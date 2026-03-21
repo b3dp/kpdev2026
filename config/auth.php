@@ -12,7 +12,7 @@ return [
     'guards' => [
         'web' => [
             'driver' => 'session',
-            'provider' => 'users',
+            'provider' => 'yoneticiler',
         ],
 
         'admin' => [
@@ -22,11 +22,6 @@ return [
     ],
 
     'providers' => [
-        'users' => [
-            'driver' => 'eloquent',
-            'model' => App\Models\User::class,
-        ],
-
         'yoneticiler' => [
             'driver' => 'eloquent',
             'model' => Yonetici::class,
