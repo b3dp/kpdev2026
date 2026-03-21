@@ -51,8 +51,7 @@ class RolResource extends Resource
                 ->relationship('permissions', 'name', fn ($query) => $query->where('guard_name', 'admin')->orderBy('name'))
                 ->columns(3)
                 ->searchable()
-                ->bulkToggleable()
-                ->getOptionLabelUsing(fn (string $value): string => $value),
+                ->bulkToggleable(),
         ]);
     }
 
