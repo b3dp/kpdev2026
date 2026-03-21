@@ -8,11 +8,13 @@ use Filament\Panel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
 
 class Yonetici extends Authenticatable implements FilamentUser, HasName
 {
-    use HasRoles, Notifiable, SoftDeletes;
+    use HasRoles, LogsActivity, Notifiable, SoftDeletes;
 
     protected $table = 'yoneticiler';
 
@@ -39,6 +41,15 @@ class Yonetici extends Authenticatable implements FilamentUser, HasName
             'aktif' => 'boolean',
             'son_giris' => 'datetime',
         ];
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['ad_soyad', 'eposta', 'telefon', 'aktif'])
+            ->logOnlyDirty()
+            ->useLogName('yoneticiler')
+            ->dontSubmitEmptyLogs();
     }
 
     public function getAuthPassword(): string
