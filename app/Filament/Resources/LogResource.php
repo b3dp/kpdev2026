@@ -30,6 +30,6 @@ class LogResource extends ActivityResource
 
     public static function canViewAny(): bool
     {
-        return auth()->check() && auth()->user()->hasRole('admin');
+        return auth()->check() && auth()->user()->hasRole('Admin');
     }
 }
