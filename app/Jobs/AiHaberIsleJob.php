@@ -15,14 +15,13 @@ class AiHaberIsleJob implements ShouldQueue
 {
     use Queueable;
 
-    public string $queue = 'default';
-
     public int $timeout = 120;
 
     public int $tries = 3;
 
     public function __construct(public int $haberId)
     {
+        $this->onQueue('default');
     }
 
     public function backoff(): array

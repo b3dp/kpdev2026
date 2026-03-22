@@ -13,16 +13,15 @@ class GorselOptimizeJob implements ShouldQueue
 {
     use Queueable;
 
-    public string $queue = 'default';
-
     public int $timeout = 120;
 
     public int $tries = 3;
 
     public function __construct(
         public int $haberId,
-        public string $kaynakYol,
+        public array $kaynakYollar,
     ) {
+        $this->onQueue('default');
     }
 
     public function backoff(): array
@@ -38,41 +37,50 @@ class GorselOptimizeJob implements ShouldQueue
             return;
         }
 
-        $orijinalTamYol = Storage::disk('local')->path($this->kaynakYol);
         $slug = $haber->slug ?: 'haber-' . $haber->id;
 
         $oriDizin = 'img26/ori/haberler/' . $slug;
         $optDizin = 'img26/opt/haberler/' . $slug;
 
         $manager = ImageManager::imagick();
-        $resim = $manager->read($orijinalTamYol);
+        $kaynaklar = array_values(array_filter($this->kaynakYollar));
 
-        $lg = (string) $resim->cover(1280, 720, 'center')->toWebp(quality: 85);
-        $og = (string) $resim->cover(1200, 675, 'center')->toWebp(quality: 85);
-        $sm = (string) $resim->cover(320, 180, 'center')->toWebp(quality: 80);
-        $mobilLg = (string) $resim->cover(768, 432, 'center')->toWebp(quality: 85);
+        foreach ($kaynaklar as $sira => $kaynakYol) {
+            $orijinalTamYol = Storage::disk('local')->path($kaynakYol);
+            $resim = $manager->read($orijinalTamYol);
 
-        $orijinalIcerik = Storage::disk('local')->get($this->kaynakYol);
+            $lg = (string) $resim->cover(1280, 720, 'center')->toWebp(quality: 85);
+            $og = (string) $resim->cover(1200, 675, 'center')->toWebp(quality: 85);
+            $sm = (string) $resim->cover(320, 180, 'center')->toWebp(quality: 80);
+            $mobilLg = (string) $resim->cover(768, 432, 'center')->toWebp(quality: 85);
 
-        $orijinalYol = $oriDizin . '/orijinal';
-        $lgYol = $optDizin . '/lg.webp';
-        $ogYol = $optDizin . '/og.webp';
-        $smYol = $optDizin . '/sm.webp';
-        $mobilLgYol = $optDizin . '/mobil-lg.webp';
+            $orijinalIcerik = Storage::disk('local')->get($kaynakYol);
+            $uzanti = pathinfo($kaynakYol, PATHINFO_EXTENSION) ?: 'jpg';
+            $siraNo = str_pad((string) ($sira + 1), 3, '0', STR_PAD_LEFT);
 
-        Storage::disk('spaces')->put($orijinalYol, $orijinalIcerik, 'public');
-        Storage::disk('spaces')->put($lgYol, $lg, 'public');
-        Storage::disk('spaces')->put($ogYol, $og, 'public');
-        Storage::disk('spaces')->put($smYol, $sm, 'public');
-        Storage::disk('spaces')->put($mobilLgYol, $mobilLg, 'public');
+            $orijinalYol = $oriDizin . '/' . $siraNo . '-orijinal.' . $uzanti;
+            $lgYol = $optDizin . '/' . $siraNo . '-lg.webp';
+            $ogYol = $optDizin . '/' . $siraNo . '-og.webp';
+            $smYol = $optDizin . '/' . $siraNo . '-sm.webp';
+            $mobilLgYol = $optDizin . '/' . $siraNo . '-mobil-lg.webp';
 
-        $haber->update([
-            'gorsel_orijinal' => Storage::disk('spaces')->url($orijinalYol),
-            'gorsel_lg' => Storage::disk('spaces')->url($lgYol),
-            'gorsel_og' => Storage::disk('spaces')->url($ogYol),
-            'gorsel_sm' => Storage::disk('spaces')->url($smYol),
-            'gorsel_mobil_lg' => Storage::disk('spaces')->url($mobilLgYol),
-        ]);
+            Storage::disk('spaces')->put($orijinalYol, $orijinalIcerik, 'public');
+            Storage::disk('spaces')->put($lgYol, $lg, 'public');
+            Storage::disk('spaces')->put($ogYol, $og, 'public');
+            Storage::disk('spaces')->put($smYol, $sm, 'public');
+            Storage::disk('spaces')->put($mobilLgYol, $mobilLg, 'public');
+
+            if ($sira === 0) {
+                // İlk yüklenen görsel haberin ana görseli olarak kaydedilir.
+                $haber->update([
+                    'gorsel_orijinal' => Storage::disk('spaces')->url($orijinalYol),
+                    'gorsel_lg' => Storage::disk('spaces')->url($lgYol),
+                    'gorsel_og' => Storage::disk('spaces')->url($ogYol),
+                    'gorsel_sm' => Storage::disk('spaces')->url($smYol),
+                    'gorsel_mobil_lg' => Storage::disk('spaces')->url($mobilLgYol),
+                ]);
+            }
+        }
     }
 
     public function failed(Throwable $exception): void

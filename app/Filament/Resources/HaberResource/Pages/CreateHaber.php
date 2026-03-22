@@ -23,9 +23,10 @@ class CreateHaber extends CreateRecord
     protected function afterCreate(): void
     {
         $haber = $this->record;
+        $gorseller = array_values(array_filter((array) data_get($this->data, 'gorseller', [])));
 
-        if (filled($haber->gorsel_orijinal) && str_starts_with((string) $haber->gorsel_orijinal, 'tmp/haberler/')) {
-            GorselOptimizeJob::dispatch($haber->id, $haber->gorsel_orijinal);
+        if (! empty($gorseller)) {
+            GorselOptimizeJob::dispatch($haber->id, $gorseller);
         }
 
         if (data_get($this->data, 'ai_otomatik_tetikle')) {

@@ -6,7 +6,6 @@ use App\Enums\HaberDurumu;
 use App\Enums\HaberOncelik;
 use App\Filament\Resources\HaberResource\Pages;
 use App\Jobs\AiHaberIsleJob;
-use App\Jobs\GorselOptimizeJob;
 use App\Models\Etiket;
 use App\Models\Haber;
 use App\Models\HaberKategorisi;
@@ -138,16 +137,19 @@ class HaberResource extends Resource
                         ])
                         ->columnSpanFull(),
 
-                    FileUpload::make('gorsel_orijinal')
-                        ->label('Haber Görseli')
+                    FileUpload::make('gorseller')
+                        ->label('Haber Görselleri')
                         ->disk('local')
                         ->directory('tmp/haberler')
                         ->visibility('private')
                         ->image()
+                        ->multiple()
+                        ->reorderable()
+                        ->dehydrated(false)
                         ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                         ->maxSize(65536)
                         ->imagePreviewHeight('180')
-                        ->helperText('JPG, JPEG, PNG, WEBP - maksimum 64MB'),
+                        ->helperText('JPG, JPEG, PNG, WEBP - maksimum 64MB. İlk sıradaki görsel ana görsel olur.'),
 
                     Placeholder::make('gorsel_lg_onizleme')
                         ->label('Mevcut Görsel Önizleme')
