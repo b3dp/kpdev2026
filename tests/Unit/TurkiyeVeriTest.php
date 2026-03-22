@@ -15,7 +15,7 @@ class TurkiyeVeriTest extends TestCase
 
     public function test_ile_gore_ilce_listesi_dondurur(): void
     {
-        $ilceler = TurkiyeIlceler::ilceSecenekleri('Izmir');
+        $ilceler = TurkiyeIlceler::ilceSecenekleri('İzmir');
 
         $this->assertArrayHasKey('Konak', $ilceler);
         $this->assertArrayHasKey('Bornova', $ilceler);

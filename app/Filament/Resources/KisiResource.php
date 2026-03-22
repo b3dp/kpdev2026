@@ -84,8 +84,7 @@ class KisiResource extends Resource
             Select::make('cinsiyet')
                 ->label('Cinsiyet')
                 ->options(KisiCinsiyet::secenekler())
-                ->default(KisiCinsiyet::Belirtilmemis->value)
-                ->required(),
+                ->default(KisiCinsiyet::Belirtilmemis->value),
 
             DatePicker::make('dogum_tarihi')
                 ->label('Doğum Tarihi')
