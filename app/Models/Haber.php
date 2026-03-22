@@ -40,6 +40,8 @@ class Haber extends Model
         'robots',
         'canonical_url',
         'ai_islendi',
+        'ai_islem_yuzde',
+        'ai_islem_adim',
         'ai_onay',
         'gorsel_orijinal',
         'gorsel_lg',
@@ -58,6 +60,7 @@ class Haber extends Model
             'yayin_bitis' => 'datetime',
             'goruntuleme' => 'integer',
             'ai_islendi' => 'boolean',
+            'ai_islem_yuzde' => 'integer',
             'ai_onay' => 'boolean',
         ];
     }
@@ -113,6 +116,8 @@ class Haber extends Model
                 'robots',
                 'canonical_url',
                 'ai_islendi',
+                'ai_islem_yuzde',
+                'ai_islem_adim',
                 'ai_onay',
                 'gorsel_orijinal',
                 'gorsel_lg',

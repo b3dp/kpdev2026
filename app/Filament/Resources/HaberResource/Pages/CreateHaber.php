@@ -4,7 +4,6 @@ namespace App\Filament\Resources\HaberResource\Pages;
 
 use App\Enums\HaberDurumu;
 use App\Filament\Resources\HaberResource;
-use App\Jobs\AiHaberIsleJob;
 use App\Jobs\GorselOptimizeJob;
 use App\Jobs\OnayEpostasiGonderJob;
 use Filament\Resources\Pages\CreateRecord;
@@ -26,11 +25,7 @@ class CreateHaber extends CreateRecord
         $gorseller = array_values(array_filter((array) data_get($this->data, 'gorseller', [])));
 
         if (! empty($gorseller)) {
-            GorselOptimizeJob::dispatch($haber->id, $gorseller);
-        }
-
-        if (data_get($this->data, 'ai_otomatik_tetikle')) {
-            AiHaberIsleJob::dispatch($haber->id);
+            dispatch_sync(new GorselOptimizeJob($haber->id, $gorseller));
         }
 
         if ($haber->durum === HaberDurumu::Incelemede) {
