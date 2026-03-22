@@ -21,12 +21,39 @@ class EditHaber extends EditRecord
                 ->label('AI İşlemlerini Başlat')
                 ->icon('heroicon-o-sparkles')
                 ->color('primary')
-                ->visible(fn () => auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör']))
-                ->hidden(fn () => $this->record->durum !== HaberDurumu::Taslak)
+                ->visible(function (): bool {
+                    $durum = $this->record->durum instanceof HaberDurumu
+                        ? $this->record->durum
+                        : HaberDurumu::tryFrom((string) $this->record->durum);
+
+                    return auth()->check()
+                        && auth()->user()->hasAnyRole(['Admin', 'Editör'])
+                        && $durum === HaberDurumu::Taslak;
+                })
                 ->modalHeading('AI İşlemleri')
                 ->modalSubmitAction(false)
                 ->modalCancelActionLabel('Kapat')
                 ->modalContent(fn () => view('filament.haber-ai-modal', ['haberId' => $this->record->id])),
+            Action::make('yayinla')
+                ->label('Yayına Al')
+                ->icon('heroicon-o-check-badge')
+                ->color('success')
+                ->visible(function (): bool {
+                    $durum = $this->record->durum instanceof HaberDurumu
+                        ? $this->record->durum
+                        : HaberDurumu::tryFrom((string) $this->record->durum);
+
+                    return auth()->check()
+                        && auth()->user()->hasRole('Editör')
+                        && $durum !== HaberDurumu::Yayinda;
+                })
+                ->requiresConfirmation()
+                ->action(function (): void {
+                    $this->record->update([
+                        'durum' => HaberDurumu::Yayinda,
+                        'yayin_tarihi' => $this->record->yayin_tarihi ?? now(),
+                    ]);
+                }),
             DeleteAction::make(),
         ];
     }

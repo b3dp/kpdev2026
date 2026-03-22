@@ -143,6 +143,8 @@ class HaberResource extends Resource
                         ->visibility('private')
                         ->image()
                         ->multiple()
+                        ->appendFiles()
+                        ->maxFiles(20)
                         ->reorderable()
                         ->dehydrated(false)
                         ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
@@ -334,7 +336,15 @@ class HaberResource extends Resource
                     ->label('Yayınla')
                     ->color('success')
                     ->icon('heroicon-o-check-badge')
-                    ->visible(fn (Haber $record) => $record->durum !== HaberDurumu::Yayinda)
+                    ->visible(function (Haber $record): bool {
+                        $durum = $record->durum instanceof HaberDurumu
+                            ? $record->durum
+                            : HaberDurumu::tryFrom((string) $record->durum);
+
+                        return auth()->check()
+                            && auth()->user()->hasRole('Editör')
+                            && $durum !== HaberDurumu::Yayinda;
+                    })
                     ->action(function (Haber $record): void {
                         $record->update(['durum' => HaberDurumu::Yayinda, 'yayin_tarihi' => $record->yayin_tarihi ?? now()]);
                     }),
