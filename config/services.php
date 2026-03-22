@@ -40,4 +40,9 @@ return [
         'secret_key' => env('RECAPTCHA_SECRET_KEY'),
     ],
 
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY'),
+        'project_id' => env('GOOGLE_CLOUD_PROJECT_ID'),
+    ],
+
 ];

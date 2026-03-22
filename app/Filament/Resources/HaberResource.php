@@ -5,16 +5,20 @@ namespace App\Filament\Resources;
 use App\Enums\HaberDurumu;
 use App\Enums\HaberOncelik;
 use App\Filament\Resources\HaberResource\Pages;
+use App\Jobs\AiHaberIsleJob;
+use App\Jobs\GorselOptimizeJob;
 use App\Models\Etiket;
 use App\Models\Haber;
 use App\Models\HaberKategorisi;
 use App\Models\Kisi;
 use App\Models\Kurum;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -133,6 +137,34 @@ class HaberResource extends Resource
                             'redo',
                         ])
                         ->columnSpanFull(),
+
+                    FileUpload::make('gorsel_orijinal')
+                        ->label('Haber Görseli')
+                        ->disk('local')
+                        ->directory('tmp/haberler')
+                        ->visibility('private')
+                        ->image()
+                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                        ->maxSize(65536)
+                        ->imagePreviewHeight('180')
+                        ->helperText('JPG, JPEG, PNG, WEBP - maksimum 64MB'),
+
+                    Placeholder::make('gorsel_lg_onizleme')
+                        ->label('Mevcut Görsel Önizleme')
+                        ->content(function (?Haber $record) {
+                            if (! $record?->gorsel_lg) {
+                                return 'Henüz optimize görsel yok.';
+                            }
+
+                            return new \Illuminate\Support\HtmlString(
+                                '<img src="' . e($record->gorsel_lg) . '" style="max-width: 100%; border-radius: 8px;" alt="Haber görsel önizleme" />'
+                            );
+                        }),
+
+                    Toggle::make('ai_otomatik_tetikle')
+                        ->label('Kaydedince AI otomatik başlat')
+                        ->dehydrated(false)
+                        ->default(false),
 
                     Select::make('etiketler')
                         ->label('Etiketler')
@@ -335,6 +367,20 @@ class HaberResource extends Resource
                     ->icon('heroicon-o-star')
                     ->visible(fn (Haber $record) => $record->manset)
                     ->action(fn (Haber $record) => $record->update(['manset' => false, 'oncelik' => HaberOncelik::Normal])),
+                Action::make('ai_islemini_baslat')
+                    ->label(fn (Haber $record) => $record->ai_islendi ? 'AI işlendi ✓' : 'AI İşlemlerini Başlat')
+                    ->icon('heroicon-o-sparkles')
+                    ->color('primary')
+                    ->disabled(fn (Haber $record) => $record->ai_islendi)
+                    ->visible(fn () => auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör']))
+                    ->action(function (Haber $record): void {
+                        AiHaberIsleJob::dispatch($record->id);
+
+                        Notification::make()
+                            ->title('AI işlemleri kuyruğa alındı.')
+                            ->success()
+                            ->send();
+                    }),
                 DeleteAction::make(),
                 RestoreAction::make(),
                 ForceDeleteAction::make(),

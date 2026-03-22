@@ -41,6 +41,11 @@ class Haber extends Model
         'canonical_url',
         'ai_islendi',
         'ai_onay',
+        'gorsel_orijinal',
+        'gorsel_lg',
+        'gorsel_og',
+        'gorsel_sm',
+        'gorsel_mobil_lg',
     ];
 
     protected function casts(): array
@@ -109,6 +114,11 @@ class Haber extends Model
                 'canonical_url',
                 'ai_islendi',
                 'ai_onay',
+                'gorsel_orijinal',
+                'gorsel_lg',
+                'gorsel_og',
+                'gorsel_sm',
+                'gorsel_mobil_lg',
             ])
             ->logOnlyDirty()
             ->useLogName('haberler')
