@@ -30,8 +30,10 @@ class Uye extends Authenticatable
         'sms_abonelik',
         'eposta_abonelik',
         'durum',
+        'aktif',
         'son_giris',
         'remember_token',
+        'abonelik_token',
         'kisi_id',
     ];
 
@@ -48,6 +50,7 @@ class Uye extends Authenticatable
             'eposta_dogrulandi' => 'boolean',
             'sms_abonelik' => 'boolean',
             'eposta_abonelik' => 'boolean',
+            'aktif' => 'boolean',
             'durum' => UyeDurumu::class,
             'son_giris' => 'datetime',
         ];
@@ -90,5 +93,10 @@ class Uye extends Authenticatable
     public function rozetler(): HasMany
     {
         return $this->hasMany(UyeRozet::class, 'uye_id');
+    }
+
+    public function bildirimler(): HasMany
+    {
+        return $this->hasMany(UyeBildirim::class, 'uye_id');
     }
 }
