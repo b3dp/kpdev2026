@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Haber;
+use App\Models\HaberGorseli;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Storage;
@@ -17,9 +18,16 @@ class GorselOptimizeJob implements ShouldQueue
 
     public int $tries = 3;
 
+    /**
+     * @param  string  $gorselTipi  'ana_gorsel' | 'galeri_gorseli'
+     * @param  string  $geciciYol   local disk relative path (tmp/haberler/...)
+     */
     public function __construct(
-        public int $haberId,
-        public array $kaynakYollar,
+        public readonly int $modelId,
+        public readonly string $modelTipi,
+        public readonly string $gorselTipi,
+        public readonly string $geciciYol,
+        public readonly int $sira = 1,
     ) {
         $this->onQueue('default');
     }
@@ -31,55 +39,68 @@ class GorselOptimizeJob implements ShouldQueue
 
     public function handle(): void
     {
-        $haber = Haber::query()->find($this->haberId);
+        $haber = Haber::query()->find($this->modelId);
 
         if (! $haber) {
             return;
         }
 
         $slug = $haber->slug ?: 'haber-' . $haber->id;
-
-        $oriDizin = 'img26/ori/haberler/' . $slug;
-        $optDizin = 'img26/opt/haberler/' . $slug;
+        $uzanti = pathinfo($this->geciciYol, PATHINFO_EXTENSION) ?: 'jpeg';
+        $geciciTamYol = Storage::disk('local')->path($this->geciciYol);
 
         $manager = ImageManager::imagick();
-        $kaynaklar = array_values(array_filter($this->kaynakYollar));
+        $resim = $manager->read($geciciTamYol);
 
-        foreach ($kaynaklar as $sira => $kaynakYol) {
-            $orijinalTamYol = Storage::disk('local')->path($kaynakYol);
-            $resim = $manager->read($orijinalTamYol);
+        $oriDizin = "img26/ori/haberler/{$haber->id}";
+        $optDizin = "img26/opt/haberler/{$haber->id}";
 
-            $lg = (string) $resim->cover(1280, 720, 'center')->toWebp(quality: 85);
-            $og = (string) $resim->cover(1200, 675, 'center')->toWebp(quality: 85);
-            $sm = (string) $resim->cover(320, 180, 'center')->toWebp(quality: 80);
-            $mobilLg = (string) $resim->cover(768, 432, 'center')->toWebp(quality: 85);
+        if ($this->gorselTipi === 'ana_gorsel') {
+            $orijinalYol  = "{$oriDizin}/{$slug}-ana-orijinal.{$uzanti}";
+            $lgYol        = "{$optDizin}/{$slug}-ana-lg.webp";
+            $ogYol        = "{$optDizin}/{$slug}-ana-og.webp";
+            $smYol        = "{$optDizin}/{$slug}-ana-sm.webp";
+            $mobilLgYol   = "{$optDizin}/{$slug}-ana-mobil-lg.webp";
 
-            $orijinalIcerik = Storage::disk('local')->get($kaynakYol);
-            $uzanti = pathinfo($kaynakYol, PATHINFO_EXTENSION) ?: 'jpg';
-            $siraNo = str_pad((string) ($sira + 1), 3, '0', STR_PAD_LEFT);
+            Storage::disk('spaces')->put($orijinalYol, Storage::disk('local')->get($this->geciciYol), 'public');
+            Storage::disk('spaces')->put($lgYol, (string) $resim->cover(1280, 720)->toWebp(quality: 85), 'public');
+            Storage::disk('spaces')->put($ogYol, (string) $resim->cover(1200, 675)->toWebp(quality: 85), 'public');
+            Storage::disk('spaces')->put($smYol, (string) $resim->cover(320, 180)->toWebp(quality: 80), 'public');
+            Storage::disk('spaces')->put($mobilLgYol, (string) $resim->cover(768, 432)->toWebp(quality: 85), 'public');
 
-            $orijinalYol = $oriDizin . '/' . $siraNo . '-orijinal.' . $uzanti;
-            $lgYol = $optDizin . '/' . $siraNo . '-lg.webp';
-            $ogYol = $optDizin . '/' . $siraNo . '-og.webp';
-            $smYol = $optDizin . '/' . $siraNo . '-sm.webp';
-            $mobilLgYol = $optDizin . '/' . $siraNo . '-mobil-lg.webp';
+            $haber->update([
+                'gorsel_orijinal'  => Storage::disk('spaces')->url($orijinalYol),
+                'gorsel_lg'        => Storage::disk('spaces')->url($lgYol),
+                'gorsel_og'        => Storage::disk('spaces')->url($ogYol),
+                'gorsel_sm'        => Storage::disk('spaces')->url($smYol),
+                'gorsel_mobil_lg'  => Storage::disk('spaces')->url($mobilLgYol),
+            ]);
 
-            Storage::disk('spaces')->put($orijinalYol, $orijinalIcerik, 'public');
-            Storage::disk('spaces')->put($lgYol, $lg, 'public');
-            Storage::disk('spaces')->put($ogYol, $og, 'public');
-            Storage::disk('spaces')->put($smYol, $sm, 'public');
-            Storage::disk('spaces')->put($mobilLgYol, $mobilLg, 'public');
+            return;
+        }
 
-            if ($sira === 0) {
-                // İlk yüklenen görsel haberin ana görseli olarak kaydedilir.
-                $haber->update([
-                    'gorsel_orijinal' => Storage::disk('spaces')->url($orijinalYol),
-                    'gorsel_lg' => Storage::disk('spaces')->url($lgYol),
-                    'gorsel_og' => Storage::disk('spaces')->url($ogYol),
-                    'gorsel_sm' => Storage::disk('spaces')->url($smYol),
-                    'gorsel_mobil_lg' => Storage::disk('spaces')->url($mobilLgYol),
-                ]);
-            }
+        if ($this->gorselTipi === 'galeri_gorseli') {
+            $siraNo = str_pad((string) $this->sira, 3, '0', STR_PAD_LEFT);
+
+            $orijinalYol = "{$oriDizin}/{$slug}-{$siraNo}-orijinal.{$uzanti}";
+            $lgYol       = "{$optDizin}/{$slug}-{$siraNo}-lg.webp";
+            $ogYol       = "{$optDizin}/{$slug}-{$siraNo}-og.webp";
+            $smYol       = "{$optDizin}/{$slug}-{$siraNo}-sm.webp";
+
+            Storage::disk('spaces')->put($orijinalYol, Storage::disk('local')->get($this->geciciYol), 'public');
+            Storage::disk('spaces')->put($lgYol, (string) $resim->cover(1280, 720)->toWebp(quality: 85), 'public');
+            Storage::disk('spaces')->put($ogYol, (string) $resim->cover(1200, 675)->toWebp(quality: 85), 'public');
+            Storage::disk('spaces')->put($smYol, (string) $resim->cover(320, 180)->toWebp(quality: 80), 'public');
+
+            HaberGorseli::updateOrCreate(
+                ['haber_id' => $haber->id, 'sira' => $this->sira],
+                [
+                    'orijinal_yol' => $orijinalYol,
+                    'lg_yol'       => $lgYol,
+                    'og_yol'       => $ogYol,
+                    'sm_yol'       => $smYol,
+                ]
+            );
         }
     }
 
@@ -87,9 +108,11 @@ class GorselOptimizeJob implements ShouldQueue
     {
         activity('gorsel_optimizasyon_hata')
             ->withProperties([
-                'haber_id' => $this->haberId,
-                'hata' => $exception->getMessage(),
+                'model_id'    => $this->modelId,
+                'gorsel_tipi' => $this->gorselTipi,
+                'hata'        => $exception->getMessage(),
             ])
             ->log('Görsel optimize job başarısız oldu');
     }
 }
+

@@ -7,6 +7,7 @@ use App\Enums\HaberOncelik;
 use App\Filament\Resources\HaberResource\Pages;
 use App\Models\Etiket;
 use App\Models\Haber;
+use App\Models\HaberGorseli;
 use App\Models\HaberKategorisi;
 use App\Models\Kisi;
 use App\Models\Kurum;
@@ -136,8 +137,33 @@ class HaberResource extends Resource
                         ])
                         ->columnSpanFull(),
 
-                    FileUpload::make('gorseller')
-                        ->label('Haber Görselleri')
+                    FileUpload::make('ana_gorsel_gecici')
+                        ->label('Ana Görsel')
+                        ->disk('local')
+                        ->directory('tmp/haberler')
+                        ->visibility('private')
+                        ->image()
+                        ->maxFiles(1)
+                        ->dehydrated(false)
+                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                        ->maxSize(65536)
+                        ->imagePreviewHeight('180')
+                        ->helperText('Tek görsel. Önerilen: en az 1280×720 piksel. JPG, PNG veya WEBP, maks 64MB.'),
+
+                    Placeholder::make('gorsel_lg_onizleme')
+                        ->label('Mevcut Ana Görsel')
+                        ->content(function (?Haber $record): \Illuminate\Support\HtmlString {
+                            if (! $record?->gorsel_lg) {
+                                return new \Illuminate\Support\HtmlString('<p class="text-sm text-gray-400">Henüz ana görsel yok.</p>');
+                            }
+
+                            return new \Illuminate\Support\HtmlString(
+                                '<img src="' . e($record->gorsel_lg) . '" style="max-width:100%;max-height:200px;border-radius:8px;object-fit:cover;" alt="Ana görsel önizleme" />'
+                            );
+                        }),
+
+                    FileUpload::make('galeri_gorseller')
+                        ->label('Galeri Görselleri')
                         ->disk('local')
                         ->directory('tmp/haberler')
                         ->visibility('private')
@@ -149,19 +175,27 @@ class HaberResource extends Resource
                         ->dehydrated(false)
                         ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                         ->maxSize(65536)
-                        ->imagePreviewHeight('180')
-                        ->helperText('JPG, JPEG, PNG, WEBP - maksimum 64MB. İlk sıradaki görsel ana görsel olur.'),
+                        ->imagePreviewHeight('120')
+                        ->helperText('Ek görseller. Sürükleyerek sıralayabilirsiniz. Her biri maks 64MB.'),
 
-                    Placeholder::make('gorsel_lg_onizleme')
-                        ->label('Mevcut Görsel Önizleme')
-                        ->content(function (?Haber $record) {
-                            if (! $record?->gorsel_lg) {
-                                return 'Henüz optimize görsel yok.';
+                    Placeholder::make('galeri_onizleme')
+                        ->label('Mevcut Galeri')
+                        ->content(function (?Haber $record): \Illuminate\Support\HtmlString {
+                            if (! $record || $record->gorseller()->count() === 0) {
+                                return new \Illuminate\Support\HtmlString('<p class="text-sm text-gray-400">Henüz galeri görseli yok.</p>');
                             }
 
-                            return new \Illuminate\Support\HtmlString(
-                                '<img src="' . e($record->gorsel_lg) . '" style="max-width: 100%; border-radius: 8px;" alt="Haber görsel önizleme" />'
-                            );
+                            $html = '<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:8px;">';
+                            foreach ($record->gorseller as $gorsel) {
+                                $url = $gorsel->lgUrl();
+                                $html .= '<div style="position:relative;">'
+                                    . '<img src="' . e($url) . '" style="border-radius:6px;width:100%;height:96px;object-fit:cover;">'
+                                    . '<span style="position:absolute;top:4px;left:4px;background:rgba(0,0,0,0.55);color:#fff;font-size:11px;padding:1px 5px;border-radius:4px;">' . $gorsel->sira . '</span>'
+                                    . '</div>';
+                            }
+                            $html .= '</div>';
+
+                            return new \Illuminate\Support\HtmlString($html);
                         }),
 
                     Select::make('etiketler')

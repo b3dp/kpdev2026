@@ -180,4 +180,9 @@ class Haber extends Model
     {
         return $this->hasMany(HaberOnayToken::class, 'haber_id');
     }
+
+    public function gorseller(): HasMany
+    {
+        return $this->hasMany(HaberGorseli::class, 'haber_id')->orderBy('sira');
+    }
 }

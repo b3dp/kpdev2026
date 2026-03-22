@@ -65,10 +65,17 @@ class EditHaber extends EditRecord
     protected function afterSave(): void
     {
         $haber = $this->record;
-        $gorseller = array_values(array_filter((array) data_get($this->data, 'gorseller', [])));
 
-        if (! empty($gorseller)) {
-            dispatch_sync(new GorselOptimizeJob($haber->id, $gorseller));
+        // Ana görsel
+        $anaGorsel = data_get($this->data, 'ana_gorsel_gecici');
+        if (filled($anaGorsel)) {
+            dispatch_sync(new GorselOptimizeJob($haber->id, 'haber', 'ana_gorsel', $anaGorsel, 1));
+        }
+
+        // Galeri görselleri
+        $galeriGorseller = array_values(array_filter((array) data_get($this->data, 'galeri_gorseller', [])));
+        foreach ($galeriGorseller as $sira => $geciciYol) {
+            GorselOptimizeJob::dispatch($haber->id, 'haber', 'galeri_gorseli', $geciciYol, $sira + 1)->onQueue('default');
         }
 
         if ($haber->durum === HaberDurumu::Incelemede) {
