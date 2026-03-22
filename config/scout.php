@@ -207,4 +207,18 @@ return [
         'import_action' => env('TYPESENSE_IMPORT_ACTION', 'upsert'),
     ],
 
+    'tntsearch' => [
+        'storage' => storage_path('scout').DIRECTORY_SEPARATOR,
+        'fuzziness' => env('TNTSEARCH_FUZZINESS', false),
+        'fuzzy' => [
+            'prefix_length' => 2,
+            'max_expansions' => 50,
+            'distance' => 2,
+            'no_limit' => true,
+        ],
+        'asYouType' => env('TNTSEARCH_AS_YOU_TYPE', false),
+        'searchBoolean' => env('TNTSEARCH_BOOLEAN', false),
+        'maxDocs' => env('TNTSEARCH_MAX_DOCS', 500),
+    ],
+
 ];
