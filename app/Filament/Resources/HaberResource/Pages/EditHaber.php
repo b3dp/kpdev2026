@@ -18,7 +18,11 @@ class EditHaber extends EditRecord
     {
         return [
             Action::make('ai_islemleri')
-                ->label('AI İşlemlerini Başlat')
+                ->label(function (): string {
+                    return $this->record->ai_islendi
+                        ? 'AI İşlemlerini Tekrar Başlat'
+                        : 'AI İşlemlerini Başlat';
+                })
                 ->icon('heroicon-o-sparkles')
                 ->color('primary')
                 ->visible(function (): bool {
@@ -28,7 +32,7 @@ class EditHaber extends EditRecord
 
                     return auth()->check()
                         && auth()->user()->hasAnyRole(['Admin', 'Editör'])
-                        && $durum === HaberDurumu::Taslak;
+                        && in_array($durum, [HaberDurumu::Taslak, HaberDurumu::Incelemede, HaberDurumu::Reddedildi], true);
                 })
                 ->modalHeading('AI İşlemleri')
                 ->modalSubmitAction(false)
