@@ -1,0 +1,43 @@
+Kişiler tablo kolonları:
+Array
+(
+    [0] => id
+    [1] => ad
+    [2] => soyad
+    [3] => cinsiyet
+    [4] => dogum_tarihi
+    [5] => tc_kimlik
+    [6] => telefon
+    [7] => eposta
+    [8] => adres
+    [9] => il
+    [10] => ilce
+    [11] => meslek
+    [12] => notlar
+    [13] => ai_onaylandi
+    [14] => ai_skoru
+    [15] => created_at
+    [16] => updated_at
+    [17] => deleted_at
+)
+
+Kurumlar tablo kolonları:
+Array
+(
+    [0] => id
+    [1] => ad
+    [2] => slug
+    [3] => tip
+    [4] => telefon
+    [5] => eposta
+    [6] => adres
+    [7] => il
+    [8] => ilce
+    [9] => web_sitesi
+    [10] => aciklama
+    [11] => aktif
+    [12] => kurumsal_sayfa_id
+    [13] => created_at
+    [14] => updated_at
+    [15] => deleted_at
+)

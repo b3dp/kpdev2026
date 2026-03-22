@@ -134,17 +134,38 @@ EK KURALLAR:
 - Aynı kurum farklı şekillerde geçiyorsa en tam halini kullan
 - Kurum adlarını kısaltma veya değiştirme
 
+
+=== KURUM TİPİ KURALLARI ===
+
+Her kurum için uygun tipi belirle (sadece bu değerleri kullan):
+- "X Müftülüğü" (ilçe/bölge adıyla) → tip: "muftuluk"
+- "X İlçe Müftülüğü" → tip: "ilce_muftulugu"
+- Bakanlık, Diyanet merkez kurumları → tip: "bakanlik"
+- "X Kur'an Kursu" → tip: "kuran_kursu"
+- "X İmam Hatip Okulu/Lisesi" → tip: "imam_hatip"
+- "X Vakfı / X Vakıf" → tip: "vakif"
+- "X Derneği / X Dernek" → tip: "dernek"
+- "X Camii / X Cami" → tip: "cami"
+- Diğer tüm kurumlar → tip: "diger"
+
+ÖRNEKLER:
+✓ "Aliağa İlçe Müftülüğü" → tip: "ilce_muftulugu"
+✓ "Aliağa Müftülüğü Kestanepazarı Hacı Tülay Çolakoğlu Kur'an Kursu" → tip: "kuran_kursu"
+✓ "Kestanepazarı Öğrenci Yetiştirme Derneği" → tip: "dernek"
+✓ "Hacı Tahir Şimşek Camii" → tip: "cami" (eğer kurum olarak çıkardıysanız)
+
 === YANIT FORMATI ===
 
 SADECE geçerli JSON döndür. Başında veya sonunda açıklama, markdown,
 kod bloğu YAZMA. Direkt JSON ile başla:
 
-{"kisiler":[{"ad_soyad":"...","gorev":"..."},{"ad_soyad":"...","gorev":""}],"kurumlar":[{"ad":"..."},{"ad":"..."}]}
+{"kisiler":[{"ad_soyad":"...","gorev":"..."},{"ad_soyad":"...","gorev":""}],"kurumlar":[{"ad":"...","tip":"..."},{"ad":"...","tip":"..."}]}
 
 === HATA YÖNETİMİ ===
 - JSON parse hatası olursa: {"kisiler": [], "kurumlar": []}
 - Emin olmadığın varlığı ekleme, yanlış eklemek eksik bırakmaktan kötü
 - gorev alanı yoksa boş string: ""
+- tip alanı bilinmiyorsa: "diger"
 PROMPT;
 
         $json = $this->jsonCevabiAl($sistemPrompt . "\n\nMetin:\n" . $metin);
@@ -253,7 +274,7 @@ PROMPT;
             return null;
         }
 
-        $response = $this->http->post('/v1beta/models/gemini-1.5-flash:generateContent', [
+        $response = $this->http->post('/v1beta/models/gemini-2.5-flash:generateContent', [
             'query' => ['key' => $apiKey],
             'json' => [
                 'contents' => [

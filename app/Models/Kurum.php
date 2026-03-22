@@ -37,7 +37,6 @@ class Kurum extends Model
     protected function casts(): array
     {
         return [
-            'tip' => KurumTipi::class,
             'aktif' => 'boolean',
         ];
     }
@@ -71,7 +70,7 @@ class Kurum extends Model
             'id' => $this->id,
             'ad' => $this->ad,
             'slug' => $this->slug,
-            'tip' => $this->tip?->value,
+            'tip' => $this->tip,
             'il' => $this->il,
             'ilce' => $this->ilce,
             'telefon' => $this->telefon,

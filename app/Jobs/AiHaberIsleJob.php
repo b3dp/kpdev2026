@@ -65,13 +65,13 @@ class AiHaberIsleJob implements ShouldQueue
 
             $kisi = Kisi::query()->firstOrCreate(
                 ['ad' => $ad, 'soyad' => $soyad],
-                ['ai_onaylandi' => false]
+                ['ai_onaylandi' => false, 'meslek' => $kisiVerisi['gorev'] ?? null]
             );
 
             DB::table('haber_kisiler')->updateOrInsert(
                 ['haber_id' => $haber->id, 'kisi_id' => $kisi->id],
                 [
-                    'rol' => $kisiVerisi['rol'] ?? null,
+                    'rol' => $kisiVerisi['gorev'] ?? $kisiVerisi['rol'] ?? null,
                     'onay_durumu' => 'beklemede',
                     'updated_at' => now(),
                     'created_at' => now(),
@@ -90,7 +90,7 @@ class AiHaberIsleJob implements ShouldQueue
 
             $kurum = Kurum::query()->firstOrCreate(
                 ['ad' => $ad],
-                ['tip' => 'diger', 'aktif' => false]
+                ['tip' => $kurumVerisi['tip'] ?? 'diger', 'aktif' => false]
             );
 
             DB::table('haber_kurumlar')->updateOrInsert(

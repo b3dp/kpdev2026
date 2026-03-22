@@ -78,8 +78,16 @@ class KurumResource extends Resource
             Select::make('tip')
                 ->label('Tip')
                 ->options(KurumTipi::secenekler())
-                ->required()
-                ->searchable(),
+                ->searchable()
+                ->createOptionForm([
+                    TextInput::make('tip')
+                        ->label('Yeni Tip')
+                        ->required(),
+                ])
+                ->createOptionUsing(function (array $data) {
+                    return $data['tip'];
+                })
+                ->nullable(),
 
             TextInput::make('telefon')
                 ->label('Telefon')
@@ -135,7 +143,7 @@ class KurumResource extends Resource
 
                 TextColumn::make('tip')
                     ->label('Tip')
-                    ->formatStateUsing(fn (Kurum $record) => $record->tip?->label())
+                    ->formatStateUsing(fn (?string $state) => $state ? (KurumTipi::tryFrom($state)?->label() ?? $state) : null)
                     ->badge()
                     ->sortable(),
 

@@ -102,6 +102,7 @@ class HaberAiController extends Controller
                             'ad' => $ad,
                             'soyad' => $soyad,
                             'ai_onaylandi' => false,
+                            'meslek' => $this->kisiRolAyikla($kisiVerisi),
                         ]);
                         $onayDurumu = 'beklemede';
                     }
@@ -157,6 +158,7 @@ class HaberAiController extends Controller
                                 'ad' => $ad,
                                 'soyad' => $soyad,
                                 'ai_onaylandi' => false,
+                                'meslek' => $this->kisiRolAyikla($kisiVerisi),
                             ]);
                             $onayDurumu = 'beklemede';
                         }
@@ -217,7 +219,7 @@ class HaberAiController extends Controller
                     } else {
                         $kurum = Kurum::query()->create([
                             'ad' => $ad,
-                            'tip' => 'diger',
+                            'tip' => trim((string) ($kurumVerisi['tip'] ?? 'diger')) ?: 'diger',
                             'aktif' => false,
                         ]);
                         $onayDurumu = 'beklemede';
@@ -263,7 +265,7 @@ class HaberAiController extends Controller
                         } else {
                             $kurum = Kurum::query()->create([
                                 'ad' => $ad,
-                                'tip' => 'diger',
+                                'tip' => trim((string) ($kurumVerisi['tip'] ?? 'diger')) ?: 'diger',
                                 'aktif' => false,
                             ]);
                             $onayDurumu = 'beklemede';
