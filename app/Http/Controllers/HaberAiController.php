@@ -48,8 +48,9 @@ class HaberAiController extends Controller
 
             $haber->update(['ai_islem_yuzde' => 75, 'ai_islem_adim' => 'Kişi tespiti yapılıyor']);
             $kisiSonuclar = $geminiService->kisiTespitEt($duzeltilmisMetin);
+            $eklenenKisiSayisi = 0;
             foreach ($kisiSonuclar as $kisiVerisi) {
-                $adSoyad = trim((string) ($kisiVerisi['ad_soyad'] ?? ''));
+                $adSoyad = $this->kisiAdiAyikla($kisiVerisi);
                 if (! filled($adSoyad)) {
                     continue;
                 }
@@ -77,12 +78,17 @@ class HaberAiController extends Controller
                         'deleted_at' => null,
                     ]
                 );
+                $eklenenKisiSayisi++;
             }
 
-            $haber->update(['ai_islem_yuzde' => 90, 'ai_islem_adim' => 'Kurum tespiti yapılıyor']);
+            $haber->update([
+                'ai_islem_yuzde' => 90,
+                'ai_islem_adim' => "Kurum tespiti yapılıyor (kişi: {$eklenenKisiSayisi})",
+            ]);
             $kurumSonuclar = $geminiService->kurumTespitEt($duzeltilmisMetin);
+            $eklenenKurumSayisi = 0;
             foreach ($kurumSonuclar as $kurumVerisi) {
-                $ad = trim((string) ($kurumVerisi['ad'] ?? ''));
+                $ad = $this->kurumAdiAyikla($kurumVerisi);
                 if (! filled($ad)) {
                     continue;
                 }
@@ -101,12 +107,13 @@ class HaberAiController extends Controller
                         'deleted_at' => null,
                     ]
                 );
+                $eklenenKurumSayisi++;
             }
 
             $haber->update([
                 'ai_islendi' => true,
                 'ai_islem_yuzde' => 100,
-                'ai_islem_adim' => 'AI işlemleri tamamlandı',
+                'ai_islem_adim' => "AI işlemleri tamamlandı (kişi: {$eklenenKisiSayisi}, kurum: {$eklenenKurumSayisi})",
                 'durum' => HaberDurumu::Incelemede,
             ]);
 
@@ -150,5 +157,62 @@ class HaberAiController extends Controller
             'ai_islendi' => $haber->ai_islendi,
             'durum' => $haber->durum?->value,
         ]);
+    }
+
+    private function kisiAdiAyikla(mixed $kisiVerisi): string
+    {
+        if (is_string($kisiVerisi)) {
+            return trim($kisiVerisi);
+        }
+
+        if (! is_array($kisiVerisi)) {
+            return '';
+        }
+
+        $adaylar = [
+            $kisiVerisi['ad_soyad'] ?? null,
+            $kisiVerisi['adSoyad'] ?? null,
+            $kisiVerisi['isim'] ?? null,
+            $kisiVerisi['ad'] ?? null,
+            $kisiVerisi['kisi'] ?? null,
+            $kisiVerisi['name'] ?? null,
+        ];
+
+        foreach ($adaylar as $aday) {
+            $deger = trim((string) ($aday ?? ''));
+            if (filled($deger)) {
+                return $deger;
+            }
+        }
+
+        return '';
+    }
+
+    private function kurumAdiAyikla(mixed $kurumVerisi): string
+    {
+        if (is_string($kurumVerisi)) {
+            return trim($kurumVerisi);
+        }
+
+        if (! is_array($kurumVerisi)) {
+            return '';
+        }
+
+        $adaylar = [
+            $kurumVerisi['ad'] ?? null,
+            $kurumVerisi['kurum'] ?? null,
+            $kurumVerisi['kurum_adi'] ?? null,
+            $kurumVerisi['name'] ?? null,
+            $kurumVerisi['organization'] ?? null,
+        ];
+
+        foreach ($adaylar as $aday) {
+            $deger = trim((string) ($aday ?? ''));
+            if (filled($deger)) {
+                return $deger;
+            }
+        }
+
+        return '';
     }
 }

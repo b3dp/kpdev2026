@@ -48,19 +48,25 @@ class GeminiService
     public function kisiTespitEt(string $metin): array
     {
         $json = $this->jsonCevabiAl(
-            "Aşağıdaki metinden sadece kişi adlarını JSON array formatında çıkar. Format: [{\"ad_soyad\":\"...\"}]\n\n" . $metin
+            "Aşağıdaki metinden kişi adlarını JSON döndür. Sadece JSON üret.\n"
+            . "Tercih edilen format: [{\"ad_soyad\":\"...\",\"rol\":\"...\"}]\n"
+            . "Alternatif olarak {\"kisiler\":[...]} da kabul edilir.\n\n"
+            . $metin
         );
 
-        return is_array($json) ? $json : [];
+        return $this->listeyiNormalizeEt($json, ['kisiler', 'people', 'sonuc', 'results']);
     }
 
     public function kurumTespitEt(string $metin): array
     {
         $json = $this->jsonCevabiAl(
-            "Aşağıdaki metinden sadece kurum adlarını JSON array formatında çıkar. Format: [{\"ad\":\"...\"}]\n\n" . $metin
+            "Aşağıdaki metinden kurum adlarını JSON döndür. Sadece JSON üret.\n"
+            . "Tercih edilen format: [{\"ad\":\"...\"}]\n"
+            . "Alternatif olarak {\"kurumlar\":[...]} da kabul edilir.\n\n"
+            . $metin
         );
 
-        return is_array($json) ? $json : [];
+        return $this->listeyiNormalizeEt($json, ['kurumlar', 'institutions', 'organizations', 'sonuc', 'results']);
     }
 
     private function metinCevabiAl(string $prompt, string $fallback): string
@@ -82,14 +88,65 @@ class GeminiService
                 return [];
             }
 
-            $temiz = trim($metin);
-            $temiz = preg_replace('/^```json|```$/m', '', $temiz) ?? $temiz;
-            $json = json_decode(trim($temiz), true);
+            $dogrudan = $this->jsonDecodeEt($metin);
+            if ($dogrudan !== null) {
+                return $dogrudan;
+            }
 
-            return is_array($json) ? $json : [];
+            $jsonParcasi = $this->metindenJsonParcasiAyikla($metin);
+            if (! filled($jsonParcasi)) {
+                return [];
+            }
+
+            $ayiklanan = $this->jsonDecodeEt($jsonParcasi);
+
+            return $ayiklanan ?? [];
         } catch (Throwable) {
             return [];
         }
+    }
+
+    private function jsonDecodeEt(string $icerik): ?array
+    {
+        $temiz = trim($icerik);
+        $temiz = preg_replace('/^```(?:json)?\s*|\s*```$/i', '', $temiz) ?? $temiz;
+
+        $json = json_decode(trim($temiz), true);
+
+        return is_array($json) ? $json : null;
+    }
+
+    private function metindenJsonParcasiAyikla(string $metin): ?string
+    {
+        if (preg_match('/\[[\s\S]*\]/', $metin, $eslesen)) {
+            return $eslesen[0];
+        }
+
+        if (preg_match('/\{[\s\S]*\}/', $metin, $eslesen)) {
+            return $eslesen[0];
+        }
+
+        return null;
+    }
+
+    private function listeyiNormalizeEt(array $json, array $olasiListeAnahtarlari): array
+    {
+        if (array_is_list($json)) {
+            return $json;
+        }
+
+        foreach ($olasiListeAnahtarlari as $anahtar) {
+            $deger = $json[$anahtar] ?? null;
+            if (is_array($deger) && array_is_list($deger)) {
+                return $deger;
+            }
+        }
+
+        if (! empty($json) && isset($json[0]) && is_array($json[0])) {
+            return $json;
+        }
+
+        return [];
     }
 
     private function apiIstegiYap(string $prompt): ?string
