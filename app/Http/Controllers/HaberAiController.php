@@ -45,15 +45,13 @@ class HaberAiController extends Controller
                 'meta_description' => $metaDescription,
             ]);
 
-            // Rerun durumunda önceki beklemede AI eşleşmelerini temizle.
+            // Tekrar başlatmada ilişkileri sıfırdan kurmak için mevcut eşleşmeleri tamamen temizle.
             DB::table('haber_kisiler')
                 ->where('haber_id', $haber->id)
-                ->where('onay_durumu', 'beklemede')
                 ->delete();
 
             DB::table('haber_kurumlar')
                 ->where('haber_id', $haber->id)
-                ->where('onay_durumu', 'beklemede')
                 ->delete();
 
             $haber->update(['ai_islem_yuzde' => 75, 'ai_islem_adim' => 'Kişi tespiti yapılıyor']);
