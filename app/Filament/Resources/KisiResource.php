@@ -14,10 +14,16 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\BulkAction;
+use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
 use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -207,10 +213,34 @@ class KisiResource extends Resource
                 TrashedFilter::make(),
             ])
             ->actions([
+                Action::make('onayla')
+                    ->label(fn (Kisi $record) => $record->ai_onaylandi ? 'Onayı Kaldır' : 'Onayla')
+                    ->icon(fn (Kisi $record) => $record->ai_onaylandi ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
+                    ->color(fn (Kisi $record) => $record->ai_onaylandi ? 'warning' : 'success')
+                    ->action(fn (Kisi $record) => $record->update(['ai_onaylandi' => ! $record->ai_onaylandi])),
                 EditAction::make(),
                 DeleteAction::make(),
                 RestoreAction::make(),
                 ForceDeleteAction::make(),
+            ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    BulkAction::make('toplu_onayla')
+                        ->label('Onayla')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->action(fn ($records) => $records->each->update(['ai_onaylandi' => true]))
+                        ->deselectRecordsAfterCompletion(),
+                    BulkAction::make('toplu_onay_kaldir')
+                        ->label('Onayı Kaldır')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('warning')
+                        ->action(fn ($records) => $records->each->update(['ai_onaylandi' => false]))
+                        ->deselectRecordsAfterCompletion(),
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
+                ]),
             ]);
     }
 

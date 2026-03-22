@@ -13,10 +13,16 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\BulkAction;
+use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
 use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -178,10 +184,34 @@ class KurumResource extends Resource
                 TrashedFilter::make(),
             ])
             ->actions([
+                Action::make('onayla')
+                    ->label(fn (Kurum $record) => $record->aktif ? 'Pasif Yap' : 'Onayla')
+                    ->icon(fn (Kurum $record) => $record->aktif ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
+                    ->color(fn (Kurum $record) => $record->aktif ? 'warning' : 'success')
+                    ->action(fn (Kurum $record) => $record->update(['aktif' => ! $record->aktif])),
                 EditAction::make(),
                 DeleteAction::make(),
                 RestoreAction::make(),
                 ForceDeleteAction::make(),
+            ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    BulkAction::make('toplu_onayla')
+                        ->label('Onayla (Aktif)')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->action(fn ($records) => $records->each->update(['aktif' => true]))
+                        ->deselectRecordsAfterCompletion(),
+                    BulkAction::make('toplu_pasif_yap')
+                        ->label('Pasif Yap')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('warning')
+                        ->action(fn ($records) => $records->each->update(['aktif' => false]))
+                        ->deselectRecordsAfterCompletion(),
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
+                ]),
             ]);
     }
 
