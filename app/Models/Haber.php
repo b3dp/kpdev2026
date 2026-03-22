@@ -26,6 +26,7 @@ class Haber extends Model
     protected $fillable = [
         'yonetici_id',
         'baslik',
+        'seo_baslik',
         'slug',
         'ozet',
         'icerik',
@@ -96,7 +97,17 @@ class Haber extends Model
     {
         return SlugOptions::create()
             ->generateSlugsFrom('baslik')
+            ->slugsShouldBeNoLongerThan(100)
             ->saveSlugsTo('slug');
+    }
+
+    public function getSeoBaslikAttribute(?string $value): string
+    {
+        if (filled($value)) {
+            return $value;
+        }
+
+        return mb_substr((string) ($this->attributes['baslik'] ?? ''), 0, 60, 'UTF-8');
     }
 
     public function getActivitylogOptions(): LogOptions
@@ -105,6 +116,7 @@ class Haber extends Model
             ->logOnly([
                 'yonetici_id',
                 'baslik',
+                'seo_baslik',
                 'slug',
                 'durum',
                 'oncelik',

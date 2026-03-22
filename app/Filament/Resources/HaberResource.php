@@ -89,14 +89,26 @@ class HaberResource extends Resource
                     TextInput::make('baslik')
                         ->label('Başlık')
                         ->required()
-                        ->maxLength(60)
-                        ->live(onBlur: true)
-                        ->helperText(fn (?string $state) => mb_strlen((string) $state) . '/60')
-                        ->afterStateUpdated(function (callable $set, ?string $state): void {
-                            if (filled($state)) {
-                                $set('slug', Str::slug($state));
+                        ->maxLength(100)
+                        ->live(debounce: 500)
+                        ->helperText(fn (?string $state) => mb_strlen((string) ($state ?? ''), 'UTF-8') . '/100 karakter')
+                        ->afterStateUpdated(function (callable $set, callable $get, ?string $state): void {
+                            $slug = Str::slug((string) ($state ?? ''));
+                            if (filled($slug)) {
+                                $set('slug', mb_substr($slug, 0, 100, 'UTF-8'));
+                            }
+
+                            if (blank($get('seo_baslik'))) {
+                                $set('seo_baslik', mb_substr((string) ($state ?? ''), 0, 60, 'UTF-8'));
                             }
                         }),
+
+                    TextInput::make('seo_baslik')
+                        ->label('SEO Başlığı')
+                        ->maxLength(60)
+                        ->nullable()
+                        ->helperText(fn (?string $state) => mb_strlen((string) ($state ?? ''), 'UTF-8') . '/60 karakter - Boş bırakılırsa başlığın ilk 60 karakteri kullanılır')
+                        ->placeholder('Boş bırakılırsa başlıktan otomatik oluşturulur'),
 
                     TextInput::make('slug')
                         ->label('Slug')
@@ -293,6 +305,8 @@ class HaberResource extends Resource
             ->columns([
                 TextColumn::make('baslik')
                     ->label('Başlık')
+                    ->limit(80)
+                    ->tooltip(fn (Haber $record) => $record->baslik)
                     ->description(fn (Haber $record) => $record->slug)
                     ->url(fn (Haber $record) => '/haberler/' . $record->slug, shouldOpenInNewTab: true)
                     ->searchable(['baslik', 'ozet', 'icerik'])

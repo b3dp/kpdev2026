@@ -53,6 +53,35 @@ class GeminiService
         return $this->metniAnlamliSinirla($yanit, 150);
     }
 
+    public function seoBaslikUret(string $baslik): string
+    {
+        $temizBaslik = trim(preg_replace('/\s+/u', ' ', $baslik) ?? '');
+
+        if ($temizBaslik === '') {
+            return '';
+        }
+
+        if (mb_strlen($temizBaslik, 'UTF-8') <= 60) {
+            return $temizBaslik;
+        }
+
+        $prompt = "Aşağıdaki haber başlığını SEO için 60 karakteri geçmeyecek "
+            . "şekilde kısalt. Türkçe karakterleri koru. Anlam bütünlüğünü koru. "
+            . "Sadece kısaltılmış başlığı yaz, başka hiçbir şey yazma:\n\n"
+            . $temizBaslik;
+
+        try {
+            $response = $this->apiIstegiYap($prompt);
+            $kisaBaslik = mb_substr(trim((string) $response), 0, 60, 'UTF-8');
+
+            return filled($kisaBaslik)
+                ? $kisaBaslik
+                : mb_substr($temizBaslik, 0, 60, 'UTF-8');
+        } catch (Throwable) {
+            return mb_substr($temizBaslik, 0, 60, 'UTF-8');
+        }
+    }
+
     public function kisiTespitEt(string $metin): array
     {
         return $this->kisiVeKurumTespitEt($metin)['kisiler'] ?? [];

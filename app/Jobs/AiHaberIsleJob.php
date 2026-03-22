@@ -40,11 +40,15 @@ class AiHaberIsleJob implements ShouldQueue
         $duzeltilmisMetin = $geminiService->imlaDuzelt((string) $haber->icerik);
         $ozet = filled($haber->ozet) ? $haber->ozet : $geminiService->ozetUret($duzeltilmisMetin);
         $metaDescription = filled($haber->meta_description) ? $haber->meta_description : $geminiService->metaDescriptionUret($duzeltilmisMetin);
+        $seoBaslik = filled($haber->getRawOriginal('seo_baslik'))
+            ? (string) $haber->getRawOriginal('seo_baslik')
+            : $geminiService->seoBaslikUret((string) $haber->baslik);
 
         $haber->update([
             'icerik' => $duzeltilmisMetin,
             'ozet' => $ozet,
             'meta_description' => $metaDescription,
+            'seo_baslik' => $seoBaslik,
             'ai_islendi' => true,
         ]);
 
