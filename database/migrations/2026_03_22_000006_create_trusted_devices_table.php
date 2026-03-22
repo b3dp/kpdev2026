@@ -14,8 +14,8 @@ return new class extends Migration
             $table->string('device_token', 64)->unique();
             $table->string('device_adi', 255)->nullable();
             $table->string('ip_adresi', 45)->nullable();
-            $table->timestamp('son_kullanim');
-            $table->timestamp('gecerlilik_tarihi');
+            $table->timestamp('son_kullanim')->useCurrent();
+            $table->timestamp('gecerlilik_tarihi')->useCurrent();
             $table->timestamps();
 
             $table->index('son_kullanim');

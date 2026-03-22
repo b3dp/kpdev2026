@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('uye_id')->constrained('uyeler')->cascadeOnDelete();
             $table->string('tip', 50);
-            $table->timestamp('kazanilma_tarihi');
+            $table->timestamp('kazanilma_tarihi')->useCurrent();
             $table->string('kaynak_tip', 100)->nullable();
             $table->unsignedBigInteger('kaynak_id')->nullable();
             $table->timestamps();
