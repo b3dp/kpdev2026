@@ -8,13 +8,14 @@ use App\Models\Haber;
 use App\Models\Kisi;
 use App\Models\Kurum;
 use App\Services\GeminiService;
+use App\Services\LevenshteinService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
 class HaberAiController extends Controller
 {
-    public function baslat(Haber $haber, GeminiService $geminiService): JsonResponse
+    public function baslat(Haber $haber, GeminiService $geminiService, LevenshteinService $levenshteinService): JsonResponse
     {
         try {
             if ($haber->ai_islem_yuzde > 0 && $haber->ai_islem_yuzde < 100) {
@@ -44,17 +45,41 @@ class HaberAiController extends Controller
                 'meta_description' => $metaDescription,
             ]);
 
+            // Rerun durumunda önceki beklemede AI eşleşmelerini temizle.
+            DB::table('haber_kisiler')
+                ->where('haber_id', $haber->id)
+                ->where('onay_durumu', 'beklemede')
+                ->delete();
+
+            DB::table('haber_kurumlar')
+                ->where('haber_id', $haber->id)
+                ->where('onay_durumu', 'beklemede')
+                ->delete();
+
             $haber->update(['ai_islem_yuzde' => 75, 'ai_islem_adim' => 'Kişi tespiti yapılıyor']);
             $kisiSonuclar = $geminiService->kisiTespitEt($duzeltilmisMetin);
             if (empty($kisiSonuclar)) {
                 $kisiSonuclar = $this->metindenKisiAdaylariAyikla($duzeltilmisMetin);
             }
+
+            $mevcutKisiler = Kisi::query()->select(['id', 'ad', 'soyad'])->get();
+            $kisiAramaListesi = $mevcutKisiler
+                ->map(fn (Kisi $kisi) => ['id' => $kisi->id, 'ad' => trim($kisi->ad . ' ' . $kisi->soyad)])
+                ->values();
+            $islenenKisiAdlari = [];
+
             $eklenenKisiSayisi = 0;
             foreach ($kisiSonuclar as $kisiVerisi) {
                 $adSoyad = $this->kisiAdiAyikla($kisiVerisi);
-                if (! filled($adSoyad)) {
+                if (! $this->kisiAdayiGecerliMi($adSoyad)) {
                     continue;
                 }
+
+                $kisiAnahtar = mb_strtolower($adSoyad);
+                if (isset($islenenKisiAdlari[$kisiAnahtar])) {
+                    continue;
+                }
+                $islenenKisiAdlari[$kisiAnahtar] = true;
 
                 $parcalar = preg_split('/\s+/', $adSoyad);
                 $ad = $parcalar[0] ?? null;
@@ -68,12 +93,20 @@ class HaberAiController extends Controller
                 $onayDurumu = 'onaylandi';
 
                 if (! $kisi) {
-                    $kisi = Kisi::query()->create([
-                        'ad' => $ad,
-                        'soyad' => $soyad,
-                        'ai_onaylandi' => false,
-                    ]);
-                    $onayDurumu = 'beklemede';
+                    $benzerKisiler = $levenshteinService->benzerBul($adSoyad, $kisiAramaListesi, 80);
+                    $enBenzer = $benzerKisiler->first();
+
+                    if ($enBenzer) {
+                        $kisi = $mevcutKisiler->firstWhere('id', $enBenzer['kayit']['id']);
+                        $onayDurumu = $enBenzer['skor'] >= 95 ? 'onaylandi' : 'beklemede';
+                    } else {
+                        $kisi = Kisi::query()->create([
+                            'ad' => $ad,
+                            'soyad' => $soyad,
+                            'ai_onaylandi' => false,
+                        ]);
+                        $onayDurumu = 'beklemede';
+                    }
                 }
 
                 DB::table('haber_kisiler')->updateOrInsert(
@@ -97,23 +130,44 @@ class HaberAiController extends Controller
             if (empty($kurumSonuclar)) {
                 $kurumSonuclar = $this->metindenKurumAdaylariAyikla($duzeltilmisMetin);
             }
+
+            $mevcutKurumlar = Kurum::query()->select(['id', 'ad'])->get();
+            $kurumAramaListesi = $mevcutKurumlar
+                ->map(fn (Kurum $kurum) => ['id' => $kurum->id, 'ad' => $kurum->ad])
+                ->values();
+            $islenenKurumAdlari = [];
+
             $eklenenKurumSayisi = 0;
             foreach ($kurumSonuclar as $kurumVerisi) {
                 $ad = $this->kurumAdiAyikla($kurumVerisi);
-                if (! filled($ad)) {
+                if (! $this->kurumAdayiGecerliMi($ad)) {
                     continue;
                 }
+
+                $kurumAnahtar = mb_strtolower($ad);
+                if (isset($islenenKurumAdlari[$kurumAnahtar])) {
+                    continue;
+                }
+                $islenenKurumAdlari[$kurumAnahtar] = true;
 
                 $kurum = Kurum::query()->where('ad', $ad)->first();
                 $onayDurumu = 'onaylandi';
 
                 if (! $kurum) {
-                    $kurum = Kurum::query()->create([
-                        'ad' => $ad,
-                        'tip' => 'diger',
-                        'aktif' => false,
-                    ]);
-                    $onayDurumu = 'beklemede';
+                    $benzerKurumlar = $levenshteinService->benzerBul($ad, $kurumAramaListesi, 80);
+                    $enBenzer = $benzerKurumlar->first();
+
+                    if ($enBenzer) {
+                        $kurum = $mevcutKurumlar->firstWhere('id', $enBenzer['kayit']['id']);
+                        $onayDurumu = $enBenzer['skor'] >= 95 ? 'onaylandi' : 'beklemede';
+                    } else {
+                        $kurum = Kurum::query()->create([
+                            'ad' => $ad,
+                            'tip' => 'diger',
+                            'aktif' => false,
+                        ]);
+                        $onayDurumu = 'beklemede';
+                    }
                 }
 
                 DB::table('haber_kurumlar')->updateOrInsert(
@@ -248,13 +302,16 @@ class HaberAiController extends Controller
     private function metindenKisiAdaylariAyikla(string $metin): array
     {
         $adaylar = [];
-        $yasakliKelimeler = ['Bakanlığı', 'Müdürlüğü', 'Üniversitesi', 'Belediyesi', 'Derneği', 'Vakfı', 'Holding'];
+        $yasakliKelimeler = [
+            'Bakanlığı', 'Müdürlüğü', 'Üniversitesi', 'Belediyesi', 'Derneği', 'Vakfı', 'Holding',
+            'Kampüsünde', 'Konuşmaları', 'Sahur', 'İkramı', 'Programı', 'Toplantısı', 'Açılış',
+        ];
         $desen = '/\b([A-ZÇĞİÖŞÜ][a-zçğıöşü]{2,}(?:\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]{2,}){1,2})\b/u';
 
         preg_match_all($desen, $metin, $eslesmeler);
         foreach ($eslesmeler[1] ?? [] as $adSoyad) {
             $adSoyad = trim((string) $adSoyad);
-            if (mb_substr_count($adSoyad, ' ') < 1) {
+            if (! $this->kisiAdayiGecerliMi($adSoyad)) {
                 continue;
             }
 
@@ -294,5 +351,57 @@ class HaberAiController extends Controller
         }
 
         return array_values($adaylar);
+    }
+
+    private function kisiAdayiGecerliMi(string $adSoyad): bool
+    {
+        $adSoyad = trim($adSoyad);
+        if (! filled($adSoyad) || mb_substr_count($adSoyad, ' ') < 1) {
+            return false;
+        }
+
+        if (mb_strlen($adSoyad) < 5 || mb_strlen($adSoyad) > 80) {
+            return false;
+        }
+
+        if (preg_match('/\d/u', $adSoyad)) {
+            return false;
+        }
+
+        $yasakliIfadeler = [
+            'açılış', 'konuşma', 'konuşmaları', 'kampüsü', 'kampüsünde', 'sahur', 'ikramı',
+            'geleneksel', 'tanınmış', 'programı', 'toplantısı', 'töreni', 'etkinliği', 'haber',
+        ];
+
+        $kucuk = mb_strtolower($adSoyad);
+        foreach ($yasakliIfadeler as $ifade) {
+            if (str_contains($kucuk, $ifade)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function kurumAdayiGecerliMi(string $ad): bool
+    {
+        $ad = trim($ad);
+        if (! filled($ad) || mb_strlen($ad) < 3 || mb_strlen($ad) > 255) {
+            return false;
+        }
+
+        $kurumIpuclari = [
+            'derne', 'vakf', 'belediye', 'müdürlüğ', 'bakanlığ', 'üniversite', 'okul', 'kurs',
+            'camii', 'cami', 'a.ş', 'aş', 'ltd', 'genel müdürlüğ', 'müftül',
+        ];
+
+        $kucuk = mb_strtolower($ad);
+        foreach ($kurumIpuclari as $ipucu) {
+            if (str_contains($kucuk, $ipucu)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

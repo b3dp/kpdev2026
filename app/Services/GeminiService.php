@@ -55,8 +55,9 @@ class GeminiService
     {
         $json = $this->jsonCevabiAl(
             "Aşağıdaki metinden kişi adlarını JSON döndür. Sadece JSON üret.\n"
-            . "Tercih edilen format: [{\"ad_soyad\":\"...\",\"rol\":\"...\"}]\n"
-            . "Alternatif olarak {\"kisiler\":[...]} da kabul edilir. Sadece metinde geçen gerçek kişi adlarını yaz.\n\n"
+            . "Tercih edilen format: [{\"ad_soyad\":\"...\",\"rol\":\"...\",\"ham_metin\":\"...\"}]\n"
+            . "Alternatif olarak {\"kisiler\":[...]} da kabul edilir.\n"
+            . "Kurallar: sadece gerçek kişi adları, en az ad+soyad; kurum, şehir, etkinlik başlığı veya genel ifade yazma.\n\n"
             . $metin
         );
 
@@ -78,8 +79,9 @@ class GeminiService
     {
         $json = $this->jsonCevabiAl(
             "Aşağıdaki metinden kurum adlarını JSON döndür. Sadece JSON üret.\n"
-            . "Tercih edilen format: [{\"ad\":\"...\"}]\n"
-            . "Alternatif olarak {\"kurumlar\":[...]} da kabul edilir. Sadece metinde geçen kurumları yaz.\n\n"
+            . "Tercih edilen format: [{\"ad\":\"...\",\"tur\":\"...\",\"ham_metin\":\"...\"}]\n"
+            . "Alternatif olarak {\"kurumlar\":[...]} da kabul edilir.\n"
+            . "Kurallar: sadece gerçek kurum adları; kişi adı, şehir adı veya etkinlik başlığını kurum olarak yazma.\n\n"
             . $metin
         );
 
