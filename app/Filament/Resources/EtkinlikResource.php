@@ -200,24 +200,18 @@ class EtkinlikResource extends Resource
                         ->searchable()
                         ->visible(fn (callable $get): bool => in_array((string) $get('tip'), [EtkinlikTipi::Fiziksel->value, EtkinlikTipi::Hibrit->value], true)),
 
-                    TextInput::make('google_places_arama')
+                    Select::make('google_places_place_id')
                         ->label('Google Places Arama')
                         ->dehydrated(false)
-                        ->live(debounce: 700)
-                        ->helperText('Konum araması için en az 3 karakter yazın.')
-                        ->visible(fn (callable $get): bool => in_array((string) $get('tip'), [EtkinlikTipi::Fiziksel->value, EtkinlikTipi::Hibrit->value], true)),
-
-                    Select::make('google_places_sonuc')
-                        ->label('Google Places Sonuçları')
-                        ->dehydrated(false)
                         ->searchable()
-                        ->options(function (callable $get): array {
-                            $arama = trim((string) $get('google_places_arama'));
+                        ->live(debounce: 600)
+                        ->getSearchResultsUsing(function (string $search): array {
+                            $arama = trim($search);
                             if (mb_strlen($arama, 'UTF-8') < 3) {
                                 return [];
                             }
 
-                            $apiKey = (string) config('services.google_maps.api_key', env('GOOGLE_MAPS_API_KEY'));
+                            $apiKey = (string) (config('services.google_maps.api_key') ?: config('services.google_maps.public_api_key'));
                             if (blank($apiKey)) {
                                 return [];
                             }
@@ -241,12 +235,37 @@ class EtkinlikResource extends Resource
                                 ->filter(fn (string $label, string $value) => filled($label) && filled($value))
                                 ->all();
                         })
+                        ->getOptionLabelUsing(function (mixed $value): ?string {
+                            if (! is_string($value) || blank($value)) {
+                                return null;
+                            }
+
+                            $apiKey = (string) (config('services.google_maps.api_key') ?: config('services.google_maps.public_api_key'));
+                            if (blank($apiKey)) {
+                                return null;
+                            }
+
+                            $response = Http::timeout(8)->get('https://maps.googleapis.com/maps/api/place/details/json', [
+                                'place_id' => $value,
+                                'language' => 'tr',
+                                'fields' => 'name,formatted_address',
+                                'key' => $apiKey,
+                            ]);
+
+                            if (! $response->ok()) {
+                                return null;
+                            }
+
+                            $sonuc = (array) data_get($response->json(), 'result', []);
+
+                            return (string) (data_get($sonuc, 'name') ?: data_get($sonuc, 'formatted_address') ?: $value);
+                        })
                         ->afterStateUpdated(function (callable $set, ?string $state): void {
                             if (blank($state)) {
                                 return;
                             }
 
-                            $apiKey = (string) config('services.google_maps.api_key', env('GOOGLE_MAPS_API_KEY'));
+                            $apiKey = (string) (config('services.google_maps.api_key') ?: config('services.google_maps.public_api_key'));
                             if (blank($apiKey)) {
                                 return;
                             }
@@ -277,7 +296,11 @@ class EtkinlikResource extends Resource
                             $set('konum_lng', data_get($sonuc, 'geometry.location.lng'));
                             $set('konum_il', (string) data_get($il, 'long_name'));
                             $set('konum_ilce', (string) data_get($ilce, 'long_name'));
+                            $set('google_places_place_id', (string) data_get($sonuc, 'place_id'));
                         })
+                        ->helperText(fn (): string => blank(config('services.google_maps.api_key')) && blank(config('services.google_maps.public_api_key'))
+                            ? 'Google Maps API anahtarı bulunamadı. Lütfen GOOGLE_MAPS_API_KEY tanımlayın.'
+                            : 'Konum aramak için en az 3 karakter yazın.')
                         ->visible(fn (callable $get): bool => in_array((string) $get('tip'), [EtkinlikTipi::Fiziksel->value, EtkinlikTipi::Hibrit->value], true)),
 
                     TextInput::make('konum_place_id')

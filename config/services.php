@@ -45,4 +45,9 @@ return [
         'project_id' => env('GOOGLE_CLOUD_PROJECT_ID'),
     ],
 
+    'google_maps' => [
+        'api_key' => env('GOOGLE_MAPS_API_KEY'),
+        'public_api_key' => env('GOOGLE_MAPS_API_KEY_PUBLIC'),
+    ],
+
 ];

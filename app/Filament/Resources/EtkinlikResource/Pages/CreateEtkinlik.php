@@ -21,14 +21,53 @@ class CreateEtkinlik extends CreateRecord
     {
         $etkinlik = $this->record;
 
-        $anaGorsel = data_get($this->data, 'ana_gorsel_gecici');
+        $anaGorsel = $this->tekDosyaYolu(data_get($this->data, 'ana_gorsel_gecici'));
         if (filled($anaGorsel)) {
             dispatch_sync(new GorselOptimizeJob($etkinlik->id, 'etkinlik', 'ana_gorsel', $anaGorsel, 1));
         }
 
-        $galeriGorseller = array_values(array_filter((array) data_get($this->data, 'galeri_gorseller', [])));
+        $galeriGorseller = $this->cokluDosyaYollari((array) data_get($this->data, 'galeri_gorseller', []));
         foreach ($galeriGorseller as $sira => $geciciYol) {
             dispatch_sync(new GorselOptimizeJob($etkinlik->id, 'etkinlik', 'galeri_gorseli', $geciciYol, $sira + 1));
         }
+    }
+
+    private function tekDosyaYolu(mixed $deger): ?string
+    {
+        if (is_string($deger) && filled($deger)) {
+            return $deger;
+        }
+
+        if (is_array($deger)) {
+            foreach ($deger as $oge) {
+                if (is_string($oge) && filled($oge)) {
+                    return $oge;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private function cokluDosyaYollari(array $degerler): array
+    {
+        $sonuc = [];
+
+        foreach ($degerler as $deger) {
+            if (is_string($deger) && filled($deger)) {
+                $sonuc[] = $deger;
+                continue;
+            }
+
+            if (is_array($deger)) {
+                foreach ($deger as $oge) {
+                    if (is_string($oge) && filled($oge)) {
+                        $sonuc[] = $oge;
+                    }
+                }
+            }
+        }
+
+        return array_values($sonuc);
     }
 }
