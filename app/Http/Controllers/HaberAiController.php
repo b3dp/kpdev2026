@@ -395,7 +395,7 @@ class HaberAiController extends Controller
             return null;
         }
 
-        $rol = trim((string) ($kisiVerisi['rol'] ?? ''));
+        $rol = trim((string) ($kisiVerisi['gorev'] ?? $kisiVerisi['rol'] ?? ''));
 
         return filled($rol) ? $rol : null;
     }

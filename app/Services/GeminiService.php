@@ -9,6 +9,8 @@ class GeminiService
 {
     private Client $http;
 
+    private array $tespitCache = [];
+
     public function __construct()
     {
         $this->http = new Client([
@@ -53,50 +55,114 @@ class GeminiService
 
     public function kisiTespitEt(string $metin): array
     {
-        $json = $this->jsonCevabiAl(
-            "Aşağıdaki metinden kişi adlarını JSON döndür. Sadece JSON üret.\n"
-            . "Tercih edilen format: [{\"ad_soyad\":\"...\",\"rol\":\"...\",\"ham_metin\":\"...\"}]\n"
-            . "Alternatif olarak {\"kisiler\":[...]} da kabul edilir.\n"
-            . "Kurallar: sadece gerçek kişi adları, en az ad+soyad; kurum, şehir, etkinlik başlığı veya genel ifade yazma.\n\n"
-            . $metin
-        );
-
-        $liste = $this->listeyiNormalizeEt($json, ['kisiler', 'people', 'sonuc', 'results']);
-        if (! empty($liste)) {
-            return $liste;
-        }
-
-        $satirYaniti = $this->metinCevabiAl(
-            "Aşağıdaki metinden sadece kişi adlarını satır satır ver. "
-            . "Format: Ad Soyad | Rol. Sadece metinde geçenleri yaz:\n\n" . $metin,
-            ''
-        );
-
-        return $this->satirlardanVarlikListesiUret($satirYaniti, 'kisi');
+        return $this->kisiVeKurumTespitEt($metin)['kisiler'] ?? [];
     }
 
     public function kurumTespitEt(string $metin): array
     {
-        $json = $this->jsonCevabiAl(
-            "Aşağıdaki metinden kurum adlarını JSON döndür. Sadece JSON üret.\n"
-            . "Tercih edilen format: [{\"ad\":\"...\",\"tur\":\"...\",\"ham_metin\":\"...\"}]\n"
-            . "Alternatif olarak {\"kurumlar\":[...]} da kabul edilir.\n"
-            . "Kurallar: sadece gerçek kurum adları; kişi adı, şehir adı veya etkinlik başlığını kurum olarak yazma.\n\n"
-            . $metin
-        );
+        return $this->kisiVeKurumTespitEt($metin)['kurumlar'] ?? [];
+    }
 
-        $liste = $this->listeyiNormalizeEt($json, ['kurumlar', 'institutions', 'organizations', 'sonuc', 'results']);
-        if (! empty($liste)) {
-            return $liste;
+    private function kisiVeKurumTespitEt(string $metin): array
+    {
+        $anahtar = md5($metin);
+
+        if (isset($this->tespitCache[$anahtar])) {
+            return $this->tespitCache[$anahtar];
         }
 
-        $satirYaniti = $this->metinCevabiAl(
-            "Aşağıdaki metinden sadece kurum adlarını satır satır ver. "
-            . "Sadece metinde geçen kurumları yaz:\n\n" . $metin,
-            ''
-        );
+        $sistemPrompt = <<<'PROMPT'
+Sen Türkiye'deki dini ve eğitim kurumları hakkında haberler üreten bir derneğin
+metin analiz asistanısın. Görevin verilen haber metnindeki KİŞİLERİ ve KURUMLARI
+doğru tespit etmek.
 
-        return $this->satirlardanVarlikListesiUret($satirYaniti, 'kurum');
+=== KİŞİ TESPİT KURALLARI ===
+
+TEMEL KURAL: Bir kişi olarak tespit edilmek için mutlaka AD + SOYAD birlikte olmalı.
+
+UNVAN VE GÖREV LİSTESİ (bunlar isim DEĞİLDİR, gorev alanına yaz):
+- Dini unvanlar: Hafız, Hafıza, Hoca, İmam, Müftü, Müezzin, Vaiz
+- İdari görevler: Müdür, Yönetici, Koordinatör, Başkan, Başkanı
+- Eğitim görevleri: Öğretici, Öğretmen, Eğitimci, Kursiyer
+- Unvan önekleri: Hacı, Hoca, Doktor, Dr., Prof.
+- Kurum içi görevler: Kurs Yöneticisi, Yurt Yöneticisi, Kur'an Kursu Yöneticisi
+
+DOĞRU ÇIKARIM ÖRNEKLERİ:
+✓ "Hafız Ömer Baydar" → ad_soyad: "Ömer Baydar", gorev: "Hafız"
+✓ "Aliağa Müftüsü Ali Saim Doğru" → ad_soyad: "Ali Saim Doğru", gorev: "Aliağa Müftüsü"
+✓ "Kur'an Kursu Yurt Yöneticisi Mustafa Aytekin" → ad_soyad: "Mustafa Aytekin", gorev: "Yurt Yöneticisi"
+✓ "Mezunumuz Karabağlar Müftülüğü Kestanepazarı Hatay Kur'an Kursu Öğreticisi Hafız Enes Kaput" → ad_soyad: "Enes Kaput", gorev: "Hafız Öğretici"
+✓ "Mezunumuz Karabağlar Müftülüğü Kestanepazarı Hatay Kur'an Kursu Yöneticisi Yasin Uslu" → ad_soyad: "Yasin Uslu", gorev: "Kur'an Kursu Yöneticisi"
+✓ "Hacı Tülay Çolakoğlu Kur'an Kursu öğrencisi Mehmet Küççülü" → ad_soyad: "Mehmet Küççülü", gorev: "Öğrenci"
+
+YANLIŞ ÇIKARIM ÖRNEKLERİ (bunları YAPMA):
+✗ "Aliağa Müftüsü Ali" → Soyadı yok, çıkarma
+✗ "Kursu Yurt Yöneticisi" → Kişi değil, görev tanımı
+✗ "Kestanepazarı Hacı Tülay" → Kurum adının parçası, kişi değil
+✗ "Kursu Öğreticisi Hafız" → Kişi değil, görev tanımı
+
+EK KURALLAR:
+- Aynı kişi metinde birden fazla geçiyorsa sadece bir kez ekle
+- "Mezunumuz" ifadesi kişiyi değil mezun durumunu belirtir, gorev alanına ekleme
+- Cami, kurum veya organizasyon adı geçen kısımlardan kişi çıkarma
+
+=== KURUM TESPİT KURALLARI ===
+
+TEMEL KURAL: Türkiye'deki resmi kurum ve kuruluşların TAM adını çıkar.
+
+KURUM YAPILARI (bunları bir bütün olarak al):
+- "X Müftülüğü" → tek kurum (Aliağa Müftülüğü, Karabağlar Müftülüğü)
+- "X Müftülüğü Y Kur'an Kursu" → tek kurum
+- "X Müftülüğü Y [Kişi Adı] Kur'an Kursu" → kişi adı içerse bile tek kurum
+- "Kestanepazarı Öğrenci Yetiştirme Derneği" → tam adıyla tek kurum
+- "X Camii/Camisinde" → cami adı mekan, kurum değil (çıkarma)
+
+DOĞRU ÇIKARIM ÖRNEKLERİ:
+✓ "Aliağa İlçe Müftülüğü" → tam kurum adı
+✓ "Karabağlar Müftülüğü Kestanepazarı Hatay Kur'an Kursu" → tam kurum adı
+✓ "Aliağa Müftülüğü Kestanepazarı Hacı Tülay Çolakoğlu Kur'an Kursu" → kişi adı içerse de tam kurum adı
+✓ "Kestanepazarı Öğrenci Yetiştirme Derneği" → tam kurum adı
+
+YANLIŞ ÇIKARIM ÖRNEKLERİ (bunları YAPMA):
+✗ "Aliağa Müftülüğü Hacı" → kurum adının yarısı
+✗ "Kestanepazarı Mezunları" → böyle bir kurum yok, uydurma
+✗ "Hacı Tahir Şimşek Camii" → mekan, kurum değil
+✗ "Kestanepazarı Öğrenci Yetiştirme" → eksik kurum adı, tam adı yaz
+
+EK KURALLAR:
+- Metinde geçmeyen kurum adı UYDURMA
+- Aynı kurum farklı şekillerde geçiyorsa en tam halini kullan
+- Kurum adlarını kısaltma veya değiştirme
+
+=== YANIT FORMATI ===
+
+SADECE geçerli JSON döndür. Başında veya sonunda açıklama, markdown,
+kod bloğu YAZMA. Direkt JSON ile başla:
+
+{"kisiler":[{"ad_soyad":"...","gorev":"..."},{"ad_soyad":"...","gorev":""}],"kurumlar":[{"ad":"..."},{"ad":"..."}]}
+
+=== HATA YÖNETİMİ ===
+- JSON parse hatası olursa: {"kisiler": [], "kurumlar": []}
+- Emin olmadığın varlığı ekleme, yanlış eklemek eksik bırakmaktan kötü
+- gorev alanı yoksa boş string: ""
+PROMPT;
+
+        $json = $this->jsonCevabiAl($sistemPrompt . "\n\nMetin:\n" . $metin);
+
+        $kisiler = [];
+        $kurumlar = [];
+
+        if (! empty($json)) {
+            $kisiler = $this->listeyiNormalizeEt($json, ['kisiler', 'people', 'kişiler']);
+            $kurumlar = $this->listeyiNormalizeEt($json, ['kurumlar', 'institutions', 'organizations']);
+        }
+
+        $this->tespitCache[$anahtar] = [
+            'kisiler' => $kisiler,
+            'kurumlar' => $kurumlar,
+        ];
+
+        return $this->tespitCache[$anahtar];
     }
 
     private function metinCevabiAl(string $prompt, string $fallback): string
