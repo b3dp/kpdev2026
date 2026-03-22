@@ -120,6 +120,62 @@ class HaberAiController extends Controller
                 $eklenenKisiSayisi++;
             }
 
+            if ($eklenenKisiSayisi === 0) {
+                $kisiSonuclar = $this->metindenKisiAdaylariAyikla($duzeltilmisMetin);
+                foreach ($kisiSonuclar as $kisiVerisi) {
+                    $adSoyad = $this->kisiAdiAyikla($kisiVerisi);
+                    if (! $this->kisiAdayiGecerliMi($adSoyad)) {
+                        continue;
+                    }
+
+                    $kisiAnahtar = mb_strtolower($adSoyad);
+                    if (isset($islenenKisiAdlari[$kisiAnahtar])) {
+                        continue;
+                    }
+                    $islenenKisiAdlari[$kisiAnahtar] = true;
+
+                    $parcalar = preg_split('/\s+/', $adSoyad);
+                    $ad = $parcalar[0] ?? null;
+                    $soyad = count($parcalar) > 1 ? implode(' ', array_slice($parcalar, 1)) : null;
+
+                    if (! filled($ad) || ! filled($soyad)) {
+                        continue;
+                    }
+
+                    $kisi = Kisi::query()->where('ad', $ad)->where('soyad', $soyad)->first();
+                    $onayDurumu = 'onaylandi';
+
+                    if (! $kisi) {
+                        $benzerKisiler = $levenshteinService->benzerBul($adSoyad, $kisiAramaListesi, 80);
+                        $enBenzer = $benzerKisiler->first();
+
+                        if ($enBenzer) {
+                            $kisi = $mevcutKisiler->firstWhere('id', $enBenzer['kayit']['id']);
+                            $onayDurumu = $enBenzer['skor'] >= 95 ? 'onaylandi' : 'beklemede';
+                        } else {
+                            $kisi = Kisi::query()->create([
+                                'ad' => $ad,
+                                'soyad' => $soyad,
+                                'ai_onaylandi' => false,
+                            ]);
+                            $onayDurumu = 'beklemede';
+                        }
+                    }
+
+                    DB::table('haber_kisiler')->updateOrInsert(
+                        ['haber_id' => $haber->id, 'kisi_id' => $kisi->id],
+                        [
+                            'rol' => $this->kisiRolAyikla($kisiVerisi),
+                            'onay_durumu' => $onayDurumu,
+                            'updated_at' => now(),
+                            'created_at' => now(),
+                            'deleted_at' => null,
+                        ]
+                    );
+                    $eklenenKisiSayisi++;
+                }
+            }
+
             $haber->update([
                 'ai_islem_yuzde' => 90,
                 'ai_islem_adim' => "Kurum tespiti yapılıyor (kişi: {$eklenenKisiSayisi})",
@@ -178,6 +234,53 @@ class HaberAiController extends Controller
                     ]
                 );
                 $eklenenKurumSayisi++;
+            }
+
+            if ($eklenenKurumSayisi === 0) {
+                $kurumSonuclar = $this->metindenKurumAdaylariAyikla($duzeltilmisMetin);
+                foreach ($kurumSonuclar as $kurumVerisi) {
+                    $ad = $this->kurumAdiAyikla($kurumVerisi);
+                    if (! $this->kurumAdayiGecerliMi($ad)) {
+                        continue;
+                    }
+
+                    $kurumAnahtar = mb_strtolower($ad);
+                    if (isset($islenenKurumAdlari[$kurumAnahtar])) {
+                        continue;
+                    }
+                    $islenenKurumAdlari[$kurumAnahtar] = true;
+
+                    $kurum = Kurum::query()->where('ad', $ad)->first();
+                    $onayDurumu = 'onaylandi';
+
+                    if (! $kurum) {
+                        $benzerKurumlar = $levenshteinService->benzerBul($ad, $kurumAramaListesi, 80);
+                        $enBenzer = $benzerKurumlar->first();
+
+                        if ($enBenzer) {
+                            $kurum = $mevcutKurumlar->firstWhere('id', $enBenzer['kayit']['id']);
+                            $onayDurumu = $enBenzer['skor'] >= 95 ? 'onaylandi' : 'beklemede';
+                        } else {
+                            $kurum = Kurum::query()->create([
+                                'ad' => $ad,
+                                'tip' => 'diger',
+                                'aktif' => false,
+                            ]);
+                            $onayDurumu = 'beklemede';
+                        }
+                    }
+
+                    DB::table('haber_kurumlar')->updateOrInsert(
+                        ['haber_id' => $haber->id, 'kurum_id' => $kurum->id],
+                        [
+                            'onay_durumu' => $onayDurumu,
+                            'updated_at' => now(),
+                            'created_at' => now(),
+                            'deleted_at' => null,
+                        ]
+                    );
+                    $eklenenKurumSayisi++;
+                }
             }
 
             $haber->update([

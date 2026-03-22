@@ -4,6 +4,7 @@
         adim: 'Hazır',
         tamamlandi: false,
         islemDevamEdiyor: false,
+        buOturumdaBaslatildi: false,
         hata: '',
         hataDetay: '',
         pollTimer: null,
@@ -16,6 +17,8 @@
             this.hata = '';
             this.hataDetay = '';
             this.islemDevamEdiyor = true;
+            this.tamamlandi = false;
+            this.buOturumdaBaslatildi = true;
             this.adim = 'AI işlemi başlatılıyor...';
 
             this.baslatPolling();
@@ -75,7 +78,7 @@
                 this.adim = data.adim ?? 'Hazır';
                 this.tamamlandi = Boolean(data.tamamlandi);
 
-                if (this.tamamlandi) {
+                if (this.tamamlandi && this.buOturumdaBaslatildi) {
                     this.pollBitir();
                     window.setTimeout(() => window.location.reload(), 1200);
                 }
@@ -113,7 +116,7 @@
         <x-filament::button
             type="button"
             color="primary"
-            x-bind:disabled="islemDevamEdiyor || tamamlandi"
+            x-bind:disabled="islemDevamEdiyor"
             @click="baslat()"
         >
             AI İşlemlerini Başlat
