@@ -74,8 +74,9 @@ class EditHaber extends EditRecord
 
         // Galeri görselleri
         $galeriGorseller = array_values(array_filter((array) data_get($this->data, 'galeri_gorseller', [])));
+        $baslangicSirasi = ((int) $haber->gorseller()->max('sira')) + 1;
         foreach ($galeriGorseller as $sira => $geciciYol) {
-            GorselOptimizeJob::dispatch($haber->id, 'haber', 'galeri_gorseli', $geciciYol, $sira + 1)->onQueue('default');
+            dispatch_sync(new GorselOptimizeJob($haber->id, 'haber', 'galeri_gorseli', $geciciYol, $baslangicSirasi + $sira));
         }
 
         if ($haber->durum === HaberDurumu::Incelemede) {
