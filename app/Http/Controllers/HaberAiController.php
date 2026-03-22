@@ -33,12 +33,10 @@ class HaberAiController extends Controller
             $duzeltilmisMetin = $geminiService->imlaDuzelt($metin);
 
             $haber->update(['ai_islem_yuzde' => 40, 'ai_islem_adim' => 'Özet üretiliyor']);
-            $ozet = filled($haber->ozet) ? $haber->ozet : $geminiService->ozetUret($duzeltilmisMetin);
+            $ozet = $geminiService->ozetUret($duzeltilmisMetin);
 
             $haber->update(['ai_islem_yuzde' => 60, 'ai_islem_adim' => 'Meta description üretiliyor']);
-            $metaDescription = filled($haber->meta_description)
-                ? $haber->meta_description
-                : $geminiService->metaDescriptionUret($duzeltilmisMetin);
+            $metaDescription = $geminiService->metaDescriptionUret($duzeltilmisMetin);
 
             $haber->update([
                 'icerik' => $duzeltilmisMetin,
@@ -48,6 +46,9 @@ class HaberAiController extends Controller
 
             $haber->update(['ai_islem_yuzde' => 75, 'ai_islem_adim' => 'Kişi tespiti yapılıyor']);
             $kisiSonuclar = $geminiService->kisiTespitEt($duzeltilmisMetin);
+            if (empty($kisiSonuclar)) {
+                $kisiSonuclar = $this->metindenKisiAdaylariAyikla($duzeltilmisMetin);
+            }
             $eklenenKisiSayisi = 0;
             foreach ($kisiSonuclar as $kisiVerisi) {
                 $adSoyad = $this->kisiAdiAyikla($kisiVerisi);
@@ -63,16 +64,23 @@ class HaberAiController extends Controller
                     continue;
                 }
 
-                $kisi = Kisi::query()->firstOrCreate(
-                    ['ad' => $ad, 'soyad' => $soyad],
-                    ['ai_onaylandi' => false]
-                );
+                $kisi = Kisi::query()->where('ad', $ad)->where('soyad', $soyad)->first();
+                $onayDurumu = 'onaylandi';
+
+                if (! $kisi) {
+                    $kisi = Kisi::query()->create([
+                        'ad' => $ad,
+                        'soyad' => $soyad,
+                        'ai_onaylandi' => false,
+                    ]);
+                    $onayDurumu = 'beklemede';
+                }
 
                 DB::table('haber_kisiler')->updateOrInsert(
                     ['haber_id' => $haber->id, 'kisi_id' => $kisi->id],
                     [
-                        'rol' => $kisiVerisi['rol'] ?? null,
-                        'onay_durumu' => 'beklemede',
+                        'rol' => $this->kisiRolAyikla($kisiVerisi),
+                        'onay_durumu' => $onayDurumu,
                         'updated_at' => now(),
                         'created_at' => now(),
                         'deleted_at' => null,
@@ -86,6 +94,9 @@ class HaberAiController extends Controller
                 'ai_islem_adim' => "Kurum tespiti yapılıyor (kişi: {$eklenenKisiSayisi})",
             ]);
             $kurumSonuclar = $geminiService->kurumTespitEt($duzeltilmisMetin);
+            if (empty($kurumSonuclar)) {
+                $kurumSonuclar = $this->metindenKurumAdaylariAyikla($duzeltilmisMetin);
+            }
             $eklenenKurumSayisi = 0;
             foreach ($kurumSonuclar as $kurumVerisi) {
                 $ad = $this->kurumAdiAyikla($kurumVerisi);
@@ -93,15 +104,22 @@ class HaberAiController extends Controller
                     continue;
                 }
 
-                $kurum = Kurum::query()->firstOrCreate(
-                    ['ad' => $ad],
-                    ['tip' => 'diger', 'aktif' => false]
-                );
+                $kurum = Kurum::query()->where('ad', $ad)->first();
+                $onayDurumu = 'onaylandi';
+
+                if (! $kurum) {
+                    $kurum = Kurum::query()->create([
+                        'ad' => $ad,
+                        'tip' => 'diger',
+                        'aktif' => false,
+                    ]);
+                    $onayDurumu = 'beklemede';
+                }
 
                 DB::table('haber_kurumlar')->updateOrInsert(
                     ['haber_id' => $haber->id, 'kurum_id' => $kurum->id],
                     [
-                        'onay_durumu' => 'beklemede',
+                        'onay_durumu' => $onayDurumu,
                         'updated_at' => now(),
                         'created_at' => now(),
                         'deleted_at' => null,
@@ -214,5 +232,67 @@ class HaberAiController extends Controller
         }
 
         return '';
+    }
+
+    private function kisiRolAyikla(mixed $kisiVerisi): ?string
+    {
+        if (! is_array($kisiVerisi)) {
+            return null;
+        }
+
+        $rol = trim((string) ($kisiVerisi['rol'] ?? ''));
+
+        return filled($rol) ? $rol : null;
+    }
+
+    private function metindenKisiAdaylariAyikla(string $metin): array
+    {
+        $adaylar = [];
+        $yasakliKelimeler = ['Bakanlığı', 'Müdürlüğü', 'Üniversitesi', 'Belediyesi', 'Derneği', 'Vakfı', 'Holding'];
+        $desen = '/\b([A-ZÇĞİÖŞÜ][a-zçğıöşü]{2,}(?:\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]{2,}){1,2})\b/u';
+
+        preg_match_all($desen, $metin, $eslesmeler);
+        foreach ($eslesmeler[1] ?? [] as $adSoyad) {
+            $adSoyad = trim((string) $adSoyad);
+            if (mb_substr_count($adSoyad, ' ') < 1) {
+                continue;
+            }
+
+            $kurumMu = false;
+            foreach ($yasakliKelimeler as $kelime) {
+                if (str_contains($adSoyad, $kelime)) {
+                    $kurumMu = true;
+                    break;
+                }
+            }
+
+            if ($kurumMu) {
+                continue;
+            }
+
+            $anahtar = mb_strtolower($adSoyad);
+            $adaylar[$anahtar] = ['ad_soyad' => $adSoyad, 'rol' => null];
+        }
+
+        return array_values($adaylar);
+    }
+
+    private function metindenKurumAdaylariAyikla(string $metin): array
+    {
+        $adaylar = [];
+        $desen = '/\b([A-ZÇĞİÖŞÜ][\pL0-9&.\-]{1,}(?:\s+[A-ZÇĞİÖŞÜ][\pL0-9&.\-]{1,}){0,6}\s+(?:Üniversitesi|Belediyesi|Bakanlığı|Müdürlüğü|Derneği|Vakfı|Holding|A\.Ş\.|AŞ|Ltd\.\s*Şti\.|Genel\s+Müdürlüğü))\b/u';
+
+        preg_match_all($desen, $metin, $eslesmeler);
+        foreach ($eslesmeler[1] ?? [] as $ad) {
+            $ad = trim((string) $ad);
+            if (! filled($ad)) {
+                continue;
+            }
+
+            $anahtar = mb_strtolower($ad);
+            $adaylar[$anahtar] = ['ad' => $ad];
+        }
+
+        return array_values($adaylar);
     }
 }

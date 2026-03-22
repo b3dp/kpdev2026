@@ -110,22 +110,22 @@
     <pre class="text-xs bg-red-50 border border-red-200 text-red-700 p-3 rounded-md overflow-auto" x-show="hataDetay" x-text="hataDetay"></pre>
 
     <div class="flex gap-2">
-        <button
+        <x-filament::button
             type="button"
-            class="px-3 py-2 bg-blue-600 text-white rounded-md text-sm"
-            :disabled="islemDevamEdiyor || tamamlandi"
+            color="primary"
+            x-bind:disabled="islemDevamEdiyor || tamamlandi"
             @click="baslat()"
         >
             AI İşlemlerini Başlat
-        </button>
+        </x-filament::button>
 
-        <button
+        <x-filament::button
             type="button"
-            class="px-3 py-2 bg-gray-100 text-gray-700 rounded-md text-sm"
+            color="gray"
             @click="durumKontrolEt()"
         >
             Durumu Yenile
-        </button>
+        </x-filament::button>
     </div>
 
     <div class="text-sm text-green-600" x-show="tamamlandi">

@@ -27,22 +27,28 @@ class GeminiService
 
     public function ozetUret(string $metin): string
     {
-        $varsayilan = mb_substr(trim(strip_tags($metin)), 0, 300);
+        $varsayilan = $this->metniAnlamliSinirla((string) strip_tags($metin), 280);
 
-        return $this->metinCevabiAl(
-            "Aşağıdaki metin için Türkçe, 250-300 karakter arasında kısa bir özet üret:\n\n" . $metin,
+        $yanit = $this->metinCevabiAl(
+            "Aşağıdaki metin için Türkçe özet üret. En fazla 280 karakter olsun, cümle yarım kalmasın. "
+            . "Gereksiz giriş cümlesi yazma, doğrudan özeti ver:\n\n" . $metin,
             $varsayilan
         );
+
+        return $this->metniAnlamliSinirla($yanit, 280);
     }
 
     public function metaDescriptionUret(string $metin): string
     {
-        $varsayilan = mb_substr(trim(strip_tags($metin)), 0, 160);
+        $varsayilan = $this->metniAnlamliSinirla((string) strip_tags($metin), 150);
 
-        return $this->metinCevabiAl(
-            "Aşağıdaki metin için Türkçe, SEO uyumlu 150-160 karakter meta description üret:\n\n" . $metin,
+        $yanit = $this->metinCevabiAl(
+            "Aşağıdaki metin için Türkçe SEO uyumlu meta description üret. En fazla 150 karakter olsun, "
+            . "cümle yarım kalmasın:\n\n" . $metin,
             $varsayilan
         );
+
+        return $this->metniAnlamliSinirla($yanit, 150);
     }
 
     public function kisiTespitEt(string $metin): array
@@ -50,11 +56,22 @@ class GeminiService
         $json = $this->jsonCevabiAl(
             "Aşağıdaki metinden kişi adlarını JSON döndür. Sadece JSON üret.\n"
             . "Tercih edilen format: [{\"ad_soyad\":\"...\",\"rol\":\"...\"}]\n"
-            . "Alternatif olarak {\"kisiler\":[...]} da kabul edilir.\n\n"
+            . "Alternatif olarak {\"kisiler\":[...]} da kabul edilir. Sadece metinde geçen gerçek kişi adlarını yaz.\n\n"
             . $metin
         );
 
-        return $this->listeyiNormalizeEt($json, ['kisiler', 'people', 'sonuc', 'results']);
+        $liste = $this->listeyiNormalizeEt($json, ['kisiler', 'people', 'sonuc', 'results']);
+        if (! empty($liste)) {
+            return $liste;
+        }
+
+        $satirYaniti = $this->metinCevabiAl(
+            "Aşağıdaki metinden sadece kişi adlarını satır satır ver. "
+            . "Format: Ad Soyad | Rol. Sadece metinde geçenleri yaz:\n\n" . $metin,
+            ''
+        );
+
+        return $this->satirlardanVarlikListesiUret($satirYaniti, 'kisi');
     }
 
     public function kurumTespitEt(string $metin): array
@@ -62,11 +79,22 @@ class GeminiService
         $json = $this->jsonCevabiAl(
             "Aşağıdaki metinden kurum adlarını JSON döndür. Sadece JSON üret.\n"
             . "Tercih edilen format: [{\"ad\":\"...\"}]\n"
-            . "Alternatif olarak {\"kurumlar\":[...]} da kabul edilir.\n\n"
+            . "Alternatif olarak {\"kurumlar\":[...]} da kabul edilir. Sadece metinde geçen kurumları yaz.\n\n"
             . $metin
         );
 
-        return $this->listeyiNormalizeEt($json, ['kurumlar', 'institutions', 'organizations', 'sonuc', 'results']);
+        $liste = $this->listeyiNormalizeEt($json, ['kurumlar', 'institutions', 'organizations', 'sonuc', 'results']);
+        if (! empty($liste)) {
+            return $liste;
+        }
+
+        $satirYaniti = $this->metinCevabiAl(
+            "Aşağıdaki metinden sadece kurum adlarını satır satır ver. "
+            . "Sadece metinde geçen kurumları yaz:\n\n" . $metin,
+            ''
+        );
+
+        return $this->satirlardanVarlikListesiUret($satirYaniti, 'kurum');
     }
 
     private function metinCevabiAl(string $prompt, string $fallback): string
@@ -173,5 +201,85 @@ class GeminiService
         $data = json_decode((string) $response->getBody(), true);
 
         return $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
+    }
+
+    private function metniAnlamliSinirla(string $metin, int $maxKarakter): string
+    {
+        $temiz = trim(preg_replace('/\s+/u', ' ', strip_tags($metin)) ?? '');
+        if ($temiz === '') {
+            return '';
+        }
+
+        if (mb_strlen($temiz) <= $maxKarakter) {
+            return $temiz;
+        }
+
+        $cumleler = preg_split('/(?<=[.!?…])\s+/u', $temiz, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $sonuc = '';
+        foreach ($cumleler as $cumle) {
+            $cumle = trim($cumle);
+            if ($cumle === '') {
+                continue;
+            }
+
+            $aday = $sonuc === '' ? $cumle : $sonuc . ' ' . $cumle;
+            if (mb_strlen($aday) > $maxKarakter) {
+                break;
+            }
+            $sonuc = $aday;
+        }
+
+        if ($sonuc !== '') {
+            return $sonuc;
+        }
+
+        $kirpilmis = trim(mb_substr($temiz, 0, $maxKarakter));
+        $sonBosluk = mb_strrpos($kirpilmis, ' ');
+        if ($sonBosluk !== false && $sonBosluk > 0) {
+            $kirpilmis = trim(mb_substr($kirpilmis, 0, $sonBosluk));
+        }
+
+        $kirpilmis = rtrim($kirpilmis, " \t\n\r\0\x0B,;:-");
+        if ($kirpilmis === '') {
+            return trim(mb_substr($temiz, 0, $maxKarakter));
+        }
+
+        if (! preg_match('/[.!?…]$/u', $kirpilmis)) {
+            if (mb_strlen($kirpilmis) + 1 <= $maxKarakter) {
+                $kirpilmis .= '.';
+            }
+        }
+
+        return $kirpilmis;
+    }
+
+    private function satirlardanVarlikListesiUret(string $metin, string $tip): array
+    {
+        $satirlar = preg_split('/\R+/u', trim($metin), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $liste = [];
+
+        foreach ($satirlar as $satir) {
+            $satir = trim(preg_replace('/^[-*\d.)\s]+/u', '', $satir) ?? '');
+            if ($satir === '' || mb_strlen($satir) < 2) {
+                continue;
+            }
+
+            if ($tip === 'kisi') {
+                $parcalar = preg_split('/\s*[|\-–]\s*/u', $satir);
+                $adSoyad = trim((string) ($parcalar[0] ?? ''));
+                if ($adSoyad === '') {
+                    continue;
+                }
+                $liste[] = [
+                    'ad_soyad' => $adSoyad,
+                    'rol' => isset($parcalar[1]) ? trim((string) $parcalar[1]) : null,
+                ];
+                continue;
+            }
+
+            $liste[] = ['ad' => $satir];
+        }
+
+        return $liste;
     }
 }
