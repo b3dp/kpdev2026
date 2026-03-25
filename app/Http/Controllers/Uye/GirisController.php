@@ -2,16 +2,18 @@
 
 namespace App\Http\Controllers\Uye;
 
+use App\Enums\OtpTipi;
 use App\Http\Controllers\Controller;
 use App\Models\OtpKod;
-use App\Models\TrustedDevice;
 use App\Models\Uye;
+use App\Services\TrustedDeviceService;
+use App\Services\ZeptomailService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class GirisController extends Controller
@@ -85,9 +87,8 @@ class GirisController extends Controller
             return response()->json(['step' => 'otp']);
         }
 
-        // Yeni üye - e-posta adresi/telefonu kaydet, OTP gönder, sonra kayıt sayfasına yönel
-        // Bu akış kayit.php'de yapılacak, burada sadece mevcut üyeler girer
-        throw ValidationException::withMessages(['iletisim' => 'Hesap bulunamadı. Lütfen kayıt olunuz.']);
+        // Yeni üye - bu akış kayit sayfasında yapılacak
+        throw ValidationException::withMessages(['iletisim' => 'Bu bilgilerle kayıtlı hesap bulunamadı.']);
     }
 
     /**
@@ -109,37 +110,37 @@ class GirisController extends Controller
             throw ValidationException::withMessages(['kod' => 'Üye bulunamadı.']);
         }
 
-        // OTP kontrolü
-        $otpKaydi = OtpKod::where('uye_id', $uyeId)
+        // Çok fazla deneme kontrolü
+        $rlAnahtari = 'otp_giris_' . $uyeId;
+        if (RateLimiter::tooManyAttempts($rlAnahtari, 5)) {
+            throw ValidationException::withMessages(['kod' => 'Çok fazla deneme yapıldı. Lütfen bekleyiniz.']);
+        }
+
+        // Önce kodu bul (süresi dolmuş olabilir)
+        $herhangiOtp = OtpKod::where('uye_id', $uyeId)
             ->where('kod', $request->input('kod'))
             ->where('kullanildi', false)
-            ->where('gecerlilik_tarihi', '>', now())
+            ->latest('id')
             ->first();
 
-        if (!$otpKaydi) {
-            throw ValidationException::withMessages(['kod' => 'Geçersiz veya süresi dolmuş kod.']);
+        if (!$herhangiOtp) {
+            RateLimiter::hit($rlAnahtari, 600);
+            throw ValidationException::withMessages(['kod' => 'Doğrulama kodu hatalı.']);
+        }
+
+        // Süre kontrolü
+        if ($herhangiOtp->gecerlilik_tarihi->isPast()) {
+            RateLimiter::hit($rlAnahtari, 600);
+            throw ValidationException::withMessages(['kod' => 'Doğrulama kodu süresi dolmuş.']);
         }
 
         // OTP'yi kullanıldı olarak işaretle
-        $otpKaydi->update(['kullanildi' => true]);
+        $herhangiOtp->update(['kullanildi' => true]);
+        RateLimiter::clear($rlAnahtari);
 
-        // Doğrulama bitişi
-        if ($otpKaydi->tip->value === 'sms') {
-            $uye->update(['telefon_dogrulandi' => true]);
-        } else {
-            $uye->update(['eposta_dogrulandi' => true]);
-        }
-
-        // Trusted device token oluştur
-        $deviceToken = Str::random(64);
-        TrustedDevice::create([
-            'uye_id' => $uyeId,
-            'device_token' => hash('sha256', $deviceToken),
-            'device_adi' => substr($request->userAgent(), 0, 255),
-            'ip_adresi' => $request->ip(),
-            'son_kullanim' => now(),
-            'gecerlilik_tarihi' => now()->addDays(3),
-        ]);
+        // Trusted device tokenı kaydet
+        $trustedDeviceService = app(TrustedDeviceService::class);
+        $deviceToken = $trustedDeviceService->deviceKaydet($uye, $request);
 
         // Giriş yap
         Auth::guard('uye')->login($uye);
@@ -161,28 +162,37 @@ class GirisController extends Controller
     }
 
     /**
-     * OTP Gonder
+     * OTP Gönder
      */
-    private function otpGonder(Uye $uye, string $kanal = 'sms')
+    private function otpGonder(Uye $uye, string $kanal = 'eposta')
     {
         // Eski OTP'leri geçersiz yap
-        OtpKod::where('uye_id', $uye->id)->update(['kullanildi' => true]);
+        OtpKod::where('uye_id', $uye->id)->where('kullanildi', false)->update(['kullanildi' => true]);
 
         // Yeni OTP oluştur
         $kod = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        $otpKaydi = OtpKod::create([
+        OtpKod::create([
             'uye_id' => $uye->id,
             'telefon' => $uye->telefon,
             'eposta' => $uye->eposta,
             'kod' => $kod,
-            'tip' => $kanal === 'sms' ? 'sms' : 'eposta',
+            'tip' => OtpTipi::Giris->value,
             'kullanildi' => false,
             'gecerlilik_tarihi' => now()->addMinutes(10),
             'created_at' => now(),
         ]);
 
-        // SMS/e-posta gönder (TODO: SMS/e-posta servisi)
-        // $this->sendOtp($uye, $kod, $kanal);
+        if ($kanal === 'eposta' && $uye->eposta) {
+            app(ZeptomailService::class)->otpGonder(
+                $uye->eposta,
+                $uye->ad_soyad,
+                $kod,
+                'giris'
+            );
+        } else {
+            // SMS servisi (HermesService) entegre edildiğinde buraya eklenecek
+            Log::info('OTP SMS gönderilecek', ['telefon' => $uye->telefon, 'kod' => $kod]);
+        }
     }
 
     /**

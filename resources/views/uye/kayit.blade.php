@@ -182,7 +182,7 @@ document.getElementById('otp-formu').addEventListener('submit', async function(e
     const otpHataBolumu = document.getElementById('otp-hata');
 
     try {
-        const response = await fetch('{{ route('uye.giris.otp') }}', {
+        const response = await fetch('{{ route('uye.kayit.otp') }}', {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('[name="_token"]').value,
