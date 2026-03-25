@@ -298,12 +298,13 @@ PROMPT;
     private function apiIstegiYap(string $prompt): ?string
     {
         $apiKey = config('services.gemini.api_key');
+        $model = (string) config('services.gemini.model', 'gemini-2.5-flash');
 
         if (! filled($apiKey)) {
             return null;
         }
 
-        $response = $this->http->post('/v1beta/models/gemini-2.5-flash:generateContent', [
+        $response = $this->http->post('/v1beta/models/' . $model . ':generateContent', [
             'query' => ['key' => $apiKey],
             'json' => [
                 'contents' => [

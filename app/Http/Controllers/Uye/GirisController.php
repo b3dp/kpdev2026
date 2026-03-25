@@ -31,7 +31,8 @@ class GirisController extends Controller
     {
         // reCAPTCHA doğrulaması
         $recaptchaResponse = $this->dogrulaRecaptcha($request->input('g-recaptcha-response'));
-        if (!$recaptchaResponse || $recaptchaResponse['score'] < 0.5) {
+        $esik = (float) config('services.recaptcha.threshold', 0.5);
+        if (! $recaptchaResponse || ((float) ($recaptchaResponse['score'] ?? 0)) < $esik) {
             return back()->withErrors(['recaptcha' => 'Bot aktivitesi tespit edildi.']);
         }
 

@@ -71,11 +71,13 @@ class Kurum extends Model
 
     public function toSearchableArray(): array
     {
+        $tip = $this->tip;
+
         return [
             'id' => $this->id,
             'ad' => $this->ad,
             'slug' => $this->slug,
-            'tip' => $this->tip,
+            'tip' => $tip instanceof \BackedEnum ? $tip->value : (string) $tip,
             'il' => $this->il,
             'ilce' => $this->ilce,
             'telefon' => $this->telefon,

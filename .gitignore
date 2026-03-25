@@ -24,4 +24,6 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 docs/pass.md
+docs/google.md
+docs/*.json
 .claude/

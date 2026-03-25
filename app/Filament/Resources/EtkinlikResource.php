@@ -211,7 +211,7 @@ class EtkinlikResource extends Resource
                                 return [];
                             }
 
-                            $apiKey = (string) (config('services.google_maps.api_key') ?: config('services.google_maps.public_api_key'));
+                            $apiKey = (string) (config('services.google_maps.key') ?: config('services.google_maps.key_public'));
                             if (blank($apiKey)) {
                                 return [];
                             }
@@ -240,7 +240,7 @@ class EtkinlikResource extends Resource
                                 return null;
                             }
 
-                            $apiKey = (string) (config('services.google_maps.api_key') ?: config('services.google_maps.public_api_key'));
+                            $apiKey = (string) (config('services.google_maps.key') ?: config('services.google_maps.key_public'));
                             if (blank($apiKey)) {
                                 return null;
                             }
@@ -265,7 +265,7 @@ class EtkinlikResource extends Resource
                                 return;
                             }
 
-                            $apiKey = (string) (config('services.google_maps.api_key') ?: config('services.google_maps.public_api_key'));
+                            $apiKey = (string) (config('services.google_maps.key') ?: config('services.google_maps.key_public'));
                             if (blank($apiKey)) {
                                 return;
                             }
@@ -298,7 +298,7 @@ class EtkinlikResource extends Resource
                             $set('konum_ilce', (string) data_get($ilce, 'long_name'));
                             $set('google_places_place_id', (string) data_get($sonuc, 'place_id'));
                         })
-                        ->helperText(fn (): string => blank(config('services.google_maps.api_key')) && blank(config('services.google_maps.public_api_key'))
+                        ->helperText(fn (): string => blank(config('services.google_maps.key')) && blank(config('services.google_maps.key_public'))
                             ? 'Google Maps API anahtarı bulunamadı. Lütfen GOOGLE_MAPS_API_KEY tanımlayın.'
                             : 'Konum aramak için en az 3 karakter yazın.')
                         ->visible(fn (callable $get): bool => in_array((string) $get('tip'), [EtkinlikTipi::Fiziksel->value, EtkinlikTipi::Hibrit->value], true)),

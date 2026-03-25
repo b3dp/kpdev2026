@@ -38,16 +38,24 @@ return [
     'recaptcha' => [
         'site_key' => env('RECAPTCHA_SITE_KEY'),
         'secret_key' => env('RECAPTCHA_SECRET_KEY'),
+        'threshold' => env('RECAPTCHA_SCORE_THRESHOLD', 0.5),
     ],
 
     'gemini' => [
         'api_key' => env('GEMINI_API_KEY'),
         'project_id' => env('GOOGLE_CLOUD_PROJECT_ID'),
+        'model' => env('GEMINI_MODEL', 'gemini-2.5-flash'),
     ],
 
     'google_maps' => [
-        'api_key' => env('GOOGLE_MAPS_API_KEY'),
-        'public_api_key' => env('GOOGLE_MAPS_API_KEY_PUBLIC'),
+        'key' => env('GOOGLE_MAPS_API_KEY'),
+        'key_public' => env('GOOGLE_MAPS_API_KEY_PUBLIC'),
+    ],
+
+    'google_drive' => [
+        'service_account_json_path' => env('GOOGLE_SERVICE_ACCOUNT_JSON_PATH'),
+        'bagis_klasor_id' => env('GOOGLE_DRIVE_BAGIS_KLASOR_ID'),
+        'ekayit_klasor_id' => env('GOOGLE_DRIVE_EKAYIT_KLASOR_ID'),
     ],
 
 ];
