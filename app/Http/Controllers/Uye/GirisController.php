@@ -29,11 +29,16 @@ class GirisController extends Controller
      */
     public function giris(Request $request)
     {
-        // reCAPTCHA doğrulaması
-        $recaptchaResponse = $this->dogrulaRecaptcha($request->input('g-recaptcha-response'));
-        $esik = (float) config('services.recaptcha.threshold', 0.5);
-        if (! $recaptchaResponse || ((float) ($recaptchaResponse['score'] ?? 0)) < $esik) {
-            return back()->withErrors(['recaptcha' => 'Bot aktivitesi tespit edildi.']);
+        // Demo/local ortamda reCAPTCHA kontrolünü es geçiyoruz.
+        if (! app()->environment('local')) {
+            $recaptchaResponse = $this->dogrulaRecaptcha($request->input('g-recaptcha-response'));
+            $esik = (float) config('services.recaptcha.threshold', 0.5);
+
+            if (! $recaptchaResponse || ! ($recaptchaResponse['success'] ?? false) || ((float) ($recaptchaResponse['score'] ?? 0)) < $esik) {
+                throw ValidationException::withMessages([
+                    'recaptcha' => 'reCAPTCHA doğrulaması başarısız. Lütfen tekrar deneyiniz.',
+                ]);
+            }
         }
 
         // Validasyon

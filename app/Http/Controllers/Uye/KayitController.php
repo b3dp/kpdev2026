@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Uye;
 
+use App\Enums\OtpTipi;
 use App\Http\Controllers\Controller;
 use App\Models\OtpKod;
 use App\Models\Uye;
@@ -24,11 +25,16 @@ class KayitController extends Controller
      */
     public function kayit(Request $request)
     {
-        // reCAPTCHA doğrulaması
-        $recaptchaResponse = $this->dogrulaRecaptcha($request->input('g-recaptcha-response'));
-        $esik = (float) config('services.recaptcha.threshold', 0.5);
-        if (! $recaptchaResponse || ((float) ($recaptchaResponse['score'] ?? 0)) < $esik) {
-            return back()->withErrors(['recaptcha' => 'Bot aktivitesi tespit edildi.']);
+        // Demo/local ortamda reCAPTCHA kontrolünü es geçiyoruz.
+        if (! app()->environment('local')) {
+            $recaptchaResponse = $this->dogrulaRecaptcha($request->input('g-recaptcha-response'));
+            $esik = (float) config('services.recaptcha.threshold', 0.5);
+
+            if (! $recaptchaResponse || ! ($recaptchaResponse['success'] ?? false) || ((float) ($recaptchaResponse['score'] ?? 0)) < $esik) {
+                throw ValidationException::withMessages([
+                    'recaptcha' => 'reCAPTCHA doğrulaması başarısız. Lütfen tekrar deneyiniz.',
+                ]);
+            }
         }
 
         // Validasyon
@@ -75,7 +81,7 @@ class KayitController extends Controller
         ]);
 
         // OTP gönder
-        $this->otpGonder($uye, $isTelefon ? 'sms' : 'eposta');
+        $this->otpGonder($uye, $isTelefon ? OtpTipi::TelefonDogrulama : OtpTipi::EpostaDogrulama);
 
         return response()->json(['uye_id' => $uye->id, 'step' => 'otp']);
     }
@@ -83,7 +89,7 @@ class KayitController extends Controller
     /**
      * OTP Gönder
      */
-    private function otpGonder(Uye $uye, string $kanal = 'sms')
+    private function otpGonder(Uye $uye, OtpTipi $tip = OtpTipi::TelefonDogrulama)
     {
         $kod = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         OtpKod::create([
@@ -91,14 +97,14 @@ class KayitController extends Controller
             'telefon' => $uye->telefon,
             'eposta' => $uye->eposta,
             'kod' => $kod,
-            'tip' => $kanal === 'sms' ? 'sms' : 'eposta',
+            'tip' => $tip,
             'kullanildi' => false,
             'gecerlilik_tarihi' => now()->addMinutes(10),
             'created_at' => now(),
         ]);
 
         // SMS/e-posta gönder (TODO: SMS/e-posta servisi)
-        // $this->sendOtp($uye, $kod, $kanal);
+        // $this->sendOtp($uye, $kod, $tip);
     }
 
     /**

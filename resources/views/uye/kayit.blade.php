@@ -116,14 +116,36 @@
 document.getElementById('kayit-formu').addEventListener('submit', async function(e) {
     e.preventDefault();
 
+    const hataBolumu = document.getElementById('hata-alani');
+
+    if (typeof grecaptcha === 'undefined') {
+        document.getElementById('hata-mesaji').textContent = 'reCAPTCHA yüklenemedi. Sayfayı yenileyip tekrar deneyiniz.';
+        hataBolumu.classList.remove('hidden');
+        return;
+    }
+
     // reCAPTCHA token al
-    const token = await grecaptcha.execute('{{ config('services.recaptcha.site_key') }}', {
-        action: 'kayit'
-    });
+    let token = '';
+
+    try {
+        token = await grecaptcha.execute('{{ config('services.recaptcha.site_key') }}', {
+            action: 'kayit'
+        });
+    } catch (error) {
+        document.getElementById('hata-mesaji').textContent = 'reCAPTCHA doğrulaması yapılamadı. Lütfen tekrar deneyiniz.';
+        hataBolumu.classList.remove('hidden');
+        return;
+    }
+
+    if (!token) {
+        document.getElementById('hata-mesaji').textContent = 'reCAPTCHA doğrulaması yapılamadı. Lütfen tekrar deneyiniz.';
+        hataBolumu.classList.remove('hidden');
+        return;
+    }
+
     document.getElementById('recaptcha-response').value = token;
 
     const formData = new FormData(this);
-    const hataBolumu = document.getElementById('hata-alani');
 
     try {
         const response = await fetch('{{ route('uye.kayit.kayit') }}', {
