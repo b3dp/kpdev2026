@@ -6,6 +6,7 @@ use App\Enums\OtpTipi;
 use App\Http\Controllers\Controller;
 use App\Models\OtpKod;
 use App\Models\Uye;
+use App\Models\Yonetici;
 use App\Services\TrustedDeviceService;
 use App\Services\ZeptomailService;
 use Illuminate\Http\Request;
@@ -62,11 +63,14 @@ class GirisController extends Controller
         if ($isTelefon) {
             $iletisim = preg_replace('/[^0-9]/', '', $iletisim);
             $uye = Uye::where('telefon', $iletisim)->first();
-            $eslesenUye = $uye;
+            $yonetici = Yonetici::where('telefon', $iletisim)->first();
         } else {
-            $eslesenUye = Uye::where('eposta', $iletisim)->first();
-            $uye = $eslesenUye;
+            $uye = Uye::where('eposta', $iletisim)->first();
+            $yonetici = Yonetici::where('eposta', $iletisim)->first();
         }
+
+        // Yönetici var mı?
+        $uye = $yonetici ?? $uye;
 
         // Üye mevcut mu?
         if ($uye) {

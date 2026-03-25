@@ -76,13 +76,13 @@ class KayitController extends Controller
             }
         }
 
-        // Yeni üye oluştur (durum: beklemede - OTP onayı bekleniyor)
+        // Yeni üye oluştur (durum: aktif, aktif=true - giriş yapabilecek)
         $uye = Uye::create([
             'ad_soyad' => $adSoyad,
             'telefon' => $isTelefon ? $iletisim : null,
             'eposta' => !$isTelefon ? $iletisim : null,
-            'durum' => UyeDurumu::Beklemede->value,
-            'aktif' => false,
+            'durum' => 'aktif',
+            'aktif' => true,
             'sms_abonelik' => true,
             'eposta_abonelik' => true,
         ]);
@@ -148,7 +148,7 @@ class KayitController extends Controller
             : 'telefon_dogrulandi';
 
         $uye->update([
-            'durum' => UyeDurumu::Aktif->value,
+            'durum' => 'aktif',
             'aktif' => true,
             $dogruladiAlani => true,
         ]);
