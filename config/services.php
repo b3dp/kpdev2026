@@ -58,4 +58,11 @@ return [
         'ekayit_klasor_id' => env('GOOGLE_DRIVE_EKAYIT_KLASOR_ID'),
     ],
 
+    'zeptomail' => [
+        'api_key'        => env('ZEPTOMAIL_API_KEY'),
+        'from_address'   => env('ZEPTOMAIL_FROM_ADDRESS', 'bildirim@n.kestanepazari.org.tr'),
+        'from_name'      => env('ZEPTOMAIL_FROM_NAME', 'Kestanepazarı Öğrenci Yetiştirme Derneği'),
+        'bounce_address' => env('ZEPTOMAIL_BOUNCE_ADDRESS', 'bounce@kestanepazari.org.tr'),
+    ],
+
 ];

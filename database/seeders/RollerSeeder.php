@@ -29,6 +29,7 @@ class RollerSeeder extends Seeder
             'yoneticiler'        => ['listele', 'goruntule', 'duzenle', 'kaydet', 'sil'],
             'roller'             => ['listele', 'goruntule', 'duzenle', 'kaydet', 'sil'],
             'loglar'             => ['listele', 'goruntule'],
+            'eposta'             => ['sablonlar.goruntule', 'sablonlar.duzenle', 'gonderimleri.goruntule'],
         ];
 
         foreach ($modulIzinleri as $modul => $izinler) {
@@ -53,6 +54,7 @@ class RollerSeeder extends Seeder
             'kisiler.listele', 'kisiler.goruntule', 'kisiler.duzenle', 'kisiler.kaydet',
             'kurumlar.listele', 'kurumlar.goruntule', 'kurumlar.duzenle', 'kurumlar.kaydet',
             'dergiler.listele', 'dergiler.goruntule', 'dergiler.duzenle', 'dergiler.kaydet', 'dergiler.sil',
+            'eposta.gonderimleri.goruntule',
         ]);
 
         // Yazar
