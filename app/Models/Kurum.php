@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Scout\Searchable;
@@ -61,6 +62,11 @@ class Kurum extends Model
         return $this->belongsToMany(Kisi::class, 'kisi_kurum', 'kurum_id', 'kisi_id')
             ->withPivot(['gorev', 'baslangic_tarihi', 'bitis_tarihi', 'aktif'])
             ->withTimestamps();
+    }
+
+    public function kurumsalSayfa(): BelongsTo
+    {
+        return $this->belongsTo(KurumsalSayfa::class, 'kurumsal_sayfa_id');
     }
 
     public function toSearchableArray(): array

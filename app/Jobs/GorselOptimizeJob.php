@@ -6,6 +6,8 @@ use App\Models\Etkinlik;
 use App\Models\EtkinlikGorseli;
 use App\Models\Haber;
 use App\Models\HaberGorseli;
+use App\Models\KurumsalSayfa;
+use App\Models\KurumsalSayfaGorseli;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Storage;
@@ -48,6 +50,11 @@ class GorselOptimizeJob implements ShouldQueue
 
         if ($this->modelTipi === 'etkinlik') {
             $this->etkinlikGorselleriniIsle();
+            return;
+        }
+
+        if ($this->modelTipi === 'kurumsal_sayfa') {
+            $this->kurumsalSayfaGorselleriniIsle();
         }
     }
 
@@ -174,6 +181,100 @@ class GorselOptimizeJob implements ShouldQueue
 
             EtkinlikGorseli::updateOrCreate(
                 ['etkinlik_id' => $etkinlik->id, 'sira' => $this->sira],
+                [
+                    'orijinal_yol' => $orijinalYol,
+                    'lg_yol' => $lgYol,
+                    'og_yol' => $ogYol,
+                    'sm_yol' => $smYol,
+                ]
+            );
+        }
+    }
+
+    protected function kurumsalSayfaGorselleriniIsle(): void
+    {
+        $sayfa = KurumsalSayfa::query()->find($this->modelId);
+
+        if (! $sayfa) {
+            return;
+        }
+
+        $slug = $sayfa->slug ?: 'kurumsal-sayfa-' . $sayfa->id;
+        $geciciTamYol = Storage::disk('local')->path($this->geciciYol);
+
+        $manager = ImageManager::imagick();
+        $resim = $manager->read($geciciTamYol);
+
+        $oriDizin = "img26/ori/kurumsal/{$sayfa->id}";
+        $optDizin = "img26/opt/kurumsal/{$sayfa->id}";
+
+        if ($this->gorselTipi === 'ana_gorsel') {
+            $orijinalYol = "{$oriDizin}/{$slug}-orijinal.jpeg";
+            $lgYol = "{$optDizin}/{$slug}-lg.webp";
+            $ogYol = "{$optDizin}/{$slug}-og.webp";
+            $smYol = "{$optDizin}/{$slug}-sm.webp";
+
+            Storage::disk('spaces')->put($orijinalYol, (string) $resim->toJpeg(quality: 90), 'public');
+            Storage::disk('spaces')->put($lgYol, (string) $resim->cover(1280, 720)->toWebp(quality: 85), 'public');
+            Storage::disk('spaces')->put($ogYol, (string) $resim->cover(1200, 675)->toWebp(quality: 85), 'public');
+            Storage::disk('spaces')->put($smYol, (string) $resim->cover(320, 180)->toWebp(quality: 80), 'public');
+
+            $sayfa->update([
+                'gorsel_orijinal' => Storage::disk('spaces')->url($orijinalYol),
+                'gorsel_lg' => Storage::disk('spaces')->url($lgYol),
+                'gorsel_og' => Storage::disk('spaces')->url($ogYol),
+                'gorsel_sm' => Storage::disk('spaces')->url($smYol),
+            ]);
+
+            return;
+        }
+
+        if ($this->gorselTipi === 'banner_masaustu') {
+            $bannerOrijinalYol = "{$oriDizin}/{$slug}-banner-orijinal.jpeg";
+            $bannerLgYol = "{$optDizin}/{$slug}-banner-lg.webp";
+
+            Storage::disk('spaces')->put($bannerOrijinalYol, (string) $resim->toJpeg(quality: 90), 'public');
+            Storage::disk('spaces')->put($bannerLgYol, (string) $resim->cover(1920, 1080)->toWebp(quality: 85), 'public');
+
+            $sayfa->update([
+                'banner_orijinal' => Storage::disk('spaces')->url($bannerOrijinalYol),
+                'banner_masaustu' => Storage::disk('spaces')->url($bannerLgYol),
+                'banner_mobil' => $sayfa->banner_mobil ?: Storage::disk('spaces')->url($bannerLgYol),
+            ]);
+
+            return;
+        }
+
+        if ($this->gorselTipi === 'banner_mobil') {
+            $bannerOrijinalYol = "{$oriDizin}/{$slug}-banner-mobil-orijinal.jpeg";
+            $bannerMobilYol = "{$optDizin}/{$slug}-banner-mobil.webp";
+
+            Storage::disk('spaces')->put($bannerOrijinalYol, (string) $resim->toJpeg(quality: 90), 'public');
+            Storage::disk('spaces')->put($bannerMobilYol, (string) $resim->cover(768, 432)->toWebp(quality: 85), 'public');
+
+            $sayfa->update([
+                'banner_orijinal' => Storage::disk('spaces')->url($bannerOrijinalYol),
+                'banner_mobil' => Storage::disk('spaces')->url($bannerMobilYol),
+            ]);
+
+            return;
+        }
+
+        if ($this->gorselTipi === 'galeri_gorseli') {
+            $siraNo = str_pad((string) $this->sira, 3, '0', STR_PAD_LEFT);
+
+            $orijinalYol = "{$oriDizin}/{$slug}-galeri-{$siraNo}-orijinal.jpeg";
+            $lgYol = "{$optDizin}/{$slug}-galeri-{$siraNo}-lg.webp";
+            $ogYol = "{$optDizin}/{$slug}-galeri-{$siraNo}-og.webp";
+            $smYol = "{$optDizin}/{$slug}-galeri-{$siraNo}-sm.webp";
+
+            Storage::disk('spaces')->put($orijinalYol, (string) $resim->toJpeg(quality: 90), 'public');
+            Storage::disk('spaces')->put($lgYol, (string) $resim->cover(1280, 720)->toWebp(quality: 85), 'public');
+            Storage::disk('spaces')->put($ogYol, (string) $resim->cover(1200, 675)->toWebp(quality: 85), 'public');
+            Storage::disk('spaces')->put($smYol, (string) $resim->cover(320, 180)->toWebp(quality: 80), 'public');
+
+            KurumsalSayfaGorseli::updateOrCreate(
+                ['sayfa_id' => $sayfa->id, 'sira' => $this->sira],
                 [
                     'orijinal_yol' => $orijinalYol,
                     'lg_yol' => $lgYol,

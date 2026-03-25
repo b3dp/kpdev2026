@@ -33,58 +33,59 @@ class RollerSeeder extends Seeder
 
         foreach ($modulIzinleri as $modul => $izinler) {
             foreach ($izinler as $izin) {
-                Permission::firstOrCreate([
+                Permission::updateOrCreate([
                     'name'       => "$modul.$izin",
                     'guard_name' => $guard,
-                ]);
+                ], []);
             }
         }
 
         // Admin — tüm izinler
-        $adminRol = Role::firstOrCreate(['name' => 'Admin', 'guard_name' => $guard]);
+        $adminRol = Role::updateOrCreate(['name' => 'Admin', 'guard_name' => $guard], []);
         $adminRol->syncPermissions(Permission::where('guard_name', $guard)->get());
 
         // Editör
-        $editorRol = Role::firstOrCreate(['name' => 'Editör', 'guard_name' => $guard]);
+        $editorRol = Role::updateOrCreate(['name' => 'Editör', 'guard_name' => $guard], []);
         $editorRol->syncPermissions([
             'haberler.listele', 'haberler.goruntule', 'haberler.duzenle', 'haberler.kaydet', 'haberler.sil', 'haberler.yayinla', 'haberler.zamanli_yayinla',
             'etkinlikler.listele', 'etkinlikler.goruntule', 'etkinlikler.duzenle', 'etkinlikler.kaydet', 'etkinlikler.sil', 'etkinlikler.yayinla',
-            'kurumsal_sayfalar.listele', 'kurumsal_sayfalar.goruntule', 'kurumsal_sayfalar.duzenle', 'kurumsal_sayfalar.kaydet', 'kurumsal_sayfalar.sil', 'kurumsal_sayfalar.yayinla',
+            'kurumsal_sayfalar.listele', 'kurumsal_sayfalar.goruntule', 'kurumsal_sayfalar.duzenle', 'kurumsal_sayfalar.kaydet', 'kurumsal_sayfalar.yayinla',
             'kisiler.listele', 'kisiler.goruntule', 'kisiler.duzenle', 'kisiler.kaydet',
             'kurumlar.listele', 'kurumlar.goruntule', 'kurumlar.duzenle', 'kurumlar.kaydet',
             'dergiler.listele', 'dergiler.goruntule', 'dergiler.duzenle', 'dergiler.kaydet', 'dergiler.sil',
         ]);
 
         // Yazar
-        $yazarRol = Role::firstOrCreate(['name' => 'Yazar', 'guard_name' => $guard]);
+        $yazarRol = Role::updateOrCreate(['name' => 'Yazar', 'guard_name' => $guard], []);
         $yazarRol->syncPermissions([
             'haberler.listele', 'haberler.goruntule', 'haberler.duzenle', 'haberler.kaydet',
             'etkinlikler.listele', 'etkinlikler.goruntule',
+            'kurumsal_sayfalar.listele', 'kurumsal_sayfalar.goruntule',
         ]);
 
         // Muhasebe
-        $muhasebeRol = Role::firstOrCreate(['name' => 'Muhasebe', 'guard_name' => $guard]);
+        $muhasebeRol = Role::updateOrCreate(['name' => 'Muhasebe', 'guard_name' => $guard], []);
         $muhasebeRol->syncPermissions([
             'bagis.listele', 'bagis.goruntule',
             'kurban.listele', 'kurban.goruntule',
         ]);
 
         // E-Kayıt
-        $ekayitRol = Role::firstOrCreate(['name' => 'E-Kayıt', 'guard_name' => $guard]);
+        $ekayitRol = Role::updateOrCreate(['name' => 'E-Kayıt', 'guard_name' => $guard], []);
         $ekayitRol->syncPermissions([
             'ekayit.listele', 'ekayit.goruntule', 'ekayit.duzenle', 'ekayit.kaydet',
             'kurumlar.listele', 'kurumlar.goruntule',
         ]);
 
         // Kurban
-        $kurbanRol = Role::firstOrCreate(['name' => 'Kurban', 'guard_name' => $guard]);
+        $kurbanRol = Role::updateOrCreate(['name' => 'Kurban', 'guard_name' => $guard], []);
         $kurbanRol->syncPermissions([
             'kurban.listele', 'kurban.goruntule', 'kurban.duzenle', 'kurban.kaydet', 'kurban.onayla',
             'bagis.listele', 'bagis.goruntule',
         ]);
 
         // Pazarlama
-        $pazarlamaRol = Role::firstOrCreate(['name' => 'Pazarlama', 'guard_name' => $guard]);
+        $pazarlamaRol = Role::updateOrCreate(['name' => 'Pazarlama', 'guard_name' => $guard], []);
         $pazarlamaRol->syncPermissions([
             'pazarlama_sms.listele', 'pazarlama_sms.goruntule', 'pazarlama_sms.gonder',
             'pazarlama_eposta.listele', 'pazarlama_eposta.goruntule', 'pazarlama_eposta.gonder',
