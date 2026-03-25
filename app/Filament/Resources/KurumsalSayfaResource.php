@@ -210,7 +210,20 @@ class KurumsalSayfaResource extends Resource
                         ->maxFiles(1)
                         ->dehydrated(false)
                         ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                        ->maxSize(65536),
+                        ->maxSize(65536)
+                        ->helperText('Bu alan yeni görsel yüklemek içindir. Kaydedilen mevcut görsel aşağıda gösterilir.'),
+
+                    Placeholder::make('mevcut_sayfa_gorseli')
+                        ->label('Mevcut Sayfa Görseli')
+                        ->content(function (?KurumsalSayfa $record): \Illuminate\Support\HtmlString {
+                            if (! filled($record?->gorsel_lg)) {
+                                return new \Illuminate\Support\HtmlString('<p class="text-sm text-gray-400">Henüz sayfa görseli yok.</p>');
+                            }
+
+                            return new \Illuminate\Support\HtmlString(
+                                '<img src="' . e((string) $record->gorsel_lg) . '" style="max-width:100%;max-height:180px;border-radius:8px;object-fit:cover;" alt="Sayfa görseli" />'
+                            );
+                        }),
 
                     FileUpload::make('banner_masaustu_gecici')
                         ->label('Banner Masaüstü')
@@ -221,7 +234,20 @@ class KurumsalSayfaResource extends Resource
                         ->maxFiles(1)
                         ->dehydrated(false)
                         ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                        ->maxSize(65536),
+                        ->maxSize(65536)
+                        ->helperText('Bu alan yeni banner yüklemek içindir. Kaydedilen banner aşağıda gösterilir.'),
+
+                    Placeholder::make('mevcut_banner_masaustu')
+                        ->label('Mevcut Banner Masaüstü')
+                        ->content(function (?KurumsalSayfa $record): \Illuminate\Support\HtmlString {
+                            if (! filled($record?->banner_masaustu)) {
+                                return new \Illuminate\Support\HtmlString('<p class="text-sm text-gray-400">Henüz masaüstü banner yok.</p>');
+                            }
+
+                            return new \Illuminate\Support\HtmlString(
+                                '<img src="' . e((string) $record->banner_masaustu) . '" style="max-width:100%;max-height:180px;border-radius:8px;object-fit:cover;" alt="Banner masaustu" />'
+                            );
+                        }),
 
                     FileUpload::make('banner_mobil_gecici')
                         ->label('Banner Mobil')
@@ -232,7 +258,20 @@ class KurumsalSayfaResource extends Resource
                         ->maxFiles(1)
                         ->dehydrated(false)
                         ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                        ->maxSize(65536),
+                        ->maxSize(65536)
+                        ->helperText('Bu alan yeni mobil banner yüklemek içindir. Kaydedilen mobil banner aşağıda gösterilir.'),
+
+                    Placeholder::make('mevcut_banner_mobil')
+                        ->label('Mevcut Banner Mobil')
+                        ->content(function (?KurumsalSayfa $record): \Illuminate\Support\HtmlString {
+                            if (! filled($record?->banner_mobil)) {
+                                return new \Illuminate\Support\HtmlString('<p class="text-sm text-gray-400">Henüz mobil banner yok.</p>');
+                            }
+
+                            return new \Illuminate\Support\HtmlString(
+                                '<img src="' . e((string) $record->banner_mobil) . '" style="max-width:100%;max-height:180px;border-radius:8px;object-fit:cover;" alt="Banner mobil" />'
+                            );
+                        }),
 
                     FileUpload::make('og_gorsel')
                         ->label('OG Görsel')
