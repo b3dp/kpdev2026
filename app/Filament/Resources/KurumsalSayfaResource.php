@@ -35,6 +35,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class KurumsalSayfaResource extends Resource
 {
@@ -273,15 +274,33 @@ class KurumsalSayfaResource extends Resource
                             );
                         }),
 
-                    FileUpload::make('og_gorsel')
+                    FileUpload::make('og_gorsel_gecici')
                         ->label('OG Görsel')
-                        ->disk('spaces')
-                        ->directory('img26/opt/kurumsal/og')
-                        ->visibility('public')
+                        ->disk('local')
+                        ->directory('tmp/kurumsal-sayfalar')
+                        ->visibility('private')
                         ->image()
                         ->maxFiles(1)
+                        ->dehydrated(false)
                         ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                        ->maxSize(65536),
+                        ->maxSize(65536)
+                        ->helperText('Bu alan yeni OG görsel yüklemek içindir. Kaydedilen OG görsel aşağıda gösterilir.'),
+
+                    Placeholder::make('mevcut_og_gorsel')
+                        ->label('Mevcut OG Görsel')
+                        ->content(function (?KurumsalSayfa $record): \Illuminate\Support\HtmlString {
+                            if (! filled($record?->og_gorsel)) {
+                                return new \Illuminate\Support\HtmlString('<p class="text-sm text-gray-400">Henüz OG görsel yok.</p>');
+                            }
+
+                            $url = filter_var((string) $record->og_gorsel, FILTER_VALIDATE_URL)
+                                ? (string) $record->og_gorsel
+                                : Storage::disk('spaces')->url((string) $record->og_gorsel);
+
+                            return new \Illuminate\Support\HtmlString(
+                                '<img src="' . e($url) . '" style="max-width:100%;max-height:180px;border-radius:8px;object-fit:cover;" alt="OG gorsel" />'
+                            );
+                        }),
 
                     FileUpload::make('galeri_gorseller')
                         ->label('Galeri')

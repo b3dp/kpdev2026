@@ -29,6 +29,11 @@ class CreateKurumsalSayfa extends CreateRecord
             dispatch_sync(new GorselOptimizeJob($sayfa->id, 'kurumsal_sayfa', 'banner_mobil', $bannerMobil, 1));
         }
 
+        $ogGorsel = $this->tekDosyaYolu(data_get($this->data, 'og_gorsel_gecici'));
+        if (filled($ogGorsel)) {
+            dispatch_sync(new GorselOptimizeJob($sayfa->id, 'kurumsal_sayfa', 'og_gorsel', $ogGorsel, 1));
+        }
+
         $galeriGorseller = $this->cokluDosyaYollari((array) data_get($this->data, 'galeri_gorseller', []));
         foreach ($galeriGorseller as $sira => $geciciYol) {
             dispatch_sync(new GorselOptimizeJob($sayfa->id, 'kurumsal_sayfa', 'galeri_gorseli', $geciciYol, $sira + 1));

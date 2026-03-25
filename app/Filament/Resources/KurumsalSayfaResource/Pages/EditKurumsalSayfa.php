@@ -48,6 +48,11 @@ class EditKurumsalSayfa extends EditRecord
             dispatch_sync(new GorselOptimizeJob($sayfa->id, 'kurumsal_sayfa', 'banner_mobil', $bannerMobil, 1));
         }
 
+        $ogGorsel = $this->tekDosyaYolu(data_get($this->data, 'og_gorsel_gecici'));
+        if (filled($ogGorsel)) {
+            dispatch_sync(new GorselOptimizeJob($sayfa->id, 'kurumsal_sayfa', 'og_gorsel', $ogGorsel, 1));
+        }
+
         $galeriGorseller = $this->cokluDosyaYollari((array) data_get($this->data, 'galeri_gorseller', []));
         $baslangicSirasi = ((int) $sayfa->gorseller()->max('sira')) + 1;
         foreach ($galeriGorseller as $sira => $geciciYol) {

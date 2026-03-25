@@ -260,6 +260,18 @@ class GorselOptimizeJob implements ShouldQueue
             return;
         }
 
+        if ($this->gorselTipi === 'og_gorsel') {
+            $ogYol = "{$optDizin}/{$slug}-ozel-og.webp";
+
+            Storage::disk('spaces')->put($ogYol, (string) $resim->cover(1200, 675)->toWebp(quality: 85), 'public');
+
+            $sayfa->update([
+                'og_gorsel' => Storage::disk('spaces')->url($ogYol),
+            ]);
+
+            return;
+        }
+
         if ($this->gorselTipi === 'galeri_gorseli') {
             $siraNo = str_pad((string) $this->sira, 3, '0', STR_PAD_LEFT);
 
