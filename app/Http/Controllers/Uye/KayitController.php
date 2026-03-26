@@ -172,6 +172,8 @@ class KayitController extends Controller
 
     /**
      * OTP Gönder
+     * Mantık: Eğer eposta varsa, HER ZAMAN eposta ile gönder.
+     * Sadece email yoksa, telefon üzerinden SMS deneme.
      */
     private function otpGonder(Uye $uye, OtpTipi $tip = OtpTipi::TelefonDogrulama)
     {
@@ -187,16 +189,26 @@ class KayitController extends Controller
             'created_at' => now(),
         ]);
 
-        if ($tip === OtpTipi::EpostaDogrulama && $uye->eposta) {
+        // Eposta varsa her zaman email ile gönder (OTP tipi=EpostaDogrulama)
+        if ($uye->eposta) {
             app(ZeptomailService::class)->otpGonder(
                 $uye->eposta,
                 $uye->ad_soyad,
                 $kod,
                 'kayit'
             );
+            Log::info('OTP e-posta ile gönderildi (kayıt)', [
+                'eposta' => $uye->eposta,
+                'kod' => $kod,
+                'uye_id' => $uye->id,
+            ]);
         } else {
-            // SMS servisi (HermesService) entegre edildiğinde buraya eklenecek
-            Log::info('OTP SMS gönderilecek (kayıt)', ['telefon' => $uye->telefon, 'kod' => $kod]);
+            // Sadece telefon varsa SMS dene (sistem hazır olmaya kadar log)
+            Log::info('OTP SMS gönderilecek (kayıt)', [
+                'telefon' => $uye->telefon,
+                'kod' => $kod,
+                'uye_id' => $uye->id,
+            ]);
         }
     }
 

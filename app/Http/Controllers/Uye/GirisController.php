@@ -176,6 +176,8 @@ class GirisController extends Controller
 
     /**
      * OTP Gönder
+     * Mantık: Eğer eposta varsa, HER ZAMAN eposta ile gönder.
+     * Sadece email yoksa, telefon üzerinden SMS deneme.
      */
     private function otpGonder(Uye $uye, string $kanal = 'eposta')
     {
@@ -195,16 +197,26 @@ class GirisController extends Controller
             'created_at' => now(),
         ]);
 
-        if ($kanal === 'eposta' && $uye->eposta) {
+        // Eposta varsa her zaman email ile gönder (kanalından bağımsız)
+        if ($uye->eposta) {
             app(ZeptomailService::class)->otpGonder(
                 $uye->eposta,
                 $uye->ad_soyad,
                 $kod,
                 'giris'
             );
+            Log::info('OTP e-posta ile gönderildi (giriş)', [
+                'eposta' => $uye->eposta,
+                'kod' => $kod,
+                'uye_id' => $uye->id,
+            ]);
         } else {
-            // SMS servisi (HermesService) entegre edildiğinde buraya eklenecek
-            Log::info('OTP SMS gönderilecek', ['telefon' => $uye->telefon, 'kod' => $kod]);
+            // Sadece telefon varsa SMS dene (sistem hazır olmaya kadar log)
+            Log::info('OTP SMS gönderilecek (giriş)', [
+                'telefon' => $uye->telefon,
+                'kod' => $kod,
+                'uye_id' => $uye->id,
+            ]);
         }
     }
 
