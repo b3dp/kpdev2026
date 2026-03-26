@@ -177,7 +177,7 @@ SMS modülüyle aynı yapı — bkz. pazarlama-sms.md.
 
 ```
 Toplu gönderimde:
-  50 alıcı/batch → 2 saniye bekleme → sonraki batch
+  5 alıcı/batch → 2 saniye bekleme → sonraki batch
   Queue Worker ile asenkron işlenir
   Limit aşımı hatasında otomatik retry (3 deneme, 5'er dakika arayla)
   3 denemede de başarısız olursa: admin'e panel bildirimi

@@ -2,88 +2,91 @@
 
 namespace App\Services;
 
-use App\Jobs\EpostaGonderJob;
 use App\Models\EpostaGonderim;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\View;
 
 class ZeptomailService
 {
-    private string $apiKey;
-    private string $fromAddress;
-    private string $fromName;
-    private string $bounceAddress;
-
-    public function __construct()
-    {
-        $this->apiKey       = config('services.zeptomail.api_key', '');
-        $this->fromAddress  = config('services.zeptomail.from_address', 'bildirim@n.kestanepazari.org.tr');
-        $this->fromName     = config('services.zeptomail.from_name', 'Kestanepazarı Öğrenci Yetiştirme Derneği');
-        $this->bounceAddress = config('services.zeptomail.bounce_address', 'bounce@kestanepazari.org.tr');
-    }
-
-    // ────────────────────────────────────────────────────────────────────────
-    // Temel gönderim (Job aracılığıyla çağrılır)
-    // ────────────────────────────────────────────────────────────────────────
-
-    public function gonderTemel(
+    private function gonderTemel(
         string $aliciEposta,
         string $aliciAd,
-        string $sablonKodu,
-        array $degiskenler = [],
+        string $konu,
+        string $htmlIcerik,
         string $queue = 'default',
         ?string $ilgiliTip = null,
         ?int $ilgiliId = null
     ): bool {
-        // Rate limit kontrolü — aynı eposta + şablon 60sn içinde 2 kez gidemez
-        $rlKey = 'eposta_rl_' . md5($aliciEposta . $sablonKodu);
-        if (Cache::has($rlKey)) {
-            Log::warning('ZeptomailService: Rate limit — e-posta engellendi', [
-                'eposta'     => $aliciEposta,
-                'sablon_kodu' => $sablonKodu,
-            ]);
+        // Rate limit kontrolü
+        $key = 'eposta_rl_' . md5($aliciEposta . $konu);
+        if (Cache::has($key)) {
             return false;
         }
-        Cache::put($rlKey, true, 60);
+        Cache::put($key, true, 60);
 
-        // Blade render
-        try {
-            $icerik = View::make('emails.' . $sablonKodu, $degiskenler)->render();
-        } catch (\Throwable $e) {
-            Log::error('ZeptomailService: Blade render hatası', [
-                'sablon' => $sablonKodu,
-                'hata'   => $e->getMessage(),
-            ]);
-            return false;
-        }
-
-        // Konu satırı — şablon tablosundan ya da değişkenden
-        $konu = $degiskenler['konu'] ?? $sablonKodu;
-
-        // DB kaydı — beklemede
+        // eposta_gonderimleri tablosuna kaydet
         $gonderim = EpostaGonderim::create([
-            'sablon_kodu' => $sablonKodu,
+            'sablon_kodu' => $ilgiliTip ?? 'manuel',
             'alici_eposta' => $aliciEposta,
-            'alici_ad'    => $aliciAd ?: null,
-            'konu'        => $konu,
-            'durum'       => 'beklemede',
-            'ilgili_tip'  => $ilgiliTip,
-            'ilgili_id'   => $ilgiliId,
-            'created_at'  => now(),
+            'alici_ad' => $aliciAd,
+            'konu' => $konu,
+            'durum' => 'beklemede',
+            'ilgili_tip' => $ilgiliTip,
+            'ilgili_id' => $ilgiliId,
+            'created_at' => now(),
         ]);
 
-        // Job'a yolla
-        EpostaGonderJob::dispatch($gonderim->id, $icerik, $aliciEposta, $aliciAd, $konu)
-            ->onQueue($queue);
+        try {
+            $response = Http::withHeaders([
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'Authorization' => config('services.zeptomail.api_key'),
+            ])->post('https://api.zeptomail.com/v1.1/email', [
+                'from' => [
+                    'address' => config('services.zeptomail.from_address'),
+                    'name' => config('services.zeptomail.from_name'),
+                ],
+                'to' => [
+                    [
+                        'email_address' => [
+                            'address' => $aliciEposta,
+                            'name' => $aliciAd ?: $aliciEposta,
+                        ],
+                    ],
+                ],
+                'subject' => $konu,
+                'htmlbody' => $htmlIcerik,
+                'track_clicks' => true,
+                'track_opens' => true,
+            ]);
 
-        return true;
+            if ($response->successful()) {
+                $gonderim->update([
+                    'durum' => 'gonderildi',
+                    'zeptomail_message_id' => $response->json('data.0.code') ?? null,
+                ]);
+                return true;
+            }
+
+            $gonderim->update([
+                'durum' => 'basarisiz',
+                'hata_mesaji' => $response->json('error.message') ?? $response->body(),
+            ]);
+            return false;
+
+        } catch (\Exception $e) {
+            $gonderim->update([
+                'durum' => 'basarisiz',
+                'hata_mesaji' => $e->getMessage(),
+            ]);
+            Log::error('ZeptoMail gönderim hatası', [
+                'alici' => $aliciEposta,
+                'hata' => $e->getMessage(),
+            ]);
+            return false;
+        }
     }
-
-    // ────────────────────────────────────────────────────────────────────────
-    // ZeptoMail API'ye gerçek gönderim (Job içinden çağrılır)
-    // ────────────────────────────────────────────────────────────────────────
 
     public function apiGonder(
         int $gonderimId,
@@ -98,91 +101,91 @@ class ZeptomailService
         }
 
         try {
-            $payload = [
-                'from' => [
-                    'address' => $this->fromAddress,
-                    'name'    => $this->fromName,
-                ],
-                'to' => [[
-                    'email_address' => [
-                        'address' => $aliciEposta,
-                        'name'    => $aliciAd,
-                    ],
-                ]],
-                'subject'     => $konu,
-                'htmlbody'    => $icerik,
-                'bounce_address' => $this->bounceAddress,
-            ];
-
             $response = Http::withHeaders([
-                'Authorization' => $this->apiKey,
-                'Content-Type'  => 'application/json',
-                'Accept'        => 'application/json',
-            ])->post('https://api.zeptomail.com/v1.1/email', $payload);
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'Authorization' => config('services.zeptomail.api_key'),
+            ])->post('https://api.zeptomail.com/v1.1/email', [
+                'from' => [
+                    'address' => config('services.zeptomail.from_address'),
+                    'name' => config('services.zeptomail.from_name'),
+                ],
+                'to' => [
+                    [
+                        'email_address' => [
+                            'address' => $aliciEposta,
+                            'name' => $aliciAd ?: $aliciEposta,
+                        ],
+                    ],
+                ],
+                'subject' => $konu,
+                'htmlbody' => $icerik,
+                'track_clicks' => true,
+                'track_opens' => true,
+            ]);
 
             if ($response->successful()) {
-                $data = $response->json();
                 $gonderim->update([
-                    'durum'                  => 'gonderildi',
-                    'zeptomail_message_id'   => $data['data'][0]['message_id'] ?? null,
+                    'durum' => 'gonderildi',
+                    'zeptomail_message_id' => $response->json('data.0.code') ?? null,
                 ]);
-            } else {
-                $hata = $response->body();
-                $gonderim->update([
-                    'durum'        => 'basarisiz',
-                    'hata_mesaji'  => mb_substr($hata, 0, 500),
-                ]);
-                Log::error('ZeptomailService: API hatası', [
-                    'status'  => $response->status(),
-                    'body'    => $hata,
-                    'alici'   => $aliciEposta,
-                    'sablon'  => $gonderim->sablon_kodu,
-                ]);
+
+                return;
             }
-        } catch (\Throwable $e) {
+
             $gonderim->update([
-                'durum'       => 'basarisiz',
-                'hata_mesaji' => mb_substr($e->getMessage(), 0, 500),
+                'durum' => 'basarisiz',
+                'hata_mesaji' => $response->json('error.message') ?? $response->body(),
             ]);
-            Log::error('ZeptomailService: İstisna', ['hata' => $e->getMessage()]);
-            throw $e; // Job'un retry mekanizması çalışsın
+        } catch (\Exception $e) {
+            $gonderim->update([
+                'durum' => 'basarisiz',
+                'hata_mesaji' => $e->getMessage(),
+            ]);
+
+            Log::error('ZeptoMail gönderim hatası', [
+                'alici' => $aliciEposta,
+                'hata' => $e->getMessage(),
+            ]);
+
+            throw $e;
         }
     }
 
-    // ────────────────────────────────────────────────────────────────────────
-    // Özel metodlar
-    // ────────────────────────────────────────────────────────────────────────
-
     public function otpGonder(string $eposta, string $ad, string $kod, string $tip = 'giris'): bool
     {
-        $sablonKodu = 'otp_' . $tip;
+        $htmlIcerik = view('emails.otp', [
+            'adSoyad' => $ad,
+            'kod' => $kod,
+            'gecerlilik' => '10 dakika',
+            'islemAdi' => $tip === 'giris' ? 'Giriş işleminizi' : 'Kayıt işleminizi',
+        ])->render();
+
         return $this->gonderTemel(
             aliciEposta: $eposta,
             aliciAd: $ad,
-            sablonKodu: $sablonKodu,
-            degiskenler: [
-                'adSoyad'     => $ad,
-                'kod'         => $kod,
-                'gecerlilik'  => '10 dakika',
-                'konu'        => $tip === 'giris' ? 'Giriş Doğrulama Kodu' : 'Kayıt Doğrulama Kodu',
-            ],
+            konu: 'Kestanepazarı Doğrulama Kodu: ' . $kod,
+            htmlIcerik: $htmlIcerik,
             queue: 'high',
+            ilgiliTip: 'otp_' . $tip,
         );
     }
 
     public function makbuzGonder(string $eposta, string $ad, string $makbuzUrl, string $bagisNo, string $tutar = ''): bool
     {
+        $htmlIcerik = view('emails.bagis_makbuz', [
+            'adSoyad' => $ad,
+            'bagisNo' => $bagisNo,
+            'tutar' => (float) $tutar,
+            'tarih' => now()->format('d.m.Y H:i'),
+            'makbuzUrl' => $makbuzUrl,
+        ])->render();
+
         return $this->gonderTemel(
             aliciEposta: $eposta,
             aliciAd: $ad,
-            sablonKodu: 'bagis_makbuz',
-            degiskenler: [
-                'adSoyad'   => $ad,
-                'bagisNo'   => $bagisNo,
-                'tutar'     => $tutar,
-                'makbuzUrl' => $makbuzUrl,
-                'konu'      => "Bağış Makbuzunuz — #{$bagisNo}",
-            ],
+            konu: "Bağış Makbuzunuz - #{$bagisNo}",
+            htmlIcerik: $htmlIcerik,
             queue: 'high',
             ilgiliTip: 'bagis',
         );
@@ -190,16 +193,17 @@ class ZeptomailService
 
     public function kurbanBildirimGonder(string $eposta, string $ad, string $kurbanNo, string $kesimTarihi): bool
     {
+        $htmlIcerik = view('emails.kurban_kesildi', [
+            'adSoyad' => $ad,
+            'kurbanNo' => $kurbanNo,
+            'kesimTarihi' => $kesimTarihi,
+        ])->render();
+
         return $this->gonderTemel(
             aliciEposta: $eposta,
             aliciAd: $ad,
-            sablonKodu: 'kurban_kesildi',
-            degiskenler: [
-                'adSoyad'     => $ad,
-                'kurbanNo'    => $kurbanNo,
-                'kesimTarihi' => $kesimTarihi,
-                'konu'        => "Kurban Kesim Bildirimi — #{$kurbanNo}",
-            ],
+            konu: "Kurban Kesim Bildirimi - #{$kurbanNo}",
+            htmlIcerik: $htmlIcerik,
             queue: 'default',
             ilgiliTip: 'kurban',
         );
@@ -207,51 +211,58 @@ class ZeptomailService
 
     public function haberOnayGonder(string $eposta, string $ad, string $haberBaslik, string $onayUrl, string $redUrl): bool
     {
+        $htmlIcerik = view('emails.haber_onay', [
+            'adSoyad' => $ad,
+            'haberBaslik' => $haberBaslik,
+            'onayUrl' => $onayUrl,
+            'redUrl' => $redUrl,
+        ])->render();
+
         return $this->gonderTemel(
             aliciEposta: $eposta,
             aliciAd: $ad,
-            sablonKodu: 'haber_onay',
-            degiskenler: [
-                'adSoyad'     => $ad,
-                'haberBaslik' => $haberBaslik,
-                'onayUrl'     => $onayUrl,
-                'redUrl'      => $redUrl,
-                'konu'        => "Haber Onay Talebi — {$haberBaslik}",
-            ],
+            konu: "Haber Onay Talebi - {$haberBaslik}",
+            htmlIcerik: $htmlIcerik,
             queue: 'default',
             ilgiliTip: 'haber',
         );
     }
 
-    public function mezunBildirimGonder(string $eposta, string $ad, bool $onaylandi, ?string $redNotu = null): bool
+    public function mezunOnayGonder(string $eposta, string $ad, bool $onaylandi, ?string $redNotu = null): bool
     {
-        $sablonKodu = $onaylandi ? 'mezun_onaylandi' : 'mezun_reddedildi';
+        $htmlIcerik = view($onaylandi ? 'emails.mezun_onaylandi' : 'emails.mezun_reddedildi', [
+            'adSoyad' => $ad,
+            'redNotu' => $redNotu,
+        ])->render();
+
         return $this->gonderTemel(
             aliciEposta: $eposta,
             aliciAd: $ad,
-            sablonKodu: $sablonKodu,
-            degiskenler: [
-                'adSoyad' => $ad,
-                'redNotu' => $redNotu,
-                'konu'    => $onaylandi ? 'Mezun Kaydınız Onaylandı' : 'Mezun Kaydınız Hakkında Bilgilendirme',
-            ],
+            konu: $onaylandi ? 'Mezun Kaydınız Onaylandı' : 'Mezun Kaydınız Hakkında Bilgilendirme',
+            htmlIcerik: $htmlIcerik,
             queue: 'default',
             ilgiliTip: 'mezun',
         );
     }
 
+    public function mezunBildirimGonder(string $eposta, string $ad, bool $onaylandi, ?string $redNotu = null): bool
+    {
+        return $this->mezunOnayGonder($eposta, $ad, $onaylandi, $redNotu);
+    }
+
     public function ekayitOnayGonder(string $eposta, string $ad, string $kayitNo, string $evrakUrl): bool
     {
+        $htmlIcerik = view('emails.ekayit_onay', [
+            'adSoyad' => $ad,
+            'kayitNo' => $kayitNo,
+            'evrakUrl' => $evrakUrl,
+        ])->render();
+
         return $this->gonderTemel(
             aliciEposta: $eposta,
             aliciAd: $ad,
-            sablonKodu: 'ekayit_onay',
-            degiskenler: [
-                'adSoyad'  => $ad,
-                'kayitNo'  => $kayitNo,
-                'evrakUrl' => $evrakUrl,
-                'konu'     => "E-Kayıt Başvurunuz Onaylandı — #{$kayitNo}",
-            ],
+            konu: "E-Kayıt Başvurunuz Onaylandı - #{$kayitNo}",
+            htmlIcerik: $htmlIcerik,
             queue: 'default',
             ilgiliTip: 'ekayit',
         );
@@ -265,15 +276,16 @@ class ZeptomailService
             $ad     = is_array($alici) ? ($alici['ad'] ?? $alici['name'] ?? 'Yönetici') : 'Yönetici';
             if (! $eposta) continue;
 
+            $htmlIcerik = view('emails.yonetici_alert', [
+                'konu' => $konu,
+                'mesaj' => $mesaj,
+            ])->render();
+
             $gonderildi = $this->gonderTemel(
                 aliciEposta: $eposta,
                 aliciAd: $ad,
-                sablonKodu: 'yonetici_alert',
-                degiskenler: [
-                    'adSoyad' => $ad,
-                    'konu'    => $konu,
-                    'mesaj'   => $mesaj,
-                ],
+                konu: $konu,
+                htmlIcerik: $htmlIcerik,
                 queue: 'high',
                 ilgiliTip: 'sistem',
             );
