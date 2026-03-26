@@ -58,6 +58,11 @@ return [
         'ekayit_klasor_id' => env('GOOGLE_DRIVE_EKAYIT_KLASOR_ID'),
     ],
 
+    'ga4' => [
+        'measurement_id' => env('GA4_MEASUREMENT_ID'),
+        'api_secret' => env('GA4_API_SECRET'),
+    ],
+
     'zeptomail' => [
         'api_key' => env('ZEPTOMAIL_API_KEY'),
         'from_address' => env('ZEPTOMAIL_FROM_ADDRESS'),

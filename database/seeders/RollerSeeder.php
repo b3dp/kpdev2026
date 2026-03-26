@@ -22,6 +22,8 @@ class RollerSeeder extends Seeder
             'kurumlar'           => ['listele', 'goruntule', 'duzenle', 'kaydet', 'sil', 'onayla'],
             'dergiler'           => ['listele', 'goruntule', 'duzenle', 'kaydet', 'sil'],
             'bagis'              => ['listele', 'goruntule', 'duzenle', 'kaydet', 'sil', 'onayla'],
+            'bagis.turleri'      => ['listele', 'goruntule', 'duzenle', 'kaydet'],
+            'bagis'              => ['listele', 'goruntule', 'duzenle', 'kaydet', 'sil', 'onayla', 'raporla', 'pasife_al'],
             'kurban'             => ['listele', 'goruntule', 'duzenle', 'kaydet', 'sil', 'onayla'],
             'ekayit'             => ['listele', 'goruntule', 'duzenle', 'kaydet', 'sil'],
             'pazarlama_sms'      => ['listele', 'goruntule', 'kaydet', 'sil', 'gonder'],
@@ -54,6 +56,8 @@ class RollerSeeder extends Seeder
             'kisiler.listele', 'kisiler.goruntule', 'kisiler.duzenle', 'kisiler.kaydet',
             'kurumlar.listele', 'kurumlar.goruntule', 'kurumlar.duzenle', 'kurumlar.kaydet',
             'dergiler.listele', 'dergiler.goruntule', 'dergiler.duzenle', 'dergiler.kaydet', 'dergiler.sil',
+            'bagis.turleri.listele', 'bagis.turleri.goruntule', 'bagis.turleri.duzenle', 'bagis.turleri.kaydet',
+            'bagis.listele', 'bagis.goruntule', 'bagis.duzenle', 'bagis.kaydet', 'bagis.raporla', 'bagis.pasife_al',
             'eposta.gonderimleri.goruntule',
         ]);
 
@@ -68,7 +72,7 @@ class RollerSeeder extends Seeder
         // Muhasebe
         $muhasebeRol = Role::updateOrCreate(['name' => 'Muhasebe', 'guard_name' => $guard], []);
         $muhasebeRol->syncPermissions([
-            'bagis.listele', 'bagis.goruntule',
+            'bagis.listele', 'bagis.goruntule', 'bagis.raporla',
             'kurban.listele', 'kurban.goruntule',
         ]);
 
