@@ -82,6 +82,7 @@
             {{-- Kayıt Butonu --}}
             <button
                 type="submit"
+                id="kayit-submit"
                 class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition font-medium"
             >
                 Kayıt Ol
@@ -114,6 +115,7 @@
                     />
                     <button
                         type="submit"
+                        id="otp-submit"
                         class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition font-medium"
                     >
                         Doğrula
@@ -130,41 +132,53 @@
 
 <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site_key') }}"></script>
 <script>
+let kayitGonderiliyor = false;
+let otpGonderiliyor = false;
+
+function butonYukleniyorYap(buton, yukleniyor, normalYazi, yukleniyorYazisi) {
+    buton.disabled = yukleniyor;
+    buton.textContent = yukleniyor ? yukleniyorYazisi : normalYazi;
+    buton.classList.toggle('opacity-70', yukleniyor);
+    buton.classList.toggle('cursor-not-allowed', yukleniyor);
+}
+
 document.getElementById('kayit-formu').addEventListener('submit', async function(e) {
     e.preventDefault();
 
-    const hataBolumu = document.getElementById('hata-alani');
-
-    if (typeof grecaptcha === 'undefined') {
-        document.getElementById('hata-mesaji').textContent = 'reCAPTCHA yüklenemedi. Sayfayı yenileyip tekrar deneyiniz.';
-        hataBolumu.classList.remove('hidden');
+    if (kayitGonderiliyor) {
         return;
     }
 
-    // reCAPTCHA token al
-    let token = '';
+    kayitGonderiliyor = true;
+
+    const kayitButonu = document.getElementById('kayit-submit');
+    const hataBolumu = document.getElementById('hata-alani');
+    const hataMesaji = document.getElementById('hata-mesaji');
+    butonYukleniyorYap(kayitButonu, true, 'Kayıt Ol', 'Gönderiliyor...');
+    hataBolumu.classList.add('hidden');
+    hataMesaji.textContent = '';
 
     try {
-        token = await grecaptcha.execute('{{ config('services.recaptcha.site_key') }}', {
+        if (typeof grecaptcha === 'undefined') {
+            hataMesaji.textContent = 'reCAPTCHA yüklenemedi. Sayfayı yenileyip tekrar deneyiniz.';
+            hataBolumu.classList.remove('hidden');
+            return;
+        }
+
+        const token = await grecaptcha.execute('{{ config('services.recaptcha.site_key') }}', {
             action: 'kayit'
         });
-    } catch (error) {
-        document.getElementById('hata-mesaji').textContent = 'reCAPTCHA doğrulaması yapılamadı. Lütfen tekrar deneyiniz.';
-        hataBolumu.classList.remove('hidden');
-        return;
-    }
 
-    if (!token) {
-        document.getElementById('hata-mesaji').textContent = 'reCAPTCHA doğrulaması yapılamadı. Lütfen tekrar deneyiniz.';
-        hataBolumu.classList.remove('hidden');
-        return;
-    }
+        if (!token) {
+            hataMesaji.textContent = 'reCAPTCHA doğrulaması yapılamadı. Lütfen tekrar deneyiniz.';
+            hataBolumu.classList.remove('hidden');
+            return;
+        }
 
-    document.getElementById('recaptcha-response').value = token;
+        document.getElementById('recaptcha-response').value = token;
 
-    const formData = new FormData(this);
+        const formData = new FormData(this);
 
-    try {
         const response = await fetch('{{ route('uye.kayit.kayit') }}', {
             method: 'POST',
             headers: {
@@ -186,7 +200,7 @@ document.getElementById('kayit-formu').addEventListener('submit', async function
                 detay = text || detay;
             }
 
-            document.getElementById('hata-mesaji').textContent = detay;
+            hataMesaji.textContent = detay;
             hataBolumu.classList.remove('hidden');
             return;
         }
@@ -196,16 +210,30 @@ document.getElementById('kayit-formu').addEventListener('submit', async function
             document.getElementById('otp-modal').classList.remove('hidden');
         }
     } catch (error) {
-        document.getElementById('hata-mesaji').textContent = `Network hatası: ${error.message}`;
+        hataMesaji.textContent = `Network hatası: ${error.message}`;
         hataBolumu.classList.remove('hidden');
+    } finally {
+        kayitGonderiliyor = false;
+        butonYukleniyorYap(kayitButonu, false, 'Kayıt Ol', 'Gönderiliyor...');
     }
 });
 
 document.getElementById('otp-formu').addEventListener('submit', async function(e) {
     e.preventDefault();
 
+    if (otpGonderiliyor) {
+        return;
+    }
+
+    otpGonderiliyor = true;
+
     const formData = new FormData(this);
     const otpHataBolumu = document.getElementById('otp-hata');
+    const otpHataMesaji = document.getElementById('otp-hata-mesaji');
+    const otpButonu = document.getElementById('otp-submit');
+    butonYukleniyorYap(otpButonu, true, 'Doğrula', 'Doğrulanıyor...');
+    otpHataBolumu.classList.add('hidden');
+    otpHataMesaji.textContent = '';
 
     try {
         const response = await fetch('{{ route('uye.kayit.otp') }}', {
@@ -229,7 +257,7 @@ document.getElementById('otp-formu').addEventListener('submit', async function(e
                 detay = text || detay;
             }
 
-            document.getElementById('otp-hata-mesaji').textContent = detay;
+            otpHataMesaji.textContent = detay;
             otpHataBolumu.classList.remove('hidden');
             return;
         }
@@ -239,8 +267,11 @@ document.getElementById('otp-formu').addEventListener('submit', async function(e
             window.location.href = data.redirect;
         }
     } catch (error) {
-        document.getElementById('otp-hata-mesaji').textContent = `Network hatası: ${error.message}`;
+        otpHataMesaji.textContent = `Network hatası: ${error.message}`;
         otpHataBolumu.classList.remove('hidden');
+    } finally {
+        otpGonderiliyor = false;
+        butonYukleniyorYap(otpButonu, false, 'Doğrula', 'Doğrulanıyor...');
     }
 });
 </script>

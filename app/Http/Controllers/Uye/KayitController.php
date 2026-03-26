@@ -158,16 +158,36 @@ class KayitController extends Controller
             $dogruladiAlani => true,
         ]);
 
-        // Trusted device kaydet
-        $trustedDeviceService = app(TrustedDeviceService::class);
-        $deviceToken = $trustedDeviceService->deviceKaydet($uye, $request);
+        $deviceToken = null;
 
-        // Otomatik giriş yap
-        Auth::guard('uye')->login($uye);
+        try {
+            // Trusted device kaydet
+            $trustedDeviceService = app(TrustedDeviceService::class);
+            $deviceToken = $trustedDeviceService->deviceKaydet($uye, $request);
+
+            // Otomatik giriş yap
+            Auth::guard('uye')->login($uye);
+        } catch (Throwable $e) {
+            Log::warning('Kayit OTP sonrasi otomatik giris adimi basarisiz oldu', [
+                'uye_id' => $uye->id,
+                'mesaj' => $e->getMessage(),
+                'dosya' => $e->getFile(),
+                'satir' => $e->getLine(),
+            ]);
+        }
+
         Session::forget('kayit_uye_id');
 
-        return response()->json(['redirect' => route('uye.basari')])
-            ->cookie('device_token', $deviceToken, 72 * 60);
+        $response = response()->json([
+            'redirect' => route('uye.basari'),
+            'message' => 'Dogrulama basariyla tamamlandi.',
+        ]);
+
+        if ($deviceToken) {
+            $response->cookie('device_token', $deviceToken, 72 * 60);
+        }
+
+        return $response;
     }
 
     /**

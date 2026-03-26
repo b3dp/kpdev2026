@@ -9,9 +9,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ForceDeleteAction;
 use Filament\Tables\Actions\RestoreAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -123,11 +121,7 @@ class YoneticiResource extends Resource
             ])
             ->actions([
                 EditAction::make(),
-                DeleteAction::make()
-                    ->hidden(fn (Yonetici $record) => $record->id === auth()->id()),
                 RestoreAction::make(),
-                ForceDeleteAction::make()
-                    ->hidden(fn (Yonetici $record) => $record->id === auth()->id()),
             ]);
     }
 

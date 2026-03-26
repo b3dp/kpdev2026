@@ -17,10 +17,7 @@ use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ForceDeleteAction;
-use Filament\Tables\Actions\RestoreAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -287,9 +284,19 @@ class UyeResource extends Resource
                             ->success()
                             ->send();
                     }),
-                DeleteAction::make(),
-                RestoreAction::make(),
-                ForceDeleteAction::make(),
+                Action::make('sil')
+                    ->label('Sil')
+                    ->icon('heroicon-o-trash')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->action(function (Uye $record): void {
+                        $record->forceDelete();
+
+                        Notification::make()
+                            ->title('Üye kalıcı olarak silindi.')
+                            ->success()
+                            ->send();
+                    }),
             ]);
     }
 

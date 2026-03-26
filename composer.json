@@ -20,7 +20,8 @@
         "spatie/laravel-settings": "^3",
         "spatie/laravel-sluggable": "^3",
         "teamtnt/laravel-scout-tntsearch-driver": "^15",
-        "z3d0x/filament-logger": "^0.8.0"
+        "z3d0x/filament-logger": "^0.8.0",
+        "zohomail/laravel-zeptomail": "dev-main"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

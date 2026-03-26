@@ -5,6 +5,7 @@ namespace App\Models;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasName;
 use Filament\Panel;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -41,6 +42,13 @@ class Yonetici extends Authenticatable implements FilamentUser, HasName
             'aktif' => 'boolean',
             'son_giris' => 'datetime',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Model $model): bool {
+            throw new \RuntimeException('Yonetici silme islemi sistem genelinde kapatilmis durumda.');
+        });
     }
 
     public function getActivitylogOptions(): LogOptions

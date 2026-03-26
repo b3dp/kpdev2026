@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\UyeDurumu;
+use Filament\Models\Contracts\HasName;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,7 +13,7 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
-class Uye extends Authenticatable
+class Uye extends Authenticatable implements HasName
 {
     use HasFactory, LogsActivity, Notifiable, SoftDeletes;
 
@@ -83,6 +84,14 @@ class Uye extends Authenticatable
     public function getAuthPassword(): ?string
     {
         return $this->sifre;
+    }
+
+    public function getFilamentName(): string
+    {
+        return $this->ad_soyad
+            ?? $this->eposta
+            ?? $this->telefon
+            ?? 'Uye';
     }
 
     public function kisi(): BelongsTo

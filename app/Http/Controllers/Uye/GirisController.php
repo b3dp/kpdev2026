@@ -151,17 +151,37 @@ class GirisController extends Controller
         $herhangiOtp->update(['kullanildi' => true]);
         RateLimiter::clear($rlAnahtari);
 
-        // Trusted device tokenı kaydet
-        $trustedDeviceService = app(TrustedDeviceService::class);
-        $deviceToken = $trustedDeviceService->deviceKaydet($uye, $request);
+        $deviceToken = null;
 
-        // Giriş yap
-        Auth::guard('uye')->login($uye);
+        try {
+            // Trusted device tokenı kaydet
+            $trustedDeviceService = app(TrustedDeviceService::class);
+            $deviceToken = $trustedDeviceService->deviceKaydet($uye, $request);
+
+            // Giriş yap
+            Auth::guard('uye')->login($uye);
+        } catch (Throwable $e) {
+            Log::warning('Giris OTP sonrasi otomatik giris adimi basarisiz oldu', [
+                'uye_id' => $uye->id,
+                'mesaj' => $e->getMessage(),
+                'dosya' => $e->getFile(),
+                'satir' => $e->getLine(),
+            ]);
+        }
+
         Session::forget('uye_id_temp');
 
+        $response = response()->json([
+            'redirect' => route('uye.profil.index'),
+            'message' => 'Dogrulama basariyla tamamlandi.',
+        ]);
+
         // Cookie'ye device token kaydet (72 saat)
-        return response()->json(['redirect' => route('uye.profil.index')])
-            ->cookie('device_token', $deviceToken, 72 * 60);
+        if ($deviceToken) {
+            $response->cookie('device_token', $deviceToken, 72 * 60);
+        }
+
+        return $response;
     }
 
     /**
