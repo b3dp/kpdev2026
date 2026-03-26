@@ -14,20 +14,37 @@
             {{-- Honeypot --}}
             <x-honeypot />
 
-            {{-- İletişim Bilgisi --}}
+            {{-- E-posta --}}
             <div>
-                <label for="iletisim" class="block text-sm font-medium text-gray-700">
-                    E-Posta veya Telefon
+                <label for="eposta" class="block text-sm font-medium text-gray-700">
+                    E-Posta
+                </label>
+                <input
+                    type="email"
+                    name="eposta"
+                    id="eposta"
+                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="ornek@eposta.com"
+                />
+                @error('eposta')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            {{-- Telefon --}}
+            <div>
+                <label for="telefon" class="block text-sm font-medium text-gray-700">
+                    Cep Telefonu
                 </label>
                 <input
                     type="text"
-                    name="iletisim"
-                    id="iletisim"
+                    name="telefon"
+                    id="telefon"
                     class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="E-posta veya telefon"
-                    required
+                    placeholder="5xx xxx xx xx"
                 />
-                @error('iletisim')
+                <p class="mt-1 text-xs text-gray-500">E-posta veya telefon alanlarından en az birini doldurun.</p>
+                @error('telefon')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
             </div>
@@ -140,9 +157,18 @@ document.getElementById('giriş-formu').addEventListener('submit', async functio
         });
 
         if (!response.ok) {
-            const errors = await response.json();
-            const errorMessages = Object.values(errors.errors || {}).flat();
-            document.getElementById('hata-mesaji').textContent = errorMessages[0] || 'Bir hata oluştu.';
+            let detay = `HTTP ${response.status}`;
+
+            try {
+                const payload = await response.json();
+                const errorMessages = Object.values(payload.errors || {}).flat();
+                detay = errorMessages[0] || payload.message || detay;
+            } catch (_) {
+                const text = await response.text();
+                detay = text || detay;
+            }
+
+            document.getElementById('hata-mesaji').textContent = detay;
             hataBolumu.classList.remove('hidden');
             return;
         }
@@ -155,7 +181,7 @@ document.getElementById('giriş-formu').addEventListener('submit', async functio
             alert('Şifre kontrolü');
         }
     } catch (error) {
-        document.getElementById('hata-mesaji').textContent = 'Network hatası oluştu.';
+        document.getElementById('hata-mesaji').textContent = `Network hatası: ${error.message}`;
         hataBolumu.classList.remove('hidden');
     }
 });
@@ -177,9 +203,18 @@ document.getElementById('otp-formu').addEventListener('submit', async function(e
         });
 
         if (!response.ok) {
-            const errors = await response.json();
-            const errorMessages = Object.values(errors.errors || {}).flat();
-            document.getElementById('otp-hata-mesaji').textContent = errorMessages[0] || 'Bir hata oluştu.';
+            let detay = `HTTP ${response.status}`;
+
+            try {
+                const payload = await response.json();
+                const errorMessages = Object.values(payload.errors || {}).flat();
+                detay = errorMessages[0] || payload.message || detay;
+            } catch (_) {
+                const text = await response.text();
+                detay = text || detay;
+            }
+
+            document.getElementById('otp-hata-mesaji').textContent = detay;
             otpHataBolumu.classList.remove('hidden');
             return;
         }
@@ -189,7 +224,7 @@ document.getElementById('otp-formu').addEventListener('submit', async function(e
             window.location.href = data.redirect;
         }
     } catch (error) {
-        document.getElementById('otp-hata-mesaji').textContent = 'Network hatası oluştu.';
+        document.getElementById('otp-hata-mesaji').textContent = `Network hatası: ${error.message}`;
         otpHataBolumu.classList.remove('hidden');
     }
 });

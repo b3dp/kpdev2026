@@ -6,7 +6,6 @@ use App\Enums\OtpTipi;
 use App\Http\Controllers\Controller;
 use App\Models\OtpKod;
 use App\Models\Uye;
-use App\Models\Yonetici;
 use App\Services\TrustedDeviceService;
 use App\Services\ZeptomailService;
 use Illuminate\Http\Request;
@@ -16,6 +15,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class GirisController extends Controller
 {
@@ -32,67 +32,76 @@ class GirisController extends Controller
      */
     public function giris(Request $request)
     {
-        // Demo/local ortamda reCAPTCHA kontrolünü es geçiyoruz.
-        if (! app()->environment('local')) {
-            $recaptchaResponse = $this->dogrulaRecaptcha($request->input('g-recaptcha-response'));
-            $esik = (float) config('services.recaptcha.threshold', 0.5);
+        try {
+            // Demo/local ortamda reCAPTCHA kontrolünü es geçiyoruz.
+            if (! app()->environment('local')) {
+                $recaptchaResponse = $this->dogrulaRecaptcha($request->input('g-recaptcha-response'));
+                $esik = (float) config('services.recaptcha.threshold', 0.5);
 
-            if (! $recaptchaResponse || ! ($recaptchaResponse['success'] ?? false) || ((float) ($recaptchaResponse['score'] ?? 0)) < $esik) {
-                throw ValidationException::withMessages([
-                    'recaptcha' => 'reCAPTCHA doğrulaması başarısız. Lütfen tekrar deneyiniz.',
-                ]);
-            }
-        }
-
-        // Validasyon
-        $request->validate([
-            'iletisim' => ['required', 'string', 'min:10', 'max:255'], // telefon veya e-posta
-        ]);
-
-        $iletisim = trim($request->input('iletisim'));
-
-        // Telefon veya e-posta kontrol et
-        $isTelefon = preg_match('/^[0-9\s\-\+]{10,}$/', $iletisim);
-        $isEposta = filter_var($iletisim, FILTER_VALIDATE_EMAIL);
-
-        if (!$isTelefon && !$isEposta) {
-            throw ValidationException::withMessages(['iletisim' => 'Geçerli bir telefon numarası veya e-posta giriniz.']);
-        }
-
-        // Telefon numarasını standartlaştır (sadece rakam)
-        if ($isTelefon) {
-            $iletisim = preg_replace('/[^0-9]/', '', $iletisim);
-            $uye = Uye::where('telefon', $iletisim)->first();
-            $yonetici = Yonetici::where('telefon', $iletisim)->first();
-        } else {
-            $uye = Uye::where('eposta', $iletisim)->first();
-            $yonetici = Yonetici::where('eposta', $iletisim)->first();
-        }
-
-        // Yönetici var mı?
-        $uye = $yonetici ?? $uye;
-
-        // Üye mevcut mu?
-        if ($uye) {
-            // Mevcut üye - kontrol et
-            if (!$uye->aktif) {
-                throw ValidationException::withMessages(['iletisim' => 'Bu hesap pasif durumdadır.']);
+                if (! $recaptchaResponse || ! ($recaptchaResponse['success'] ?? false) || ((float) ($recaptchaResponse['score'] ?? 0)) < $esik) {
+                    throw ValidationException::withMessages([
+                        'recaptcha' => 'reCAPTCHA doğrulaması başarısız. Lütfen tekrar deneyiniz.',
+                    ]);
+                }
             }
 
-            // Şifre varsa direkt şifre gir
-            if ($uye->sifre) {
+            // Validasyon - e-posta ve telefon ayrı alanlar, en az biri zorunlu
+            $request->validate([
+                'eposta' => ['nullable', 'email', 'max:255', 'required_without:telefon'],
+                'telefon' => ['nullable', 'string', 'min:10', 'max:20', 'required_without:eposta'],
+            ]);
+
+            $eposta = trim((string) $request->input('eposta', ''));
+            $telefon = preg_replace('/[^0-9]/', '', (string) $request->input('telefon', ''));
+
+            $uye = null;
+            $kanal = 'eposta';
+
+            if ($eposta !== '') {
+                $uye = Uye::where('eposta', $eposta)->first();
+                $kanal = 'eposta';
+            }
+
+            if (! $uye && $telefon !== '') {
+                $uye = Uye::where('telefon', $telefon)->first();
+                $kanal = 'sms';
+            }
+
+            // Üye mevcut mu?
+            if ($uye) {
+                if (! $uye->aktif) {
+                    throw ValidationException::withMessages(['eposta' => 'Bu hesap pasif durumdadır.']);
+                }
+
+                if ($uye->sifre) {
+                    Session::put('uye_id_temp', $uye->id);
+                    return response()->json(['step' => 'sifre']);
+                }
+
+                $this->otpGonder($uye, $kanal);
                 Session::put('uye_id_temp', $uye->id);
-                return response()->json(['step' => 'sifre']);
+                return response()->json(['step' => 'otp']);
             }
 
-            // Şifre yoksa OTP gönder
-            $this->otpGonder($uye, $isTelefon ? 'sms' : 'eposta');
-            Session::put('uye_id_temp', $uye->id);
-            return response()->json(['step' => 'otp']);
-        }
+            throw ValidationException::withMessages(['eposta' => 'Bu bilgilerle kayıtlı hesap bulunamadı.']);
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (Throwable $e) {
+            Log::error('Uye giris hatasi', [
+                'mesaj' => $e->getMessage(),
+                'dosya' => $e->getFile(),
+                'satir' => $e->getLine(),
+                'eposta' => $request->input('eposta'),
+                'telefon' => $request->input('telefon'),
+                'ip' => $request->ip(),
+            ]);
 
-        // Yeni üye - bu akış kayit sayfasında yapılacak
-        throw ValidationException::withMessages(['iletisim' => 'Bu bilgilerle kayıtlı hesap bulunamadı.']);
+            return response()->json([
+                'message' => app()->environment('local')
+                    ? ('Sunucu hatası: ' . $e->getMessage())
+                    : 'Beklenmeyen bir sunucu hatası oluştu.',
+            ], 500);
+        }
     }
 
     /**

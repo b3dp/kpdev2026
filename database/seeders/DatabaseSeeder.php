@@ -10,7 +10,8 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             RollerSeeder::class,
-            AdminSeeder::class,
+            // AdminSeeder burada bilinçli olarak çağrılmıyor.
+            // Canlı/var olan admin hesaplarının otomatik etkilenmesini engeller.
             KurumlarSeeder::class,
         ]);
     }

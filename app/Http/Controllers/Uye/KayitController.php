@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Uye;
 
 use App\Enums\OtpTipi;
-use App\Enums\UyeDurumu;
 use App\Http\Controllers\Controller;
 use App\Models\OtpKod;
 use App\Models\Uye;
@@ -16,6 +15,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class KayitController extends Controller
 {
@@ -32,68 +32,73 @@ class KayitController extends Controller
      */
     public function kayit(Request $request)
     {
-        // Demo/local ortamda reCAPTCHA kontrolünü es geçiyoruz.
-        if (! app()->environment('local')) {
-            $recaptchaResponse = $this->dogrulaRecaptcha($request->input('g-recaptcha-response'));
-            $esik = (float) config('services.recaptcha.threshold', 0.5);
+        try {
+            // Demo/local ortamda reCAPTCHA kontrolünü es geçiyoruz.
+            if (! app()->environment('local')) {
+                $recaptchaResponse = $this->dogrulaRecaptcha($request->input('g-recaptcha-response'));
+                $esik = (float) config('services.recaptcha.threshold', 0.5);
 
-            if (! $recaptchaResponse || ! ($recaptchaResponse['success'] ?? false) || ((float) ($recaptchaResponse['score'] ?? 0)) < $esik) {
-                throw ValidationException::withMessages([
-                    'recaptcha' => 'reCAPTCHA doğrulaması başarısız. Lütfen tekrar deneyiniz.',
-                ]);
+                if (! $recaptchaResponse || ! ($recaptchaResponse['success'] ?? false) || ((float) ($recaptchaResponse['score'] ?? 0)) < $esik) {
+                    throw ValidationException::withMessages([
+                        'recaptcha' => 'reCAPTCHA doğrulaması başarısız. Lütfen tekrar deneyiniz.',
+                    ]);
+                }
             }
-        }
 
-        // Validasyon
-        $request->validate([
-            'ad_soyad' => ['required', 'string', 'max:255', 'regex:/^[\p{L}\s\-]+$/u'],
-            'iletisim' => ['required', 'string', 'min:10', 'max:255'], // telefon veya e-posta
-        ]);
+            $request->validate([
+                'ad_soyad' => ['required', 'string', 'max:255', 'regex:/^[\p{L}\s\-]+$/u'],
+                'eposta' => ['nullable', 'email', 'max:255', 'required_without:telefon'],
+                'telefon' => ['nullable', 'string', 'min:10', 'max:20', 'required_without:eposta'],
+            ]);
 
-        $iletisim = trim($request->input('iletisim'));
-        $adSoyad = trim($request->input('ad_soyad'));
+            $eposta = trim((string) $request->input('eposta', ''));
+            $telefon = preg_replace('/[^0-9]/', '', (string) $request->input('telefon', ''));
+            $adSoyad = trim((string) $request->input('ad_soyad'));
 
-        // Telefon veya e-posta kontrol et
-        $isTelefon = preg_match('/^[0-9\s\-\+]{10,}$/', $iletisim);
-        $isEposta = filter_var($iletisim, FILTER_VALIDATE_EMAIL);
-
-        if (!$isTelefon && !$isEposta) {
-            throw ValidationException::withMessages(['iletisim' => 'Geçerli bir telefon numarası veya e-posta giriniz.']);
-        }
-
-        // Telefon numarasını standartlaştır
-        if ($isTelefon) {
-            $iletisim = preg_replace('/[^0-9]/', '', $iletisim);
-            
-            // Telefon benzersizliğini kontrol et
-            if (Uye::where('telefon', $iletisim)->exists()) {
-                throw ValidationException::withMessages(['iletisim' => 'Bu telefon numarası zaten kayıtlı.']);
+            if ($telefon !== '' && Uye::where('telefon', $telefon)->exists()) {
+                throw ValidationException::withMessages(['telefon' => 'Bu telefon numarası zaten kayıtlı.']);
             }
-        } else {
-            // E-posta benzersizliğini kontrol et
-            if (Uye::where('eposta', $iletisim)->exists()) {
-                throw ValidationException::withMessages(['iletisim' => 'Bu e-posta zaten kayıtlı.']);
+
+            if ($eposta !== '' && Uye::where('eposta', $eposta)->exists()) {
+                throw ValidationException::withMessages(['eposta' => 'Bu e-posta zaten kayıtlı.']);
             }
+
+            // Yeni üye oluştur (durum: aktif, aktif=true - giriş yapabilecek)
+            $uye = Uye::create([
+                'ad_soyad' => $adSoyad,
+                'telefon' => $telefon !== '' ? $telefon : null,
+                'eposta' => $eposta !== '' ? $eposta : null,
+                'durum' => 'aktif',
+                'aktif' => true,
+                'sms_abonelik' => true,
+                'eposta_abonelik' => true,
+            ]);
+
+            $otpTipi = $eposta !== '' ? OtpTipi::EpostaDogrulama : OtpTipi::TelefonDogrulama;
+            $this->otpGonder($uye, $otpTipi);
+
+            Session::put('kayit_uye_id', $uye->id);
+
+            return response()->json(['step' => 'otp']);
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (Throwable $e) {
+            Log::error('Uye kayit hatasi', [
+                'mesaj' => $e->getMessage(),
+                'dosya' => $e->getFile(),
+                'satir' => $e->getLine(),
+                'ad_soyad' => $request->input('ad_soyad'),
+                'eposta' => $request->input('eposta'),
+                'telefon' => $request->input('telefon'),
+                'ip' => $request->ip(),
+            ]);
+
+            return response()->json([
+                'message' => app()->environment('local')
+                    ? ('Sunucu hatası: ' . $e->getMessage())
+                    : 'Beklenmeyen bir sunucu hatası oluştu.',
+            ], 500);
         }
-
-        // Yeni üye oluştur (durum: aktif, aktif=true - giriş yapabilecek)
-        $uye = Uye::create([
-            'ad_soyad' => $adSoyad,
-            'telefon' => $isTelefon ? $iletisim : null,
-            'eposta' => !$isTelefon ? $iletisim : null,
-            'durum' => 'aktif',
-            'aktif' => true,
-            'sms_abonelik' => true,
-            'eposta_abonelik' => true,
-        ]);
-
-        // OTP gönder
-        $this->otpGonder($uye, $isTelefon ? OtpTipi::TelefonDogrulama : OtpTipi::EpostaDogrulama);
-
-        // Session'a uye_id kaydet
-        Session::put('kayit_uye_id', $uye->id);
-
-        return response()->json(['step' => 'otp']);
     }
 
     /**
