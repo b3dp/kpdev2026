@@ -6,10 +6,12 @@ use App\Enums\BagisDurumu;
 use App\Filament\Resources\BagisResource;
 use App\Models\Bagis;
 use Filament\Actions\EditAction;
+use Filament\Infolists\Components\Actions\Action as InfolistAction;
 use Filament\Infolists\Components\Grid;
 use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\TextEntry\TextEntrySize;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Pages\ViewRecord;
 use Illuminate\Database\Eloquent\Model;
@@ -50,43 +52,78 @@ class ViewBagis extends ViewRecord
                     'md' => 3,
                 ])->schema([
                     Section::make('Bağış Özeti')
+                        ->icon('heroicon-o-heart')
                         ->schema([
-                            TextEntry::make('bagis_no')->label('Bağış No'),
-                            TextEntry::make('toplam_tutar')->label('Toplam Tutar')->money('TRY'),
+                            TextEntry::make('bagis_no')->label('Bağış No')->copyable(),
+                            TextEntry::make('toplam_tutar')
+                                ->label('Toplam Tutar')
+                                ->money('TRY')
+                                ->weight('bold')
+                                ->size(TextEntrySize::Large),
                             TextEntry::make('durum')->label('Durum')->badge()->formatStateUsing(function ($state): string {
                                 $durum = $state instanceof BagisDurumu ? $state : BagisDurumu::tryFrom((string) $state);
 
                                 return $durum?->label() ?? 'Bilinmiyor';
+                            })->color(function ($state): string {
+                                $durum = $state instanceof BagisDurumu ? $state : BagisDurumu::tryFrom((string) $state);
+
+                                return match ($durum) {
+                                    BagisDurumu::Odendi => 'success',
+                                    BagisDurumu::Beklemede => 'warning',
+                                    BagisDurumu::Hatali => 'danger',
+                                    BagisDurumu::Iptal => 'gray',
+                                    BagisDurumu::TerkEdildi => 'orange',
+                                    default => 'gray',
+                                };
                             }),
                             TextEntry::make('created_at')->label('Bağış Tarihi')->dateTime('d.m.Y H:i'),
                         ])
                         ->columnSpan(1),
 
                     Section::make('Ödeyenin Bilgileri')
+                        ->icon('heroicon-o-user')
                         ->schema([
-                            TextEntry::make('odeyen_ad')->label('Ad Soyad')->state(fn () => $this->odeyen()?->ad_soyad),
-                            TextEntry::make('odeyen_tc')->label('TC')->state(fn () => $this->odeyen()?->tc_kimlik),
-                            TextEntry::make('odeyen_telefon')->label('Telefon')->state(fn () => $this->odeyen()?->telefon),
-                            TextEntry::make('odeyen_eposta')->label('E-posta')->state(fn () => $this->odeyen()?->eposta),
-                            TextEntry::make('odeyen_ara')
+                            TextEntry::make('odeyen_ad')
+                                ->label('Ad Soyad')
+                                ->state(fn () => $this->odeyen()?->ad_soyad)
+                                ->weight('bold')
+                                ->size(TextEntrySize::Large)
+                                ->copyable(),
+                            TextEntry::make('odeyen_tc')
+                                ->label('TC')
+                                ->state(fn () => $this->odeyen()?->tc_kimlik)
+                                ->copyable()
+                                ->extraAttributes(['class' => 'font-mono border-t border-gray-200 pt-2']),
+                            TextEntry::make('odeyen_telefon')
+                                ->label('Telefon')
+                                ->state(fn () => $this->odeyen()?->telefon)
+                                ->copyable(),
+                            TextEntry::make('odeyen_eposta')
+                                ->label('E-posta')
+                                ->state(fn () => $this->odeyen()?->eposta)
+                                ->copyable(),
+                        ])
+                        ->footerActions([
+                            InfolistAction::make('odeyen_ara')
                                 ->label('Ara')
-                                ->state('Ara')
-                                ->badge()
+                                ->icon('heroicon-o-phone')
+                                ->color('gray')
+                                ->outlined()
                                 ->url(fn () => $this->telefonLinki($this->odeyen()?->telefon))
                                 ->openUrlInNewTab()
                                 ->visible(fn () => filled($this->odeyen()?->telefon)),
-                            TextEntry::make('odeyen_whatsapp')
+                            InfolistAction::make('odeyen_whatsapp')
                                 ->label('WhatsApp')
-                                ->state('WhatsApp')
-                                ->badge()
+                                ->icon('heroicon-o-chat-bubble-left-ellipsis')
                                 ->color('success')
                                 ->url(fn () => $this->whatsappLinki($this->odeyen()?->telefon))
                                 ->openUrlInNewTab()
                                 ->visible(fn () => filled($this->odeyen()?->telefon)),
-                            TextEntry::make('odeyen_eposta_buton')
+                            InfolistAction::make('odeyen_eposta')
                                 ->label('E-posta Gönder')
-                                ->state('E-posta Gönder')
-                                ->badge()
+                                ->icon('heroicon-o-envelope')
+                                ->color('info')
+                                ->outlined()
                                 ->url(fn () => $this->epostaLinki($this->odeyen()?->eposta))
                                 ->openUrlInNewTab()
                                 ->visible(fn () => filled($this->odeyen()?->eposta)),
@@ -94,30 +131,49 @@ class ViewBagis extends ViewRecord
                         ->columnSpan(1),
 
                     Section::make('Bağış Sahibi Bilgileri')
+                        ->icon('heroicon-o-user-circle')
                         ->schema([
-                            TextEntry::make('sahip_ad')->label('Ad Soyad')->state(fn () => $this->sahip()?->ad_soyad),
-                            TextEntry::make('sahip_tc')->label('TC')->state(fn () => $this->sahip()?->tc_kimlik),
-                            TextEntry::make('sahip_telefon')->label('Telefon')->state(fn () => $this->sahip()?->telefon),
-                            TextEntry::make('sahip_eposta')->label('E-posta')->state(fn () => $this->sahip()?->eposta),
-                            TextEntry::make('sahip_ara')
+                            TextEntry::make('sahip_ad')
+                                ->label('Ad Soyad')
+                                ->state(fn () => $this->sahip()?->ad_soyad)
+                                ->weight('bold')
+                                ->size(TextEntrySize::Large)
+                                ->copyable(),
+                            TextEntry::make('sahip_tc')
+                                ->label('TC')
+                                ->state(fn () => $this->sahip()?->tc_kimlik)
+                                ->copyable()
+                                ->extraAttributes(['class' => 'font-mono border-t border-gray-200 pt-2']),
+                            TextEntry::make('sahip_telefon')
+                                ->label('Telefon')
+                                ->state(fn () => $this->sahip()?->telefon)
+                                ->copyable(),
+                            TextEntry::make('sahip_eposta')
+                                ->label('E-posta')
+                                ->state(fn () => $this->sahip()?->eposta)
+                                ->copyable(),
+                        ])
+                        ->footerActions([
+                            InfolistAction::make('sahip_ara')
                                 ->label('Ara')
-                                ->state('Ara')
-                                ->badge()
+                                ->icon('heroicon-o-phone')
+                                ->color('gray')
+                                ->outlined()
                                 ->url(fn () => $this->telefonLinki($this->sahip()?->telefon))
                                 ->openUrlInNewTab()
                                 ->visible(fn () => filled($this->sahip()?->telefon)),
-                            TextEntry::make('sahip_whatsapp')
+                            InfolistAction::make('sahip_whatsapp')
                                 ->label('WhatsApp')
-                                ->state('WhatsApp')
-                                ->badge()
+                                ->icon('heroicon-o-chat-bubble-left-ellipsis')
                                 ->color('success')
                                 ->url(fn () => $this->whatsappLinki($this->sahip()?->telefon))
                                 ->openUrlInNewTab()
                                 ->visible(fn () => filled($this->sahip()?->telefon)),
-                            TextEntry::make('sahip_eposta_buton')
+                            InfolistAction::make('sahip_eposta')
                                 ->label('E-posta Gönder')
-                                ->state('E-posta Gönder')
-                                ->badge()
+                                ->icon('heroicon-o-envelope')
+                                ->color('info')
+                                ->outlined()
                                 ->url(fn () => $this->epostaLinki($this->sahip()?->eposta))
                                 ->openUrlInNewTab()
                                 ->visible(fn () => filled($this->sahip()?->eposta)),
@@ -126,6 +182,7 @@ class ViewBagis extends ViewRecord
                         ->columnSpan(1),
 
                     Section::make('Ödeme Bilgileri')
+                        ->icon('heroicon-o-credit-card')
                         ->schema([
                             TextEntry::make('odeme_saglayici')->label('Ödeme Sağlayıcısı'),
                             TextEntry::make('odeme_referans')->label('Referans No'),
@@ -135,6 +192,7 @@ class ViewBagis extends ViewRecord
                         ->columnSpan(1),
 
                     Section::make('Vekalet Bilgileri')
+                        ->icon('heroicon-o-document-text')
                         ->schema([
                             TextEntry::make('vekalet_ad_soyad')->label('Vekalet Veren')->state(fn () => $this->sahip()?->vekalet_ad_soyad),
                             TextEntry::make('vekalet_tc')->label('Vekalet TC')->state(fn () => $this->sahip()?->vekalet_tc),
@@ -144,6 +202,7 @@ class ViewBagis extends ViewRecord
                         ->columnSpan(1),
 
                     Section::make('Hissedar Bilgileri')
+                        ->icon('heroicon-o-users')
                         ->schema([
                             TextEntry::make('hissedarlar')
                                 ->label('Hissedarlar')
@@ -154,6 +213,7 @@ class ViewBagis extends ViewRecord
                         ->columnSpan(1),
 
                     Section::make('Kurban Aktarım Bilgileri')
+                        ->icon('heroicon-o-arrow-path')
                         ->schema([
                             TextEntry::make('kurban_aktarildi')
                                 ->label('Aktarım Durumu')
@@ -167,14 +227,23 @@ class ViewBagis extends ViewRecord
                         ->columnSpan(1),
 
                     Section::make('Hata Bilgileri')
+                        ->icon('heroicon-o-exclamation-triangle')
+                        ->iconColor('danger')
                         ->schema([
                             IconEntry::make('hata_ikonu')
                                 ->label('Uyarı')
                                 ->icon('heroicon-o-exclamation-triangle')
                                 ->state(true)
                                 ->color('danger'),
-                            TextEntry::make('hata_kodu')->label('Hata Kodu')->state(fn () => $this->record->odemeHatalari->first()?->hata_kodu)->color('danger'),
-                            TextEntry::make('hata_mesaji')->label('Hata Mesajı')->state(fn () => $this->record->odemeHatalari->first()?->hata_mesaji)->color('danger'),
+                            TextEntry::make('hata_kodu')
+                                ->label('Hata Kodu')
+                                ->state(fn () => $this->record->odemeHatalari->first()?->hata_kodu)
+                                ->badge()
+                                ->color('danger'),
+                            TextEntry::make('hata_mesaji')
+                                ->label('Hata Mesajı')
+                                ->state(fn () => $this->record->odemeHatalari->first()?->hata_mesaji)
+                                ->extraAttributes(['class' => 'rounded-md border border-red-200 bg-red-50 px-3 py-2 text-red-700']),
                             TextEntry::make('kart_son_haneler')->label('Kart Son Haneler')->state(fn () => $this->record->odemeHatalari->first()?->kart_son_haneler)->color('danger'),
                             TextEntry::make('banka_adi')->label('Banka Adı')->state(fn () => $this->record->odemeHatalari->first()?->banka_adi)->color('danger'),
                         ])
