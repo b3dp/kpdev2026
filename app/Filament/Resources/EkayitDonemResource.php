@@ -28,6 +28,16 @@ class EkayitDonemResource extends Resource
         return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör']);
     }
 
+    public static function canCreate(): bool
+    {
+        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör']);
+    }
+
+    public static function canEdit($record): bool
+    {
+        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör']);
+    }
+
     public static function form(Form $form): Form
     {
         return $form->schema([

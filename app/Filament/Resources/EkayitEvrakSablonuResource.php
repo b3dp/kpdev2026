@@ -29,6 +29,16 @@ class EkayitEvrakSablonuResource extends Resource
         return auth()->check() && auth()->user()->hasAnyRole(['Admin']);
     }
 
+    public static function canCreate(): bool
+    {
+        return auth()->check() && auth()->user()->hasAnyRole(['Admin']);
+    }
+
+    public static function canEdit($record): bool
+    {
+        return auth()->check() && auth()->user()->hasAnyRole(['Admin']);
+    }
+
     public static function form(Form $form): Form
     {
         return $form->schema([
