@@ -5,6 +5,7 @@ namespace App\Filament\Resources\EkayitKayitResource\Pages;
 use App\Filament\Resources\EkayitKayitResource;
 use App\Models\EkayitDonem;
 use App\Models\EkayitSinif;
+use Filament\Actions;
 use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
@@ -12,6 +13,13 @@ use Illuminate\Database\Eloquent\Builder;
 class ListEkayitKayit extends ListRecords
 {
     protected static string $resource = EkayitKayitResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\CreateAction::make(),
+        ];
+    }
 
     public function getTabs(): array
     {
