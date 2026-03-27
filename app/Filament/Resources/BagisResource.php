@@ -80,14 +80,22 @@ class BagisResource extends Resource
                 TextColumn::make('durum')
                     ->label('Durum')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        BagisDurumu::Odendi->value => 'success',
-                        BagisDurumu::Hatali->value => 'danger',
-                        BagisDurumu::Iptal->value => 'gray',
-                        BagisDurumu::TerkEdildi->value => 'warning',
-                        default => 'primary',
+                    ->color(function ($state): string {
+                        $durum = $state instanceof BagisDurumu ? $state : BagisDurumu::tryFrom((string) $state);
+
+                        return match ($durum) {
+                            BagisDurumu::Odendi => 'success',
+                            BagisDurumu::Hatali => 'danger',
+                            BagisDurumu::Iptal => 'gray',
+                            BagisDurumu::TerkEdildi => 'warning',
+                            default => 'primary',
+                        };
                     })
-                    ->formatStateUsing(fn (string $state) => BagisDurumu::from($state)->label())
+                    ->formatStateUsing(function ($state): string {
+                        $durum = $state instanceof BagisDurumu ? $state : BagisDurumu::tryFrom((string) $state);
+
+                        return $durum?->label() ?? 'Bilinmiyor';
+                    })
                     ->sortable(),
                 TextColumn::make('toplam_tutar')->label('Tutar')->money('TRY')->sortable(),
                 TextColumn::make('sahip_tipi')
