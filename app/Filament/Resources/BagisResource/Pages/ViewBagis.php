@@ -120,7 +120,7 @@ class ViewBagis extends ViewRecord
                                 ->openUrlInNewTab()
                                 ->visible(fn () => filled($this->odeyen()?->telefon)),
                             InfolistAction::make('odeyen_eposta')
-                                ->label('E-posta Gönder')
+                                ->label('E-posta')
                                 ->icon('heroicon-o-envelope')
                                 ->color('info')
                                 ->outlined()
@@ -170,7 +170,7 @@ class ViewBagis extends ViewRecord
                                 ->openUrlInNewTab()
                                 ->visible(fn () => filled($this->sahip()?->telefon)),
                             InfolistAction::make('sahip_eposta')
-                                ->label('E-posta Gönder')
+                                ->label('E-posta')
                                 ->icon('heroicon-o-envelope')
                                 ->color('info')
                                 ->outlined()
