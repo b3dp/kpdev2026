@@ -37,7 +37,10 @@ class EkayitKayitResource extends Resource
         return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör', 'E-Kayıt']);
     }
 
-    public static function canCreate(): bool { return false; }
+    public static function canCreate(): bool
+    {
+        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör', 'E-Kayıt']);
+    }
 
     public static function canEdit($record): bool
     {
@@ -159,15 +162,20 @@ class EkayitKayitResource extends Resource
                         return (new EkayitExport($query->get()))->download($dosyaAdi);
                     }),
             ])
-            ->actions([ViewAction::make()])
+            ->actions([
+                ViewAction::make(),
+                \Filament\Tables\Actions\EditAction::make(),
+            ])
             ->bulkActions([]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListEkayitKayit::route('/'),
-            'view'  => Pages\ViewEkayitKayit::route('/{record}'),
+            'index'  => Pages\ListEkayitKayit::route('/'),
+            'create' => Pages\CreateEkayitKayit::route('/create'),
+            'view'   => Pages\ViewEkayitKayit::route('/{record}'),
+            'edit'   => Pages\EditEkayitKayit::route('/{record}/edit'),
         ];
     }
 }

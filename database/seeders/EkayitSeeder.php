@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\EkayitDonem;
+use App\Models\EkayitEvrakSablonu;
 use App\Models\EkayitHazirMesaj;
 use App\Models\EkayitSinif;
 use App\Models\Kurum;
@@ -64,5 +65,18 @@ class EkayitSeeder extends Seeder
                 ['tip' => $mesaj['tip'], 'metin' => $mesaj['metin'], 'aktif' => true]
             );
         }
+
+        // Evrak Şablonları
+        EkayitEvrakSablonu::updateOrCreate(
+            ['dosya_adi' => 'kayit-formu'],
+            [
+                'ad'              => 'Kayıt Formu',
+                'sablon_yol'      => 'pdf.ekayit.kayit-formu',
+                'degiskenler'     => ['AD_SOYAD', 'TC_KIMLIK', 'SINIF', 'KURUM', 'DOGUM_TARIHI'],
+                'sadece_onayliya' => false,
+                'sira'            => 1,
+                'aktif'           => true,
+            ]
+        );
     }
 }
