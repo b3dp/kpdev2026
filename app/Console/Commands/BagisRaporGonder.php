@@ -47,7 +47,7 @@ class BagisRaporGonder extends Command
 
         [$baslangic, $bitis] = $this->tarihAraligiHesapla($periyot);
         $dosyaAdi = GoogleDriveService::dosyaAdiUret('bagis', $baslangic->format('dmY'), $bitis->format('dmY'));
-        $tempDizin = storage_path('app/temp');
+        $tempDizin = storage_path('app/private/tmp');
         $tempDosyaYolu = $tempDizin.'/'.$dosyaAdi;
 
         if (! is_dir($tempDizin)) {
@@ -64,13 +64,18 @@ class BagisRaporGonder extends Command
 
             (new BagisExport($bagislar))->saveToFile($tempDosyaYolu);
 
+            // Drive yüklemesi opsiyonel — başarısız olursa hata fırlatma
+            $driveUrl = null;
             $anaKlasorId = (string) config('services.google_drive.bagis_klasor_id');
-
-            if ($anaKlasorId === '') {
-                throw new \RuntimeException('Google Drive bağış klasör ID bilgisi tanımlı değil.');
+            if ($anaKlasorId !== '') {
+                try {
+                    $driveUrl = $googleDriveService->excelYukle($anaKlasorId, $tempDosyaYolu, $dosyaAdi, $bitis);
+                } catch (Throwable $driveException) {
+                    \Illuminate\Support\Facades\Log::warning('Drive yüklemesi atlandı: '.$driveException->getMessage());
+                    $this->warn('Drive yüklemesi atlandı: '.$driveException->getMessage());
+                }
             }
 
-            $driveUrl = $googleDriveService->excelYukle($anaKlasorId, $tempDosyaYolu, $dosyaAdi, $bitis);
             $tarihAraligi = $baslangic->format('d.m.Y').' - '.$bitis->format('d.m.Y');
 
             foreach ($alicilar as $alici) {
@@ -79,7 +84,7 @@ class BagisRaporGonder extends Command
                     ad: (string) $alici,
                     dosyaYolu: $tempDosyaYolu,
                     dosyaAdi: $dosyaAdi,
-                    driveUrl: $driveUrl,
+                    driveUrl: $driveUrl ?? '',
                     periyot: $periyot->label(),
                     tarihAraligi: $tarihAraligi,
                 );

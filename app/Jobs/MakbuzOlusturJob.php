@@ -36,7 +36,7 @@ class MakbuzOlusturJob implements ShouldQueue
             ->findOrFail($this->bagis->getKey());
 
         $bagisci = $bagis->odeyenKisi() ?? $bagis->kisiler->first();
-        $tempDizin = storage_path('app/temp');
+        $tempDizin = storage_path('app/private/tmp');
 
         if (! is_dir($tempDizin)) {
             mkdir($tempDizin, 0755, true);
