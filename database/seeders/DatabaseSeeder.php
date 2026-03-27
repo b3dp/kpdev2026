@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             // AdminSeeder burada bilinçli olarak çağrılmıyor.
             // Canlı/var olan admin hesaplarının otomatik etkilenmesini engeller.
             KurumlarSeeder::class,
+            EkayitSeeder::class,
         ]);
     }
 }

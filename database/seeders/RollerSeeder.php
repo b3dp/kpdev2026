@@ -25,7 +25,7 @@ class RollerSeeder extends Seeder
             'bagis.turleri'      => ['listele', 'goruntule', 'duzenle', 'kaydet'],
             'bagis'              => ['listele', 'goruntule', 'duzenle', 'kaydet', 'sil', 'onayla', 'raporla', 'pasife_al'],
             'kurban'             => ['listele', 'goruntule', 'duzenle', 'kaydet', 'sil', 'onayla'],
-            'ekayit'             => ['listele', 'goruntule', 'duzenle', 'kaydet', 'sil'],
+            'ekayit'             => ['listele', 'goruntule', 'durum_guncelle', 'pdf_indir', 'sinif_yonet', 'sil'],
             'pazarlama_sms'      => ['listele', 'goruntule', 'kaydet', 'sil', 'gonder'],
             'pazarlama_eposta'   => ['listele', 'goruntule', 'kaydet', 'sil', 'gonder'],
             'yoneticiler'        => ['listele', 'goruntule', 'duzenle', 'kaydet', 'sil'],
@@ -58,6 +58,7 @@ class RollerSeeder extends Seeder
             'dergiler.listele', 'dergiler.goruntule', 'dergiler.duzenle', 'dergiler.kaydet', 'dergiler.sil',
             'bagis.turleri.listele', 'bagis.turleri.goruntule', 'bagis.turleri.duzenle', 'bagis.turleri.kaydet',
             'bagis.listele', 'bagis.goruntule', 'bagis.duzenle', 'bagis.kaydet', 'bagis.raporla', 'bagis.pasife_al',
+            'ekayit.listele', 'ekayit.goruntule', 'ekayit.durum_guncelle', 'ekayit.pdf_indir', 'ekayit.sinif_yonet', 'ekayit.sil',
             'eposta.gonderimleri.goruntule',
         ]);
 
@@ -79,7 +80,7 @@ class RollerSeeder extends Seeder
         // E-Kayıt
         $ekayitRol = Role::updateOrCreate(['name' => 'E-Kayıt', 'guard_name' => $guard], []);
         $ekayitRol->syncPermissions([
-            'ekayit.listele', 'ekayit.goruntule', 'ekayit.duzenle', 'ekayit.kaydet',
+            'ekayit.listele', 'ekayit.goruntule', 'ekayit.durum_guncelle', 'ekayit.pdf_indir',
             'kurumlar.listele', 'kurumlar.goruntule',
         ]);
 

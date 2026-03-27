@@ -9,7 +9,7 @@
 | Frontend | Evet (kayıt formu) |
 | Öncelik | Yüksek |
 | Bağımlı Modüller | Kurumlar, Kurumsal Sayfalar, Üyeler, Pazarlama - SMS, Pazarlama - Eposta, Loglar, Roller, Yöneticiler |
-| Paketler | `barryvdh/laravel-dompdf`, `maatwebsite/laravel-excel` |
+| Paketler | `barryvdh/laravel-dompdf`, `maatwebsite/openspout` |
 | Arama | TNTSearch — bkz. genel-panel-notlari.md |
 
 ---
@@ -415,7 +415,7 @@ Filtre modalı açılır:
   Durum seçimi (çoklu: Beklemede, Onaylandı, Reddedildi, Yedek)
         │
         ▼
-maatwebsite/laravel-excel ile Excel oluşturulur
+maatwebsite/openspout ile Excel oluşturulur
 Sınıf rengi Excel'de arka plan rengi olarak yansıtılır
 Dosya adı: ekayit-{donem}-{tarih}.xlsx
 DO Spaces: img26/xlsx26/ekayit/{yil}/{dosya-adi}.xlsx
