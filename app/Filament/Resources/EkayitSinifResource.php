@@ -60,7 +60,7 @@ class EkayitSinifResource extends Resource
                     ->options(fn () => EkayitDonem::orderByDesc('baslangic')->pluck('ad', 'id')->all())
                     ->searchable(),
                 Select::make('kurum_id')->label('Kurum')->required()
-                    ->options(fn () => Kurum::whereNotNull('kurumsal_sayfa_id')
+                    ->options(fn () => Kurum::query()
                         ->orderBy('ad')->pluck('ad', 'id')->all())
                     ->searchable(),
                 Select::make('renk')->label('Renk')->required()

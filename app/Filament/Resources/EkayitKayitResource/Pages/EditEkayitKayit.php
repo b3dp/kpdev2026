@@ -25,14 +25,17 @@ class EditEkayitKayit extends EditRecord
             Section::make('Kayıt Bilgisi')->schema([
                 Select::make('sinif_id')
                     ->label('Sınıf')->required()
-                    ->options(fn () => EkayitSinif::with('donem')
+                    ->options(fn () => EkayitSinif::with(['donem', 'kurum'])
                         ->where('aktif', true)
                         ->orderBy('ad')
                         ->get()
                         ->mapWithKeys(fn (EkayitSinif $s) => [
-                            $s->id => $s->ad.' ('.$s->donem?->ad.')',
+                            $s->id => $s->ad
+                                .' ('.$s->donem?->ad.')'
+                                .($s->kurum?->ad ? ' - '.$s->kurum->ad : ''),
                         ])->all())
-                    ->searchable(),
+                    ->searchable()
+                    ->helperText('Sadece aktif siniflar listelenir. Siniflar ekranindan sinif olusturup aktif hale getirebilirsiniz.'),
                 Select::make('durum')
                     ->label('Durum')->required()
                     ->options(\App\Enums\EkayitDurumu::secenekler()),
