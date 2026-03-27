@@ -85,7 +85,7 @@ class ViewBagis extends ViewRecord
                                 ->color('gray')
                                 ->outlined()
                                 ->url(fn () => filled($this->record->makbuz_yol)
-                                    ? rtrim((string) config('filesystems.disks.spaces.cdn_url'), '/').'/'.$this->record->makbuz_yol
+                                    ? rtrim((string) config('filesystems.disks.spaces.url'), '/').'/'.$this->record->makbuz_yol
                                     : null)
                                 ->openUrlInNewTab()
                                 ->visible(fn () => filled($this->record->makbuz_yol)),
