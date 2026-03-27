@@ -3,10 +3,12 @@
 namespace App\Filament\Resources;
 
 use App\Enums\BagisDurumu;
+use App\Exports\BagisExport;
 use App\Filament\Resources\BagisResource\Pages;
 use App\Filament\Widgets\BagisIstatistikWidget;
 use App\Models\Bagis;
 use App\Models\BagisTuru;
+use Carbon\Carbon;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
@@ -22,6 +24,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class BagisResource extends Resource
 {
@@ -169,23 +172,26 @@ class BagisResource extends Resource
                     ->form([
                         Radio::make('periyot')
                             ->label('Periyot')
-                            ->options([
-                                'bugun' => 'Bugün',
-                                'dun' => 'Dün',
-                                'bu_ay' => 'Bu Ay',
-                                'gecen_ay' => 'Geçen Ay',
-                                'bu_yil' => 'Bu Yıl',
-                                'gecen_yil' => 'Geçtiğimiz Yıl',
-                                'ozel' => 'Özel Tarih',
-                            ])->default('bugun')->required()->live(),
+                            ->options(self::excelPeriyotSecenekleri())
+                            ->default('bugun')
+                            ->required()
+                            ->live(),
                         DatePicker::make('ozel_baslangic')->label('Özel Başlangıç')->visible(fn ($get) => $get('periyot') === 'ozel'),
                         DatePicker::make('ozel_bitis')->label('Özel Bitiş')->visible(fn ($get) => $get('periyot') === 'ozel'),
                     ])
-                    ->action(function (): void {
-                        Notification::make()
-                            ->title('Excel raporu bu fazda servis entegrasyonu sonrası aktif edilecek.')
-                            ->warning()
-                            ->send();
+                    ->action(function (array $data): StreamedResponse {
+                        [$baslangic, $bitis] = self::excelTarihAraligi($data);
+
+                        $bagislar = Bagis::query()
+                            ->with(['kalemler.bagisTuru', 'kisiler'])
+                            ->where('durum', BagisDurumu::Odendi->value)
+                            ->whereBetween('odeme_tarihi', [$baslangic, $bitis])
+                            ->orderByDesc('odeme_tarihi')
+                            ->get();
+
+                        $dosyaAdi = sprintf('bagis-%s-%s.xlsx', $baslangic->format('dmY'), $bitis->format('dmY'));
+
+                        return (new BagisExport($bagislar))->download($dosyaAdi);
                     }),
             ])
             ->actions([
@@ -208,5 +214,39 @@ class BagisResource extends Resource
             'view' => Pages\ViewBagis::route('/{record}'),
             'edit' => Pages\EditBagis::route('/{record}/edit'),
         ];
+    }
+
+    protected static function excelPeriyotSecenekleri(): array
+    {
+        $simdi = Carbon::now();
+
+        return [
+            'bugun' => 'Bugün ('.$simdi->format('d/m/y D').')',
+            'dun' => 'Dün ('.$simdi->copy()->subDay()->format('d/m/y D').')',
+            'bu_ay' => 'Bu Ay ('.$simdi->translatedFormat('F y').')',
+            'gecen_ay' => 'Geçen Ay ('.$simdi->copy()->subMonthNoOverflow()->translatedFormat('F y').')',
+            'bu_yil' => 'Bu Yıl ('.$simdi->format('Y').')',
+            'gecen_yil' => 'Geçtiğimiz Yıl ('.$simdi->copy()->subYear()->format('Y').')',
+            'ozel' => 'Özel Tarih',
+        ];
+    }
+
+    protected static function excelTarihAraligi(array $data): array
+    {
+        $simdi = Carbon::now();
+
+        return match ($data['periyot'] ?? 'bugun') {
+            'bugun' => [$simdi->copy()->startOfDay(), $simdi->copy()->endOfDay()],
+            'dun' => [$simdi->copy()->subDay()->startOfDay(), $simdi->copy()->subDay()->endOfDay()],
+            'bu_ay' => [$simdi->copy()->startOfMonth(), $simdi->copy()->endOfDay()],
+            'gecen_ay' => [$simdi->copy()->subMonthNoOverflow()->startOfMonth(), $simdi->copy()->subMonthNoOverflow()->endOfMonth()],
+            'bu_yil' => [$simdi->copy()->startOfYear(), $simdi->copy()->endOfDay()],
+            'gecen_yil' => [$simdi->copy()->subYear()->startOfYear(), $simdi->copy()->subYear()->endOfYear()],
+            'ozel' => [
+                Carbon::parse($data['ozel_baslangic'] ?? $simdi->toDateString())->startOfDay(),
+                Carbon::parse($data['ozel_bitis'] ?? $data['ozel_baslangic'] ?? $simdi->toDateString())->endOfDay(),
+            ],
+            default => [$simdi->copy()->startOfDay(), $simdi->copy()->endOfDay()],
+        };
     }
 }

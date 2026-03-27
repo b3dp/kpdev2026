@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\BagisDurumu;
 use App\Enums\OdemeSaglayici;
+use App\Jobs\MakbuzOlusturJob;
 use App\Services\BagisNoService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,6 +16,24 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class Bagis extends Model
 {
     use HasFactory, LogsActivity;
+
+    protected static function booted(): void
+    {
+        static::updated(function (self $bagis): void {
+            if (! $bagis->wasChanged('durum')) {
+                return;
+            }
+
+            $oncekiDurum = (string) $bagis->getOriginal('durum');
+            $yeniDurum = $bagis->durum instanceof BagisDurumu
+                ? $bagis->durum->value
+                : (string) $bagis->durum;
+
+            if ($oncekiDurum !== BagisDurumu::Odendi->value && $yeniDurum === BagisDurumu::Odendi->value) {
+                MakbuzOlusturJob::dispatch($bagis)->onQueue('default');
+            }
+        });
+    }
 
     protected $table = 'bagislar';
 
@@ -105,5 +124,15 @@ class Bagis extends Model
         }
 
         return $cdnUrl.'/'.ltrim($this->makbuz_yol, '/');
+    }
+
+    public function odeyenKisi(): ?BagisKisi
+    {
+        return $this->kisiler->first(fn (BagisKisi $kisi) => in_array('odeyen', $kisi->tipListesi(), true));
+    }
+
+    public function sahipKisi(): ?BagisKisi
+    {
+        return $this->kisiler->first(fn (BagisKisi $kisi) => in_array('sahip', $kisi->tipListesi(), true));
     }
 }

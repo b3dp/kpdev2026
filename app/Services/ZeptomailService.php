@@ -16,7 +16,8 @@ class ZeptomailService
         string $htmlIcerik,
         string $queue = 'default',
         ?string $ilgiliTip = null,
-        ?int $ilgiliId = null
+        ?int $ilgiliId = null,
+        array $ekler = [],
     ): bool {
         // Rate limit kontrolü
         $key = 'eposta_rl_' . md5($aliciEposta . $konu);
@@ -59,6 +60,7 @@ class ZeptomailService
                 'htmlbody' => $htmlIcerik,
                 'track_clicks' => true,
                 'track_opens' => true,
+                'attachments' => $this->ekleriHazirla($ekler),
             ]);
 
             if ($response->successful()) {
@@ -191,6 +193,29 @@ class ZeptomailService
         );
     }
 
+    public function bagisRaporGonder(string $eposta, string $ad, string $dosyaYolu, string $dosyaAdi, string $driveUrl, string $periyot, string $tarihAraligi): bool
+    {
+        $htmlIcerik = view('emails.bagis_rapor', [
+            'periyot' => $periyot,
+            'tarihAraligi' => $tarihAraligi,
+            'driveUrl' => $driveUrl,
+        ])->render();
+
+        return $this->gonderTemel(
+            aliciEposta: $eposta,
+            aliciAd: $ad,
+            konu: "Bağış Raporu - {$periyot}",
+            htmlIcerik: $htmlIcerik,
+            queue: 'default',
+            ilgiliTip: 'bagis_rapor',
+            ekler: [[
+                'name' => $dosyaAdi,
+                'path' => $dosyaYolu,
+                'mime_type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ]],
+        );
+    }
+
     public function kurbanBildirimGonder(string $eposta, string $ad, string $kurbanNo, string $kesimTarihi): bool
     {
         $htmlIcerik = view('emails.kurban_kesildi', [
@@ -294,5 +319,18 @@ class ZeptomailService
             }
         }
         return $sonuc;
+    }
+
+    private function ekleriHazirla(array $ekler): array
+    {
+        return collect($ekler)
+            ->filter(fn (array $ek) => isset($ek['path']) && is_file($ek['path']))
+            ->map(fn (array $ek) => [
+                'name' => $ek['name'] ?? basename((string) $ek['path']),
+                'mime_type' => $ek['mime_type'] ?? 'application/octet-stream',
+                'content' => base64_encode((string) file_get_contents((string) $ek['path'])),
+            ])
+            ->values()
+            ->all();
     }
 }

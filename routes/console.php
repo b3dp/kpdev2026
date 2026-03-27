@@ -1,6 +1,7 @@
 <?php
 
 use App\Console\Commands\BagisTerkSepetKontrol;
+use App\Console\Commands\BagisRaporGonder;
 use App\Console\Commands\BagisTuruOtomatikKontrol;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -12,3 +13,6 @@ Artisan::command('inspire', function () {
 
 Schedule::command('bagis:hicri-kontrol')->hourly();
 Schedule::command('bagis:terk-sepet')->everyTwoHours();
+Schedule::command('bagis:rapor-gonder gunluk')->dailyAt('08:00');
+Schedule::command('bagis:rapor-gonder haftalik')->weeklyOn(1, '08:00');
+Schedule::command('bagis:rapor-gonder aylik')->monthlyOn(1, '08:00');

@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Enums\RaporPeriyot;
 use App\Filament\Resources\BagisOtomatikRaporResource\Pages;
 use App\Models\BagisOtomatikRapor;
+use Exception;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Toggle;
@@ -16,6 +17,7 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Artisan;
 
 class BagisOtomatikRaporResource extends Resource
 {
@@ -66,11 +68,20 @@ class BagisOtomatikRaporResource extends Resource
                 Action::make('simdi_gonder')
                     ->label('Şimdi Gönder')
                     ->color('success')
-                    ->action(function (): void {
-                        Notification::make()
-                            ->title('Rapor gönderimi kuyruğa alınacak şekilde sonraki fazda bağlanacak.')
-                            ->success()
-                            ->send();
+                    ->action(function (BagisOtomatikRapor $record): void {
+                        try {
+                            Artisan::call('bagis:rapor-gonder', ['periyot' => $record->periyot->value]);
+
+                            Notification::make()
+                                ->title('Rapor gönderimi tamamlandı.')
+                                ->success()
+                                ->send();
+                        } catch (Exception $exception) {
+                            Notification::make()
+                                ->title($exception->getMessage())
+                                ->danger()
+                                ->send();
+                        }
                     }),
             ]);
     }

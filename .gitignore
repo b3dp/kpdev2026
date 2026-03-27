@@ -16,6 +16,8 @@
 /public/build
 /public/hot
 /public/storage
+/storage/app/private/google-service-account.json
+/storage/app/temp
 /storage/*.key
 /storage/scout
 /storage/pail

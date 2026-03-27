@@ -53,7 +53,7 @@ return [
     ],
 
     'google_drive' => [
-        'service_account_json_path' => env('GOOGLE_SERVICE_ACCOUNT_JSON_PATH'),
+        'service_account_json_path' => env('GOOGLE_SERVICE_ACCOUNT_JSON_PATH', storage_path('app/private/google-service-account.json')),
         'bagis_klasor_id' => env('GOOGLE_DRIVE_BAGIS_KLASOR_ID'),
         'ekayit_klasor_id' => env('GOOGLE_DRIVE_EKAYIT_KLASOR_ID'),
     ],
