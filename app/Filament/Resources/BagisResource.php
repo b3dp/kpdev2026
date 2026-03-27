@@ -10,6 +10,8 @@ use App\Models\BagisTuru;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
@@ -49,7 +51,7 @@ class BagisResource extends Resource
 
     public static function canEdit($record): bool
     {
-        return false;
+        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör']);
     }
 
     public static function canDelete($record): bool
@@ -59,7 +61,24 @@ class BagisResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form->schema([]);
+        return $form->schema([
+            Select::make('durum')
+                ->label('Bağış Durumu')
+                ->options([
+                    BagisDurumu::Beklemede->value => BagisDurumu::Beklemede->label(),
+                    BagisDurumu::Odendi->value => BagisDurumu::Odendi->label(),
+                    BagisDurumu::Hatali->value => BagisDurumu::Hatali->label(),
+                    BagisDurumu::Iptal->value => BagisDurumu::Iptal->label(),
+                ])
+                ->required(),
+            TextInput::make('odeme_referans')
+                ->label('Ödeme Referans Numarası')
+                ->maxLength(255),
+            Toggle::make('makbuz_gonderildi')
+                ->label('Makbuz Gönderildi'),
+            Toggle::make('kurban_aktarildi')
+                ->label('Kurban Aktarıldı'),
+        ]);
     }
 
     public static function table(Table $table): Table
@@ -187,6 +206,7 @@ class BagisResource extends Resource
         return [
             'index' => Pages\ListBagis::route('/'),
             'view' => Pages\ViewBagis::route('/{record}'),
+            'edit' => Pages\EditBagis::route('/{record}/edit'),
         ];
     }
 }
