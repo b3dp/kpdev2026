@@ -25,7 +25,10 @@ class EditBagisOtomatikRapor extends EditRecord
                 ->color('success')
                 ->action(function (BagisOtomatikRapor $record): void {
                     try {
-                        $cikisKodu = Artisan::call('bagis:rapor-gonder', ['periyot' => $record->periyot->value]);
+                        $cikisKodu = Artisan::call('bagis:rapor-gonder', [
+                            'periyot' => $record->periyot->value,
+                            '--tarih' => 'bugun',
+                        ]);
 
                         if ($cikisKodu !== 0) {
                             $hataMesaji = trim(Artisan::output());

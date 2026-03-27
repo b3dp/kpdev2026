@@ -15,16 +15,23 @@ use Throwable;
 
 class BagisRaporGonder extends Command
 {
-    protected $signature = 'bagis:rapor-gonder {periyot : gunluk|haftalik|aylik}';
+    protected $signature = 'bagis:rapor-gonder {periyot : gunluk|haftalik|aylik} {--tarih=dun : dun|bugun|test}';
 
     protected $description = 'Bağış raporlarını Excel olarak üretir, Drivea yükler ve e-posta ile gönderir.';
 
     public function handle(GoogleDriveService $googleDriveService, ZeptomailService $zeptomailService): int
     {
         $periyot = RaporPeriyot::tryFrom((string) $this->argument('periyot'));
+        $tarihSecenegi = strtolower((string) $this->option('tarih'));
 
         if (! $periyot) {
             $this->error('Geçersiz periyot.');
+            return self::FAILURE;
+        }
+
+        if (! in_array($tarihSecenegi, ['dun', 'bugun', 'test'], true)) {
+            $this->error('Geçersiz tarih seçeneği. Sadece dun, bugun veya test kullanılabilir.');
+
             return self::FAILURE;
         }
 
@@ -45,7 +52,7 @@ class BagisRaporGonder extends Command
             return self::SUCCESS;
         }
 
-        [$baslangic, $bitis] = $this->tarihAraligiHesapla($periyot);
+        [$baslangic, $bitis] = $this->tarihAraligiHesapla($tarihSecenegi);
         $dosyaAdi = GoogleDriveService::dosyaAdiUret('bagis', $baslangic->format('dmY'), $bitis->format('dmY'));
         $tempDizin = storage_path('app/private/tmp');
         $tempDosyaYolu = $tempDizin.'/'.$dosyaAdi;
@@ -127,22 +134,20 @@ class BagisRaporGonder extends Command
         }
     }
 
-    private function tarihAraligiHesapla(RaporPeriyot $periyot): array
+    private function tarihAraligiHesapla(string $tarihSecenegi): array
     {
-        $bugun = Carbon::now();
-
-        return match ($periyot) {
-            RaporPeriyot::Gunluk => [
-                $bugun->copy()->subDay()->startOfDay(),
-                $bugun->copy()->subDay()->endOfDay(),
+        return match ($tarihSecenegi) {
+            'dun' => [
+                Carbon::yesterday()->startOfDay(),
+                Carbon::yesterday()->endOfDay(),
             ],
-            RaporPeriyot::Haftalik => [
-                $bugun->copy()->subWeek()->startOfWeek(Carbon::MONDAY),
-                $bugun->copy()->subWeek()->endOfWeek(Carbon::SUNDAY),
+            'bugun' => [
+                Carbon::today()->startOfDay(),
+                Carbon::now(),
             ],
-            RaporPeriyot::Aylik => [
-                $bugun->copy()->subMonthNoOverflow()->startOfMonth(),
-                $bugun->copy()->subMonthNoOverflow()->endOfMonth(),
+            'test' => [
+                Carbon::now()->subDays(30)->startOfDay(),
+                Carbon::now(),
             ],
         };
     }
