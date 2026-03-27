@@ -16,16 +16,7 @@ class GoogleDriveService
 
     public function __construct()
     {
-        $jsonYolu = $this->serviceAccountJsonYolu();
-
-        if (! is_file($jsonYolu)) {
-            throw new RuntimeException("Google service account JSON dosyasi bulunamadi: {$jsonYolu}");
-        }
-
-        $client = new Client();
-        $client->setApplicationName(config('app.name').' Google Drive');
-        $client->setAuthConfig($jsonYolu);
-        $client->setScopes([Drive::DRIVE]);
+        $client = $this->googleClientOlustur();
 
         $this->drive = new Drive($client);
     }
@@ -122,6 +113,48 @@ class GoogleDriveService
         }
 
         return base_path($jsonYolu);
+    }
+
+    private function googleClientOlustur(): Client
+    {
+        $authMode = (string) config('services.google_drive.auth_mode', 'service_account');
+
+        $client = new Client();
+        $client->setApplicationName(config('app.name').' Google Drive');
+        $client->setScopes([Drive::DRIVE]);
+
+        if ($authMode === 'oauth_user') {
+            $clientId = (string) config('services.google_drive.oauth_client_id');
+            $clientSecret = (string) config('services.google_drive.oauth_client_secret');
+            $refreshToken = (string) config('services.google_drive.oauth_refresh_token');
+
+            if ($clientId === '' || $clientSecret === '' || $refreshToken === '') {
+                throw new RuntimeException('Google Drive OAuth bilgileri eksik.');
+            }
+
+            $client->setClientId($clientId);
+            $client->setClientSecret($clientSecret);
+            $client->setAccessType('offline');
+            $client->setPrompt('consent');
+
+            $token = $client->fetchAccessTokenWithRefreshToken($refreshToken);
+
+            if (is_array($token) && isset($token['error'])) {
+                throw new RuntimeException('Google OAuth token yenileme hatasi: '.json_encode($token));
+            }
+
+            return $client;
+        }
+
+        $jsonYolu = $this->serviceAccountJsonYolu();
+
+        if (! is_file($jsonYolu)) {
+            throw new RuntimeException("Google service account JSON dosyasi bulunamadi: {$jsonYolu}");
+        }
+
+        $client->setAuthConfig($jsonYolu);
+
+        return $client;
     }
 
     private function tekTirnakKacis(string $deger): string

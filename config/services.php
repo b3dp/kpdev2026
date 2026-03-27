@@ -53,7 +53,11 @@ return [
     ],
 
     'google_drive' => [
+        'auth_mode' => env('GOOGLE_DRIVE_AUTH_MODE', 'service_account'),
         'service_account_json_path' => env('GOOGLE_SERVICE_ACCOUNT_JSON_PATH', storage_path('app/private/google-service-account.json')),
+        'oauth_client_id' => env('GOOGLE_DRIVE_OAUTH_CLIENT_ID'),
+        'oauth_client_secret' => env('GOOGLE_DRIVE_OAUTH_CLIENT_SECRET'),
+        'oauth_refresh_token' => env('GOOGLE_DRIVE_OAUTH_REFRESH_TOKEN'),
         'bagis_klasor_id' => env('GOOGLE_DRIVE_BAGIS_KLASOR_ID'),
         'ekayit_klasor_id' => env('GOOGLE_DRIVE_EKAYIT_KLASOR_ID'),
     ],
