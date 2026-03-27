@@ -78,6 +78,18 @@ class ViewBagis extends ViewRecord
                             }),
                             TextEntry::make('created_at')->label('Bağış Tarihi')->dateTime('d.m.Y H:i'),
                         ])
+                        ->footerActions([
+                            InfolistAction::make('makbuz_indir')
+                                ->label('Makbuz İndir')
+                                ->icon('heroicon-o-document-arrow-down')
+                                ->color('gray')
+                                ->outlined()
+                                ->url(fn () => filled($this->record->makbuz_yol)
+                                    ? rtrim((string) config('filesystems.disks.spaces.cdn_url'), '/').'/'.$this->record->makbuz_yol
+                                    : null)
+                                ->openUrlInNewTab()
+                                ->visible(fn () => filled($this->record->makbuz_yol)),
+                        ])
                         ->columnSpan(1),
 
                     Section::make('Ödeyenin Bilgileri')
@@ -187,7 +199,6 @@ class ViewBagis extends ViewRecord
                             TextEntry::make('odeme_saglayici')->label('Ödeme Sağlayıcısı'),
                             TextEntry::make('odeme_referans')->label('Referans No'),
                             TextEntry::make('odeme_tarihi')->label('Ödeme Tarihi')->dateTime('d.m.Y H:i'),
-                            TextEntry::make('makbuz_yol')->label('Makbuz Linki')->placeholder('-'),
                         ])
                         ->columnSpan(1),
 
