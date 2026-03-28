@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Etkinlik;
 use App\Models\EtkinlikGorseli;
+use App\Models\EkayitSinif;
 use App\Models\Haber;
 use App\Models\HaberGorseli;
 use App\Models\KurumsalSayfa;
@@ -11,6 +12,7 @@ use App\Models\KurumsalSayfaGorseli;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Intervention\Image\ImageManager;
 use Throwable;
 
@@ -55,6 +57,11 @@ class GorselOptimizeJob implements ShouldQueue
 
         if ($this->modelTipi === 'kurumsal_sayfa') {
             $this->kurumsalSayfaGorselleriniIsle();
+            return;
+        }
+
+        if ($this->modelTipi === 'ekayit_sinif') {
+            $this->ekayitSinifGorselleriniIsle();
         }
     }
 
@@ -294,6 +301,51 @@ class GorselOptimizeJob implements ShouldQueue
                     'sm_yol' => $smYol,
                 ]
             );
+        }
+    }
+
+    protected function ekayitSinifGorselleriniIsle(): void
+    {
+        $sinif = EkayitSinif::query()->find($this->modelId);
+
+        if (! $sinif) {
+            return;
+        }
+
+        $slug = Str::slug($sinif->ad);
+        $uzanti = pathinfo($this->geciciYol, PATHINFO_EXTENSION) ?: 'jpeg';
+        $geciciTamYol = Storage::disk('local')->path($this->geciciYol);
+
+        $manager = ImageManager::imagick();
+        $resim = $manager->read($geciciTamYol);
+
+        $oriDizin = "img26/ori/ekayit/{$sinif->id}";
+        $optDizin = "img26/opt/ekayit/{$sinif->id}";
+
+        if ($this->gorselTipi === '1x1') {
+            $orijinalYol = "{$oriDizin}/{$slug}-original.{$uzanti}";
+            $kareyol = "{$optDizin}/{$slug}-1x1.webp";
+
+            Storage::disk('spaces')->put($orijinalYol, Storage::disk('local')->get($this->geciciYol), 'public');
+            Storage::disk('spaces')->put($kareyol, (string) $resim->cover(800, 800)->toWebp(quality: 85), 'public');
+
+            $sinif->update(['gorsel_kare' => Storage::disk('spaces')->url($kareyol)]);
+        } elseif ($this->gorselTipi === '9x16') {
+            $orijinalYol = "{$oriDizin}/{$slug}-original.{$uzanti}";
+            $dikeyyol = "{$optDizin}/{$slug}-9x16.webp";
+
+            Storage::disk('spaces')->put($orijinalYol, Storage::disk('local')->get($this->geciciYol), 'public');
+            Storage::disk('spaces')->put($dikeyyol, (string) $resim->cover(720, 1280)->toWebp(quality: 85), 'public');
+
+            $sinif->update(['gorsel_dikey' => Storage::disk('spaces')->url($dikeyyol)]);
+        } elseif ($this->gorselTipi === '16x9') {
+            $orijinalYol = "{$oriDizin}/{$slug}-original.{$uzanti}";
+            $yatayayol = "{$optDizin}/{$slug}-16x9.webp";
+
+            Storage::disk('spaces')->put($orijinalYol, Storage::disk('local')->get($this->geciciYol), 'public');
+            Storage::disk('spaces')->put($yatayayol, (string) $resim->cover(1280, 720)->toWebp(quality: 85), 'public');
+
+            $sinif->update(['gorsel_yatay' => Storage::disk('spaces')->url($yatayayol)]);
         }
     }
 

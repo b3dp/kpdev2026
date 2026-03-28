@@ -3,10 +3,12 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\EkayitSinifResource\Pages;
+use App\Jobs\GorselOptimizeJob;
 use App\Models\EkayitDonem;
 use App\Models\EkayitSinif;
 use App\Models\Kurum;
 use App\Services\SinifRenkService;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -18,6 +20,7 @@ use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Storage;
 
 class EkayitSinifResource extends Resource
 {
@@ -82,11 +85,60 @@ class EkayitSinifResource extends Resource
             ]),
 
             Section::make('Görseller')->schema([
-                TextInput::make('gorsel_kare')->label('Görsel 1:1 (Kare)')->nullable()->maxLength(500),
-                TextInput::make('gorsel_dikey')->label('Görsel 9:16 (Dikey)')->nullable()->maxLength(500),
-                TextInput::make('gorsel_yatay')->label('Görsel 16:9 (Yatay)')->nullable()->maxLength(500),
-                TextInput::make('gorsel_orijinal')->label('Görsel Orijinal')->nullable()->maxLength(500),
-            ])->columns(2),
+                FileUpload::make('gorsel_kare')
+                    ->label('Görsel 1:1 (Kare)')
+                    ->disk('local')
+                    ->directory('tmp/ekayit-gorseller')
+                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                    ->maxSize(64 * 1024)
+                    ->helperText('JPG, PNG, WebP - Max 64MB')
+                    ->afterStateUpdated(function ($state, $record) {
+                        if ($state && $record?->id) {
+                            GorselOptimizeJob::dispatch(
+                                modelId: $record->id,
+                                modelTipi: 'ekayit_sinif',
+                                gorselTipi: '1x1',
+                                geciciYol: trim($state, '/')
+                            );
+                        }
+                    }),
+                
+                FileUpload::make('gorsel_dikey')
+                    ->label('Görsel 9:16 (Dikey)')
+                    ->disk('local')
+                    ->directory('tmp/ekayit-gorseller')
+                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                    ->maxSize(64 * 1024)
+                    ->helperText('JPG, PNG, WebP - Max 64MB')
+                    ->afterStateUpdated(function ($state, $record) {
+                        if ($state && $record?->id) {
+                            GorselOptimizeJob::dispatch(
+                                modelId: $record->id,
+                                modelTipi: 'ekayit_sinif',
+                                gorselTipi: '9x16',
+                                geciciYol: trim($state, '/')
+                            );
+                        }
+                    }),
+                
+                FileUpload::make('gorsel_yatay')
+                    ->label('Görsel 16:9 (Yatay)')
+                    ->disk('local')
+                    ->directory('tmp/ekayit-gorseller')
+                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                    ->maxSize(64 * 1024)
+                    ->helperText('JPG, PNG, WebP - Max 64MB')
+                    ->afterStateUpdated(function ($state, $record) {
+                        if ($state && $record?->id) {
+                            GorselOptimizeJob::dispatch(
+                                modelId: $record->id,
+                                modelTipi: 'ekayit_sinif',
+                                gorselTipi: '16x9',
+                                geciciYol: trim($state, '/')
+                            );
+                        }
+                    }),
+            ])->columns(1),
         ]);
     }
 
