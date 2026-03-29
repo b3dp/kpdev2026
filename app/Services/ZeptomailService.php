@@ -293,6 +293,34 @@ class ZeptomailService
         );
     }
 
+    public function ekayitDurumGonder(
+        string $eposta,
+        string $ad,
+        string $ogrenciAdSoyad,
+        string $sinif,
+        string $kurum,
+        string $durum,
+        ?string $durumNotu = null,
+    ): bool {
+        $htmlIcerik = view('emails.ekayit-durum', [
+            'veliAdSoyad' => $ad,
+            'ogrenciAdSoyad' => $ogrenciAdSoyad,
+            'sinif' => $sinif,
+            'kurum' => $kurum,
+            'durum' => $durum,
+            'durumNotu' => $durumNotu,
+        ])->render();
+
+        return $this->gonderTemel(
+            aliciEposta: $eposta,
+            aliciAd: $ad,
+            konu: 'E-Kayıt Durum Bilgilendirmesi - '.$durum,
+            htmlIcerik: $htmlIcerik,
+            queue: 'default',
+            ilgiliTip: 'ekayit_durum',
+        );
+    }
+
     public function yoneticiAlertGonder(array $alicilar, string $konu, string $mesaj): bool
     {
         $sonuc = true;
