@@ -7,8 +7,6 @@ use App\Models\EkayitDonem;
 use App\Models\EkayitSinif;
 use App\Models\Kurum;
 use App\Services\SinifRenkService;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -20,7 +18,6 @@ use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
-use Illuminate\Support\HtmlString;
 
 class EkayitSinifResource extends Resource
 {
@@ -63,7 +60,7 @@ class EkayitSinifResource extends Resource
                     ->options(fn () => EkayitDonem::orderByDesc('baslangic')->pluck('ad', 'id')->all())
                     ->searchable(),
                 Select::make('kurum_id')->label('Kurum')->required()
-                    ->options(fn () => Kurum::query()
+                    ->options(fn () => Kurum::whereNotNull('kurumsal_sayfa_id')
                         ->orderBy('ad')->pluck('ad', 'id')->all())
                     ->searchable(),
                 Select::make('renk')->label('Renk')->required()
@@ -85,76 +82,12 @@ class EkayitSinifResource extends Resource
             ]),
 
             Section::make('Görseller')->schema([
-                Placeholder::make('gorsel_kare_onizleme')
-                    ->label('Mevcut Görsel 1:1')
-                    ->visible(fn (?EkayitSinif $record): bool => filled($record?->gorsel_kare))
-                    ->content(fn (?EkayitSinif $record): HtmlString => new HtmlString(
-                        '<img src="' . e(static::gorselUrl($record?->gorsel_kare)) . '" style="max-height: 150px; border-radius: 8px;" />'
-                    )),
-                FileUpload::make('tmp_gorsel_kare')
-                    ->label('Görsel 1:1 (Kare) - Yeni')
-                    ->disk('local')
-                    ->directory('tmp/ekayit-uploads')
-                    ->visibility('private')
-                    ->preserveFilenames(false)
-                    ->image()
-                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                    ->maxSize(65536)
-                    ->helperText('JPG, PNG, WebP - Max 64MB')
-                    ->dehydrated(false),
-
-                Placeholder::make('gorsel_dikey_onizleme')
-                    ->label('Mevcut Görsel 9:16')
-                    ->visible(fn (?EkayitSinif $record): bool => filled($record?->gorsel_dikey))
-                    ->content(fn (?EkayitSinif $record): HtmlString => new HtmlString(
-                        '<img src="' . e(static::gorselUrl($record?->gorsel_dikey)) . '" style="max-height: 150px; border-radius: 8px;" />'
-                    )),
-                FileUpload::make('tmp_gorsel_dikey')
-                    ->label('Görsel 9:16 (Dikey) - Yeni')
-                    ->disk('local')
-                    ->directory('tmp/ekayit-uploads')
-                    ->visibility('private')
-                    ->preserveFilenames(false)
-                    ->image()
-                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                    ->maxSize(65536)
-                    ->helperText('JPG, PNG, WebP - Max 64MB')
-                    ->dehydrated(false),
-
-                Placeholder::make('gorsel_yatay_onizleme')
-                    ->label('Mevcut Görsel 16:9')
-                    ->visible(fn (?EkayitSinif $record): bool => filled($record?->gorsel_yatay))
-                    ->content(fn (?EkayitSinif $record): HtmlString => new HtmlString(
-                        '<img src="' . e(static::gorselUrl($record?->gorsel_yatay)) . '" style="max-height: 150px; border-radius: 8px;" />'
-                    )),
-                FileUpload::make('tmp_gorsel_yatay')
-                    ->label('Görsel 16:9 (Yatay) - Yeni')
-                    ->disk('local')
-                    ->directory('tmp/ekayit-uploads')
-                    ->visibility('private')
-                    ->preserveFilenames(false)
-                    ->image()
-                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                    ->maxSize(65536)
-                    ->helperText('JPG, PNG, WebP - Max 64MB')
-                    ->dehydrated(false),
-            ])->columns(1),
+                TextInput::make('gorsel_kare')->label('Görsel 1:1 (Kare)')->nullable()->maxLength(500),
+                TextInput::make('gorsel_dikey')->label('Görsel 9:16 (Dikey)')->nullable()->maxLength(500),
+                TextInput::make('gorsel_yatay')->label('Görsel 16:9 (Yatay)')->nullable()->maxLength(500),
+                TextInput::make('gorsel_orijinal')->label('Görsel Orijinal')->nullable()->maxLength(500),
+            ])->columns(2),
         ]);
-    }
-
-    protected static function gorselUrl(?string $yol): string
-    {
-        if (blank($yol)) {
-            return '';
-        }
-
-        if (str_starts_with($yol, 'http://') || str_starts_with($yol, 'https://')) {
-            return $yol;
-        }
-
-        $cdn = (string) (config('filesystems.disks.spaces.cdn_url') ?: config('filesystems.disks.spaces.url'));
-
-        return rtrim($cdn, '/') . '/' . ltrim($yol, '/');
     }
 
     public static function table(Table $table): Table
