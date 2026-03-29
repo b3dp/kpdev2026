@@ -12,6 +12,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\Actions as InfolistActions;
 use Filament\Infolists\Components\Actions\Action as InfolistAction;
 use Filament\Infolists\Components\Grid;
 use Filament\Infolists\Components\Section;
@@ -53,7 +54,7 @@ class ViewEkayitKayit extends ViewRecord
                     ])
                     ->footerActions([
                         InfolistAction::make('durum_notu_kaydet')
-                            ->label('Kaydet')
+                            ->label('Durum Notu Ekle')
                             ->icon('heroicon-o-check-circle')
                             ->color('primary')
                             ->form([
@@ -91,30 +92,60 @@ class ViewEkayitKayit extends ViewRecord
                             }),
                     ]),
 
-                Section::make('İletişim Telefonu 01')
+                Section::make('Bilgilendirme Kanalı 01')
                     ->columnSpan(1)
                     ->schema([
                         TextEntry::make('veliBilgisi.telefon_1')
                             ->label('Telefon 1')
                             ->default('—'),
-                    ])
-                    ->footerActions([
-                        $this->durumAksiyonuOlustur(EkayitDurumu::Onaylandi, 'veliBilgisi.telefon_1', true),
-                        $this->durumAksiyonuOlustur(EkayitDurumu::Reddedildi, 'veliBilgisi.telefon_1', true),
-                        $this->durumAksiyonuOlustur(EkayitDurumu::Yedek, 'veliBilgisi.telefon_1', true),
+                        InfolistActions::make([
+                            InfolistAction::make('telefon_1_whatsapp_etiket')
+                                ->label('WhatsApp')
+                                ->icon('heroicon-s-chat-bubble-left-ellipsis')
+                                ->color('gray')
+                                ->disabled(),
+                            $this->durumAksiyonuOlustur(EkayitDurumu::Onaylandi, 'veliBilgisi.telefon_1', true)->size('sm'),
+                            $this->durumAksiyonuOlustur(EkayitDurumu::Reddedildi, 'veliBilgisi.telefon_1', true)->size('sm'),
+                            $this->durumAksiyonuOlustur(EkayitDurumu::Yedek, 'veliBilgisi.telefon_1', true)->size('sm'),
+                        ])->columnSpanFull(),
+                        InfolistActions::make([
+                            InfolistAction::make('telefon_1_sms_etiket')
+                                ->label('SMS')
+                                ->icon('heroicon-o-device-phone-mobile')
+                                ->color('gray')
+                                ->disabled(),
+                            $this->smsAksiyonuOlustur('tel1_sms_onay', 'Onay', 'success')->size('sm'),
+                            $this->smsAksiyonuOlustur('tel1_sms_red', 'Red', 'danger')->size('sm'),
+                            $this->smsAksiyonuOlustur('tel1_sms_yedek', 'Yedek', 'info')->size('sm'),
+                        ])->columnSpanFull(),
                     ]),
 
-                Section::make('İletişim Telefonu 02')
+                Section::make('Bilgilendirme Kanalı 02')
                     ->columnSpan(1)
                     ->schema([
                         TextEntry::make('veliBilgisi.telefon_2')
                             ->label('Telefon 2')
                             ->default('—'),
-                    ])
-                    ->footerActions([
-                        $this->durumAksiyonuOlustur(EkayitDurumu::Onaylandi, 'veliBilgisi.telefon_2', false),
-                        $this->durumAksiyonuOlustur(EkayitDurumu::Reddedildi, 'veliBilgisi.telefon_2', false),
-                        $this->durumAksiyonuOlustur(EkayitDurumu::Yedek, 'veliBilgisi.telefon_2', false),
+                        InfolistActions::make([
+                            InfolistAction::make('telefon_2_whatsapp_etiket')
+                                ->label('WhatsApp')
+                                ->icon('heroicon-s-chat-bubble-left-ellipsis')
+                                ->color('gray')
+                                ->disabled(),
+                            $this->durumAksiyonuOlustur(EkayitDurumu::Onaylandi, 'veliBilgisi.telefon_2', false)->size('sm'),
+                            $this->durumAksiyonuOlustur(EkayitDurumu::Reddedildi, 'veliBilgisi.telefon_2', false)->size('sm'),
+                            $this->durumAksiyonuOlustur(EkayitDurumu::Yedek, 'veliBilgisi.telefon_2', false)->size('sm'),
+                        ])->columnSpanFull(),
+                        InfolistActions::make([
+                            InfolistAction::make('telefon_2_sms_etiket')
+                                ->label('SMS')
+                                ->icon('heroicon-o-device-phone-mobile')
+                                ->color('gray')
+                                ->disabled(),
+                            $this->smsAksiyonuOlustur('tel2_sms_onay', 'Onay', 'success')->size('sm'),
+                            $this->smsAksiyonuOlustur('tel2_sms_red', 'Red', 'danger')->size('sm'),
+                            $this->smsAksiyonuOlustur('tel2_sms_yedek', 'Yedek', 'info')->size('sm'),
+                        ])->columnSpanFull(),
                     ])
                     ->visible(fn (): bool => filled($this->record->veliBilgisi?->telefon_2)),
 
@@ -166,7 +197,7 @@ class ViewEkayitKayit extends ViewRecord
                         TextEntry::make('durum_notu')->label('Durum Notu')->default('—')->columnSpanFull(),
                         TextEntry::make('genel_not')->label('Genel Not')->default('—')->columnSpanFull(),
                     ])
-                    ->footerActions([
+                    ->headerActions([
                         $this->kayitBilgisiDuzenleAksiyonu(),
                     ]),
 
@@ -191,7 +222,7 @@ class ViewEkayitKayit extends ViewRecord
                         TextEntry::make('ogrenciBilgisi.ikamet_il')->label('İkamet İl')->default('—'),
                         TextEntry::make('ogrenciBilgisi.adres')->label('Adres')->default('—')->columnSpanFull(),
                     ])
-                    ->footerActions([
+                    ->headerActions([
                         $this->ogrenciBilgisiDuzenleAksiyonu(),
                     ]),
 
@@ -203,7 +234,7 @@ class ViewEkayitKayit extends ViewRecord
                         TextEntry::make('veliBilgisi.telefon_1')->label('Telefon 1')->default('—'),
                         TextEntry::make('veliBilgisi.telefon_2')->label('Telefon 2')->default('—'),
                     ])
-                    ->footerActions([
+                    ->headerActions([
                         $this->veliBilgisiDuzenleAksiyonu(),
                     ]),
 
@@ -215,7 +246,7 @@ class ViewEkayitKayit extends ViewRecord
                         TextEntry::make('okulBilgisi.sube')->label('Şube')->default('—'),
                         TextEntry::make('okulBilgisi.not')->label('Not')->default('—'),
                     ])
-                    ->footerActions([
+                    ->headerActions([
                         $this->okulBilgisiDuzenleAksiyonu(),
                     ]),
 
@@ -232,7 +263,7 @@ class ViewEkayitKayit extends ViewRecord
                         TextEntry::make('kimlikBilgisi.kimlik_seri_no')->label('Kimlik Seri No')->default('—'),
                         TextEntry::make('kimlikBilgisi.kan_grubu')->label('Kan Grubu')->default('—'),
                     ])
-                    ->footerActions([
+                    ->headerActions([
                         $this->kimlikBilgisiDuzenleAksiyonu(),
                     ]),
 
@@ -242,7 +273,7 @@ class ViewEkayitKayit extends ViewRecord
                         TextEntry::make('babaBilgisi.dogum_yeri')->label('Doğum Yeri')->default('—'),
                         TextEntry::make('babaBilgisi.nufus_il_ilce')->label('Nüfus İl/İlçe')->default('—'),
                     ])
-                    ->footerActions([
+                    ->headerActions([
                         $this->babaBilgisiDuzenleAksiyonu(),
                     ]),
             ]),
@@ -252,7 +283,7 @@ class ViewEkayitKayit extends ViewRecord
     private function kayitBilgisiDuzenleAksiyonu(): InfolistAction
     {
         return InfolistAction::make('kayit_bilgisi_duzenle')
-            ->label('Düzenle')
+            ->label('')
             ->icon('heroicon-o-pencil-square')
             ->color('gray')
             ->outlined()
@@ -284,7 +315,7 @@ class ViewEkayitKayit extends ViewRecord
     private function ogrenciBilgisiDuzenleAksiyonu(): InfolistAction
     {
         return InfolistAction::make('ogrenci_bilgisi_duzenle')
-            ->label('Düzenle')
+            ->label('')
             ->icon('heroicon-o-pencil-square')
             ->color('gray')
             ->outlined()
@@ -331,7 +362,7 @@ class ViewEkayitKayit extends ViewRecord
     private function veliBilgisiDuzenleAksiyonu(): InfolistAction
     {
         return InfolistAction::make('veli_bilgisi_duzenle')
-            ->label('Düzenle')
+            ->label('')
             ->icon('heroicon-o-pencil-square')
             ->color('gray')
             ->outlined()
@@ -366,7 +397,7 @@ class ViewEkayitKayit extends ViewRecord
     private function okulBilgisiDuzenleAksiyonu(): InfolistAction
     {
         return InfolistAction::make('okul_bilgisi_duzenle')
-            ->label('Düzenle')
+            ->label('')
             ->icon('heroicon-o-pencil-square')
             ->color('gray')
             ->outlined()
@@ -401,7 +432,7 @@ class ViewEkayitKayit extends ViewRecord
     private function kimlikBilgisiDuzenleAksiyonu(): InfolistAction
     {
         return InfolistAction::make('kimlik_bilgisi_duzenle')
-            ->label('Düzenle')
+            ->label('')
             ->icon('heroicon-o-pencil-square')
             ->color('gray')
             ->outlined()
@@ -451,7 +482,7 @@ class ViewEkayitKayit extends ViewRecord
     private function babaBilgisiDuzenleAksiyonu(): InfolistAction
     {
         return InfolistAction::make('baba_bilgisi_duzenle')
-            ->label('Düzenle')
+            ->label('')
             ->icon('heroicon-o-pencil-square')
             ->color('gray')
             ->outlined()
@@ -526,7 +557,12 @@ class ViewEkayitKayit extends ViewRecord
     private function durumAksiyonuOlustur(EkayitDurumu $durum, string $telefonYolu, bool $durumGuncellensin): InfolistAction
     {
         return InfolistAction::make(($durumGuncellensin ? 'tel1_' : 'tel2_') . $durum->value)
-            ->label($durum->label())
+            ->label(match ($durum) {
+                EkayitDurumu::Onaylandi => 'Onay',
+                EkayitDurumu::Reddedildi => 'Red',
+                EkayitDurumu::Yedek => 'Yedek',
+                default => $durum->label(),
+            })
             ->color($durum->renk())
             ->action(function () use ($durum, $telefonYolu, $durumGuncellensin): void {
                 $telefon = data_get($this->record, $telefonYolu);
@@ -571,6 +607,19 @@ class ViewEkayitKayit extends ViewRecord
                 Notification::make()
                     ->title('WhatsApp penceresi açıldı')
                     ->success()
+                    ->send();
+            });
+    }
+
+    private function smsAksiyonuOlustur(string $ad, string $etiket, string $renk): InfolistAction
+    {
+        return InfolistAction::make($ad)
+            ->label($etiket)
+            ->color($renk)
+            ->action(function (): void {
+                Notification::make()
+                    ->title('SMS entegrasyonu henüz aktif değil')
+                    ->warning()
                     ->send();
             });
     }
