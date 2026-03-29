@@ -67,10 +67,11 @@ return [
             'region' => env('DO_SPACES_REGION', env('DO_DEFAULT_REGION', 'ams3')),
             'bucket' => env('DO_SPACES_BUCKET', env('DO_BUCKET')),
             'url' => env('DO_SPACES_CDN_URL', env('DO_URL')),
+            'cdn_url' => env('DO_SPACES_CDN_URL', env('DO_URL')),
             'endpoint' => env('DO_SPACES_ENDPOINT', env('DO_ENDPOINT')),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
-            'root' => env('DO_ROOT', 'img26'),
             'visibility' => 'public',
+            'throw' => false,
         ],
 
     ],

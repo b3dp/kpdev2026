@@ -314,6 +314,11 @@ class GorselOptimizeJob implements ShouldQueue
 
         $slug = Str::slug($sinif->ad);
         $uzanti = pathinfo($this->geciciYol, PATHINFO_EXTENSION) ?: 'jpeg';
+
+        if (! Storage::disk('local')->exists($this->geciciYol)) {
+            return;
+        }
+
         $geciciTamYol = Storage::disk('local')->path($this->geciciYol);
 
         $manager = ImageManager::imagick();
@@ -326,27 +331,39 @@ class GorselOptimizeJob implements ShouldQueue
             $orijinalYol = "{$oriDizin}/{$slug}-original.{$uzanti}";
             $kareyol = "{$optDizin}/{$slug}-1x1.webp";
 
-            Storage::disk('spaces')->put($orijinalYol, Storage::disk('local')->get($this->geciciYol), 'public');
-            Storage::disk('spaces')->put($kareyol, (string) $resim->cover(800, 800)->toWebp(quality: 85), 'public');
+            Storage::disk('spaces')->put($this->spacesYolunuNormalizeEt($orijinalYol), Storage::disk('local')->get($this->geciciYol), 'public');
+            Storage::disk('spaces')->put($this->spacesYolunuNormalizeEt($kareyol), (string) $resim->cover(800, 800)->toWebp(quality: 85), 'public');
 
-            $sinif->update(['gorsel_kare' => Storage::disk('spaces')->url($kareyol)]);
+            $sinif->update(['gorsel_kare' => $kareyol]);
         } elseif ($this->gorselTipi === '9x16') {
             $orijinalYol = "{$oriDizin}/{$slug}-original.{$uzanti}";
             $dikeyyol = "{$optDizin}/{$slug}-9x16.webp";
 
-            Storage::disk('spaces')->put($orijinalYol, Storage::disk('local')->get($this->geciciYol), 'public');
-            Storage::disk('spaces')->put($dikeyyol, (string) $resim->cover(720, 1280)->toWebp(quality: 85), 'public');
+            Storage::disk('spaces')->put($this->spacesYolunuNormalizeEt($orijinalYol), Storage::disk('local')->get($this->geciciYol), 'public');
+            Storage::disk('spaces')->put($this->spacesYolunuNormalizeEt($dikeyyol), (string) $resim->cover(720, 1280)->toWebp(quality: 85), 'public');
 
-            $sinif->update(['gorsel_dikey' => Storage::disk('spaces')->url($dikeyyol)]);
+            $sinif->update(['gorsel_dikey' => $dikeyyol]);
         } elseif ($this->gorselTipi === '16x9') {
             $orijinalYol = "{$oriDizin}/{$slug}-original.{$uzanti}";
             $yatayayol = "{$optDizin}/{$slug}-16x9.webp";
 
-            Storage::disk('spaces')->put($orijinalYol, Storage::disk('local')->get($this->geciciYol), 'public');
-            Storage::disk('spaces')->put($yatayayol, (string) $resim->cover(1280, 720)->toWebp(quality: 85), 'public');
+            Storage::disk('spaces')->put($this->spacesYolunuNormalizeEt($orijinalYol), Storage::disk('local')->get($this->geciciYol), 'public');
+            Storage::disk('spaces')->put($this->spacesYolunuNormalizeEt($yatayayol), (string) $resim->cover(1280, 720)->toWebp(quality: 85), 'public');
 
-            $sinif->update(['gorsel_yatay' => Storage::disk('spaces')->url($yatayayol)]);
+            $sinif->update(['gorsel_yatay' => $yatayayol]);
         }
+    }
+
+    protected function spacesYolunuNormalizeEt(string $yol): string
+    {
+        $yol = ltrim($yol, '/');
+        $kok = trim((string) config('filesystems.disks.spaces.root', ''), '/');
+
+        if ($kok !== '' && str_starts_with($yol, $kok . '/')) {
+            return substr($yol, strlen($kok) + 1);
+        }
+
+        return $yol;
     }
 
     public function failed(Throwable $exception): void
