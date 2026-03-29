@@ -8,8 +8,10 @@ use App\Jobs\EkayitDurumEpostasiJob;
 use App\Models\EkayitHazirMesaj;
 use App\Models\EkayitKayit;
 use Carbon\Carbon;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\Actions\Action as InfolistAction;
 use Filament\Infolists\Components\Grid;
 use Filament\Infolists\Components\Section;
@@ -36,13 +38,17 @@ class ViewEkayitKayit extends ViewRecord
     public function infolist(Infolist $infolist): Infolist
     {
         return $infolist->record($this->record)->schema([
-            Grid::make(['default' => 1, 'lg' => 2])->schema([
+            Grid::make(4)->schema([
                 Section::make('Onay/Red Sebebi')
                     ->schema([
                         TextEntry::make('durum_notu')
                             ->label('Mevcut Durum Notu')
                             ->default('—')
                             ->columnSpanFull(),
+                        TextEntry::make('hazir_mesaj_bilgi')
+                            ->label('Hazır Mesaj')
+                            ->state('Henüz hazır mesaj tanımlanmamış')
+                            ->visible(fn (): bool => ! $this->hazirMesajVarMi()),
                     ])
                     ->footerActions([
                         InfolistAction::make('durum_notu_kaydet')
@@ -53,6 +59,8 @@ class ViewEkayitKayit extends ViewRecord
                                 Select::make('hazir_mesaj_id')
                                     ->label('Hazır Mesaj Seç')
                                     ->options(fn (): array => $this->hazirMesajSecenekleri())
+                                    ->placeholder('Henüz hazır mesaj tanımlanmamış')
+                                    ->disabled(fn (): bool => ! $this->hazirMesajVarMi())
                                     ->searchable(),
                                 Textarea::make('durum_notu')
                                     ->label('Manuel Mesaj')
@@ -129,82 +137,357 @@ class ViewEkayitKayit extends ViewRecord
                     ]),
             ]),
 
-            Grid::make(['default' => 1, 'lg' => 2])->schema([
-                Section::make('Kayıt Bilgisi')->schema([
-                    TextEntry::make('durum')->label('Durum')->badge()
-                        ->formatStateUsing(function ($state): string {
-                            $durum = $state instanceof EkayitDurumu ? $state : EkayitDurumu::tryFrom((string) $state);
+            Grid::make(2)->schema([
+                Section::make('Kayıt Bilgisi')
+                    ->schema([
+                        TextEntry::make('durum')->label('Durum')->badge()
+                            ->formatStateUsing(function ($state): string {
+                                $durum = $state instanceof EkayitDurumu ? $state : EkayitDurumu::tryFrom((string) $state);
 
-                            return $durum?->label() ?? (string) $state;
-                        })
-                        ->color(function ($state): string {
-                            $durum = $state instanceof EkayitDurumu ? $state : EkayitDurumu::tryFrom((string) $state);
+                                return $durum?->label() ?? (string) $state;
+                            })
+                            ->color(function ($state): string {
+                                $durum = $state instanceof EkayitDurumu ? $state : EkayitDurumu::tryFrom((string) $state);
 
-                            return $durum?->renk() ?? 'gray';
-                        }),
-                    TextEntry::make('sinif.ad')->label('Sınıf')->default('—'),
-                    TextEntry::make('sinif.donem.ad')->label('Dönem')->default('—'),
-                    TextEntry::make('sinif.kurum.ad')->label('Kurum')->default('—'),
-                    TextEntry::make('created_at')->label('Kayıt Tarihi')
-                        ->formatStateUsing(fn ($state): string => $state ? Carbon::parse($state)->format('d.m.Y H:i') : '—'),
-                    TextEntry::make('durum_tarihi')->label('Durum Tarihi')
-                        ->formatStateUsing(fn ($state): string => $state ? Carbon::parse($state)->format('d.m.Y H:i') : '—'),
-                    TextEntry::make('durum_notu')->label('Durum Notu')->default('—')->columnSpanFull(),
-                    TextEntry::make('genel_not')->label('Genel Not')->default('—')->columnSpanFull(),
-                ]),
+                                return $durum?->renk() ?? 'gray';
+                            }),
+                        TextEntry::make('sinif.ad')->label('Sınıf')->default('—'),
+                        TextEntry::make('sinif.donem.ad')->label('Dönem')->default('—'),
+                        TextEntry::make('sinif.kurum.ad')->label('Kurum')->default('—'),
+                        TextEntry::make('created_at')->label('Kayıt Tarihi')
+                            ->formatStateUsing(fn ($state): string => $state ? Carbon::parse($state)->format('d.m.Y H:i') : '—'),
+                        TextEntry::make('durum_tarihi')->label('Durum Tarihi')
+                            ->formatStateUsing(fn ($state): string => $state ? Carbon::parse($state)->format('d.m.Y H:i') : '—'),
+                        TextEntry::make('durum_notu')->label('Durum Notu')->default('—')->columnSpanFull(),
+                        TextEntry::make('genel_not')->label('Genel Not')->default('—')->columnSpanFull(),
+                    ])
+                    ->footerActions([
+                        $this->kayitBilgisiDuzenleAksiyonu(),
+                    ]),
 
-                Section::make('Öğrenci Bilgileri')->schema([
-                    TextEntry::make('ogrenciBilgisi.ad_soyad')->label('Ad Soyad')->default('—'),
-                    TextEntry::make('ogrenciBilgisi.tc_kimlik')
-                        ->label('TC Kimlik')
-                        ->formatStateUsing(function (?string $state): string {
-                            if (blank($state) || mb_strlen($state) < 6) {
-                                return (string) ($state ?? '—');
-                            }
+                Section::make('Öğrenci Bilgileri')
+                    ->schema([
+                        TextEntry::make('ogrenciBilgisi.ad_soyad')->label('Ad Soyad')->default('—'),
+                        TextEntry::make('ogrenciBilgisi.tc_kimlik')
+                            ->label('TC Kimlik')
+                            ->formatStateUsing(function (?string $state): string {
+                                if (blank($state) || mb_strlen($state) < 6) {
+                                    return (string) ($state ?? '—');
+                                }
 
-                            return mb_substr($state, 0, 3) . '****' . mb_substr($state, -3);
-                        }),
-                    TextEntry::make('ogrenciBilgisi.dogum_tarihi')->label('Doğum Tarihi')
-                        ->formatStateUsing(fn ($state): string => $state ? Carbon::parse($state)->format('d.m.Y') : '—'),
-                    TextEntry::make('ogrenciBilgisi.dogum_yeri')->label('Doğum Yeri')->default('—'),
-                    TextEntry::make('ogrenciBilgisi.baba_adi')->label('Baba Adı')->default('—'),
-                    TextEntry::make('ogrenciBilgisi.anne_adi')->label('Anne Adı')->default('—'),
-                    TextEntry::make('ogrenciBilgisi.ikamet_il')->label('İkamet İl')->default('—'),
-                    TextEntry::make('ogrenciBilgisi.adres')->label('Adres')->default('—')->columnSpanFull(),
-                ]),
+                                return mb_substr($state, 0, 3) . '****' . mb_substr($state, -3);
+                            }),
+                        TextEntry::make('ogrenciBilgisi.dogum_tarihi')->label('Doğum Tarihi')
+                            ->formatStateUsing(fn ($state): string => $state ? Carbon::parse($state)->format('d.m.Y') : '—'),
+                        TextEntry::make('ogrenciBilgisi.dogum_yeri')->label('Doğum Yeri')->default('—'),
+                        TextEntry::make('ogrenciBilgisi.baba_adi')->label('Baba Adı')->default('—'),
+                        TextEntry::make('ogrenciBilgisi.anne_adi')->label('Anne Adı')->default('—'),
+                        TextEntry::make('ogrenciBilgisi.ikamet_il')->label('İkamet İl')->default('—'),
+                        TextEntry::make('ogrenciBilgisi.adres')->label('Adres')->default('—')->columnSpanFull(),
+                    ])
+                    ->footerActions([
+                        $this->ogrenciBilgisiDuzenleAksiyonu(),
+                    ]),
 
-                Section::make('Veli Bilgileri')->schema([
-                    TextEntry::make('veliBilgisi.ad_soyad')->label('Ad Soyad')->default('—'),
-                    TextEntry::make('veliBilgisi.eposta')->label('E-posta')->default('—'),
-                    TextEntry::make('veliBilgisi.telefon_1')->label('Telefon 1')->default('—'),
-                    TextEntry::make('veliBilgisi.telefon_2')->label('Telefon 2')->default('—'),
-                ]),
+                Section::make('Veli Bilgileri')
+                    ->schema([
+                        TextEntry::make('veliBilgisi.ad_soyad')->label('Ad Soyad')->default('—'),
+                        TextEntry::make('veliBilgisi.eposta')->label('E-posta')->default('—'),
+                        TextEntry::make('veliBilgisi.telefon_1')->label('Telefon 1')->default('—'),
+                        TextEntry::make('veliBilgisi.telefon_2')->label('Telefon 2')->default('—'),
+                    ])
+                    ->footerActions([
+                        $this->veliBilgisiDuzenleAksiyonu(),
+                    ]),
 
-                Section::make('Okul Bilgileri')->schema([
-                    TextEntry::make('okulBilgisi.okul_adi')->label('Okul Adı')->default('—'),
-                    TextEntry::make('okulBilgisi.okul_numarasi')->label('Okul Numarası')->default('—'),
-                    TextEntry::make('okulBilgisi.sube')->label('Şube')->default('—'),
-                    TextEntry::make('okulBilgisi.not')->label('Not')->default('—'),
-                ]),
+                Section::make('Okul Bilgileri')
+                    ->schema([
+                        TextEntry::make('okulBilgisi.okul_adi')->label('Okul Adı')->default('—'),
+                        TextEntry::make('okulBilgisi.okul_numarasi')->label('Okul Numarası')->default('—'),
+                        TextEntry::make('okulBilgisi.sube')->label('Şube')->default('—'),
+                        TextEntry::make('okulBilgisi.not')->label('Not')->default('—'),
+                    ])
+                    ->footerActions([
+                        $this->okulBilgisiDuzenleAksiyonu(),
+                    ]),
 
-                Section::make('Kimlik Bilgileri')->schema([
-                    TextEntry::make('kimlikBilgisi.kayitli_il')->label('Kayıtlı İl')->default('—'),
-                    TextEntry::make('kimlikBilgisi.kayitli_ilce')->label('Kayıtlı İlçe')->default('—'),
-                    TextEntry::make('kimlikBilgisi.kayitli_mahalle_koy')->label('Mahalle/Köy')->default('—'),
-                    TextEntry::make('kimlikBilgisi.cilt_no')->label('Cilt No')->default('—'),
-                    TextEntry::make('kimlikBilgisi.aile_sira_no')->label('Aile Sıra No')->default('—'),
-                    TextEntry::make('kimlikBilgisi.sira_no')->label('Sıra No')->default('—'),
-                    TextEntry::make('kimlikBilgisi.cuzdanin_verildigi_yer')->label('Cüzdanın Verildiği Yer')->default('—'),
-                    TextEntry::make('kimlikBilgisi.kimlik_seri_no')->label('Kimlik Seri No')->default('—'),
-                    TextEntry::make('kimlikBilgisi.kan_grubu')->label('Kan Grubu')->default('—'),
-                ]),
+                Section::make('Kimlik Bilgileri')
+                    ->schema([
+                        TextEntry::make('kimlikBilgisi.kayitli_il')->label('Kayıtlı İl')->default('—'),
+                        TextEntry::make('kimlikBilgisi.kayitli_ilce')->label('Kayıtlı İlçe')->default('—'),
+                        TextEntry::make('kimlikBilgisi.kayitli_mahalle_koy')->label('Mahalle/Köy')->default('—'),
+                        TextEntry::make('kimlikBilgisi.cilt_no')->label('Cilt No')->default('—'),
+                        TextEntry::make('kimlikBilgisi.aile_sira_no')->label('Aile Sıra No')->default('—'),
+                        TextEntry::make('kimlikBilgisi.sira_no')->label('Sıra No')->default('—'),
+                        TextEntry::make('kimlikBilgisi.cuzdanin_verildigi_yer')->label('Cüzdanın Verildiği Yer')->default('—'),
+                        TextEntry::make('kimlikBilgisi.kimlik_seri_no')->label('Kimlik Seri No')->default('—'),
+                        TextEntry::make('kimlikBilgisi.kan_grubu')->label('Kan Grubu')->default('—'),
+                    ])
+                    ->footerActions([
+                        $this->kimlikBilgisiDuzenleAksiyonu(),
+                    ]),
 
-                Section::make('Baba Bilgileri')->schema([
-                    TextEntry::make('babaBilgisi.dogum_yeri')->label('Doğum Yeri')->default('—'),
-                    TextEntry::make('babaBilgisi.nufus_il_ilce')->label('Nüfus İl/İlçe')->default('—'),
-                ]),
+                Section::make('Baba Bilgileri')
+                    ->schema([
+                        TextEntry::make('babaBilgisi.dogum_yeri')->label('Doğum Yeri')->default('—'),
+                        TextEntry::make('babaBilgisi.nufus_il_ilce')->label('Nüfus İl/İlçe')->default('—'),
+                    ])
+                    ->footerActions([
+                        $this->babaBilgisiDuzenleAksiyonu(),
+                    ]),
             ]),
         ]);
+    }
+
+    private function kayitBilgisiDuzenleAksiyonu(): InfolistAction
+    {
+        return InfolistAction::make('kayit_bilgisi_duzenle')
+            ->label('Düzenle')
+            ->icon('heroicon-o-pencil-square')
+            ->color('gray')
+            ->outlined()
+            ->form([
+                Select::make('durum')
+                    ->label('Durum')
+                    ->options(EkayitDurumu::secenekler())
+                    ->required(),
+                Textarea::make('durum_notu')->label('Durum Notu')->rows(3),
+                Textarea::make('genel_not')->label('Genel Not')->rows(3),
+            ])
+            ->fillForm(fn (): array => [
+                'durum' => $this->record->durum?->value ?? $this->record->durum,
+                'durum_notu' => $this->record->durum_notu,
+                'genel_not' => $this->record->genel_not,
+            ])
+            ->action(function (array $data): void {
+                $this->record->update([
+                    'durum' => $data['durum'],
+                    'durum_notu' => $data['durum_notu'] ?? null,
+                    'genel_not' => $data['genel_not'] ?? null,
+                ]);
+
+                $this->kaydiYenile();
+                $this->basariliBildirimGonder('Kayıt bilgisi güncellendi');
+            });
+    }
+
+    private function ogrenciBilgisiDuzenleAksiyonu(): InfolistAction
+    {
+        return InfolistAction::make('ogrenci_bilgisi_duzenle')
+            ->label('Düzenle')
+            ->icon('heroicon-o-pencil-square')
+            ->color('gray')
+            ->outlined()
+            ->form([
+                TextInput::make('ad_soyad')->label('Ad Soyad')->required()->maxLength(255),
+                TextInput::make('tc_kimlik')->label('TC Kimlik')->required()->maxLength(11),
+                DatePicker::make('dogum_tarihi')->label('Doğum Tarihi')->required(),
+                TextInput::make('dogum_yeri')->label('Doğum Yeri')->maxLength(255),
+                TextInput::make('baba_adi')->label('Baba Adı')->maxLength(255),
+                TextInput::make('anne_adi')->label('Anne Adı')->maxLength(255),
+                TextInput::make('ikamet_il')->label('İkamet İl')->maxLength(100),
+                Textarea::make('adres')->label('Adres')->rows(3)->columnSpanFull(),
+            ])
+            ->fillForm(fn (): array => [
+                'ad_soyad' => $this->record->ogrenciBilgisi?->ad_soyad,
+                'tc_kimlik' => $this->record->ogrenciBilgisi?->tc_kimlik,
+                'dogum_tarihi' => $this->record->ogrenciBilgisi?->dogum_tarihi?->toDateString(),
+                'dogum_yeri' => $this->record->ogrenciBilgisi?->dogum_yeri,
+                'baba_adi' => $this->record->ogrenciBilgisi?->baba_adi,
+                'anne_adi' => $this->record->ogrenciBilgisi?->anne_adi,
+                'ikamet_il' => $this->record->ogrenciBilgisi?->ikamet_il,
+                'adres' => $this->record->ogrenciBilgisi?->adres,
+            ])
+            ->action(function (array $data): void {
+                $this->record->ogrenciBilgisi()->updateOrCreate(
+                    ['kayit_id' => $this->record->id],
+                    [
+                        'ad_soyad' => $data['ad_soyad'],
+                        'tc_kimlik' => $data['tc_kimlik'],
+                        'dogum_tarihi' => $data['dogum_tarihi'],
+                        'dogum_yeri' => $data['dogum_yeri'] ?? null,
+                        'baba_adi' => $data['baba_adi'] ?? null,
+                        'anne_adi' => $data['anne_adi'] ?? null,
+                        'ikamet_il' => $data['ikamet_il'] ?? null,
+                        'adres' => $data['adres'] ?? null,
+                    ]
+                );
+
+                $this->kaydiYenile();
+                $this->basariliBildirimGonder('Öğrenci bilgileri güncellendi');
+            });
+    }
+
+    private function veliBilgisiDuzenleAksiyonu(): InfolistAction
+    {
+        return InfolistAction::make('veli_bilgisi_duzenle')
+            ->label('Düzenle')
+            ->icon('heroicon-o-pencil-square')
+            ->color('gray')
+            ->outlined()
+            ->form([
+                TextInput::make('ad_soyad')->label('Ad Soyad')->required()->maxLength(255),
+                TextInput::make('eposta')->label('E-posta')->email()->maxLength(255),
+                TextInput::make('telefon_1')->label('Telefon 1')->required()->maxLength(20),
+                TextInput::make('telefon_2')->label('Telefon 2')->maxLength(20),
+            ])
+            ->fillForm(fn (): array => [
+                'ad_soyad' => $this->record->veliBilgisi?->ad_soyad,
+                'eposta' => $this->record->veliBilgisi?->eposta,
+                'telefon_1' => $this->record->veliBilgisi?->telefon_1,
+                'telefon_2' => $this->record->veliBilgisi?->telefon_2,
+            ])
+            ->action(function (array $data): void {
+                $this->record->veliBilgisi()->updateOrCreate(
+                    ['kayit_id' => $this->record->id],
+                    [
+                        'ad_soyad' => $data['ad_soyad'],
+                        'eposta' => $data['eposta'] ?? null,
+                        'telefon_1' => $data['telefon_1'],
+                        'telefon_2' => $data['telefon_2'] ?? null,
+                    ]
+                );
+
+                $this->kaydiYenile();
+                $this->basariliBildirimGonder('Veli bilgileri güncellendi');
+            });
+    }
+
+    private function okulBilgisiDuzenleAksiyonu(): InfolistAction
+    {
+        return InfolistAction::make('okul_bilgisi_duzenle')
+            ->label('Düzenle')
+            ->icon('heroicon-o-pencil-square')
+            ->color('gray')
+            ->outlined()
+            ->form([
+                TextInput::make('okul_adi')->label('Okul Adı')->maxLength(255),
+                TextInput::make('okul_numarasi')->label('Okul Numarası')->maxLength(50),
+                TextInput::make('sube')->label('Şube')->maxLength(10),
+                Textarea::make('not')->label('Not')->rows(3)->columnSpanFull(),
+            ])
+            ->fillForm(fn (): array => [
+                'okul_adi' => $this->record->okulBilgisi?->okul_adi,
+                'okul_numarasi' => $this->record->okulBilgisi?->okul_numarasi,
+                'sube' => $this->record->okulBilgisi?->sube,
+                'not' => $this->record->okulBilgisi?->not,
+            ])
+            ->action(function (array $data): void {
+                $this->record->okulBilgisi()->updateOrCreate(
+                    ['kayit_id' => $this->record->id],
+                    [
+                        'okul_adi' => $data['okul_adi'] ?? null,
+                        'okul_numarasi' => $data['okul_numarasi'] ?? null,
+                        'sube' => $data['sube'] ?? null,
+                        'not' => $data['not'] ?? null,
+                    ]
+                );
+
+                $this->kaydiYenile();
+                $this->basariliBildirimGonder('Okul bilgileri güncellendi');
+            });
+    }
+
+    private function kimlikBilgisiDuzenleAksiyonu(): InfolistAction
+    {
+        return InfolistAction::make('kimlik_bilgisi_duzenle')
+            ->label('Düzenle')
+            ->icon('heroicon-o-pencil-square')
+            ->color('gray')
+            ->outlined()
+            ->form([
+                TextInput::make('kayitli_il')->label('Kayıtlı İl')->maxLength(100),
+                TextInput::make('kayitli_ilce')->label('Kayıtlı İlçe')->maxLength(100),
+                TextInput::make('kayitli_mahalle_koy')->label('Mahalle/Köy')->maxLength(255),
+                TextInput::make('cilt_no')->label('Cilt No')->maxLength(50),
+                TextInput::make('aile_sira_no')->label('Aile Sıra No')->maxLength(50),
+                TextInput::make('sira_no')->label('Sıra No')->maxLength(50),
+                TextInput::make('cuzdanin_verildigi_yer')->label('Cüzdanın Verildiği Yer')->maxLength(255),
+                TextInput::make('kimlik_seri_no')->label('Kimlik Seri No')->maxLength(50),
+                TextInput::make('kan_grubu')->label('Kan Grubu')->maxLength(10),
+            ])
+            ->fillForm(fn (): array => [
+                'kayitli_il' => $this->record->kimlikBilgisi?->kayitli_il,
+                'kayitli_ilce' => $this->record->kimlikBilgisi?->kayitli_ilce,
+                'kayitli_mahalle_koy' => $this->record->kimlikBilgisi?->kayitli_mahalle_koy,
+                'cilt_no' => $this->record->kimlikBilgisi?->cilt_no,
+                'aile_sira_no' => $this->record->kimlikBilgisi?->aile_sira_no,
+                'sira_no' => $this->record->kimlikBilgisi?->sira_no,
+                'cuzdanin_verildigi_yer' => $this->record->kimlikBilgisi?->cuzdanin_verildigi_yer,
+                'kimlik_seri_no' => $this->record->kimlikBilgisi?->kimlik_seri_no,
+                'kan_grubu' => $this->record->kimlikBilgisi?->kan_grubu,
+            ])
+            ->action(function (array $data): void {
+                $this->record->kimlikBilgisi()->updateOrCreate(
+                    ['kayit_id' => $this->record->id],
+                    [
+                        'kayitli_il' => $data['kayitli_il'] ?? null,
+                        'kayitli_ilce' => $data['kayitli_ilce'] ?? null,
+                        'kayitli_mahalle_koy' => $data['kayitli_mahalle_koy'] ?? null,
+                        'cilt_no' => $data['cilt_no'] ?? null,
+                        'aile_sira_no' => $data['aile_sira_no'] ?? null,
+                        'sira_no' => $data['sira_no'] ?? null,
+                        'cuzdanin_verildigi_yer' => $data['cuzdanin_verildigi_yer'] ?? null,
+                        'kimlik_seri_no' => $data['kimlik_seri_no'] ?? null,
+                        'kan_grubu' => $data['kan_grubu'] ?? null,
+                    ]
+                );
+
+                $this->kaydiYenile();
+                $this->basariliBildirimGonder('Kimlik bilgileri güncellendi');
+            });
+    }
+
+    private function babaBilgisiDuzenleAksiyonu(): InfolistAction
+    {
+        return InfolistAction::make('baba_bilgisi_duzenle')
+            ->label('Düzenle')
+            ->icon('heroicon-o-pencil-square')
+            ->color('gray')
+            ->outlined()
+            ->form([
+                TextInput::make('dogum_yeri')->label('Doğum Yeri')->maxLength(255),
+                TextInput::make('nufus_il_ilce')->label('Nüfus İl/İlçe')->maxLength(255),
+            ])
+            ->fillForm(fn (): array => [
+                'dogum_yeri' => $this->record->babaBilgisi?->dogum_yeri,
+                'nufus_il_ilce' => $this->record->babaBilgisi?->nufus_il_ilce,
+            ])
+            ->action(function (array $data): void {
+                $this->record->babaBilgisi()->updateOrCreate(
+                    ['kayit_id' => $this->record->id],
+                    [
+                        'dogum_yeri' => $data['dogum_yeri'] ?? null,
+                        'nufus_il_ilce' => $data['nufus_il_ilce'] ?? null,
+                    ]
+                );
+
+                $this->kaydiYenile();
+                $this->basariliBildirimGonder('Baba bilgileri güncellendi');
+            });
+    }
+
+    private function kaydiYenile(): void
+    {
+        $this->record->refresh();
+        $this->record->load([
+            'sinif.donem',
+            'sinif.kurum',
+            'ogrenciBilgisi',
+            'kimlikBilgisi',
+            'okulBilgisi',
+            'veliBilgisi',
+            'babaBilgisi',
+            'yonetici',
+        ]);
+    }
+
+    private function basariliBildirimGonder(string $mesaj): void
+    {
+        Notification::make()
+            ->title($mesaj)
+            ->success()
+            ->send();
     }
 
     private function hazirMesajSecenekleri(): array
@@ -216,6 +499,11 @@ class ViewEkayitKayit extends ViewRecord
                 $mesaj->id => sprintf('%s (%s)', (string) $mesaj->baslik, strtoupper((string) $mesaj->tip)),
             ])
             ->all();
+    }
+
+    private function hazirMesajVarMi(): bool
+    {
+        return EkayitHazirMesaj::query()->exists();
     }
 
     private function hazirMesajMetni(int $hazirMesajId): ?string
