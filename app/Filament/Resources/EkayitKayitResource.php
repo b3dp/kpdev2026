@@ -44,7 +44,7 @@ class EkayitKayitResource extends Resource
 
     public static function canEdit($record): bool
     {
-        return auth()->check() && auth()->user()->hasAnyPermissionTo(['ekayit.durum_guncelle', 'ekayit.listele']);
+        return auth()->check() && auth()->user()->hasAnyPermission(['ekayit.durum_guncelle', 'ekayit.listele']);
     }
 
     public static function canDelete($record): bool
