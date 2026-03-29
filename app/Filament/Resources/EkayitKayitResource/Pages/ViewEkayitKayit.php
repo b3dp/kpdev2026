@@ -40,6 +40,7 @@ class ViewEkayitKayit extends ViewRecord
         return $infolist->record($this->record)->schema([
             Grid::make(4)->schema([
                 Section::make('Onay/Red Sebebi')
+                    ->columnSpan(1)
                     ->schema([
                         TextEntry::make('durum_notu')
                             ->label('Mevcut Durum Notu')
@@ -91,6 +92,7 @@ class ViewEkayitKayit extends ViewRecord
                     ]),
 
                 Section::make('İletişim Telefonu 01')
+                    ->columnSpan(1)
                     ->schema([
                         TextEntry::make('veliBilgisi.telefon_1')
                             ->label('Telefon 1')
@@ -103,6 +105,7 @@ class ViewEkayitKayit extends ViewRecord
                     ]),
 
                 Section::make('İletişim Telefonu 02')
+                    ->columnSpan(1)
                     ->schema([
                         TextEntry::make('veliBilgisi.telefon_2')
                             ->label('Telefon 2')
@@ -116,6 +119,7 @@ class ViewEkayitKayit extends ViewRecord
                     ->visible(fn (): bool => filled($this->record->veliBilgisi?->telefon_2)),
 
                 Section::make('Dökümanlar')
+                    ->columnSpan(1)
                     ->schema([
                         TextEntry::make('dokuman_bilgi')
                             ->label('Bilgi')
