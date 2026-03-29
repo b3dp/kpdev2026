@@ -68,7 +68,7 @@ class EditHaber extends EditRecord
 
         // Ana görsel
         $anaGorsel = data_get($this->data, 'ana_gorsel_gecici');
-        $anaGorsel = is_array($anaGorsel) ? ($anaGorsel[0] ?? null) : $anaGorsel;
+        $anaGorsel = is_array($anaGorsel) ? (array_values($anaGorsel)[0] ?? null) : $anaGorsel;
         if (filled($anaGorsel) && is_string($anaGorsel)) {
             dispatch_sync(new GorselOptimizeJob($haber->id, 'haber', 'ana_gorsel', $anaGorsel, 1));
         }

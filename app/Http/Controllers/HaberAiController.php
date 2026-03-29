@@ -29,6 +29,9 @@ class HaberAiController extends Controller
             ]);
 
             $metin = (string) $haber->icerik;
+            $metin = strip_tags($metin);
+            $metin = html_entity_decode($metin, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $metin = trim(preg_replace('/\s+/u', ' ', $metin) ?? $metin);
 
             $haber->update(['ai_islem_yuzde' => 20, 'ai_islem_adim' => 'İmla düzeltme yapılıyor']);
             $duzeltilmisMetin = $geminiService->imlaDuzelt($metin);

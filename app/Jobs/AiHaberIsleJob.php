@@ -52,6 +52,10 @@ class AiHaberIsleJob implements ShouldQueue
             'ai_islendi' => true,
         ]);
 
+        \Log::debug('AI_KISI_TESPIT_METIN', [
+            'haber_id' => $haber->id,
+            'metin_ilk_500' => mb_substr($duzeltilmisMetin, 0, 500),
+        ]);
         $kisiSonuclar = $geminiService->kisiTespitEt($duzeltilmisMetin);
         foreach ($kisiSonuclar as $kisiVerisi) {
             $adSoyad = trim((string) ($kisiVerisi['ad_soyad'] ?? ''));

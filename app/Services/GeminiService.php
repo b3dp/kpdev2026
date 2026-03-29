@@ -197,7 +197,7 @@ kod bloğu YAZMA. Direkt JSON ile başla:
 - tip alanı bilinmiyorsa: "diger"
 PROMPT;
 
-        $json = $this->jsonCevabiAl($sistemPrompt . "\n\nMetin:\n" . $metin);
+        $json = $this->jsonCevabiAl("Metni analiz et:\n\n" . $metin, $sistemPrompt);
 
         $kisiler = [];
         $kurumlar = [];
@@ -226,10 +226,10 @@ PROMPT;
         }
     }
 
-    private function jsonCevabiAl(string $prompt): array
+    private function jsonCevabiAl(string $prompt, ?string $sistemPrompt = null): array
     {
         try {
-            $metin = $this->apiIstegiYap($prompt);
+            $metin = $this->apiIstegiYap($prompt, $sistemPrompt);
             if (! filled($metin)) {
                 return [];
             }
@@ -295,7 +295,7 @@ PROMPT;
         return [];
     }
 
-    private function apiIstegiYap(string $prompt): ?string
+    private function apiIstegiYap(string $prompt, ?string $sistemPrompt = null): ?string
     {
         $apiKey = config('services.gemini.api_key');
         $model = (string) config('services.gemini.model', 'gemini-2.5-flash');
@@ -304,17 +304,27 @@ PROMPT;
             return null;
         }
 
-        $response = $this->http->post('/v1beta/models/' . $model . ':generateContent', [
-            'query' => ['key' => $apiKey],
-            'json' => [
-                'contents' => [
-                    [
-                        'parts' => [
-                            ['text' => $prompt],
-                        ],
+        $body = [
+            'contents' => [
+                [
+                    'parts' => [
+                        ['text' => $prompt],
                     ],
                 ],
             ],
+        ];
+
+        if (filled($sistemPrompt)) {
+            $body['system_instruction'] = [
+                'parts' => [
+                    ['text' => $sistemPrompt],
+                ],
+            ];
+        }
+
+        $response = $this->http->post('/v1beta/models/' . $model . ':generateContent', [
+            'query' => ['key' => $apiKey],
+            'json' => $body,
         ]);
 
         $data = json_decode((string) $response->getBody(), true);
