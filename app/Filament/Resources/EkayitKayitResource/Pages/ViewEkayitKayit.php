@@ -139,6 +139,7 @@ class ViewEkayitKayit extends ViewRecord
 
             Grid::make(2)->schema([
                 Section::make('Kayıt Bilgisi')
+                    ->columnSpan(1)
                     ->schema([
                         TextEntry::make('durum')->label('Durum')->badge()
                             ->formatStateUsing(function ($state): string {
@@ -166,6 +167,7 @@ class ViewEkayitKayit extends ViewRecord
                     ]),
 
                 Section::make('Öğrenci Bilgileri')
+                    ->columnSpan(1)
                     ->schema([
                         TextEntry::make('ogrenciBilgisi.ad_soyad')->label('Ad Soyad')->default('—'),
                         TextEntry::make('ogrenciBilgisi.tc_kimlik')
@@ -190,6 +192,7 @@ class ViewEkayitKayit extends ViewRecord
                     ]),
 
                 Section::make('Veli Bilgileri')
+                    ->columnSpan(1)
                     ->schema([
                         TextEntry::make('veliBilgisi.ad_soyad')->label('Ad Soyad')->default('—'),
                         TextEntry::make('veliBilgisi.eposta')->label('E-posta')->default('—'),
@@ -201,6 +204,7 @@ class ViewEkayitKayit extends ViewRecord
                     ]),
 
                 Section::make('Okul Bilgileri')
+                    ->columnSpan(1)
                     ->schema([
                         TextEntry::make('okulBilgisi.okul_adi')->label('Okul Adı')->default('—'),
                         TextEntry::make('okulBilgisi.okul_numarasi')->label('Okul Numarası')->default('—'),
@@ -212,6 +216,7 @@ class ViewEkayitKayit extends ViewRecord
                     ]),
 
                 Section::make('Kimlik Bilgileri')
+                    ->columnSpan(1)
                     ->schema([
                         TextEntry::make('kimlikBilgisi.kayitli_il')->label('Kayıtlı İl')->default('—'),
                         TextEntry::make('kimlikBilgisi.kayitli_ilce')->label('Kayıtlı İlçe')->default('—'),
@@ -228,6 +233,7 @@ class ViewEkayitKayit extends ViewRecord
                     ]),
 
                 Section::make('Baba Bilgileri')
+                    ->columnSpan(1)
                     ->schema([
                         TextEntry::make('babaBilgisi.dogum_yeri')->label('Doğum Yeri')->default('—'),
                         TextEntry::make('babaBilgisi.nufus_il_ilce')->label('Nüfus İl/İlçe')->default('—'),
