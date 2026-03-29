@@ -238,10 +238,10 @@ PROMPT;
         }
     }
 
-    private function jsonCevabiAl(string $prompt, ?string $sistemPrompt = null): array
+    private function jsonCevabiAl(string $prompt, ?string $sistemPrompt = null, ?string $modelOverride = null): array
     {
         try {
-            $metin = $this->apiIstegiYap($prompt, $sistemPrompt);
+            $metin = $this->apiIstegiYap($prompt, $sistemPrompt, $modelOverride);
             if (! filled($metin)) {
                 return [];
             }
@@ -259,7 +259,7 @@ PROMPT;
             $ayiklanan = $this->jsonDecodeEt($jsonParcasi);
 
             return $ayiklanan ?? [];
-        } catch (Throwable) {
+        } catch (Throwable $e) {
             return [];
         }
     }
@@ -307,10 +307,10 @@ PROMPT;
         return [];
     }
 
-    private function apiIstegiYap(string $prompt, ?string $sistemPrompt = null): ?string
+    private function apiIstegiYap(string $prompt, ?string $sistemPrompt = null, ?string $modelOverride = null): ?string
     {
         $apiKey = config('services.gemini.api_key');
-        $model = (string) config('services.gemini.model', 'gemini-2.5-flash');
+        $model = $modelOverride ?? (string) config('services.gemini.model', 'gemini-2.5-flash');
 
         if (! filled($apiKey)) {
             return null;
