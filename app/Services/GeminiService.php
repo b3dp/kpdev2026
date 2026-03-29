@@ -21,10 +21,18 @@ class GeminiService
 
     public function imlaDuzelt(string $metin): string
     {
-        return $this->metinCevabiAl(
-            "Aşağıdaki metinde sadece yazım ve imla hatalarını düzelt. Anlamı, üslubu ve cümle yapısını değiştirme:\n\n" . $metin,
+        $yanit = $this->metinCevabiAl(
+            "Aşağıdaki HTML metinde sadece yazım ve imla hatalarını düzelt. " .
+            "HTML tag yapısını ve paragraf düzenini AYNEN koru. " .
+            "Markdown kullanma, sadece HTML döndür. " .
+            "Başına veya sonuna ```html veya ``` ekleme. " .
+            "Anlamı, üslubu ve cümle yapısını kesinlikle değiştirme:\n\n" . $metin,
             $metin
         );
+        // Markdown code fence temizle
+        $yanit = preg_replace('/^```(?:html)?\s*/i', '', trim($yanit));
+        $yanit = preg_replace('/\s*```$/i', '', $yanit);
+        return trim($yanit);
     }
 
     public function ozetUret(string $metin): string

@@ -44,6 +44,10 @@ class HaberAiController extends Controller
 
             $haber->update(['ai_islem_yuzde' => 20, 'ai_islem_adim' => 'İmla düzeltme yapılıyor']);
             $duzeltilmisMetin = $geminiService->imlaDuzelt($temizHtml);
+            // Kişi/kurum tespiti için düzeltilmiş metinden düz metin üret
+            $metin = strip_tags($duzeltilmisMetin);
+            $metin = html_entity_decode($metin, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $metin = trim(preg_replace('/\s+/u', ' ', $metin) ?? $metin);
 
             $haber->update(['ai_islem_yuzde' => 40, 'ai_islem_adim' => 'Özet üretiliyor']);
             $ozet = $geminiService->ozetUret($duzeltilmisMetin);
