@@ -98,22 +98,18 @@ class ViewEkayitKayit extends ViewRecord
                         TextEntry::make('veliBilgisi.telefon_1')
                             ->label('Telefon 1')
                             ->default('—'),
+                        TextEntry::make('telefon_1_whatsapp_baslik')
+                            ->label('')
+                            ->state('WhatsApp'),
                         InfolistActions::make([
-                            InfolistAction::make('telefon_1_whatsapp_etiket')
-                                ->label('WhatsApp')
-                                ->icon('heroicon-s-chat-bubble-left-ellipsis')
-                                ->color('gray')
-                                ->disabled(),
                             $this->durumAksiyonuOlustur(EkayitDurumu::Onaylandi, 'veliBilgisi.telefon_1', true)->size('sm'),
                             $this->durumAksiyonuOlustur(EkayitDurumu::Reddedildi, 'veliBilgisi.telefon_1', true)->size('sm'),
                             $this->durumAksiyonuOlustur(EkayitDurumu::Yedek, 'veliBilgisi.telefon_1', true)->size('sm'),
                         ])->columnSpanFull(),
+                        TextEntry::make('telefon_1_sms_baslik')
+                            ->label('')
+                            ->state('SMS'),
                         InfolistActions::make([
-                            InfolistAction::make('telefon_1_sms_etiket')
-                                ->label('SMS')
-                                ->icon('heroicon-o-device-phone-mobile')
-                                ->color('gray')
-                                ->disabled(),
                             $this->smsAksiyonuOlustur('tel1_sms_onay', 'Onay', 'success')->size('sm'),
                             $this->smsAksiyonuOlustur('tel1_sms_red', 'Red', 'danger')->size('sm'),
                             $this->smsAksiyonuOlustur('tel1_sms_yedek', 'Yedek', 'info')->size('sm'),
@@ -126,22 +122,18 @@ class ViewEkayitKayit extends ViewRecord
                         TextEntry::make('veliBilgisi.telefon_2')
                             ->label('Telefon 2')
                             ->default('—'),
+                        TextEntry::make('telefon_2_whatsapp_baslik')
+                            ->label('')
+                            ->state('WhatsApp'),
                         InfolistActions::make([
-                            InfolistAction::make('telefon_2_whatsapp_etiket')
-                                ->label('WhatsApp')
-                                ->icon('heroicon-s-chat-bubble-left-ellipsis')
-                                ->color('gray')
-                                ->disabled(),
                             $this->durumAksiyonuOlustur(EkayitDurumu::Onaylandi, 'veliBilgisi.telefon_2', false)->size('sm'),
                             $this->durumAksiyonuOlustur(EkayitDurumu::Reddedildi, 'veliBilgisi.telefon_2', false)->size('sm'),
                             $this->durumAksiyonuOlustur(EkayitDurumu::Yedek, 'veliBilgisi.telefon_2', false)->size('sm'),
                         ])->columnSpanFull(),
+                        TextEntry::make('telefon_2_sms_baslik')
+                            ->label('')
+                            ->state('SMS'),
                         InfolistActions::make([
-                            InfolistAction::make('telefon_2_sms_etiket')
-                                ->label('SMS')
-                                ->icon('heroicon-o-device-phone-mobile')
-                                ->color('gray')
-                                ->disabled(),
                             $this->smsAksiyonuOlustur('tel2_sms_onay', 'Onay', 'success')->size('sm'),
                             $this->smsAksiyonuOlustur('tel2_sms_red', 'Red', 'danger')->size('sm'),
                             $this->smsAksiyonuOlustur('tel2_sms_yedek', 'Yedek', 'info')->size('sm'),
