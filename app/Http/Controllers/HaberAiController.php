@@ -71,6 +71,7 @@ class HaberAiController extends Controller
 
             $eklenenKisiSayisi = 0;
             foreach ($kisiSonuclar as $kisiVerisi) {
+                \Log::debug('AI_KISI_SONUC', ['veri' => $kisiVerisi]);
                 $adSoyad = $this->kisiAdiAyikla($kisiVerisi);
                 if (! $this->kisiAdayiGecerliMi($adSoyad)) {
                     continue;

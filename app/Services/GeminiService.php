@@ -197,7 +197,19 @@ kod bloğu YAZMA. Direkt JSON ile başla:
 - tip alanı bilinmiyorsa: "diger"
 PROMPT;
 
-        $json = $this->jsonCevabiAl("Metni analiz et:\n\n" . $metin, $sistemPrompt);
+        $json = $this->jsonCevabiAl(
+            "Aşağıdaki Türkçe haber metnini analiz et.\n\n" .
+            "GÖREV:\n" .
+            "1. Metinde adı ve soyadı geçen KİŞİLERİ tespit et (sadece gerçek insan adları, yer/kurum adları değil)\n" .
+            "2. Metinde geçen resmi KURUMLARI tespit et (dernek, vakıf, müdürlük, okul vb.)\n\n" .
+            "ÖNEMLİ:\n" .
+            "- Kişi için mutlaka AD + SOYAD birlikte olmalı\n" .
+            "- Şehir, ilçe, semt, kampüs, mescid adlarını kişi olarak ekleme\n" .
+            "- Dernek ve kurum adlarının parçalarını kişi olarak ekleme\n" .
+            "- Yanıtı sadece JSON olarak ver, başka hiçbir şey yazma\n\n" .
+            "METİN:\n" . $metin,
+            $sistemPrompt
+        );
 
         $kisiler = [];
         $kurumlar = [];
