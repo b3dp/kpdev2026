@@ -45,7 +45,8 @@ class ViewEkayitKayit extends ViewRecord
                         }),
                     TextEntry::make('durum_notu')->label('Durum Notu')->default('—'),
                     TextEntry::make('yonetici.ad_soyad')->label('İşlem Yapan Yönetici')->default('—'),
-                    TextEntry::make('durum_tarihi')->label('Durum Tarihi')->dateTime('d.m.Y H:i')->default('—'),
+                    TextEntry::make('durum_tarihi')->label('Durum Tarihi')
+                        ->formatStateUsing(fn ($state) => $state ? \Carbon\Carbon::parse($state)->format('d.m.Y H:i') : '—'),
                     TextEntry::make('genel_not')->label('Genel Not')->default('—'),
                     TextEntry::make('created_at')->label('Kayıt Tarihi')->dateTime('d.m.Y H:i'),
                 ]),
@@ -53,7 +54,8 @@ class ViewEkayitKayit extends ViewRecord
                 Section::make('Öğrenci Bilgileri')->schema([
                     TextEntry::make('ogrenciBilgisi.ad_soyad')->label('Ad Soyad'),
                     TextEntry::make('ogrenciBilgisi.tc_kimlik')->label('TC Kimlik'),
-                    TextEntry::make('ogrenciBilgisi.dogum_tarihi')->label('Doğum Tarihi')->date('d.m.Y')->default('—'),
+                    TextEntry::make('ogrenciBilgisi.dogum_tarihi')->label('Doğum Tarihi')
+                        ->formatStateUsing(fn ($state) => $state ? \Carbon\Carbon::parse($state)->format('d.m.Y') : '—'),
                     TextEntry::make('ogrenciBilgisi.dogum_yeri')->label('Doğum Yeri')->default('—'),
                     TextEntry::make('ogrenciBilgisi.baba_adi')->label('Baba Adı')->default('—'),
                     TextEntry::make('ogrenciBilgisi.anne_adi')->label('Anne Adı')->default('—'),
