@@ -39,6 +39,13 @@ class ViewEkayitKayit extends ViewRecord
     public function infolist(Infolist $infolist): Infolist
     {
         return $infolist->record($this->record)->schema([
+            Section::make()
+                ->icon('heroicon-o-information-circle')
+                ->iconColor('info')
+                ->description('1. ONAY/RED SEBEBİ bölümünden durum notunu seçin veya yazın. 2. Bilgilendirme Kanallarından WhatsApp veya SMS butonuna tıklayın — seçtiğiniz tip (Onay / Red / Yedek) doğrultusunda kayıt durumu otomatik güncellenir ve ilgili uygulama açılır. 3. Gönderilen mesaj tipine göre Kayıt Bilgisi Durumu da değişmiş olur.')
+                ->schema([])
+                ->columnSpanFull(),
+
             Grid::make(4)->schema([
                 Section::make('Onay/Red Sebebi')
                     ->columnSpan(1)
