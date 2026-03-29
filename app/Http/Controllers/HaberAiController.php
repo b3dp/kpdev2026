@@ -28,13 +28,22 @@ class HaberAiController extends Controller
                 'ai_islem_adim' => 'AI işlemi başlatıldı',
             ]);
 
-            $metin = (string) $haber->icerik;
-            $metin = strip_tags($metin);
+            $hamHtml = (string) $haber->icerik;
+
+            // İmla düzeltme için: izin verilen tag'lar korunur, inline style/class temizlenir
+            $izinliTaglar = '<p><h1><h2><h3><h4><h5><h6><i><b><strong><u><blockquote><ul><ol><li>';
+            $temizHtml = strip_tags($hamHtml, $izinliTaglar);
+            // style, class, id attribute'larını temizle
+            $temizHtml = preg_replace('/(<[a-z][a-z0-9]*)\s+(?:style|class|id|data-[a-z-]+)="[^"]*"/iu', '$1', $temizHtml);
+            $temizHtml = preg_replace('/(<[a-z][a-z0-9]*)\s+(?:style|class|id|data-[a-z-]+)=\'[^\']*\'/iu', '$1', $temizHtml);
+
+            // Kişi/kurum tespiti için: düz metin
+            $metin = strip_tags($temizHtml);
             $metin = html_entity_decode($metin, ENT_QUOTES | ENT_HTML5, 'UTF-8');
             $metin = trim(preg_replace('/\s+/u', ' ', $metin) ?? $metin);
 
             $haber->update(['ai_islem_yuzde' => 20, 'ai_islem_adim' => 'İmla düzeltme yapılıyor']);
-            $duzeltilmisMetin = $geminiService->imlaDuzelt($metin);
+            $duzeltilmisMetin = $geminiService->imlaDuzelt($temizHtml);
 
             $haber->update(['ai_islem_yuzde' => 40, 'ai_islem_adim' => 'Özet üretiliyor']);
             $ozet = $geminiService->ozetUret($duzeltilmisMetin);
