@@ -73,4 +73,15 @@ return [
         'from_name' => env('ZEPTOMAIL_FROM_NAME'),
     ],
 
+    'iletisim_makinesi' => [
+        'username' => env('ILETISIM_MAKINESI_USERNAME'),
+        'password' => env('ILETISIM_MAKINESI_PASSWORD'),
+        'customer_code' => env('ILETISIM_MAKINESI_CUSTOMER_CODE'),
+        'api_key' => env('ILETISIM_MAKINESI_API_KEY'),
+        'vendor_code' => env('ILETISIM_MAKINESI_VENDOR_CODE', 2),
+        'originator_id' => env('ILETISIM_MAKINESI_ORIGINATOR_ID', 45605),
+        'async_limit' => (int) env('ILETISIM_MAKINESI_ASYNC_LIMIT', 500),
+        'validity_period' => (int) env('ILETISIM_MAKINESI_VALIDITY_PERIOD', 1440),
+    ],
+
 ];
