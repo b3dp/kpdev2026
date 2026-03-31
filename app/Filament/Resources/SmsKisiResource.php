@@ -3,10 +3,12 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\SmsKisiResource\Pages;
+use App\Jobs\HermesAktarimJob;
 use App\Models\SmsKisi;
 use App\Models\SmsListe;
 use Carbon\Carbon;
 use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -84,16 +86,31 @@ class SmsKisiResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->headerActions([
                 Tables\Actions\CreateAction::make(),
-                Action::make('excel_aktar')
-                    ->label('Excel Aktar')
+                Action::make('hermes_aktar')
+                    ->label('Hermes\'ten Aktar')
                     ->icon('heroicon-o-arrow-up-tray')
-                    ->color('primary')
-                    ->action(function (): void {
+                    ->color('warning')
+                    ->form([
+                        FileUpload::make('dosya')
+                            ->label('Excel Dosyası')
+                            ->acceptedFileTypes([
+                                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                                'application/vnd.ms-excel',
+                            ])
+                            ->required()
+                            ->maxSize(10240), // 10MB
+                    ])
+                    ->action(function (array $data): void {
+                        // Import job'ı dispatch et
+                        HermesAktarimJob::dispatch($data['dosya'], auth()->id());
+
                         Notification::make()
-                            ->title('Excel aktarımı Faz 10A-3 ile eklenecek')
-                            ->warning()
+                            ->title('Aktarım başlatıldı')
+                            ->body('İşlem arka planda devam ediyor. Tamamlandığında log kayıtlarından sonucu görebilirsiniz.')
+                            ->success()
                             ->send();
-                    }),
+                    })
+                    ->visible(fn (): bool => auth()->check() && auth()->user()->hasRole('Admin')),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
