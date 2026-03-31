@@ -16,7 +16,7 @@ class SmsGonderimDurumGuncelle extends Command
     public function handle(HermesService $hermesService): int
     {
         $gonderimler = SmsGonderim::query()
-            ->where('durum', 'gonderiliyor')
+            ->whereIn('durum', ['gonderiliyor', 'beklemede'])
             ->whereNotNull('hermes_transaction_id')
             ->with('alicilar')
             ->get();
@@ -110,11 +110,11 @@ class SmsGonderimDurumGuncelle extends Command
     {
         $temiz = preg_replace('/\D+/', '', $telefon) ?? '';
 
-        if (Str::startsWith($temiz, '90')) {
+        if (Str::startsWith($temiz, '0090')) {
+            $temiz = substr($temiz, 4);
+        } elseif (Str::startsWith($temiz, '90') && strlen($temiz) === 12) {
             $temiz = substr($temiz, 2);
-        }
-
-        if (Str::startsWith($temiz, '0')) {
+        } elseif (Str::startsWith($temiz, '0') && strlen($temiz) === 11) {
             $temiz = substr($temiz, 1);
         }
 
