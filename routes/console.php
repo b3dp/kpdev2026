@@ -17,3 +17,4 @@ Schedule::command('bagis:rapor-gonder gunluk')->dailyAt('08:00');
 Schedule::command('bagis:rapor-gonder haftalik')->weeklyOn(1, '08:00');
 Schedule::command('bagis:rapor-gonder aylik')->monthlyOn(1, '08:00');
 Schedule::command('ekayit:donem-kontrol')->dailyAt('00:05');
+Schedule::command('sms:durum-guncelle')->everyTenMinutes();

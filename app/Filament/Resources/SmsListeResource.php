@@ -1,0 +1,129 @@
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\SmsListeResource\Pages;
+use App\Models\SmsListe;
+use App\Models\Yonetici;
+use Carbon\Carbon;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+
+class SmsListeResource extends Resource
+{
+    protected static ?string $model = SmsListe::class;
+
+    protected static ?string $navigationGroup = 'SMS Yönetimi';
+
+    protected static ?string $navigationLabel = 'Listeler';
+
+    protected static ?string $modelLabel = 'Liste';
+
+    protected static ?string $pluralModelLabel = 'Listeler';
+
+    protected static ?int $navigationSort = 10;
+
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    public static function canViewAny(): bool
+    {
+        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Kurs Yöneticisi']);
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->check() && auth()->user()->hasRole('Admin');
+    }
+
+    public static function canEdit($record): bool
+    {
+        return auth()->check() && auth()->user()->hasRole('Admin');
+    }
+
+    public static function canDelete($record): bool
+    {
+        return auth()->check() && auth()->user()->hasRole('Admin');
+    }
+
+    public static function form(Form $form): Form
+    {
+        return $form->schema([
+            TextInput::make('ad')
+                ->label('Liste Adı')
+                ->required()
+                ->maxLength(255),
+
+            Select::make('sahip_yonetici_id')
+                ->label('Liste Sahibi')
+                ->options(fn (): array => Yonetici::query()->orderBy('ad_soyad')->pluck('ad_soyad', 'id')->toArray())
+                ->searchable()
+                ->nullable()
+                ->visible(fn (): bool => auth()->check() && auth()->user()->hasRole('Admin')),
+        ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('ad')
+                    ->label('Liste')
+                    ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('kisiler_count')
+                    ->counts('kisiler')
+                    ->label('Kişi Sayısı')
+                    ->sortable(),
+
+                TextColumn::make('sahip.ad_soyad')
+                    ->label('Sahip')
+                    ->formatStateUsing(fn (?string $state): string => $state ?: 'Genel Liste')
+                    ->sortable(),
+
+                TextColumn::make('created_at')
+                    ->label('Oluşturma')
+                    ->formatStateUsing(fn ($state): string => $state ? Carbon::parse($state)->format('d.m.Y H:i') : '-')
+                    ->sortable(),
+            ])
+            ->defaultSort('created_at', 'desc')
+            ->actions([
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->visible(fn (): bool => auth()->check() && auth()->user()->hasRole('Admin')),
+            ])
+            ->bulkActions([]);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        if (! auth()->check() || auth()->user()->hasRole('Admin')) {
+            return $query;
+        }
+
+        return $query->where(function (Builder $builder): void {
+            $builder
+                ->where('sahip_yonetici_id', auth()->id())
+                ->orWhereNull('sahip_yonetici_id')
+                ->orWhere('ad', '2026NisanOncesi');
+        });
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListSmsListeler::route('/'),
+            'create' => Pages\CreateSmsListe::route('/create'),
+            'view' => Pages\ViewSmsListe::route('/{record}'),
+            'edit' => Pages\EditSmsListe::route('/{record}/edit'),
+        ];
+    }
+}

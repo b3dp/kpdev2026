@@ -1,0 +1,112 @@
+<?php
+
+namespace App\Console\Commands;
+
+use App\Models\SmsGonderim;
+use App\Services\HermesService;
+use Illuminate\Console\Command;
+use Illuminate\Support\Str;
+
+class SmsGonderimDurumGuncelle extends Command
+{
+    protected $signature = 'sms:durum-guncelle';
+
+    protected $description = 'Hermes transaction durumlarını çekerek SMS gönderim alıcı durumlarını günceller.';
+
+    public function handle(HermesService $hermesService): int
+    {
+        $gonderimler = SmsGonderim::query()
+            ->where('durum', 'gonderiliyor')
+            ->whereNotNull('hermes_transaction_id')
+            ->with('alicilar')
+            ->get();
+
+        foreach ($gonderimler as $gonderim) {
+            $detaylar = $hermesService->getTransactionDetails((int) $gonderim->hermes_transaction_id);
+
+            foreach ($detaylar as $satir) {
+                $cozulmus = $this->detaySatiriCoz($satir);
+
+                if (! $cozulmus) {
+                    continue;
+                }
+
+                $telefon = $this->telefonNormalize($cozulmus['telefon']);
+                $durum = $this->durumuMaple($cozulmus['durum']);
+
+                $gonderim->alicilar()
+                    ->where('telefon', $telefon)
+                    ->update([
+                        'durum' => $durum,
+                        'hata_kodu' => $durum === 'basarisiz' ? ($cozulmus['durum'] ?: 'HATA') : null,
+                    ]);
+            }
+
+            $basarili = $gonderim->alicilar()->where('durum', 'basarili')->count();
+            $basarisiz = $gonderim->alicilar()->where('durum', 'basarisiz')->count();
+            $bekleyen = $gonderim->alicilar()->where('durum', 'beklemede')->count();
+
+            $gonderim->update([
+                'basarili' => $basarili,
+                'basarisiz' => $basarisiz,
+                'bekleyen' => $bekleyen,
+                'durum' => $bekleyen === 0 ? 'tamamlandi' : 'gonderiliyor',
+            ]);
+        }
+
+        $this->info('SMS gönderim durumları güncellendi.');
+
+        return self::SUCCESS;
+    }
+
+    private function detaySatiriCoz(array $satir): ?array
+    {
+        $telefon = null;
+        $durum = null;
+
+        foreach ($satir as $deger) {
+            $metin = (string) $deger;
+
+            if ($telefon === null && preg_match('/(0090|90|0)?5\d{9}/', $metin, $eslesme)) {
+                $telefon = $eslesme[0];
+            }
+
+            if ($durum === null && preg_match('/(SUCCESSFUL|DELIVERED|WAITING|FAILED|ERROR|UNDELIVERED|PENDING)/i', $metin, $eslesme)) {
+                $durum = strtoupper($eslesme[1]);
+            }
+        }
+
+        if ($telefon === null || $durum === null) {
+            return null;
+        }
+
+        return [
+            'telefon' => $telefon,
+            'durum' => $durum,
+        ];
+    }
+
+    private function durumuMaple(string $durum): string
+    {
+        return match (Str::upper($durum)) {
+            'SUCCESSFUL', 'DELIVERED' => 'basarili',
+            'WAITING', 'PENDING' => 'beklemede',
+            default => 'basarisiz',
+        };
+    }
+
+    private function telefonNormalize(string $telefon): string
+    {
+        $temiz = preg_replace('/\D+/', '', $telefon) ?? '';
+
+        if (Str::startsWith($temiz, '90')) {
+            $temiz = substr($temiz, 2);
+        }
+
+        if (Str::startsWith($temiz, '0')) {
+            $temiz = substr($temiz, 1);
+        }
+
+        return $temiz;
+    }
+}
