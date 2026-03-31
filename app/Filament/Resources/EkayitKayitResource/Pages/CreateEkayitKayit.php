@@ -4,6 +4,7 @@ namespace App\Filament\Resources\EkayitKayitResource\Pages;
 
 use App\Data\TurkiyeIller;
 use App\Filament\Resources\EkayitKayitResource;
+use App\Jobs\EkayitSmsJob;
 use App\Models\EkayitBabaBilgisi;
 use App\Models\EkayitKayit;
 use App\Models\EkayitKimlikBilgisi;
@@ -188,6 +189,17 @@ class CreateEkayitKayit extends CreateRecord
             'dogum_yeri'      => $data['bab_dogum_yeri'] ?? null,
             'nufus_il_ilce'   => $data['bab_nufus_il_ilce'] ?? null,
         ]);
+
+        // Başvuru alındı SMS'i
+        $telefon1 = $data['vel_telefon_1'] ?? null;
+        if (filled($telefon1)) {
+            dispatch(new EkayitSmsJob(
+                $kayit->id,
+                'basvuru_alindi',
+                $telefon1,
+                false
+            ));
+        }
 
         return $kayit;
     }

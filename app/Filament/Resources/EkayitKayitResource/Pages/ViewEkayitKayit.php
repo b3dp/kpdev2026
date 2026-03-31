@@ -5,6 +5,7 @@ namespace App\Filament\Resources\EkayitKayitResource\Pages;
 use App\Enums\EkayitDurumu;
 use App\Filament\Resources\EkayitKayitResource;
 use App\Jobs\EkayitDurumEpostasiJob;
+use App\Jobs\EkayitSmsJob;
 use App\Models\EkayitHazirMesaj;
 use App\Models\EkayitKayit;
 use Carbon\Carbon;
@@ -612,13 +613,67 @@ class ViewEkayitKayit extends ViewRecord
 
     private function smsAksiyonuOlustur(string $ad, string $etiket, string $renk): InfolistAction
     {
+        // $ad formatı: tel1_sms_onay, tel1_sms_red, tel1_sms_yedek
+        //              tel2_sms_onay, tel2_sms_red, tel2_sms_yedek
+        $telefonAlan = str_starts_with($ad, 'tel1') ? 'veliBilgisi.telefon_1' : 'veliBilgisi.telefon_2';
+        $tip = match (true) {
+            str_ends_with($ad, 'onay') => 'onaylandi',
+            str_ends_with($ad, 'red') => 'reddedildi',
+            str_ends_with($ad, 'yedek') => 'yedek',
+            default => 'onaylandi',
+        };
+        $durumGuncellensin = str_starts_with($ad, 'tel1');
+
         return InfolistAction::make($ad)
             ->label($etiket)
             ->color($renk)
-            ->action(function (): void {
+            ->action(function () use ($telefonAlan, $tip, $durumGuncellensin): void {
+                $telefon = data_get($this->record, $telefonAlan);
+
+                if (blank($telefon)) {
+                    Notification::make()
+                        ->title('Telefon numarası bulunamadı')
+                        ->danger()
+                        ->send();
+
+                    return;
+                }
+
+                // Durum güncelle (sadece tel1 için)
+                if ($durumGuncellensin) {
+                    $durum = match ($tip) {
+                        'onaylandi' => EkayitDurumu::Onaylandi,
+                        'reddedildi' => EkayitDurumu::Reddedildi,
+                        'yedek' => EkayitDurumu::Yedek,
+                    };
+
+                    $this->record->update([
+                        'durum' => $durum,
+                        'durum_tarihi' => now(),
+                        'yonetici_id' => auth()->id(),
+                    ]);
+
+                    if (filled($this->record->veliBilgisi?->eposta)) {
+                        dispatch(new EkayitDurumEpostasiJob(
+                            $this->record->id,
+                            $durum->value
+                        ));
+                    }
+
+                    $this->record->refresh();
+                }
+
+                // SMS gönder
+                dispatch(new EkayitSmsJob(
+                    $this->record->id,
+                    $tip,
+                    (string) $telefon,
+                    $durumGuncellensin
+                ));
+
                 Notification::make()
-                    ->title('SMS entegrasyonu henüz aktif değil')
-                    ->warning()
+                    ->title('SMS gönderildi')
+                    ->success()
                     ->send();
             });
     }
