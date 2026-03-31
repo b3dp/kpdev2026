@@ -24,7 +24,10 @@ class SmsGonderimDurumGuncelle extends Command
         foreach ($gonderimler as $gonderim) {
             $detaylar = $hermesService->getTransactionDetails((int) $gonderim->hermes_transaction_id);
 
-            foreach ($detaylar as $satir) {
+            foreach ($detaylar as $index => $satir) {
+                if ($index === 0) continue; // header satırı atla
+                // index 2 ve üzeri metadata (mesaj içeriği, kullanıcı) — sadece index 1 veri
+                if ($index > 1) continue;
                 $cozulmus = $this->detaySatiriCoz($satir);
 
                 if (! $cozulmus) {
