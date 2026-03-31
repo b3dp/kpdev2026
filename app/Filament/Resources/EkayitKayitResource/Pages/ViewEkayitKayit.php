@@ -668,7 +668,8 @@ class ViewEkayitKayit extends ViewRecord
                     $this->record->id,
                     $tip,
                     (string) $telefon,
-                    $durumGuncellensin
+                    $durumGuncellensin,
+                    auth()->id() ?? 1
                 ));
 
                 Notification::make()

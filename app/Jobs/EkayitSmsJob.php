@@ -3,6 +3,8 @@
 namespace App\Jobs;
 
 use App\Models\EkayitKayit;
+use App\Models\SmsGonderim;
+use App\Models\SmsGonderimAlici;
 use App\Services\HermesService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -24,6 +26,7 @@ class EkayitSmsJob implements ShouldQueue
         public string $tip,
         public string $telefon,
         public bool $durumGuncellensin = false,
+        public int $yoneticiId = 1,
     ) {
         $this->onQueue('default');
     }
@@ -55,7 +58,25 @@ class EkayitSmsJob implements ShouldQueue
                 '{SINIF}' => (string) ($kayit->sinif?->ad ?? ''),
             ]);
 
-            app(HermesService::class)->sendSMS([$telefon], $mesaj);
+            $sonuc = app(HermesService::class)->sendSMS([$telefon], $mesaj);
+
+            $gonderim = SmsGonderim::create([
+                'yonetici_id' => auth()->id() ?? $this->yoneticiId,
+                'tip' => 'bildirim_ekayit',
+                'mesaj' => $mesaj,
+                'alici_sayisi' => 1,
+                'basarili' => ($sonuc['basarili'] ?? false) ? 1 : 0,
+                'basarisiz' => ($sonuc['basarili'] ?? false) ? 0 : 1,
+                'bekleyen' => 0,
+                'durum' => ($sonuc['basarili'] ?? false) ? 'tamamlandi' : 'basarisiz',
+                'hermes_transaction_id' => $sonuc['transaction_id'] ?? null,
+            ]);
+
+            SmsGonderimAlici::create([
+                'gonderim_id' => $gonderim->id,
+                'telefon' => $telefon,
+                'durum' => ($sonuc['basarili'] ?? false) ? 'basarili' : 'basarisiz',
+            ]);
 
             Log::info('[EkayitSmsJob] SMS gönderildi', [
                 'kayit_id' => $this->kayitId,

@@ -11,6 +11,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -57,7 +58,26 @@ class SmsGonderimResource extends Resource
                 TextColumn::make('tip')
                     ->label('Tip')
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => ucfirst($state))
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'hizli' => 'Hızlı',
+                        'toplu' => 'Toplu',
+                        'bildirim_ekayit' => 'E-Kayıt',
+                        'bildirim_bagis' => 'Bağış',
+                        'bildirim_uyelik' => 'Üyelik',
+                        'bildirim_etkinlik' => 'Etkinlik',
+                        'bildirim_veli' => 'Veli',
+                        default => $state,
+                    })
+                    ->color(fn (string $state): string => match ($state) {
+                        'hizli' => 'info',
+                        'toplu' => 'primary',
+                        'bildirim_ekayit' => 'success',
+                        'bildirim_bagis' => 'warning',
+                        'bildirim_uyelik' => 'gray',
+                        'bildirim_etkinlik' => 'purple',
+                        'bildirim_veli' => 'orange',
+                        default => 'gray',
+                    })
                     ->sortable(),
 
                 TextColumn::make('mesaj')
@@ -103,6 +123,31 @@ class SmsGonderimResource extends Resource
                     ->label('Planlı Tarih')
                     ->formatStateUsing(fn ($state): string => $state ? Carbon::parse($state)->format('d.m.Y H:i') : 'Anlık')
                     ->sortable(),
+            ])
+            ->filters([
+                SelectFilter::make('tip')
+                    ->label('Tip')
+                    ->options([
+                        'hizli' => 'Hızlı',
+                        'toplu' => 'Toplu',
+                        'bildirim_ekayit' => 'Bildirim - E-Kayıt',
+                        'bildirim_bagis' => 'Bildirim - Bağış',
+                        'bildirim_uyelik' => 'Bildirim - Üyelik',
+                        'bildirim_etkinlik' => 'Bildirim - Etkinlik',
+                        'bildirim_veli' => 'Bildirim - Veli/Öğrenci',
+                    ]),
+                SelectFilter::make('durum')
+                    ->label('Durum')
+                    ->options([
+                        'beklemede' => 'Beklemede',
+                        'gonderiliyor' => 'Gönderiliyor',
+                        'tamamlandi' => 'Tamamlandı',
+                        'basarisiz' => 'Başarısız',
+                        'iptal' => 'İptal',
+                    ]),
+                SelectFilter::make('yonetici_id')
+                    ->label('Yönetici')
+                    ->relationship('yonetici', 'ad_soyad'),
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([

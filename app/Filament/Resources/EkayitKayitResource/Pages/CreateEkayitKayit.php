@@ -197,7 +197,8 @@ class CreateEkayitKayit extends CreateRecord
                 $kayit->id,
                 'basvuru_alindi',
                 $telefon1,
-                false
+                false,
+                auth()->id() ?? 1
             ));
         }
 
