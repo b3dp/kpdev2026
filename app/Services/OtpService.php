@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\OtpTipi;
 use App\Models\OtpKod;
 use App\Models\Uye;
+use App\Services\HermesService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 
@@ -21,6 +22,11 @@ class OtpService
         $anahtar = $this->oranSinirAnahtari('sms', $telefon, $otpTipi->value);
 
         if (RateLimiter::tooManyAttempts($anahtar, 3)) {
+            Log::warning('OTP SMS rate limit aşıldı.', [
+                'telefon' => $telefon,
+                'tip' => $otpTipi->value,
+            ]);
+
             return false;
         }
 
@@ -28,11 +34,26 @@ class OtpService
 
         RateLimiter::hit($anahtar, 600);
 
-        Log::info('OTP SMS kodu oluşturuldu.', [
-            'telefon' => $telefon,
-            'tip' => $otpTipi->value,
-            'otp_id' => $otp->id,
-        ]);
+        // SMS gönder
+        try {
+            $mesaj = 'Kestanepazarı doğrulama kodunuz: ' . $otp->kod . '. 10 dakika geçerlidir.';
+            app(HermesService::class)->sendSMS([$telefon], $mesaj);
+
+            Log::info('OTP SMS gönderildi.', [
+                'telefon' => $telefon,
+                'tip' => $otpTipi->value,
+                'otp_id' => $otp->id,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('OTP SMS gönderilemedi.', [
+                'telefon' => $telefon,
+                'tip' => $otpTipi->value,
+                'otp_id' => $otp->id,
+                'hata' => $e->getMessage(),
+            ]);
+            // SMS başarısız olsa da OTP kodu oluşturuldu, false dönme
+            // Kullanıcı e-posta ile devam edebilir
+        }
 
         return true;
     }
