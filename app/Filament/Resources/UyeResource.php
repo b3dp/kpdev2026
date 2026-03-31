@@ -18,6 +18,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -217,6 +218,7 @@ class UyeResource extends Resource
                 TrashedFilter::make(),
             ])
             ->actions([
+                ViewAction::make(),
                 EditAction::make(),
                 Action::make('rozet_ekle')
                     ->label('Rozet Ekle')
@@ -314,6 +316,7 @@ class UyeResource extends Resource
         return [
             'index' => Pages\ListUyeler::route('/'),
             'create' => Pages\CreateUye::route('/create'),
+            'view' => Pages\ViewUye::route('/{record}'),
             'edit' => Pages\EditUye::route('/{record}/edit'),
         ];
     }
