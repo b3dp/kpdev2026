@@ -223,12 +223,21 @@ class KayitController extends Controller
                 'uye_id' => $uye->id,
             ]);
         } else {
-            // Sadece telefon varsa SMS dene (sistem hazır olmaya kadar log)
-            Log::info('OTP SMS gönderilecek (kayıt)', [
-                'telefon' => $uye->telefon,
-                'kod' => $kod,
-                'uye_id' => $uye->id,
-            ]);
+            // Sadece telefon varsa SMS ile gönder
+            try {
+                $mesaj = 'Kestanepazarı doğrulama kodunuz: ' . $kod . '. 10 dakika geçerlidir.';
+                app(\App\Services\HermesService::class)->sendSMS([$uye->telefon], $mesaj);
+                Log::info('OTP SMS gönderildi (kayıt)', [
+                    'telefon' => $uye->telefon,
+                    'uye_id' => $uye->id,
+                ]);
+            } catch (\Throwable $e) {
+                Log::error('OTP SMS gönderilemedi (kayıt)', [
+                    'telefon' => $uye->telefon,
+                    'uye_id' => $uye->id,
+                    'hata' => $e->getMessage(),
+                ]);
+            }
         }
     }
 
