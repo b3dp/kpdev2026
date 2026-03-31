@@ -64,15 +64,26 @@ class SmsGonderimDurumGuncelle extends Command
         $telefon = null;
         $durum = null;
 
-        foreach ($satir as $deger) {
-            $metin = (string) $deger;
+        foreach ($satir as $key => $value) {
+            $key = preg_replace('/[^0-9a-zA-Z ]/', '', (string) $key);
+            $value = preg_replace('/[^0-9a-zA-Z ]/', '', (string) $value);
 
-            if ($telefon === null && preg_match('/(0090|90|0)?5\d{9}/', $metin, $eslesme)) {
-                $telefon = $eslesme[0];
+            // Telefon tespiti — key veya value'da 10-14 haneli ve 5 veya 905 ile başlayan
+            foreach ([$key, $value] as $metin) {
+                if ($telefon === null && preg_match('/(?:0090|90|0)?5\d{9}/', $metin, $eslesme)) {
+                    $telefon = $eslesme[0];
+                }
             }
 
-            if ($durum === null && preg_match('/(SUCCESSFUL|DELIVERED|WAITING|FAILED|ERROR|UNDELIVERED|PENDING)/i', $metin, $eslesme)) {
-                $durum = strtoupper($eslesme[1]);
+            // Durum tespiti — key veya value'da
+            foreach ([$key, $value] as $metin) {
+                if ($durum === null && preg_match(
+                    '/\b(SUCCESSFUL|DELIVERED|WAITING|FAILED|ERROR|UNDELIVERED|PENDING)\b/i',
+                    $metin,
+                    $eslesme
+                )) {
+                    $durum = strtoupper($eslesme[1]);
+                }
             }
         }
 
@@ -80,10 +91,7 @@ class SmsGonderimDurumGuncelle extends Command
             return null;
         }
 
-        return [
-            'telefon' => $telefon,
-            'durum' => $durum,
-        ];
+        return ['telefon' => $telefon, 'durum' => $durum];
     }
 
     private function durumuMaple(string $durum): string
