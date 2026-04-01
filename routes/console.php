@@ -29,7 +29,7 @@ Schedule::call(function () {
     $haberler = \App\Models\Haber::query()
         ->where('durum', \App\Enums\HaberDurumu::Incelemede->value)
         ->whereNotNull('onay_epostasi_gonderildi_at')
-        ->where('onay_epostasi_gonderildi_at', '<=', now()->subHour())
+        ->where('onay_epostasi_gonderildi_at', '<=', now()->subMinutes(config('services.haber_onay.sms_dakika')))
         ->get();
 
     foreach ($haberler as $haber) {

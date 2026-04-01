@@ -75,6 +75,7 @@ return [
 
     'haber_onay' => [
         'editor_id' => env('HABER_ONAY_EDITOR_ID', 1),
+        'sms_dakika' => (int) env('HABER_ONAY_SMS_DAKIKA', 60),
     ],
 
     'iletisim_makinesi' => [

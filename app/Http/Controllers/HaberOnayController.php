@@ -40,24 +40,35 @@ class HaberOnayController extends Controller
         return response('Haber reddedildi.', 200);
     }
 
-    public function yayinla(Request $request, Haber $haber)
+    public function yayinla(Request $request, int $haberId)
     {
+        $haber = Haber::find($haberId);
+
+        if (! $haber) {
+            return response('Haber bulunamadi.', 404);
+        }
+
+        // Haber zaten yayındaysa bilgi ver
+        if ($haber->durum === HaberDurumu::Yayinda) {
+            return view('haber-onay-basarili', [
+                'haber' => $haber,
+                'mesaj' => 'Bu haber zaten yayında.',
+            ]);
+        }
+
         $token = $request->query('token');
         $duzenleUrl = config('app.url') . '/yonetim/haberler/' . $haber->id . '/edit';
 
-        // Token kontrolü
         if (! $token || $haber->onay_token !== $token) {
             return redirect($duzenleUrl)
-                ->with('warning', 'Geçersiz veya kullanılmış token.');
+                ->with('warning', 'Gecersiz veya kullanilmis token.');
         }
 
-        // Süre kontrolü
         if (! $haber->onay_token_expires_at || $haber->onay_token_expires_at->isPast()) {
             return redirect($duzenleUrl)
-                ->with('warning', 'Token süresi dolmuş. Lütfen panelden yayına alın.');
+                ->with('warning', 'Token suresi dolmus. Lutfen panelden yayina alin.');
         }
 
-        // Yayına al
         $haber->update([
             'durum' => HaberDurumu::Yayinda,
             'yayin_tarihi' => $haber->yayin_tarihi ?? now(),
@@ -65,10 +76,10 @@ class HaberOnayController extends Controller
             'onay_token_expires_at' => null,
         ]);
 
-        Log::info('[HaberOnayController] Token ile yayına alındı', [
+        Log::info('[HaberOnayController] Token ile yayina alindi', [
             'haber_id' => $haber->id,
         ]);
 
-        return view('haber-onay-basarili', ['haber' => $haber]);
+        return view('haber-onay-basarili', ['haber' => $haber, 'mesaj' => null]);
     }
 }

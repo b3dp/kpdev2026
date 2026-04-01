@@ -16,7 +16,11 @@
 <body>
     <div class="card">
         <h1>Haber Yayına Alındı</h1>
-        <p><strong>{{ $haber->baslik }}</strong> başlıklı haber başarıyla yayına alındı.</p>
+        @if(!empty($mesaj))
+            <p>{{ $mesaj }}</p>
+        @else
+            <p><strong>{{ $haber->baslik }}</strong> başlıklı haber başarıyla yayına alındı.</p>
+        @endif
         <p><a href="{{ config('app.url') }}/yonetim/haberler">Haber Listesine Dön</a></p>
     </div>
 </body>
