@@ -291,9 +291,28 @@ class HaberResource extends Resource
 
                     Select::make('durum')
                         ->label('Durum')
-                        ->options(HaberDurumu::secenekler())
+                        ->options(function (): array {
+                            $user = auth()->user();
+
+                            if ($user?->hasAnyRole(['Admin', 'Editör'])) {
+                                return HaberDurumu::secenekler();
+                            }
+
+                            return [HaberDurumu::Taslak->value => HaberDurumu::Taslak->label()];
+                        })
                         ->default(HaberDurumu::Taslak->value)
-                        ->required(),
+                        ->required()
+                        ->disabled(function (?Haber $record): bool {
+                            if (! auth()->check() || ! auth()->user()->hasRole('Yazar')) {
+                                return false;
+                            }
+
+                            $durum = $record?->durum instanceof HaberDurumu
+                                ? $record->durum
+                                : HaberDurumu::tryFrom((string) $record?->durum);
+
+                            return $durum === HaberDurumu::Incelemede;
+                        }),
                 ])
                 ->columns(2),
         ]);
@@ -429,11 +448,17 @@ class HaberResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()
+        $query = parent::getEloquentQuery()
             ->with(['kategori', 'yonetici'])
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+
+        if (auth()->check() && auth()->user()->hasRole('Yazar')) {
+            return $query->where('yonetici_id', auth()->id());
+        }
+
+        return $query;
     }
 
     public static function getPages(): array

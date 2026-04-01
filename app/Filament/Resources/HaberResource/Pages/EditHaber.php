@@ -8,6 +8,7 @@ use App\Jobs\GorselOptimizeJob;
 use App\Jobs\OnayEpostasiGonderJob;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 
 class EditHaber extends EditRecord
@@ -31,13 +32,43 @@ class EditHaber extends EditRecord
                         : HaberDurumu::tryFrom((string) $this->record->durum);
 
                     return auth()->check()
-                        && auth()->user()->hasAnyRole(['Admin', 'Editör'])
-                        && in_array($durum, [HaberDurumu::Taslak, HaberDurumu::Incelemede, HaberDurumu::Reddedildi], true);
+                        && auth()->user()->hasAnyRole(['Admin', 'Editör', 'Yazar'])
+                        && in_array($durum, [HaberDurumu::Taslak, HaberDurumu::Incelemede], true);
                 })
                 ->modalHeading('AI İşlemleri')
                 ->modalSubmitAction(false)
                 ->modalCancelActionLabel('Kapat')
                 ->modalContent(fn () => view('filament.haber-ai-modal', ['haberId' => $this->record->id])),
+            Action::make('incelemeye_gonder')
+                ->label('İncelemeye Gönder')
+                ->icon('heroicon-o-paper-airplane')
+                ->color('warning')
+                ->visible(function (): bool {
+                    $durum = $this->record->durum instanceof HaberDurumu
+                        ? $this->record->durum
+                        : HaberDurumu::tryFrom((string) $this->record->durum);
+
+                    return auth()->check()
+                        && auth()->user()->hasRole('Yazar')
+                        && $durum === HaberDurumu::Taslak;
+                })
+                ->requiresConfirmation()
+                ->modalHeading('İncelemeye Gönder')
+                ->modalDescription('Haber editör incelemesine gönderilecek. Devam etmek istiyor musunuz?')
+                ->action(function (): void {
+                    $this->record->update([
+                        'durum' => HaberDurumu::Incelemede,
+                    ]);
+
+                    OnayEpostasiGonderJob::dispatch($this->record->id);
+
+                    Notification::make()
+                        ->title('Haber incelemeye gönderildi')
+                        ->success()
+                        ->send();
+
+                    $this->redirect($this->getResource()::getUrl('index'));
+                }),
             Action::make('yayinla')
                 ->label('Yayına Al')
                 ->icon('heroicon-o-check-badge')
@@ -65,6 +96,19 @@ class EditHaber extends EditRecord
     protected function afterSave(): void
     {
         $haber = $this->record;
+
+        if (auth()->user()?->hasRole('Editör') && $this->record->wasChanged()) {
+            $degisiklikler = $this->record->getChanges();
+            unset($degisiklikler['updated_at']);
+
+            if (! empty($degisiklikler)) {
+                activity('haber_revize')
+                    ->causedBy(auth()->user())
+                    ->performedOn($this->record)
+                    ->withProperties(['degisiklikler' => $degisiklikler])
+                    ->log('Editör revizyonu yapıldı');
+            }
+        }
 
         // Ana görsel
         $anaGorsel = data_get($this->data, 'ana_gorsel_gecici');

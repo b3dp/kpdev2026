@@ -16,6 +16,10 @@ class CreateHaber extends CreateRecord
     {
         $data['yonetici_id'] = auth()->id();
 
+        if (auth()->user()?->hasRole('Yazar')) {
+            $data['durum'] = HaberDurumu::Taslak->value;
+        }
+
         return $data;
     }
 
