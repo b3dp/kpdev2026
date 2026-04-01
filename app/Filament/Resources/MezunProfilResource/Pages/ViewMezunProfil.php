@@ -92,7 +92,7 @@ class ViewMezunProfil extends ViewRecord
 
                                 TextEntry::make('linkedin')
                                     ->label('LinkedIn')
-                                    ->url()
+                                    ->url(fn ($state) => filled($state) ? $state : null)
                                     ->openUrlInNewTab()
                                     ->default('—'),
 
