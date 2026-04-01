@@ -24,3 +24,39 @@ Schedule::call(function () {
         ->where('yayin_tarihi', '<=', now())
         ->update(['durum' => \App\Enums\HaberDurumu::Yayinda->value]);
 })->everyMinute();
+
+Schedule::call(function () {
+    $haberler = \App\Models\Haber::query()
+        ->where('durum', \App\Enums\HaberDurumu::Incelemede->value)
+        ->whereNotNull('onay_epostasi_gonderildi_at')
+        ->where('onay_epostasi_gonderildi_at', '<=', now()->subHour())
+        ->get();
+
+    foreach ($haberler as $haber) {
+        $editor = \App\Models\Yonetici::find(config('services.haber_onay.editor_id'));
+        if (! $editor || ! $editor->telefon) {
+            continue;
+        }
+
+        $mesaj = 'Inceleme bekleyen haberiniz var: "'
+            . mb_substr($haber->baslik, 0, 40)
+            . '". Panel: ' . config('app.url') . '/yonetim/haberler';
+
+        try {
+            app(\App\Services\HermesService::class)->sendSMS(
+                [$editor->telefon],
+                $mesaj
+            );
+
+            \Illuminate\Support\Facades\Log::info('[HaberOnay] SMS hatirlatma gonderildi', [
+                'haber_id' => $haber->id,
+                'editor_telefon' => $editor->telefon,
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('[HaberOnay] SMS gonderilemedi', [
+                'haber_id' => $haber->id,
+                'hata' => $e->getMessage(),
+            ]);
+        }
+    }
+})->everyMinute();

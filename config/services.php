@@ -73,6 +73,10 @@ return [
         'from_name' => env('ZEPTOMAIL_FROM_NAME'),
     ],
 
+    'haber_onay' => [
+        'editor_id' => env('HABER_ONAY_EDITOR_ID', 1),
+    ],
+
     'iletisim_makinesi' => [
         'username' => env('ILETISIM_MAKINESI_USERNAME'),
         'password' => env('ILETISIM_MAKINESI_PASSWORD'),

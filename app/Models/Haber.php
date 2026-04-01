@@ -49,6 +49,9 @@ class Haber extends Model
         'gorsel_og',
         'gorsel_sm',
         'gorsel_mobil_lg',
+        'onay_token',
+        'onay_token_expires_at',
+        'onay_epostasi_gonderildi_at',
     ];
 
     protected function casts(): array
@@ -63,6 +66,8 @@ class Haber extends Model
             'ai_islendi' => 'boolean',
             'ai_islem_yuzde' => 'integer',
             'ai_onay' => 'boolean',
+            'onay_token_expires_at' => 'datetime',
+            'onay_epostasi_gonderildi_at' => 'datetime',
         ];
     }
 

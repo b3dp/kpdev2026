@@ -234,22 +234,61 @@ class ZeptomailService
         );
     }
 
-    public function haberOnayGonder(string $eposta, string $ad, string $haberBaslik, string $onayUrl, string $redUrl): bool
-    {
-        $htmlIcerik = view('emails.haber_onay', [
-            'adSoyad' => $ad,
-            'haberBaslik' => $haberBaslik,
-            'onayUrl' => $onayUrl,
-            'redUrl' => $redUrl,
-        ])->render();
+    public function haberOnayGonder(
+        string $eposta,
+        string $ad,
+        string $haberBaslik,
+        string $haberIcerik,
+        string $haberKategori,
+        string $kisiler,
+        string $kurumlar,
+        ?string $gorselUrl,
+        string $yayinlaUrl,
+        string $duzenleUrl,
+    ): bool {
+        $gorselHtml = $gorselUrl
+            ? '<img src="' . e($gorselUrl) . '" style="width:100%;max-height:400px;object-fit:cover;border-radius:8px;margin-bottom:20px;" alt="Haber görseli">'
+            : '';
+
+        $ozet = mb_substr($haberIcerik, 0, 1000);
+        $devami = mb_strlen($haberIcerik) > 1000 ? '...' : '';
+
+        $htmlIcerik = '
+<div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto;padding:24px;">
+    <h1 style="font-size:22px;color:#1a1a1a;margin-bottom:8px;">' . e($haberBaslik) . '</h1>
+    <p style="color:#666;font-size:13px;margin-bottom:20px;">
+        <strong>Kategori:</strong> ' . e($haberKategori) . '
+        ' . ($kisiler ? ' &nbsp;|&nbsp; <strong>Ki&#351;iler:</strong> ' . e($kisiler) : '') . '
+        ' . ($kurumlar ? ' &nbsp;|&nbsp; <strong>Kurumlar:</strong> ' . e($kurumlar) : '') . '
+    </p>
+    ' . $gorselHtml . '
+    <div style="color:#333;font-size:15px;line-height:1.7;margin-bottom:28px;">'
+            . nl2br(e($ozet)) . $devami .
+        '</div>
+    <div style="margin-top:28px;">
+        <a href="' . e($yayinlaUrl) . '"
+           style="display:inline-block;background:#16a34a;color:#fff;padding:14px 32px;
+                  border-radius:8px;text-decoration:none;font-size:16px;font-weight:bold;margin-right:12px;">
+            Yayina Al
+        </a>
+        <a href="' . e($duzenleUrl) . '"
+           style="display:inline-block;background:#2563eb;color:#fff;padding:14px 32px;
+                  border-radius:8px;text-decoration:none;font-size:16px;font-weight:bold;">
+            Duzenle
+        </a>
+    </div>
+    <p style="color:#999;font-size:12px;margin-top:20px;">
+        Bu link 3 saat gecerlidir. Sure dolduktan sonra "Yayina Al" butonu duzenleme ekranina yonlendirir.
+    </p>
+</div>';
 
         return $this->gonderTemel(
             aliciEposta: $eposta,
             aliciAd: $ad,
-            konu: "Haber Onay Talebi - {$haberBaslik}",
+            konu: 'Inceleme Bekliyor: ' . $haberBaslik,
             htmlIcerik: $htmlIcerik,
             queue: 'default',
-            ilgiliTip: 'haber',
+            ilgiliTip: 'haber_onay',
         );
     }
 
