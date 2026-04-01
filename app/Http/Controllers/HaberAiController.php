@@ -305,7 +305,6 @@ class HaberAiController extends Controller
                 'ai_islendi' => true,
                 'ai_islem_yuzde' => 100,
                 'ai_islem_adim' => "AI işlemleri tamamlandı (kişi: {$eklenenKisiSayisi}, kurum: {$eklenenKurumSayisi})",
-                'durum' => HaberDurumu::Incelemede,
             ]);
 
             dispatch_sync(new OnayEpostasiGonderJob($haber->id));

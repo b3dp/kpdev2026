@@ -5,6 +5,7 @@ namespace App\Enums;
 enum HaberDurumu: string
 {
     case Taslak = 'taslak';
+    case Planli = 'planli';
     case Incelemede = 'incelemede';
     case Yayinda = 'yayinda';
     case Reddedildi = 'reddedildi';
@@ -14,6 +15,7 @@ enum HaberDurumu: string
     {
         return match ($this) {
             self::Taslak => 'Taslak',
+            self::Planli => 'Planlı',
             self::Incelemede => 'İncelemede',
             self::Yayinda => 'Yayında',
             self::Reddedildi => 'Reddedildi',

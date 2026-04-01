@@ -10,6 +10,7 @@ use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
+use Filament\Support\Enums\Alignment;
 
 class EditHaber extends EditRecord
 {
@@ -50,7 +51,7 @@ class EditHaber extends EditRecord
 
                     return auth()->check()
                         && auth()->user()->hasRole('Yazar')
-                        && $durum === HaberDurumu::Taslak;
+                        && in_array($durum, [HaberDurumu::Taslak, HaberDurumu::Incelemede], true);
                 })
                 ->requiresConfirmation()
                 ->modalHeading('İncelemeye Gönder')
@@ -84,12 +85,66 @@ class EditHaber extends EditRecord
                 })
                 ->requiresConfirmation()
                 ->action(function (): void {
+                    $yayinTarihi = $this->record->yayin_tarihi;
+
+                    if ($yayinTarihi && $yayinTarihi->isFuture()) {
+                        $this->record->update([
+                            'durum' => HaberDurumu::Planli,
+                        ]);
+
+                        return;
+                    }
+
                     $this->record->update([
                         'durum' => HaberDurumu::Yayinda,
-                        'yayin_tarihi' => $this->record->yayin_tarihi ?? now(),
+                        'yayin_tarihi' => $yayinTarihi ?? now(),
                     ]);
                 }),
             DeleteAction::make(),
+        ];
+    }
+
+    protected function getFooterActionsAlignment(): Alignment
+    {
+        return Alignment::Between;
+    }
+
+    protected function getFooterActions(): array
+    {
+        return [
+            Action::make('incelemeye_gonder_footer')
+                ->label('İncelemeye Gönder')
+                ->icon('heroicon-o-paper-airplane')
+                ->color('warning')
+                ->visible(function (): bool {
+                    $durum = $this->record->durum instanceof HaberDurumu
+                        ? $this->record->durum
+                        : HaberDurumu::tryFrom((string) $this->record->durum);
+
+                    return auth()->check()
+                        && auth()->user()->hasRole('Yazar')
+                        && in_array($durum, [
+                            HaberDurumu::Taslak,
+                            HaberDurumu::Incelemede,
+                        ], true);
+                })
+                ->requiresConfirmation()
+                ->modalHeading('İncelemeye Gönder')
+                ->modalDescription('Haber editör incelemesine gönderilecek. Devam etmek istiyor musunuz?')
+                ->action(function (): void {
+                    $this->record->update([
+                        'durum' => HaberDurumu::Incelemede,
+                    ]);
+
+                    OnayEpostasiGonderJob::dispatch($this->record->id);
+
+                    Notification::make()
+                        ->title('Haber incelemeye gönderildi')
+                        ->success()
+                        ->send();
+
+                    $this->redirect($this->getResource()::getUrl('index'));
+                }),
         ];
     }
 

@@ -200,6 +200,20 @@ class HaberResource extends Resource
                             $html = '<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:8px;">';
                             foreach ($record->gorseller as $gorsel) {
                                 $url = $gorsel->lgUrl();
+
+                                if (config('app.debug')) {
+                                    logger()->info('Haber galeri görsel önizleme URL kontrolü', [
+                                        'haber_id' => $record->id,
+                                        'gorsel_id' => $gorsel->id,
+                                        'lg_yol' => $gorsel->lg_yol,
+                                        'olusan_url' => $url,
+                                    ]);
+                                }
+
+                                if (blank($url)) {
+                                    continue;
+                                }
+
                                 $html .= '<div style="position:relative;">'
                                     . '<img src="' . e($url) . '" style="border-radius:6px;width:100%;height:96px;object-fit:cover;">'
                                     . '<span style="position:absolute;top:4px;left:4px;background:rgba(0,0,0,0.55);color:#fff;font-size:11px;padding:1px 5px;border-radius:4px;">' . $gorsel->sira . '</span>'
@@ -344,6 +358,7 @@ class HaberResource extends Resource
                         : HaberDurumu::tryFrom((string) $state)?->label() ?? $state)
                     ->color(fn (HaberDurumu|string|null $state) => match ($state instanceof HaberDurumu ? $state : HaberDurumu::tryFrom((string) $state)) {
                         HaberDurumu::Taslak => 'gray',
+                        HaberDurumu::Planli => 'info',
                         HaberDurumu::Incelemede => 'warning',
                         HaberDurumu::Yayinda => 'success',
                         HaberDurumu::Reddedildi => 'danger',

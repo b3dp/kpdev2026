@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class HaberGorseli extends Model
 {
@@ -29,16 +30,29 @@ class HaberGorseli extends Model
 
     public function lgUrl(): string
     {
-        return Storage::disk('spaces')->url($this->lg_yol);
+        return $this->olusturUrl($this->lg_yol);
     }
 
     public function ogUrl(): string
     {
-        return Storage::disk('spaces')->url($this->og_yol);
+        return $this->olusturUrl($this->og_yol);
     }
 
     public function smUrl(): string
     {
-        return Storage::disk('spaces')->url($this->sm_yol);
+        return $this->olusturUrl($this->sm_yol);
+    }
+
+    private function olusturUrl(?string $yol): string
+    {
+        if (blank($yol)) {
+            return '';
+        }
+
+        if (Str::startsWith($yol, ['http://', 'https://'])) {
+            return $yol;
+        }
+
+        return Storage::disk('spaces')->url(ltrim($yol, '/'));
     }
 }

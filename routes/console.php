@@ -18,3 +18,9 @@ Schedule::command('bagis:rapor-gonder haftalik')->weeklyOn(1, '08:00');
 Schedule::command('bagis:rapor-gonder aylik')->monthlyOn(1, '08:00');
 Schedule::command('ekayit:donem-kontrol')->dailyAt('00:05');
 Schedule::command('sms:durum-guncelle')->everyTenMinutes();
+Schedule::call(function () {
+    \App\Models\Haber::query()
+        ->where('durum', \App\Enums\HaberDurumu::Planli->value)
+        ->where('yayin_tarihi', '<=', now())
+        ->update(['durum' => \App\Enums\HaberDurumu::Yayinda->value]);
+})->everyMinute();
