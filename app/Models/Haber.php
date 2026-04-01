@@ -52,6 +52,7 @@ class Haber extends Model
         'onay_token',
         'onay_token_expires_at',
         'onay_epostasi_gonderildi_at',
+        'onay_sms_gonderildi_at',
     ];
 
     protected function casts(): array
@@ -68,6 +69,7 @@ class Haber extends Model
             'ai_onay' => 'boolean',
             'onay_token_expires_at' => 'datetime',
             'onay_epostasi_gonderildi_at' => 'datetime',
+            'onay_sms_gonderildi_at' => 'datetime',
         ];
     }
 

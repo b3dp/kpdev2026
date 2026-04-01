@@ -30,6 +30,7 @@ Schedule::call(function () {
         ->where('durum', \App\Enums\HaberDurumu::Incelemede->value)
         ->whereNotNull('onay_epostasi_gonderildi_at')
         ->where('onay_epostasi_gonderildi_at', '<=', now()->subMinutes(config('services.haber_onay.sms_dakika')))
+        ->whereNull('onay_sms_gonderildi_at')
         ->get();
 
     foreach ($haberler as $haber) {
@@ -47,6 +48,8 @@ Schedule::call(function () {
                 [$editor->telefon],
                 $mesaj
             );
+
+            $haber->update(['onay_sms_gonderildi_at' => now()]);
 
             \Illuminate\Support\Facades\Log::info('[HaberOnay] SMS hatirlatma gonderildi', [
                 'haber_id' => $haber->id,

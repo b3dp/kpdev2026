@@ -59,6 +59,7 @@ class EditHaber extends EditRecord
                 ->action(function (): void {
                     $this->record->update([
                         'durum' => HaberDurumu::Incelemede,
+                        'onay_sms_gonderildi_at' => null,
                     ]);
 
                     OnayEpostasiGonderJob::dispatch($this->record->id);
@@ -134,6 +135,7 @@ class EditHaber extends EditRecord
                 ->action(function (): void {
                     $this->record->update([
                         'durum' => HaberDurumu::Incelemede,
+                        'onay_sms_gonderildi_at' => null,
                     ]);
 
                     OnayEpostasiGonderJob::dispatch($this->record->id);

@@ -60,7 +60,7 @@ class OnayEpostasiGonderJob implements ShouldQueue
 
         // URL'leri oluştur
         $yayinlaUrl = route('haber.onay.yayinla', [
-            'haber' => $haber->id,
+            'haberId' => $haber->id,
             'token' => $token,
         ]);
         $duzenleUrl = config('app.url') . '/yonetim/haberler/' . $haber->id . '/edit';
