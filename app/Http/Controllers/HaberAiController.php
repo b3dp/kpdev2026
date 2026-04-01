@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\HaberDurumu;
 use App\Jobs\OnayEpostasiGonderJob;
 use App\Models\Haber;
 use App\Models\Kisi;
