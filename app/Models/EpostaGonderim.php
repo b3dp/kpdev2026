@@ -15,6 +15,7 @@ class EpostaGonderim extends Model
         'alici_eposta',
         'alici_ad',
         'konu',
+        'html_icerik',
         'durum',
         'zeptomail_message_id',
         'hata_mesaji',

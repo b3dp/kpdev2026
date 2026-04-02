@@ -134,7 +134,16 @@ class EpostaGonderimResource extends Resource
                     }),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
+                Tables\Actions\Action::make('goruntule')
+                    ->label('Görüntüle')
+                    ->icon('heroicon-o-eye')
+                    ->modalHeading(fn ($record) => $record->konu)
+                    ->modalContent(fn ($record) => view(
+                        'filament.eposta-goruntule',
+                        ['htmlIcerik' => $record->html_icerik]
+                    ))
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Kapat'),
             ])
             ->bulkActions([]);
     }

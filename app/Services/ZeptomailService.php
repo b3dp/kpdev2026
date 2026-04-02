@@ -32,6 +32,7 @@ class ZeptomailService
             'alici_eposta' => $aliciEposta,
             'alici_ad' => $aliciAd,
             'konu' => $konu,
+            'html_icerik' => $htmlIcerik ?? null,
             'durum' => 'beklemede',
             'ilgili_tip' => $ilgiliTip,
             'ilgili_id' => $ilgiliId,
@@ -101,6 +102,10 @@ class ZeptomailService
         if (! $gonderim) {
             return;
         }
+
+        $gonderim->update([
+            'html_icerik' => $icerik ?? null,
+        ]);
 
         try {
             $response = Http::withHeaders([
