@@ -1,5 +1,96 @@
 @extends('emails._layout')
 
+@section('json_ld')
+
+{{-- Gmail & Yahoo: JSON-LD --}}
+<script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Order",
+    "orderNumber": "{{ $bagisNo }}",
+    "orderDate": "{{ \Carbon\Carbon::now()->toIso8601String() }}",
+    "orderStatus": "http://schema.org/OrderPaymentDue",
+    "priceCurrency": "TRY",
+    "price": "{{ $tutar }}",
+    "acceptedOffer": {
+        "@type": "Offer",
+        "itemOffered": {
+            "@type": "Service",
+            "name": "Bağış — Kestanepazarı Öğrenci Yetiştirme Derneği"
+        }
+    },
+    "seller": {
+        "@type": "Organization",
+        "name": "Kestanepazarı Öğrenci Yetiştirme Derneği",
+        "url": "{{ config('app.url') }}"
+    },
+    "customer": {
+        "@type": "Person",
+        "name": "{{ $adSoyad }}"
+    },
+    "potentialAction": {
+        "@type": "ViewAction",
+        "name": "Makbuzu İndir",
+        "url": "{{ $makbuzUrl ?? config('app.url') }}"
+    }
+}
+</script>
+
+{{-- Outlook: Actionable Messages --}}
+<script type="application/adaptivecard+json">
+{
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "type": "AdaptiveCard",
+    "version": "1.4",
+    "originator": "{{ config('app.url') }}",
+    "body": [
+        {
+            "type": "TextBlock",
+            "text": "Bağış Alındı — {{ $bagisNo }}",
+            "weight": "Bolder",
+            "size": "Medium"
+        },
+        {
+            "type": "FactSet",
+            "facts": [
+                { "title": "Tutar", "value": "{{ number_format($tutar, 2, ',', '.') }} ₺" },
+                { "title": "İşlem No", "value": "{{ $bagisNo }}" },
+                { "title": "Tarih", "value": "{{ $tarih }}" }
+            ]
+        }
+    ],
+    "actions": [
+        {
+            "type": "Action.OpenUrl",
+            "title": "Makbuzu İndir",
+            "url": "{{ $makbuzUrl ?? config('app.url') }}"
+        }
+    ]
+}
+</script>
+
+{{-- Yandex Smart Widgets --}}
+<script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Order",
+    "orderNumber": "{{ $bagisNo }}",
+    "priceCurrency": "TRY",
+    "price": "{{ $tutar }}",
+    "seller": {
+        "@type": "Organization",
+        "name": "Kestanepazarı Öğrenci Yetiştirme Derneği"
+    },
+    "potentialAction": {
+        "@type": "ViewAction",
+        "name": "Makbuzu İndir",
+        "url": "{{ $makbuzUrl ?? config('app.url') }}"
+    }
+}
+</script>
+
+@endsection
+
 @section('baslik', 'Bağış Makbuzu')
 
 @section('konu', 'Bağışınız Alındı - ' . $bagisNo)
@@ -75,5 +166,19 @@
     Bağışlarınız derneğimizin eğitim faaliyetlerine katkı sağlamaktadır.
     Sorularınız için <a href="mailto:bilgi@kestanepazari.org.tr" style="color:#1e3a5f;">bilgi@kestanepazari.org.tr</a> adresine yazabilirsiniz.
 </p>
+
+{{-- Apple Mail / Siri: Microdata --}}
+<div itemscope itemtype="http://schema.org/Order" style="display:none;">
+    <span itemprop="orderNumber">{{ $bagisNo }}</span>
+    <span itemprop="priceCurrency">TRY</span>
+    <span itemprop="price">{{ $tutar }}</span>
+    <div itemprop="seller" itemscope itemtype="http://schema.org/Organization">
+        <span itemprop="name">Kestanepazarı Öğrenci Yetiştirme Derneği</span>
+    </div>
+    <div itemprop="potentialAction" itemscope itemtype="http://schema.org/ViewAction">
+        <link itemprop="url" href="{{ $makbuzUrl ?? config('app.url') }}"/>
+        <meta itemprop="name" content="Makbuzu İndir"/>
+    </div>
+</div>
 
 @endsection

@@ -48,6 +48,10 @@
             p { font-size: 14px !important; }
         }
     </style>
+
+    @hasSection('json_ld')
+        @yield('json_ld')
+    @endif
 </head>
 <body id="body" style="margin:0;padding:0;background-color:#f4f6f9;width:100%;">
 
