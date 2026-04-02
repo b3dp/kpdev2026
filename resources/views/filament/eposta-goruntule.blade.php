@@ -5,5 +5,5 @@
         sandbox="allow-same-origin">
     </iframe>
 @else
-    <p class="text-gray-400 text-center py-8">Bu gonderim icin icerik kaydedilmemis.</p>
+    <p class="text-gray-400 text-center py-8">Bu gönderim için içerik kaydedilmemiş.</p>
 @endif
