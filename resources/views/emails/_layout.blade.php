@@ -81,20 +81,18 @@
                                     </td>
                                     {{-- Sağ: Başlık --}}
                                     <td valign="middle"
-                                        style="background-color:#faf8f4;padding:20px 24px 20px 12px;
-                                               text-align:right;border-bottom:4px solid #e07b39;">
+                                        style="background-color:#faf8f4;padding:20px 24px 20px 12px;text-align:right;">
                                         <p style="color:#1e3a5f;font-size:28px;font-family:Arial,sans-serif;
-                                                   font-weight:bold;margin:0;line-height:1.3;">
+                                                   font-weight:bold;margin:0;line-height:1.2;">
                                             @yield('baslik', 'Bildirim')
                                         </p>
                                     </td>
                                 </tr>
-                            </table>
-                            {{-- Turuncu çizgi tüm genişlikte --}}
-                            <table role="presentation" border="0" cellpadding="0"
-                                   cellspacing="0" width="100%">
+                                {{-- Turuncu çizgi ayrı satırda --}}
                                 <tr>
-                                    <td style="background-color:#e07b39;height:4px;font-size:0;line-height:0;">&nbsp;</td>
+                                    <td colspan="2"
+                                        style="background-color:#e07b39;height:4px;font-size:0;line-height:0;padding:0;">
+                                    </td>
                                 </tr>
                             </table>
                         </td>
@@ -123,9 +121,14 @@
                         <td class="footer-td"
                             style="background-color:#f8f9fb;padding:20px 40px;border-top:1px solid #e8ecf0;">
                             <p style="color:#9aa3ae;font-size:11px;font-family:Arial,sans-serif;margin:0 0 6px;line-height:1.6;text-align:center;">
-                                Kestanepazarı Öğrenci Yetiştirme Derneği<br>
-                                Uğur Mumcu Mah. 1234 Sok. No:5 Karabağlar / İZMİR
-                            </p>
+    <img src="{{ rtrim(config('app.url'), '/') }}/images/logo-gri.png"
+         alt="Kestanepazarı"
+         width="100"
+         height="100"
+         style="display:inline-block; vertical-align:middle; width:100px; height:100px; object-fit:contain; margin-bottom:10px;"><br/>
+    <strong>Kestanepazarı Öğrenci Yetiştirme Derneği</strong><br>
+    Uğur Mumcu Mah. 1234 Sok. No:5 Karabağlar / İZMİR
+</p>
                             <p style="color:#9aa3ae;font-size:11px;font-family:Arial,sans-serif;margin:0;text-align:center;">
                                 <a href="{{ config('app.url') }}"
                                    style="color:#1e3a5f;text-decoration:none;">kestanepazari.org.tr</a>

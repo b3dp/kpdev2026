@@ -1,3 +1,5 @@
+@extends('emails._layout')
+
 @section('baslik', 'Doğrulama Kodu')
 
 <!DOCTYPE html>

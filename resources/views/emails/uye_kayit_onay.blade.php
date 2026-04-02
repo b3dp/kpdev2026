@@ -1,4 +1,4 @@
-@extends('emails.layouts.base')
+@extends('emails._layout')
 @section('baslik', 'Üyelik Bildirimi')
 @section('konu', 'Hesabınız Oluşturuldu')
 @section('icerik')
