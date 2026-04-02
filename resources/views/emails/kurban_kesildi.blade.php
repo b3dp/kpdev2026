@@ -1,5 +1,7 @@
 @extends('emails._layout')
 
+@section('baslik', 'Kurban Bildirimi')
+
 @section('konu', 'Kurbanınız Kesildi - ' . $kurbanNo)
 
 @section('icerik')

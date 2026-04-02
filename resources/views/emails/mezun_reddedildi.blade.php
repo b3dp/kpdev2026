@@ -1,5 +1,7 @@
 @extends('emails._layout')
 
+@section('baslik', 'Mezun Kaydı Hakkında')
+
 @section('konu', 'Mezun Kaydınız Hakkında')
 
 @section('icerik')

@@ -1,4 +1,5 @@
 @extends('emails.layouts.base')
+@section('baslik', 'Şifre Sıfırlama')
 @section('konu', 'Şifre Sıfırlama Talebi')
 @section('icerik')
 <h1>Şifre Sıfırlama</h1>

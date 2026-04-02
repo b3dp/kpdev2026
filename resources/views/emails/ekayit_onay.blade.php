@@ -1,5 +1,7 @@
 @extends('emails._layout')
 
+@section('baslik', 'E-Kayıt Bildirimi')
+
 @section('konu', 'E-Kayıt Onayı - ' . $kayitNo)
 
 @section('icerik')

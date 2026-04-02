@@ -66,23 +66,35 @@
 
                     {{-- Header --}}
                     <tr>
-                        <td class="header-td" align="center" valign="middle"
-                            style="background-color:#1e3a5f;padding:32px 40px;">
-                            <!--[if mso]>
-                            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
-                                style="height:80px;v-text-anchor:middle;width:600px;" arcsize="0%" stroke="f" fillcolor="#1e3a5f">
-                            <w:anchorlock/>
-                            <![endif]-->
-                            <img class="logo"
-                                 src="{{ rtrim(config('app.url'), '/') }}/images/logo-kare.png"
-                                 alt="Kestanepazarı"
-                                 width="72"
-                                 height="72"
-                                 style="display:block;margin:0 auto 12px;width:72px;height:72px;border-radius:8px;">
-                            <p style="color:#ffffff;font-size:12px;font-family:Arial,sans-serif;margin:0;opacity:0.75;letter-spacing:0.5px;">
-                                KESTANEPAZARI ÖĞRENCİ YETİŞTİRME DERNEĞİ
-                            </p>
-                            <!--[if mso]></v:roundrect><![endif]-->
+                        <td style="padding:0;">
+                            <table role="presentation" border="0" cellpadding="0"
+                                   cellspacing="0" width="100%">
+                                <tr>
+                                    {{-- Sol: Lacivert logo şeridi --}}
+                                    <td width="80" align="center" valign="middle"
+                                        style="background-color:#1e3a5f;padding:20px 0;width:80px;">
+                                        <img src="{{ rtrim(config('app.url'), '/') }}/images/logo-kare.png"
+                                             alt="Kestanepazarı"
+                                             width="48"
+                                             height="48"
+                                             style="display:block;width:48px;height:48px;
+                                                    border-radius:6px;margin:0 auto;">
+                                    </td>
+                                    {{-- Sağ: Krem zemin başlık --}}
+                                    <td valign="middle"
+                                        style="background-color:#faf8f4;padding:20px 24px;
+                                               border-bottom:3px solid #e07b39;">
+                                        <p style="color:#9aa3ae;font-size:10px;font-family:Arial,sans-serif;
+                                                   margin:0 0 4px;letter-spacing:0.8px;text-transform:uppercase;">
+                                            Kestanepazarı Öğrenci Yetiştirme Derneği
+                                        </p>
+                                        <p style="color:#1e3a5f;font-size:17px;font-family:Arial,sans-serif;
+                                                   font-weight:bold;margin:0;line-height:1.3;">
+                                            @yield('baslik', 'Bildirim')
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
                         </td>
                     </tr>
 

@@ -1,3 +1,5 @@
+@section('baslik', 'Doğrulama Kodu')
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>

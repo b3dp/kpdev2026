@@ -1,5 +1,7 @@
 @extends('emails._layout')
 
+@section('baslik', 'Yönetici Bildirimi')
+
 @section('konu', '[Sistem] ' . $konu)
 
 @section('icerik')

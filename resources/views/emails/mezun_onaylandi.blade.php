@@ -1,6 +1,8 @@
 {{-- mezun_onaylandi.blade.php --}}
 @extends('emails._layout')
 
+@section('baslik', 'Mezun Kaydı Onaylandı')
+
 @section('konu', 'Mezun Kaydınız Onaylandı')
 
 @section('icerik')

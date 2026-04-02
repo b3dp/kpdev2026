@@ -1,4 +1,5 @@
 @extends('emails.layouts.base')
+@section('baslik', 'Üyelik Bildirimi')
 @section('konu', 'Hesabınız Oluşturuldu')
 @section('icerik')
 <h1>Hoş Geldiniz!</h1>

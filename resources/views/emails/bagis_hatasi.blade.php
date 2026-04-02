@@ -1,5 +1,7 @@
 @extends('emails._layout')
 
+@section('baslik', 'Bağış Bildirimi')
+
 @section('konu', 'Ödeme Hatası - ' . $bagisNo)
 
 @section('icerik')

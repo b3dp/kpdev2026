@@ -1,5 +1,7 @@
 @extends('emails._layout')
 
+@section('baslik', 'Doğrulama Kodu')
+
 @section('konu', 'Kestanepazarı Doğrulama Kodu: ' . $kod)
 
 @section('icerik')

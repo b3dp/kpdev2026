@@ -1,5 +1,7 @@
 @extends('emails._layout')
 
+@section('baslik', 'Bağış Raporu')
+
 @section('konu', 'Bağış Raporu - ' . $periyot)
 
 @section('icerik')

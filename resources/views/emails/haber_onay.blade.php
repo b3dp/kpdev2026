@@ -1,5 +1,7 @@
 @extends('emails._layout')
 
+@section('baslik', 'Haber İnceleme Bildirimi')
+
 @section('konu', 'İnceleme Bekliyor: ' . $haberBaslik)
 
 @section('icerik')
