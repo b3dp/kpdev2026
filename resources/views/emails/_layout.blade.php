@@ -70,29 +70,31 @@
                             <table role="presentation" border="0" cellpadding="0"
                                    cellspacing="0" width="100%">
                                 <tr>
-                                    {{-- Sol: Lacivert logo şeridi --}}
-                                    <td width="80" align="center" valign="middle"
-                                        style="background-color:#1e3a5f;padding:20px 0;width:80px;">
+                                    {{-- Sol: Logo --}}
+                                    <td width="130" valign="middle"
+                                        style="background-color:#faf8f4;padding:16px 12px 16px 24px;width:130px;">
                                         <img src="{{ rtrim(config('app.url'), '/') }}/images/logo-kare.png"
                                              alt="Kestanepazarı"
-                                             width="48"
-                                             height="48"
-                                             style="display:block;width:48px;height:48px;
-                                                    border-radius:6px;margin:0 auto;">
+                                             width="100"
+                                             height="100"
+                                             style="display:block;width:100px;height:100px;object-fit:contain;">
                                     </td>
-                                    {{-- Sağ: Krem zemin başlık --}}
+                                    {{-- Sağ: Başlık --}}
                                     <td valign="middle"
-                                        style="background-color:#faf8f4;padding:20px 24px;
-                                               border-bottom:3px solid #e07b39;">
-                                        <p style="color:#9aa3ae;font-size:10px;font-family:Arial,sans-serif;
-                                                   margin:0 0 4px;letter-spacing:0.8px;text-transform:uppercase;">
-                                            Kestanepazarı Öğrenci Yetiştirme Derneği
-                                        </p>
-                                        <p style="color:#1e3a5f;font-size:17px;font-family:Arial,sans-serif;
+                                        style="background-color:#faf8f4;padding:20px 24px 20px 12px;
+                                               text-align:right;border-bottom:4px solid #e07b39;">
+                                        <p style="color:#1e3a5f;font-size:28px;font-family:Arial,sans-serif;
                                                    font-weight:bold;margin:0;line-height:1.3;">
                                             @yield('baslik', 'Bildirim')
                                         </p>
                                     </td>
+                                </tr>
+                            </table>
+                            {{-- Turuncu çizgi tüm genişlikte --}}
+                            <table role="presentation" border="0" cellpadding="0"
+                                   cellspacing="0" width="100%">
+                                <tr>
+                                    <td style="background-color:#e07b39;height:4px;font-size:0;line-height:0;">&nbsp;</td>
                                 </tr>
                             </table>
                         </td>
