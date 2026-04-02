@@ -73,12 +73,19 @@ class MakbuzOlusturJob implements ShouldQueue
             ])->save();
 
             if ($bagisci?->eposta) {
+                $bagisTuru = $bagis->kalemler->first()?->bagisTuru;
+
                 $gonderildi = $zeptomailService->makbuzGonder(
-                    $bagisci->eposta,
-                    $bagisci->ad_soyad ?? 'Bağışçı',
-                    $bagis->fresh()->makbuzUrl() ?? '',
-                    $bagis->bagis_no,
-                    (string) $bagis->toplam_tutar,
+                    eposta: $bagisci->eposta,
+                    ad: $bagisci->ad_soyad ?? 'Bağışçı',
+                    makbuzUrl: $bagis->fresh()->makbuzUrl() ?? '',
+                    bagisNo: $bagis->bagis_no,
+                    tutar: (string) $bagis->toplam_tutar,
+                    tarih: $bagis->odeme_tarihi ?? now(),
+                    bagisSlug: $bagisTuru?->slug ?? 'bagis',
+                    gorselUrl: $bagisTuru?->gorsel_orijinal
+                        ? Storage::disk('spaces')->url($bagisTuru->gorsel_orijinal)
+                        : null,
                 );
 
                 if ($gonderildi) {

@@ -178,14 +178,30 @@ class ZeptomailService
         );
     }
 
-    public function makbuzGonder(string $eposta, string $ad, string $makbuzUrl, string $bagisNo, string $tutar = ''): bool
+    public function makbuzGonder(
+        string $eposta,
+        string $ad,
+        string $makbuzUrl,
+        string $bagisNo,
+        string $tutar = '',
+        \Carbon\Carbon|\DateTime|string|null $tarih = null,
+        string $bagisSlug = 'bagis',
+        ?string $gorselUrl = null,
+    ): bool
     {
+        $tarihObj = $tarih instanceof \Carbon\Carbon
+            ? $tarih
+            : \Carbon\Carbon::parse($tarih ?? now());
+
         $htmlIcerik = view('emails.bagis_makbuz', [
             'adSoyad' => $ad,
             'bagisNo' => $bagisNo,
             'tutar' => (float) $tutar,
-            'tarih' => now()->format('d.m.Y H:i'),
+            'tarih' => $tarihObj->format('d.m.Y H:i'),
+            'tarihIso' => $tarihObj->toIso8601String(),
             'makbuzUrl' => $makbuzUrl,
+            'bagisSlug' => $bagisSlug,
+            'gorselUrl' => $gorselUrl,
         ])->render();
 
         return $this->gonderTemel(

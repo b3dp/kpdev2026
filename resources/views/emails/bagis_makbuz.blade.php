@@ -8,16 +8,13 @@
     "@@context": "http://schema.org",
     "@@type": "Order",
     "orderNumber": "{{ $bagisNo }}",
-    "orderDate": "{{ \Carbon\Carbon::now()->toIso8601String() }}",
-    "orderStatus": "http://schema.org/OrderPaymentDue",
-    "priceCurrency": "TRY",
-    "price": {{ $tutar }},
-    "acceptedOffer": {
-        "@@type": "Offer",
-        "itemOffered": {
-            "@@type": "Service",
-            "name": "Bağış — Kestanepazarı Öğrenci Yetiştirme Derneği"
-        }
+    "orderDate": "{{ $tarihIso }}",
+    "orderStatus": "http://schema.org/OrderDelivered",
+    "url": "{{ $makbuzUrl }}",
+    "merchant": {
+        "@@type": "Organization",
+        "name": "Kestanepazarı Öğrenci Yetiştirme Derneği",
+        "url": "{{ config('app.url') }}"
     },
     "seller": {
         "@@type": "Organization",
@@ -32,7 +29,36 @@
         "@@type": "ViewAction",
         "name": "Makbuzu İndir",
         "url": "{{ $makbuzUrl ?? config('app.url') }}"
+    },
+    "acceptedOffer": {
+        "@@type": "Offer",
+        "name": "Bağış — Kestanepazarı Öğrenci Yetiştirme Derneği",
+        "url": "{{ config('app.url') }}",
+        "price": {{ $tutar }},
+        "priceCurrency": "TRY",
+        "sku": "{{ $bagisSlug }}2026",
+        "eligibleQuantity": {
+            "@@type": "QuantitativeValue",
+            "value": 1
+        },
+        "itemOffered": {
+            "@@type": "Service",
+            "name": "{{ $bagisSlug }}",
+            "url": "{{ config('app.url') }}"
+            @if($gorselUrl)
+            ,"image": "{{ $gorselUrl }}"
+            @endif
+        }
+    },
+    "priceSpecification": {
+        "@@type": "PriceSpecification",
+        "price": {{ $tutar }},
+        "priceCurrency": "TRY",
+        "validFrom": "{{ $tarihIso }}"
     }
+    @if($gorselUrl)
+    ,"image": "{{ $gorselUrl }}"
+    @endif
 }
 </script>
 
