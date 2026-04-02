@@ -588,6 +588,10 @@ class ViewEkayitKayit extends ViewRecord
                     }
 
                     $this->record->refresh();
+
+                    if ($durum === EkayitDurumu::Onaylandi) {
+                        app(\App\Services\KisiEslestirmeService::class)->ekayitEslestir($this->record);
+                    }
                 }
 
                 $mesaj = $this->mesajMetniHazirla($durum);
@@ -661,6 +665,10 @@ class ViewEkayitKayit extends ViewRecord
                     }
 
                     $this->record->refresh();
+
+                    if ($tip === 'onaylandi') {
+                        app(\App\Services\KisiEslestirmeService::class)->ekayitEslestir($this->record);
+                    }
                 }
 
                 // SMS gönder

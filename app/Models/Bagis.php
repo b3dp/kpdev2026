@@ -31,6 +31,7 @@ class Bagis extends Model
 
             if ($oncekiDurum !== BagisDurumu::Odendi->value && $yeniDurum === BagisDurumu::Odendi->value) {
                 MakbuzOlusturJob::dispatch($bagis)->onQueue('default');
+                app(\App\Services\KisiEslestirmeService::class)->bagisEslestir($bagis);
             }
         });
     }
@@ -41,6 +42,7 @@ class Bagis extends Model
         'bagis_no',
         'sepet_id',
         'uye_id',
+        'kisi_id',
         'durum',
         'toplam_tutar',
         'odeme_saglayici',
@@ -89,6 +91,11 @@ class Bagis extends Model
     public function uye(): BelongsTo
     {
         return $this->belongsTo(Uye::class, 'uye_id');
+    }
+
+    public function kisi(): BelongsTo
+    {
+        return $this->belongsTo(Kisi::class, 'kisi_id');
     }
 
     public function kalemler(): HasMany

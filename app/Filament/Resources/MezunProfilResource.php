@@ -319,6 +319,8 @@ class MezunProfilResource extends Resource
                             ]);
                         }
 
+                        app(\App\Services\KisiEslestirmeService::class)->mezunEslestir($record);
+
                         Notification::make()
                             ->success()
                             ->title('Başarılı')

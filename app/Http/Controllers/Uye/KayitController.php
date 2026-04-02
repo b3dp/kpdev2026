@@ -158,6 +158,8 @@ class KayitController extends Controller
             $dogruladiAlani => true,
         ]);
 
+        app(\App\Services\KisiEslestirmeService::class)->uyeEslestir($uye);
+
         $deviceToken = null;
 
         try {
