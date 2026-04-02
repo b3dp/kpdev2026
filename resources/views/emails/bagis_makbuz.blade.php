@@ -3,36 +3,35 @@
 @section('json_ld')
 
 {{-- Gmail & Yahoo: JSON-LD --}}
-@verbatim
 <script type="application/ld+json">
 {
-    "@context": "http://schema.org",
-    "@type": "Order",
-    "orderNumber": "BAGIS_NO",
-    "orderDate": "TARIH",
+    "@@context": "http://schema.org",
+    "@@type": "Order",
+    "orderNumber": "{{ $bagisNo }}",
+    "orderDate": "{{ \Carbon\Carbon::now()->toIso8601String() }}",
     "orderStatus": "http://schema.org/OrderPaymentDue",
     "priceCurrency": "TRY",
-    "price": "TUTAR",
+    "price": {{ $tutar }},
     "acceptedOffer": {
-        "@type": "Offer",
+        "@@type": "Offer",
         "itemOffered": {
-            "@type": "Service",
+            "@@type": "Service",
             "name": "Bağış — Kestanepazarı Öğrenci Yetiştirme Derneği"
         }
     },
     "seller": {
-        "@type": "Organization",
+        "@@type": "Organization",
         "name": "Kestanepazarı Öğrenci Yetiştirme Derneği",
-        "url": "APP_URL"
+        "url": "{{ config('app.url') }}"
     },
     "customer": {
-        "@type": "Person",
-        "name": "AD_SOYAD"
+        "@@type": "Person",
+        "name": "{{ $adSoyad }}"
     },
     "potentialAction": {
-        "@type": "ViewAction",
+        "@@type": "ViewAction",
         "name": "Makbuzu İndir",
-        "url": "MAKBUZ_URL"
+        "url": "{{ $makbuzUrl ?? config('app.url') }}"
     }
 }
 </script>
@@ -43,20 +42,20 @@
     "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
     "type": "AdaptiveCard",
     "version": "1.4",
-    "originator": "APP_URL",
+    "originator": "{{ config('app.url') }}",
     "body": [
         {
             "type": "TextBlock",
-            "text": "Bağış Alındı — BAGIS_NO",
+            "text": "Bağış Alındı — {{ $bagisNo }}",
             "weight": "Bolder",
             "size": "Medium"
         },
         {
             "type": "FactSet",
             "facts": [
-                { "title": "Tutar", "value": "TUTAR ₺" },
-                { "title": "İşlem No", "value": "BAGIS_NO" },
-                { "title": "Tarih", "value": "TARIH" }
+                { "title": "Tutar", "value": "{{ number_format($tutar, 2, ',', '.') }} ₺" },
+                { "title": "İşlem No", "value": "{{ $bagisNo }}" },
+                { "title": "Tarih", "value": "{{ $tarih }}" }
             ]
         }
     ],
@@ -64,7 +63,7 @@
         {
             "type": "Action.OpenUrl",
             "title": "Makbuzu İndir",
-            "url": "MAKBUZ_URL"
+            "url": "{{ $makbuzUrl ?? config('app.url') }}"
         }
     ]
 }
@@ -73,23 +72,22 @@
 {{-- Yandex Smart Widgets --}}
 <script type="application/ld+json">
 {
-    "@context": "http://schema.org",
-    "@type": "Order",
-    "orderNumber": "BAGIS_NO",
+    "@@context": "http://schema.org",
+    "@@type": "Order",
+    "orderNumber": "{{ $bagisNo }}",
     "priceCurrency": "TRY",
-    "price": "TUTAR",
+    "price": {{ $tutar }},
     "seller": {
-        "@type": "Organization",
+        "@@type": "Organization",
         "name": "Kestanepazarı Öğrenci Yetiştirme Derneği"
     },
     "potentialAction": {
-        "@type": "ViewAction",
+        "@@type": "ViewAction",
         "name": "Makbuzu İndir",
-        "url": "MAKBUZ_URL"
+        "url": "{{ $makbuzUrl ?? config('app.url') }}"
     }
 }
 </script>
-@endverbatim
 
 @endsection
 
