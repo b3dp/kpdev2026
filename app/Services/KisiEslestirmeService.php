@@ -34,7 +34,9 @@ class KisiEslestirmeService
                 $kisi = Kisi::query()->where('eposta', $eposta)->first();
             }
 
-            [$ad, $soyad] = $this->adSoyadParcala($adSoyad);
+            $parcalar = $adSoyad !== null ? explode(' ', trim($adSoyad), 2) : [];
+            $ad = $parcalar[0] ?? null;
+            $soyad = $parcalar[1] ?? null;
             $yeniAd = $ad ?? 'Bilinmiyor';
             $yeniSoyad = $soyad ?? 'Bilinmiyor';
 
@@ -248,28 +250,4 @@ class KisiEslestirmeService
         return $metin !== '' ? $metin : null;
     }
 
-    private function adSoyadParcala(?string $adSoyad): array
-    {
-        if ($adSoyad === null) {
-            return [null, null];
-        }
-
-        $parcalar = preg_split('/\s+/', trim($adSoyad)) ?: [];
-
-        if ($parcalar === []) {
-            return [null, null];
-        }
-
-        if (count($parcalar) === 1) {
-            return [$parcalar[0], null];
-        }
-
-        $ad = array_shift($parcalar);
-        $soyad = trim(implode(' ', $parcalar));
-
-        return [
-            $ad !== '' ? $ad : null,
-            $soyad !== '' ? $soyad : null,
-        ];
-    }
 }
