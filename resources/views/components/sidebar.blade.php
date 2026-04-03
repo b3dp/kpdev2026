@@ -11,11 +11,11 @@
         </div>
 
         <h3 class="relative z-[1] mb-2 font-baskerville text-[17px] font-bold leading-[1.3] text-cream">
-            Bir Ogrencinin Gelecegine Ortak Ol
+            Bir Öğrencinin Geleceğine Ortak Ol
         </h3>
 
         <p class="relative z-[1] mb-[18px] font-jakarta text-[13px] leading-[1.65] text-cream/60">
-            Bagislariniz dogrudan ogrencilerin burs, kirtasiye ve barinma ihtiyaclarina aktarilmaktadir.
+            Bağışlarınız doğrudan öğrencilerin burs, kırtasiye ve barınma ihtiyaçlarına aktarılmaktadır.
         </p>
 
         <a
@@ -25,7 +25,7 @@
             <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
                 <path stroke-linecap="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
             </svg>
-            Bagis Yap
+            Bağış Yap
         </a>
     </div>
 
@@ -70,7 +70,7 @@
         </div>
 
         <a href="{{ route('haberler.index') }}" class="mt-3.5 flex items-center justify-center gap-1.5 rounded-lg border border-primary/15 p-[9px] font-jakarta text-[13px] font-semibold text-primary transition-colors hover:border-primary/25 hover:bg-bg-soft">
-            Tum Haberler
+            Tüm Haberler
             <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
         </a>
     </div>
@@ -80,7 +80,7 @@
 
         <div class="mt-4 flex flex-wrap gap-[7px]">
             <a href="{{ route('haberler.index') }}" class="cat-pill {{ !$aktifKategori ? 'active' : 'inactive' }}">
-                Tumu
+                Tümü
             </a>
 
             @foreach($kategoriler as $kategori)
@@ -96,7 +96,7 @@
     </div>
 
     <div class="sidebar-card">
-        <h3 class="sidebar-section-title">Yaklasan Etkinlik</h3>
+        <h3 class="sidebar-section-title">Yaklaşan Etkinlik</h3>
 
         <div class="mt-4 flex flex-col gap-2.5">
             @forelse($yaklasanEtkinlikler as $etkinlik)
@@ -142,7 +142,7 @@
         </div>
 
         <a href="{{ route('etkinlikler.index') }}" class="mt-3.5 flex items-center justify-center gap-1.5 rounded-lg border border-primary/15 p-[9px] font-jakarta text-[13px] font-semibold text-primary transition-colors hover:border-primary/25 hover:bg-bg-soft">
-            Tum Takvim
+            Tüm Takvim
             <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
         </a>
     </div>

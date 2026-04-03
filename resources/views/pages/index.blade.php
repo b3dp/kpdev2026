@@ -9,7 +9,7 @@
 @section('schema')
 <script type="application/ld+json">
 {
-  "@context": "https://schema.org",
+  "@@context": "https://schema.org",
   "@type": "WebSite",
   "name": "{{ config('site.ad') }} Öğrenci Yetiştirme Derneği",
   "url": "{{ url('/') }}",
@@ -21,6 +21,8 @@
 }
 </script>
 @endsection
+
+
 
 @section('content')
 @php
@@ -42,30 +44,30 @@
         </div>
 
         <h1 class="mb-5 font-baskerville text-[clamp(34px,4.5vw,56px)] font-bold leading-[1.18] text-primary">
-          Gelecegi<br>
+          Geleceği<br>
           <span class="italic text-accent">Birlikte</span><br>
-          Insa Ediyoruz
+          İnşa Ediyoruz
         </h1>
 
         <p class="mb-8 max-w-[440px] font-jakarta text-base leading-[1.75] text-teal-muted">
-          58 yildir Seferihisar genclerinin egitim hayatinda yanlarindayiz. Her bagisiniz bir ogrencinin gelecegini sekillendiriyor.
+          58 yıldır Seferihisar gençlerinin eğitim hayatında yanlarındayız. Her bağışınız bir öğrencinin geleceğini şekillendiriyor.
         </p>
 
         <div class="flex flex-wrap gap-3">
           <a href="{{ route('bagis.index') }}" class="flex items-center gap-2 rounded-[10px] bg-orange-cta px-[26px] py-[13px] font-jakarta text-sm font-bold text-white shadow-[0_4px_16px_rgba(233,89,37,.25)] transition-colors hover:bg-[#c94620]">
             <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-            Bagis Yap
+            Bağış Yap
           </a>
           <a href="{{ route('ekayit.index') }}" class="flex items-center gap-2 rounded-[10px] border border-primary/20 bg-white px-[26px] py-[13px] font-jakarta text-sm font-semibold text-primary transition-colors hover:bg-bg-soft">
             <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-            Ogrenci Kayit
+            Öğrenci Kayıt
           </a>
         </div>
 
         <div class="mt-10 flex gap-8 border-t border-primary/10 pt-8">
           <div>
             <p class="mb-1 font-baskerville text-[28px] font-bold text-primary">1.250</p>
-            <p class="font-jakarta text-[12.5px] font-medium text-teal-muted">Aktif Ogrenci</p>
+            <p class="font-jakarta text-[12.5px] font-medium text-teal-muted">Aktif Öğrenci</p>
           </div>
           <div>
             <p class="mb-1 font-baskerville text-[28px] font-bold text-primary">4.500+</p>
@@ -73,7 +75,7 @@
           </div>
           <div>
             <p class="mb-1 font-baskerville text-[28px] font-bold text-primary">58</p>
-            <p class="font-jakarta text-[12.5px] font-medium text-teal-muted">Yillik Tecrube</p>
+            <p class="font-jakarta text-[12.5px] font-medium text-teal-muted">Yıllık Tecrübe</p>
           </div>
         </div>
       </div>
@@ -153,7 +155,7 @@
             <div class="mb-3 flex items-center justify-between">
               <div class="flex items-center gap-2">
                 <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#E95925" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                <span class="font-jakarta text-[11.5px] font-bold uppercase tracking-[0.06em] text-orange-cta">Yaklasan Etkinlik</span>
+                <span class="font-jakarta text-[11.5px] font-bold uppercase tracking-[0.06em] text-orange-cta">Yaklaşan Etkinlik</span>
               </div>
               <a href="{{ route('etkinlikler.index') }}" class="text-primary transition-colors hover:text-accent">
                 <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
@@ -182,12 +184,12 @@
 <section class="relative overflow-hidden bg-[linear-gradient(135deg,#162E4B_0%,#091420_100%)] py-16">
   <div class="absolute -right-[60px] -top-[60px] h-[250px] w-[250px] rounded-full bg-accent/10"></div>
   <div class="relative z-[1] mx-auto max-w-7xl px-6 text-center">
-    <p class="mb-3.5 font-jakarta text-[12.5px] font-semibold uppercase tracking-[0.1em] text-cream/60">Harekete Gec</p>
-    <h2 class="mb-4 font-baskerville text-[clamp(24px,3.5vw,38px)] font-bold leading-[1.25] text-cream">Gelecegi Birlikte <span class="italic text-accent">Insa Edelim</span></h2>
-    <p class="mx-auto mb-7 max-w-[560px] font-jakarta text-[15px] leading-[1.7] text-cream/60">Her yil yuzlerce ogrenci burs destegimizle hayallerine ulasiyor.</p>
+    <p class="mb-3.5 font-jakarta text-[12.5px] font-semibold uppercase tracking-[0.1em] text-cream/60">Harekete Geç</p>
+    <h2 class="mb-4 font-baskerville text-[clamp(24px,3.5vw,38px)] font-bold leading-[1.25] text-cream">Geleceği Birlikte <span class="italic text-accent">İnşa Edelim</span></h2>
+    <p class="mx-auto mb-7 max-w-[560px] font-jakarta text-[15px] leading-[1.7] text-cream/60">Her yıl yüzlerce öğrenci burs desteğimizle hayallerine ulaşıyor.</p>
     <div class="flex flex-wrap justify-center gap-3">
-      <a href="{{ route('bagis.index') }}" class="flex items-center gap-2 rounded-[10px] bg-orange-cta px-7 py-[13px] font-jakarta text-sm font-bold text-white transition-colors hover:bg-[#c94620]">Bagis Yap</a>
-      <a href="{{ route('ekayit.index') }}" class="flex items-center gap-2 rounded-[10px] border border-cream/30 px-7 py-[13px] font-jakarta text-sm font-semibold text-cream transition-colors hover:bg-white/10">Ogrenci Kayit</a>
+      <a href="{{ route('bagis.index') }}" class="flex items-center gap-2 rounded-[10px] bg-orange-cta px-7 py-[13px] font-jakarta text-sm font-bold text-white transition-colors hover:bg-[#c94620]">Bağış Yap</a>
+      <a href="{{ route('ekayit.index') }}" class="flex items-center gap-2 rounded-[10px] border border-cream/30 px-7 py-[13px] font-jakarta text-sm font-semibold text-cream transition-colors hover:bg-white/10">Öğrenci Kayıt</a>
     </div>
   </div>
 </section>
@@ -196,11 +198,11 @@
   <div class="mx-auto max-w-7xl px-6">
     <div class="mb-8 flex flex-wrap items-end justify-between gap-3">
       <div>
-        <p class="mb-2 font-jakarta text-[12.5px] font-semibold uppercase tracking-[0.1em] text-accent">Iyiligin Farkli Yuzleri</p>
-        <h2 class="font-baskerville text-[clamp(22px,3vw,32px)] font-bold text-primary">Bagis Turleri</h2>
+        <p class="mb-2 font-jakarta text-[12.5px] font-semibold uppercase tracking-[0.1em] text-accent">İyiliğin Farklı Yüzleri</p>
+        <h2 class="font-baskerville text-[clamp(22px,3vw,32px)] font-bold text-primary">Bağış Türleri</h2>
       </div>
       <a href="{{ route('bagis.index') }}" class="flex items-center gap-1.5 font-jakarta text-[13px] font-semibold text-primary opacity-70 transition-opacity hover:opacity-100">
-        Tumunu Gor
+        Tümünü Gör
         <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
       </a>
     </div>
@@ -233,11 +235,11 @@
           <div class="p-[18px]">
             <h3 class="mb-1.5 font-jakarta text-base font-bold text-primary">{{ $tur->ad }}</h3>
             <p class="mb-3.5 font-jakarta text-[13px] leading-[1.55] text-teal-muted">{{ $tur->aciklama }}</p>
-            <a href="{{ route('bagis.show', $tur->slug) }}" class="font-jakarta text-[13px] font-bold tracking-[0.04em] text-accent transition-colors hover:text-orange-cta">BAGIS YAP</a>
+            <a href="{{ route('bagis.show', $tur->slug) }}" class="font-jakarta text-[13px] font-bold tracking-[0.04em] text-accent transition-colors hover:text-orange-cta">BAĞIŞ YAP</a>
           </div>
         </div>
       @empty
-        <p class="py-8 text-center font-jakarta text-sm text-teal-muted">Henuz bagis turu eklenmemis.</p>
+        <p class="py-8 text-center font-jakarta text-sm text-teal-muted">Henüz bağış türü eklenmemiş.</p>
       @endforelse
     </div>
   </div>
@@ -247,17 +249,17 @@
   <div class="mx-auto max-w-7xl px-6">
     <div class="mb-3 flex flex-wrap items-start justify-between gap-4">
       <div>
-        <p class="mb-2 font-jakarta text-[12.5px] font-semibold uppercase tracking-[0.1em] text-accent">Guncel Gelismeler</p>
+        <p class="mb-2 font-jakarta text-[12.5px] font-semibold uppercase tracking-[0.1em] text-accent">Güncel Gelişmeler</p>
         <h2 class="font-baskerville text-[clamp(22px,3vw,32px)] font-bold text-primary">Haberler &amp; Duyurular</h2>
       </div>
       <a href="{{ route('haberler.index') }}" class="mt-2 flex items-center gap-1.5 font-jakarta text-[13px] font-bold tracking-[0.04em] text-primary transition-colors hover:text-accent">
-        TUM HABER ARSIVI
+        TÜM HABER ARŞİVİ
         <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
       </a>
     </div>
 
     <div class="mb-7 flex flex-wrap gap-2">
-      <a href="{{ route('haberler.index') }}" class="cat-pill {{ !$aktifKategori ? 'active' : 'inactive' }}">Tumu</a>
+      <a href="{{ route('haberler.index') }}" class="cat-pill {{ !$aktifKategori ? 'active' : 'inactive' }}">Tümü</a>
       @foreach($kategoriler as $kat)
         <a href="{{ route('haberler.index', ['kategori' => $kat->slug]) }}" class="cat-pill {{ $aktifKategori === $kat->slug ? 'active' : 'inactive' }}">{{ $kat->ad }}</a>
       @endforeach
@@ -373,10 +375,10 @@
     <div class="mb-8 flex flex-wrap items-end justify-between gap-3">
       <div>
         <p class="mb-2 font-jakarta text-[12.5px] font-semibold uppercase tracking-[0.1em] text-accent">Takvim</p>
-        <h2 class="font-baskerville text-[clamp(22px,3vw,32px)] font-bold text-primary">Yaklasan Etkinlikler</h2>
+        <h2 class="font-baskerville text-[clamp(22px,3vw,32px)] font-bold text-primary">Yaklaşan Etkinlikler</h2>
       </div>
       <a href="{{ route('etkinlikler.index') }}" class="flex items-center gap-1.5 font-jakarta text-[13px] font-semibold text-primary opacity-70 transition-opacity hover:opacity-100">
-        Tum Takvim
+        Tüm Takvim
         <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
       </a>
     </div>
@@ -409,7 +411,7 @@
           </div>
         </div>
       @empty
-        <p class="py-8 text-center font-jakarta text-sm text-teal-muted">Yaklasan etkinlik yok.</p>
+        <p class="py-8 text-center font-jakarta text-sm text-teal-muted">Yaklaşan etkinlik yok.</p>
       @endforelse
     </div>
   </div>
@@ -418,13 +420,14 @@
 <section class="quote-band py-20">
   <div class="relative z-[1] mx-auto max-w-[680px] px-6 text-center">
     <p class="mb-6 font-baskerville text-[clamp(20px,3vw,28px)] font-bold italic leading-[1.55] text-primary">
-      "Bir cocuga egitim vermek,<br>ona sonsuz bir kapi acmaktir."
+      "Bir çocuğa eğitim vermek,<br>ona sonsuz bir kapı açmaktır."
     </p>
     <p class="mb-7 font-jakarta text-[13px] font-semibold uppercase tracking-[0.06em] text-primary/40">- Kestanepazari Dernegi</p>
     <a href="{{ route('iletisim.index') }}" class="inline-flex items-center gap-2 rounded-[10px] bg-primary px-7 py-[13px] font-jakarta text-sm font-bold text-cream transition-colors hover:bg-primary-dark">
       <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-      Gonullu Olun
+      Gönüllü Olun
     </a>
   </div>
 </section>
 @endsection
+
