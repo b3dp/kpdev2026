@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arama — Kestanepazarı</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,700;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #F7F5F0; color: #162E4B; }
+
+    /* HEADER */
+    #top-bar { transition: max-height .3s, opacity .3s; max-height: 40px; overflow: hidden; }
+    #main-header { transition: box-shadow .3s, background .3s; }
+    #main-header.scrolled { box-shadow: 0 4px 24px rgba(22,46,75,.1); background: rgba(255,255,255,.98); backdrop-filter: blur(8px); }
+    #main-header.scrolled #top-bar { max-height: 0; opacity: 0; }
+    .nav-link { position: relative; transition: color .2s; text-decoration: none; }
+    .nav-link::after { content:''; position:absolute; left:0; bottom:-2px; width:0; height:2px; background:#B27829; transition:width .25s; }
+    .nav-link:hover::after { width:100%; }
+    .ham-line { display:block; width:22px; height:2px; background:#162E4B; border-radius:2px; transition:transform .3s, opacity .3s; }
+    #ham-btn.open .line1 { transform:translateY(7px) rotate(45deg); }
+    #ham-btn.open .line2 { opacity:0; }
+    #ham-btn.open .line3 { transform:translateY(-7px) rotate(-45deg); }
+    #mob-menu { transition:max-height .35s, opacity .3s; max-height:0; opacity:0; overflow:hidden; }
+    #mob-menu.open { max-height:400px; opacity:1; }
+
+    /* ARAMA KUTUSU */
+    .search-big {
+      width: 100%;
+      padding: 16px 56px 16px 20px;
+      border: 2px solid rgba(22,46,75,.15);
+      border-radius: 14px;
+      font-size: 17px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: #162E4B;
+      background: #fff;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .search-big:focus { border-color: #B27829; box-shadow: 0 0 0 4px rgba(178,120,41,.1); }
+    .search-big::placeholder { color: rgba(22,46,75,.35); }
+
+    /* FİLTRE PİLL */
+    .filter-pill { padding:6px 14px; border-radius:999px; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; text-decoration:none; border:1.5px solid transparent; font-family:'Plus Jakarta Sans',sans-serif; }
+    .filter-pill.active { background:#162E4B; color:#EBDFB5; border-color:#162E4B; }
+    .filter-pill.inactive { background:#fff; color:rgba(22,46,75,.65); border-color:rgba(22,46,75,.15); }
+    .filter-pill.inactive:hover { background:#F7F5F0; color:#162E4B; border-color:rgba(22,46,75,.3); }
+
+    /* SONUÇ KARTI */
+    .result-card {
+      background: #fff; border-radius: 14px;
+      border: 1px solid rgba(22,46,75,.08);
+      padding: 18px 20px;
+      display: flex; gap: 14px; align-items: flex-start;
+      text-decoration: none;
+      transition: box-shadow .2s, transform .15s, border-color .15s;
+    }
+    .result-card:hover { box-shadow: 0 6px 24px rgba(22,46,75,.1); transform: translateY(-2px); border-color: rgba(22,46,75,.15); }
+    .result-thumb {
+      width: 72px; height: 72px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; overflow: hidden;
+    }
+
+    /* TİP BADGE */
+    .tip-badge { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:999px; font-size:11.5px; font-weight:700; font-family:'Plus Jakarta Sans',sans-serif; }
+
+    /* VURGU */
+    .highlight { background: rgba(178,120,41,.2); color: #7a5210; border-radius: 3px; padding: 0 2px; font-weight: 600; }
+
+    /* SIDEBAR */
+    .sidebar-card { background:#fff; border-radius:14px; border:1px solid rgba(22,46,75,.08); padding:20px; }
+    .sidebar-title { font-family:'Libre Baskerville',serif; font-weight:700; font-size:15px; color:#162E4B; padding-bottom:10px; margin-bottom:16px; position:relative; }
+    .sidebar-title::after { content:''; position:absolute; left:0; bottom:0; width:24px; height:2px; background:#B27829; border-radius:1px; }
+
+    /* POPÜLER ARAMA */
+    .popular-tag { display:inline-flex; align-items:center; gap:5px; padding:6px 13px; border-radius:999px; font-size:12.5px; font-weight:600; background:#F7F5F0; color:rgba(22,46,75,.7); border:1px solid rgba(22,46,75,.1); cursor:pointer; transition:all .15s; text-decoration:none; }
+    .popular-tag:hover { background:#162E4B; color:#EBDFB5; border-color:#162E4B; }
+
+    /* BOŞSTATE */
+    .empty-state { text-align:center; padding:60px 20px; }
+
+    /* Footer */
+    .footer-link { color:rgba(22,46,75,0.5); font-size:13.5px; transition:color .2s, padding-left .2s; display:inline-block; text-decoration:none; }
+    .footer-link:hover { color:#B27829; padding-left:4px; }
+    .social-btn { width:36px; height:36px; border-radius:8px; border:1px solid rgba(22,46,75,0.2); display:flex; align-items:center; justify-content:center; color:rgba(22,46,75,0.45); transition:background .2s, color .2s, border-color .2s, transform .2s; }
+    .social-btn:hover { background:rgba(178,120,41,0.15); border-color:rgba(178,120,41,0.5); color:#B27829; transform:translateY(-2px); }
+    .col-head { font-family:'Libre Baskerville',serif; font-weight:700; font-size:12.5px; color:#162E4B; letter-spacing:.06em; text-transform:uppercase; margin-bottom:16px; position:relative; padding-bottom:10px; }
+    .col-head::after { content:''; position:absolute; left:0; bottom:0; width:24px; height:2px; background:#B27829; border-radius:1px; }
+    .contact-row { display:flex; align-items:flex-start; gap:10px; color:rgba(22,46,75,.55); font-size:13.5px; line-height:1.5; transition:color .2s; text-decoration:none; }
+    .contact-row:hover { color:#162E4B; }
+    .cicon { width:16px; height:16px; flex-shrink:0; margin-top:2px; color:#B27829; }
+    .bottom-link { font-size:12px; color:rgba(22,46,75,0.5); transition:color .2s; text-decoration:none; }
+    .bottom-link:hover { color:#B27829; }
+    .logo-kf { background:linear-gradient(135deg,#162E4B,#28484C); color:#EBDFB5; font-family:'Libre Baskerville',serif; font-weight:700; }
+  </style>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header id="main-header" style="position:fixed;top:0;left:0;right:0;z-index:50;background:#fff;border-bottom:1px solid #f1f1ef;">
+  <div id="top-bar" style="background:#162E4B;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;">
+    <div style="max-width:1280px;margin:0 auto;padding:0 24px;height:38px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;gap:20px;">
+        <a href="tel:4449232" style="display:flex;align-items:center;gap:6px;opacity:.75;color:#fff;text-decoration:none;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.75"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>444 9 232</a>
+        <a href="/cdn-cgi/l/email-protection#21484f474e614a445255404f4451405b4053480f4e53460f5553" style="display:flex;align-items:center;gap:6px;opacity:.75;color:#fff;text-decoration:none;"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg><span class="__cf_email__" data-cfemail="1a73747c755a717f696e7b747f6a7b607b68733475687d346e68">[email&#160;protected]</span></a>
+      </div>
+      <div style="display:flex;gap:12px;">
+        <a href="#" style="opacity:.6;color:#fff;" onmouseover="this.style.color='#FF9300';this.style.opacity=1" onmouseout="this.style.color='#fff';this.style.opacity=.6"><svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg></a>
+        <a href="#" style="opacity:.6;color:#fff;" onmouseover="this.style.color='#FF9300';this.style.opacity=1" onmouseout="this.style.color='#fff';this.style.opacity=.6"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".5" fill="currentColor" stroke="none"/></svg></a>
+        <a href="#" style="opacity:.6;color:#fff;" onmouseover="this.style.color='#FF9300';this.style.opacity=1" onmouseout="this.style.color='#fff';this.style.opacity=.6"><svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+      </div>
+    </div>
+  </div>
+  <div style="max-width:1280px;margin:0 auto;padding:0 24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;height:64px;">
+      <a href="/" style="display:flex;align-items:center;gap:12px;text-decoration:none;flex-shrink:0;">
+        <span style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#162E4B,#28484C);color:#EBDFB5;font-family:'Libre Baskerville',serif;font-weight:700;font-size:17px;display:flex;align-items:center;justify-content:center;">K</span>
+        <span style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:16px;color:#162E4B;">Kestanepazarı</span>
+      </a>
+      <!-- Büyük arama kutusu header'da -->
+      <div style="flex:1;max-width:480px;margin:0 24px;position:relative;" class="hidden md:block">
+        <svg style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:rgba(22,46,75,.35);pointer-events:none;" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+        <input id="header-search" type="search" placeholder="Sitede ara..." value="burs başvurusu"
+          style="width:100%;padding:9px 14px 9px 38px;border:1.5px solid rgba(22,46,75,.15);border-radius:10px;font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;color:#162E4B;background:#F7F5F0;outline:none;transition:border-color .2s,box-shadow .2s,background .2s;"
+          onfocus="this.style.background='#fff';this.style.borderColor='#B27829';this.style.boxShadow='0 0 0 3px rgba(178,120,41,.1)'"
+          onblur="this.style.background='#F7F5F0';this.style.borderColor='rgba(22,46,75,.15)';this.style.boxShadow='none'" />
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <button style="display:flex;align-items:center;gap:6px;color:#162E4B;background:none;border:none;cursor:pointer;padding:8px;" onmouseover="this.style.color='#B27829'" onmouseout="this.style.color='#162E4B'"><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path stroke-linecap="round" d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:500;" class="hidden md:inline">Giriş</span></button>
+        <a href="/bagis" style="display:flex;align-items:center;gap:6px;background:#E95925;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:13px;padding:9px 18px;border-radius:8px;text-decoration:none;margin-left:4px;" onmouseover="this.style.background='#c94620'" onmouseout="this.style.background='#E95925'">BAĞIŞ YAP</a>
+        <button id="ham-btn" aria-expanded="false" style="display:flex;flex-direction:column;justify-content:center;gap:5px;padding:8px;border-radius:6px;background:none;border:none;cursor:pointer;" class="lg:hidden"><span class="ham-line line1"></span><span class="ham-line line2"></span><span class="ham-line line3"></span></button>
+      </div>
+    </div>
+  </div>
+  <div id="mob-menu"><nav style="border-top:1px solid #f1f1ef;background:#fff;padding:8px 16px 20px;"><a href="/" style="display:flex;padding:10px 12px;border-radius:8px;color:#162E4B;text-decoration:none;font-size:14px;font-weight:500;">Ana Sayfa</a></nav></div>
+</header>
+
+<!-- ══ ANA İÇERİK ══ -->
+<main style="padding-top:102px;">
+  <div style="max-width:1280px;margin:0 auto;padding:40px 24px 80px;">
+
+    <!-- Büyük arama kutusu -->
+    <div style="margin-bottom:32px;">
+      <div style="position:relative;">
+        <svg style="position:absolute;left:18px;top:50%;transform:translateY(-50%);color:rgba(22,46,75,.4);pointer-events:none;" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+        <input id="main-search" type="search" class="search-big" placeholder="Ne aramak istiyorsunuz?" value="burs başvurusu" oninput="handleSearch(this.value)" />
+        <button onclick="clearSearch()" style="position:absolute;right:16px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;background:rgba(22,46,75,.1);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:rgba(22,46,75,.5);transition:background .15s;" onmouseover="this.style.background='rgba(22,46,75,.2)'" onmouseout="this.style.background='rgba(22,46,75,.1)'">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-10">
+
+      <!-- ══ SONUÇLAR (2/3) ══ -->
+      <div style="grid-column:span 2;">
+
+        <!-- Filtreler + sonuç sayısı -->
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;" id="filter-bar">
+            <button class="filter-pill active" data-tip="tumu" onclick="setFilter(this)">Tümü</button>
+            <button class="filter-pill inactive" data-tip="haber" onclick="setFilter(this)">
+              <span style="display:flex;align-items:center;gap:5px;">
+                <span style="width:7px;height:7px;border-radius:50%;background:#3B82F6;display:inline-block;"></span>Haberler
+              </span>
+            </button>
+            <button class="filter-pill inactive" data-tip="etkinlik" onclick="setFilter(this)">
+              <span style="display:flex;align-items:center;gap:5px;">
+                <span style="width:7px;height:7px;border-radius:50%;background:#FF9300;display:inline-block;"></span>Etkinlikler
+              </span>
+            </button>
+            <button class="filter-pill inactive" data-tip="sayfa" onclick="setFilter(this)">
+              <span style="display:flex;align-items:center;gap:5px;">
+                <span style="width:7px;height:7px;border-radius:50%;background:#28484C;display:inline-block;"></span>Sayfalar
+              </span>
+            </button>
+          </div>
+          <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;color:#62868D;">
+            <strong id="sonuc-sayi" style="color:#162E4B;font-weight:700;">7</strong> sonuç bulundu
+            <span style="color:#B27829;font-weight:600;" id="query-display"> "burs başvurusu"</span> için
+          </p>
+        </div>
+
+        <!-- ── SONUÇ LİSTESİ ── -->
+        <div id="results-list" style="display:flex;flex-direction:column;gap:10px;">
+
+          <!-- Haber 1 -->
+          <a href="/haber/1" class="result-card" data-tip="haber">
+            <div class="result-thumb" style="background:linear-gradient(135deg,#1e3a58,#0a1d30);">
+              <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,.2)" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
+                <span class="tip-badge" style="background:#EDF4FB;color:#1d4ed8;">
+                  <svg width="10" height="10" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                  Haber
+                </span>
+                <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:#62868D;">28 Mart 2025</span>
+              </div>
+              <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;color:#162E4B;margin-bottom:5px;line-height:1.35;">2025 Yılı <span class="highlight">Burs Başvurusu</span> Süreci Başladı</h3>
+              <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;line-height:1.6;">Lise ve üniversite öğrencileri <span class="highlight">burs başvurusu</span>nu 30 Nisan tarihine kadar yapabilir. Başvuru için gerekli belgeler ve...</p>
+            </div>
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#B27829" stroke-width="2.5" style="flex-shrink:0;margin-top:4px;"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
+          </a>
+
+          <!-- Haber 2 -->
+          <a href="/haber/2" class="result-card" data-tip="haber">
+            <div class="result-thumb" style="background:linear-gradient(135deg,#1a3a28,#0c2018);">
+              <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,.2)" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                <span class="tip-badge" style="background:#EDF4FB;color:#1d4ed8;">
+                  <svg width="10" height="10" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                  Haber
+                </span>
+                <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:#62868D;">15 Ocak 2025</span>
+              </div>
+              <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;color:#162E4B;margin-bottom:5px;line-height:1.35;">2024-2025 <span class="highlight">Burs</span> Sonuçları Açıklandı</h3>
+              <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;line-height:1.6;">Bu dönem toplam 320 öğrenciye <span class="highlight">burs</span> verildi. Değerlendirme süreci ve kriterler hakkında detaylı bilgi...</p>
+            </div>
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#B27829" stroke-width="2.5" style="flex-shrink:0;margin-top:4px;"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
+          </a>
+
+          <!-- Etkinlik -->
+          <a href="/etkinlik-detay" class="result-card" data-tip="etkinlik">
+            <div class="result-thumb" style="background:linear-gradient(135deg,#162E4B,#091420);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;">
+              <span style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:20px;color:#EBDFB5;line-height:1;">12</span>
+              <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:9px;font-weight:600;text-transform:uppercase;color:rgba(235,223,181,.6);letter-spacing:.06em;">Nis</span>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                <span class="tip-badge" style="background:#FFF3EE;color:#E95925;">
+                  <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                  Etkinlik
+                </span>
+                <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:#62868D;">12 Nisan 2025</span>
+              </div>
+              <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;color:#162E4B;margin-bottom:5px;line-height:1.35;">Bahar Konseri &amp; <span class="highlight">Burs</span> Gecesi</h3>
+              <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;line-height:1.6;">19:00 — 22:00 · Seferihisar Kültür Merkezi. Toplanan bağışlar <span class="highlight">burs</span> fonuna aktarılacak.</p>
+            </div>
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#B27829" stroke-width="2.5" style="flex-shrink:0;margin-top:4px;"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
+          </a>
+
+          <!-- Sayfa: E-Kayıt -->
+          <a href="/ekayit" class="result-card" data-tip="sayfa">
+            <div class="result-thumb" style="background:#F7F5F0;border:1.5px solid rgba(22,46,75,.1);">
+              <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#162E4B" stroke-width="1.5"><path stroke-linecap="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                <span class="tip-badge" style="background:#F0FDF4;color:#15803d;">
+                  <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101"/><path stroke-linecap="round" d="M14.828 14.828a4 4 0 015.656 0l4 4a4 4 0 01-5.656 5.656l-1.102-1.101"/></svg>
+                  Sayfa
+                </span>
+              </div>
+              <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;color:#162E4B;margin-bottom:5px;line-height:1.35;">E-Kayıt — Öğrenci <span class="highlight">Başvurusu</span></h3>
+              <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;line-height:1.6;">Çok adımlı online kayıt formu. Öğrenci, veli ve belge bilgilerini doldurarak <span class="highlight">başvurunuzu</span> tamamlayabilirsiniz.</p>
+              <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:#B27829;margin-top:4px;">kestanepazari.org.tr/ekayit</p>
+            </div>
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#B27829" stroke-width="2.5" style="flex-shrink:0;margin-top:4px;"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
+          </a>
+
+          <!-- Sayfa: Bağış -->
+          <a href="/bagis" class="result-card" data-tip="sayfa">
+            <div class="result-thumb" style="background:#FFF3EE;border:1.5px solid rgba(233,89,37,.15);">
+              <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#E95925" stroke-width="1.5"><path stroke-linecap="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                <span class="tip-badge" style="background:#F0FDF4;color:#15803d;">
+                  <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101"/><path stroke-linecap="round" d="M14.828 14.828a4 4 0 015.656 0l4 4a4 4 0 01-5.656 5.656l-1.102-1.101"/></svg>
+                  Sayfa
+                </span>
+              </div>
+              <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;color:#162E4B;margin-bottom:5px;line-height:1.35;"><span class="highlight">Burs</span> Desteği — Bağış Yap</h3>
+              <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;line-height:1.6;">Zekat, kurban, adak veya genel bağışınızı yaparak öğrencilerin <span class="highlight">burs</span> desteğine ortak olun.</p>
+              <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:#B27829;margin-top:4px;">kestanepazari.org.tr/bagis</p>
+            </div>
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#B27829" stroke-width="2.5" style="flex-shrink:0;margin-top:4px;"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
+          </a>
+
+          <!-- Haber 3 -->
+          <a href="/haber/3" class="result-card" data-tip="haber">
+            <div class="result-thumb" style="background:linear-gradient(135deg,#3d2a1c,#201510);">
+              <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,.2)" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                <span class="tip-badge" style="background:#EDF4FB;color:#1d4ed8;">
+                  <svg width="10" height="10" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                  Haber
+                </span>
+                <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:#62868D;">10 Aralık 2024</span>
+              </div>
+              <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;color:#162E4B;margin-bottom:5px;line-height:1.35;"><span class="highlight">Burs</span> Komitesi Toplantısı Gerçekleşti</h3>
+              <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;line-height:1.6;">2025 yılı <span class="highlight">burs</span> kriterleri ve bütçe planlaması değerlendirildi. Komite kararları oy birliğiyle alındı.</p>
+            </div>
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#B27829" stroke-width="2.5" style="flex-shrink:0;margin-top:4px;"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
+          </a>
+
+          <!-- Etkinlik 2 -->
+          <a href="/etkinlik-detay" class="result-card" data-tip="etkinlik">
+            <div class="result-thumb" style="background:linear-gradient(135deg,#162E4B,#091420);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;">
+              <span style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:20px;color:#EBDFB5;line-height:1;">24</span>
+              <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:9px;font-weight:600;text-transform:uppercase;color:rgba(235,223,181,.6);letter-spacing:.06em;">Nis</span>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                <span class="tip-badge" style="background:#FFF3EE;color:#E95925;">
+                  <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                  Etkinlik
+                </span>
+                <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:#62868D;">24 Nisan 2025</span>
+              </div>
+              <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;color:#162E4B;margin-bottom:5px;line-height:1.35;">Mezun Buluşması — <span class="highlight">Burs</span> Ödülleri</h3>
+              <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;line-height:1.6;">14:00 — 18:00 · Kestanepazarı Derneği. Başarılı <span class="highlight">burs</span>lu öğrencilerimiz ödüllendirilecek.</p>
+            </div>
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#B27829" stroke-width="2.5" style="flex-shrink:0;margin-top:4px;"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
+          </a>
+
+        </div>
+
+        <!-- ── BOŞ DURUM (gizli) ── -->
+        <div id="empty-state" class="empty-state" style="display:none;">
+          <div style="width:72px;height:72px;border-radius:full;background:#F7F5F0;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;border-radius:50%;">
+            <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="rgba(22,46,75,.25)" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+          </div>
+          <h3 style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:20px;color:#162E4B;margin-bottom:8px;" id="empty-title">Sonuç bulunamadı</h3>
+          <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;color:#62868D;line-height:1.7;margin-bottom:24px;" id="empty-desc">Aradığınız içerik için eşleşme bulunamadı.<br/>Farklı anahtar kelimeler deneyebilirsiniz.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;">
+            <a href="#" onclick="doSearch('burs')" class="popular-tag">burs</a>
+            <a href="#" onclick="doSearch('etkinlik')" class="popular-tag">etkinlik</a>
+            <a href="#" onclick="doSearch('kurban')" class="popular-tag">kurban</a>
+            <a href="#" onclick="doSearch('kayıt')" class="popular-tag">kayıt</a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ══ SIDEBAR (1/3) ══ -->
+      <aside style="display:flex;flex-direction:column;gap:16px;">
+
+        <!-- Popüler aramalar -->
+        <div class="sidebar-card">
+          <h3 class="sidebar-title">Popüler Aramalar</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <a href="#" onclick="doSearch('burs')" class="popular-tag">burs</a>
+            <a href="#" onclick="doSearch('etkinlik')" class="popular-tag">etkinlik</a>
+            <a href="#" onclick="doSearch('kurban')" class="popular-tag">kurban</a>
+            <a href="#" onclick="doSearch('kayıt')" class="popular-tag">kayıt</a>
+            <a href="#" onclick="doSearch('zekat')" class="popular-tag">zekat</a>
+            <a href="#" onclick="doSearch('mezun')" class="popular-tag">mezun</a>
+            <a href="#" onclick="doSearch('yurt')" class="popular-tag">yurt</a>
+            <a href="#" onclick="doSearch('hafızlık')" class="popular-tag">hafızlık</a>
+          </div>
+        </div>
+
+        <!-- Tip dağılımı -->
+        <div class="sidebar-card">
+          <h3 class="sidebar-title">İçerik Türleri</h3>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="width:10px;height:10px;border-radius:50%;background:#3B82F6;display:inline-block;"></span>
+                <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;color:#162E4B;font-weight:500;">Haberler</span>
+              </div>
+              <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:#162E4B;background:#EDF4FB;padding:2px 10px;border-radius:999px;">3</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="width:10px;height:10px;border-radius:50%;background:#FF9300;display:inline-block;"></span>
+                <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;color:#162E4B;font-weight:500;">Etkinlikler</span>
+              </div>
+              <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:#162E4B;background:#FFF3EE;padding:2px 10px;border-radius:999px;">2</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="width:10px;height:10px;border-radius:50%;background:#28484C;display:inline-block;"></span>
+                <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;color:#162E4B;font-weight:500;">Sayfalar</span>
+              </div>
+              <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:#162E4B;background:#F0FDF4;padding:2px 10px;border-radius:999px;">2</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hızlı linkler -->
+        <div class="sidebar-card">
+          <h3 class="sidebar-title">Hızlı Erişim</h3>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <a href="/ekayit" style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:8px;background:#F7F5F0;text-decoration:none;transition:background .15s;" onmouseover="this.style.background='#EBDFB5'" onmouseout="this.style.background='#F7F5F0'">
+              <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#B27829" stroke-width="2"><path stroke-linecap="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+              <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;font-weight:600;color:#162E4B;">E-Kayıt Formu</span>
+            </a>
+            <a href="/bagis" style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:8px;background:#F7F5F0;text-decoration:none;transition:background .15s;" onmouseover="this.style.background='#EBDFB5'" onmouseout="this.style.background='#F7F5F0'">
+              <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#B27829" stroke-width="2"><path stroke-linecap="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+              <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;font-weight:600;color:#162E4B;">Bağış Yap</span>
+            </a>
+            <a href="/etkinlikler" style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:8px;background:#F7F5F0;text-decoration:none;transition:background .15s;" onmouseover="this.style.background='#EBDFB5'" onmouseout="this.style.background='#F7F5F0'">
+              <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#B27829" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+              <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;font-weight:600;color:#162E4B;">Etkinlik Takvimi</span>
+            </a>
+            <a href="/haberler" style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:8px;background:#F7F5F0;text-decoration:none;transition:background .15s;" onmouseover="this.style.background='#EBDFB5'" onmouseout="this.style.background='#F7F5F0'">
+              <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#B27829" stroke-width="2"><path d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+              <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;font-weight:600;color:#162E4B;">Tüm Haberler</span>
+            </a>
+          </div>
+        </div>
+
+      </aside>
+    </div>
+  </div>
+</main>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div style="height:3px;background:linear-gradient(to right,transparent,#B27829 30%,#B27829 70%,transparent);opacity:.7;"></div>
+  <div style="background-color:#EBDFB5;">
+    <div style="max-width:1280px;margin:0 auto;padding:48px 24px 36px;">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-10">
+        <div class="col-span-2 lg:col-span-1">
+          <a href="/" style="display:flex;align-items:center;gap:12px;margin-bottom:18px;text-decoration:none;">
+            <span class="logo-kf" style="width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;">K</span>
+            <div><p style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:15px;color:#162E4B;margin:0;">Kestanepazarı</p><p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;color:rgba(22,46,75,.5);margin:2px 0 0;">Öğrenci Yetiştirme Derneği</p></div>
+          </a>
+          <div style="display:flex;gap:8px;">
+            <a href="#" class="social-btn"><svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg></a>
+            <a href="#" class="social-btn"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".5" fill="currentColor" stroke="none"/></svg></a>
+            <a href="#" class="social-btn"><svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+          </div>
+        </div>
+        <div><h3 class="col-head">Kurumsal</h3><ul style="list-style:none;display:flex;flex-direction:column;gap:10px;"><li><a href="#" class="footer-link">Hakkımızda</a></li><li><a href="#" class="footer-link">Yönetim Kurulu</a></li><li><a href="#" class="footer-link">Dernek Tüzüğü</a></li></ul></div>
+        <div><h3 class="col-head">Faaliyetler</h3><ul style="list-style:none;display:flex;flex-direction:column;gap:10px;"><li><a href="#" class="footer-link">Haberler</a></li><li><a href="#" class="footer-link">Etkinlikler</a></li><li><a href="#" class="footer-link">Bağış Yap</a></li><li><a href="#" class="footer-link">E-Kayıt</a></li></ul></div>
+        <div>
+          <h3 class="col-head">İletişim</h3>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <a href="tel:4449232" class="contact-row"><svg class="cicon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg><span>444 9 232</span></a>
+            <a href="/cdn-cgi/l/email-protection#60090e060f200b051314010e0510011a0112094e0f12074e1412" class="contact-row"><svg class="cicon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg><span><span class="__cf_email__" data-cfemail="82ebece4edc2e9e7f1f6e3ece7f2e3f8e3f0ebacedf0e5acf6f0">[email&#160;protected]</span></span></a>
+            <div class="contact-row"><svg class="cicon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg><span>Seferihisar, İzmir</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="max-width:1280px;margin:0 auto;padding:0 24px;"><div style="height:1px;background:rgba(22,46,75,.12);"></div></div>
+  </div>
+  <div style="background-color:#DED099;">
+    <div style="max-width:1280px;margin:0 auto;padding:14px 24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;">
+      <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:rgba(22,46,75,.6);margin:0;">© 2025 Kestanepazarı Öğrenci Yetiştirme Derneği.</p>
+      <div style="display:flex;gap:16px;"><a href="#" class="bottom-link">Gizlilik</a><span style="color:rgba(22,46,75,.2);">|</span><a href="#" class="bottom-link">KVKK</a></div>
+    </div>
+  </div>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  // Header
+  const hamBtn = document.getElementById('ham-btn');
+  const mobMenu = document.getElementById('mob-menu');
+  hamBtn.addEventListener('click', () => {
+    const open = mobMenu.classList.contains('open');
+    mobMenu.classList.toggle('open', !open);
+    hamBtn.classList.toggle('open', !open);
+  });
+  window.addEventListener('scroll', () => {
+    document.getElementById('main-header').classList.toggle('scrolled', window.scrollY > 8);
+  }, { passive: true });
+
+  // Senkronize arama kutuları
+  const mainSearch   = document.getElementById('main-search');
+  const headerSearch = document.getElementById('header-search');
+  mainSearch.addEventListener('input', e => { headerSearch.value = e.target.value; handleSearch(e.target.value); });
+  headerSearch.addEventListener('input', e => { mainSearch.value = e.target.value; handleSearch(e.target.value); });
+
+  // Filtre
+  let aktifTip = 'tumu';
+  function setFilter(btn) {
+    document.querySelectorAll('#filter-bar .filter-pill').forEach(p => { p.classList.remove('active'); p.classList.add('inactive'); });
+    btn.classList.add('active'); btn.classList.remove('inactive');
+    aktifTip = btn.dataset.tip;
+    applyFilter();
+  }
+
+  function applyFilter() {
+    const cards = document.querySelectorAll('#results-list .result-card');
+    let count = 0;
+    cards.forEach(c => {
+      const show = aktifTip === 'tumu' || c.dataset.tip === aktifTip;
+      c.style.display = show ? '' : 'none';
+      if (show) count++;
+    });
+    document.getElementById('sonuc-sayi').textContent = count;
+    document.getElementById('empty-state').style.display = count === 0 ? '' : 'none';
+    document.getElementById('results-list').style.display = count === 0 ? 'none' : 'flex';
+  }
+
+  // Arama (demo: sadece boş input kontrolü)
+  function handleSearch(val) {
+    document.getElementById('query-display').textContent = val ? ` "${val}"` : '';
+    const isEmpty = val.trim() === '';
+    document.getElementById('results-list').style.display = isEmpty ? 'none' : 'flex';
+    document.getElementById('empty-state').style.display  = isEmpty ? '' : 'none';
+    if (isEmpty) {
+      document.getElementById('empty-title').textContent = 'Aramak için yazmaya başlayın';
+      document.getElementById('empty-desc').textContent = 'Haber, etkinlik veya sayfa aramak için yukarıdaki kutuyu kullanın.';
+      document.getElementById('sonuc-say

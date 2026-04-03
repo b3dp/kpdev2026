@@ -59,11 +59,16 @@ class HaberController extends Controller
 
     public function show(string $slug)
     {
-        $haber = Haber::where('slug', $slug)
+        $haber = Haber::with(['kategori', 'etiketler'])
+            ->where('slug', $slug)
             ->where('durum', 'yayinda')
             ->firstOrFail();
 
-        $ilgiliHaberler = Haber::where('durum', 'yayinda')
+        $haber->increment('goruntuleme');
+        $haber->refresh();
+
+        $ilgiliHaberler = Haber::with('kategori')
+            ->where('durum', 'yayinda')
             ->where('id', '!=', $haber->id)
             ->latest('yayin_tarihi')
             ->take(3)

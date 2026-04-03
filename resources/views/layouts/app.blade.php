@@ -36,7 +36,7 @@
 <!-- Organization Schema (tüm sayfalarda) -->
 <script type="application/ld+json">
 {
-  "@context": "https://schema.org",
+  "@@context": "https://schema.org",
   "@type": "Organization",
   "name": "{{ config('site.ad') }} Öğrenci Yetiştirme Derneği",
   "url": "{{ url('/') }}",

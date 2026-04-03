@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Etkinlikler — Kestanepazarı</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,700;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #F7F5F0; color: #162E4B; }
+
+    /* HEADER */
+    #top-bar { transition: max-height .3s, opacity .3s; max-height: 40px; overflow: hidden; }
+    #main-header { transition: box-shadow .3s, background .3s; }
+    #main-header.scrolled { box-shadow: 0 4px 24px rgba(22,46,75,.1); background: rgba(255,255,255,.98); backdrop-filter: blur(8px); }
+    #main-header.scrolled #top-bar { max-height: 0; opacity: 0; }
+    .nav-link { position: relative; transition: color .2s; text-decoration: none; }
+    .nav-link::after { content:''; position:absolute; left:0; bottom:-2px; width:0; height:2px; background:#B27829; transition:width .25s; }
+    .nav-link:hover::after, .nav-link.active::after { width:100%; }
+    .has-dd { position: relative; }
+    .dd-panel { position:absolute; top:calc(100% + 10px); left:50%; transform:translateX(-50%) translateY(6px); opacity:0; pointer-events:none; transition:opacity .2s, transform .2s; min-width:200px; z-index:200; }
+    .has-dd:hover .dd-panel { opacity:1; pointer-events:all; transform:translateX(-50%) translateY(0); }
+    .dd-panel::before { content:''; position:absolute; top:-6px; left:50%; transform:translateX(-50%); border:6px solid transparent; border-top:0; border-bottom-color:#fff; }
+    .dd-item { display:flex; align-items:center; gap:8px; padding:9px 14px; font-size:13.5px; color:#162E4B; font-weight:500; border-radius:6px; transition:background .15s, color .15s; text-decoration:none; white-space:nowrap; }
+    .dd-item:hover { background:#F7F5F0; color:#B27829; }
+    .dd-dot { width:5px; height:5px; border-radius:50%; background:#B27829; flex-shrink:0; }
+    .chev { transition:transform .2s; }
+    .has-dd:hover .chev { transform:rotate(180deg); }
+    .ham-line { display:block; width:22px; height:2px; background:#162E4B; border-radius:2px; transition:transform .3s, opacity .3s; }
+    #ham-btn.open .line1 { transform:translateY(7px) rotate(45deg); }
+    #ham-btn.open .line2 { opacity:0; }
+    #ham-btn.open .line3 { transform:translateY(-7px) rotate(-45deg); }
+    #mob-menu { transition:max-height .35s, opacity .3s; max-height:0; opacity:0; overflow:hidden; }
+    #mob-menu.open { max-height:480px; opacity:1; }
+
+    /* FİLTRE PİLL */
+    .filter-pill {
+      padding: 7px 16px; border-radius: 999px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      transition: all .15s; text-decoration: none;
+      border: 1.5px solid transparent; white-space: nowrap;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .filter-pill.active { background: #162E4B; color: #EBDFB5; border-color: #162E4B; }
+    .filter-pill.inactive { background: #fff; color: rgba(22,46,75,.65); border-color: rgba(22,46,75,.15); }
+    .filter-pill.inactive:hover { background: #F7F5F0; color: #162E4B; border-color: rgba(22,46,75,.3); }
+
+    /* GÖRÜNÜM TOGGLE */
+    .view-btn {
+      width: 36px; height: 36px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1.5px solid rgba(22,46,75,.15);
+      background: #fff; cursor: pointer;
+      transition: all .15s; color: rgba(22,46,75,.45);
+    }
+    .view-btn.active { background: #162E4B; border-color: #162E4B; color: #EBDFB5; }
+    .view-btn:hover:not(.active) { border-color: rgba(22,46,75,.35); color: #162E4B; }
+
+    /* ETKİNLİK — LİSTE GÖRÜNÜMÜ */
+    .etk-liste-kart {
+      background: #fff; border-radius: 14px;
+      border: 1px solid rgba(22,46,75,.08);
+      padding: 20px; display: flex; gap: 16px; align-items: flex-start;
+      transition: box-shadow .2s, transform .15s;
+      text-decoration: none;
+    }
+    .etk-liste-kart:hover { box-shadow: 0 6px 24px rgba(22,46,75,.1); transform: translateY(-2px); }
+
+    /* Tarih badge */
+    .tarih-badge {
+      background: #162E4B; color: #EBDFB5;
+      border-radius: 12px; width: 60px; text-align: center;
+      padding: 10px 6px; flex-shrink: 0;
+    }
+
+    /* ETKİNLİK — GRİD GÖRÜNÜMÜ */
+    .etk-grid-kart {
+      background: #fff; border-radius: 16px; overflow: hidden;
+      border: 1px solid rgba(22,46,75,.08);
+      transition: box-shadow .2s, transform .15s;
+      text-decoration: none; display: flex; flex-direction: column;
+    }
+    .etk-grid-kart:hover { box-shadow: 0 8px 28px rgba(22,46,75,.12); transform: translateY(-3px); }
+    .etk-grid-foto {
+      height: 160px; position: relative;
+      display: flex; align-items: flex-end;
+    }
+    .etk-grid-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(22,46,75,.85) 0%, transparent 60%);
+    }
+
+    /* DETAY LİNKİ */
+    .detay-link {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 12.5px; font-weight: 600;
+      color: #B27829; text-decoration: none;
+      transition: color .15s;
+    }
+    .detay-link:hover { color: #E95925; }
+
+    /* Footer */
+    .footer-link { color:rgba(22,46,75,0.5); font-size:13.5px; transition:color .2s, padding-left .2s; display:inline-block; text-decoration:none; }
+    .footer-link:hover { color:#B27829; padding-left:4px; }
+    .social-btn { width:36px; height:36px; border-radius:8px; border:1px solid rgba(22,46,75,0.2); display:flex; align-items:center; justify-content:center; color:rgba(22,46,75,0.45); transition:background .2s, color .2s, border-color .2s, transform .2s; }
+    .social-btn:hover { background:rgba(178,120,41,0.15); border-color:rgba(178,120,41,0.5); color:#B27829; transform:translateY(-2px); }
+    .col-head { font-family:'Libre Baskerville',serif; font-weight:700; font-size:12.5px; color:#162E4B; letter-spacing:.06em; text-transform:uppercase; margin-bottom:16px; position:relative; padding-bottom:10px; }
+    .col-head::after { content:''; position:absolute; left:0; bottom:0; width:24px; height:2px; background:#B27829; border-radius:1px; }
+    .contact-row { display:flex; align-items:flex-start; gap:10px; color:rgba(22,46,75,.55); font-size:13.5px; line-height:1.5; transition:color .2s; text-decoration:none; }
+    .contact-row:hover { color:#162E4B; }
+    .cicon { width:16px; height:16px; flex-shrink:0; margin-top:2px; color:#B27829; }
+    .bottom-link { font-size:12px; color:rgba(22,46,75,0.5); transition:color .2s; text-decoration:none; font-family:'Plus Jakarta Sans',sans-serif; }
+    .bottom-link:hover { color:#B27829; }
+    .logo-kf { background:linear-gradient(135deg,#162E4B,#28484C); color:#EBDFB5; font-family:'Libre Baskerville',serif; font-weight:700; }
+  </style>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header id="main-header" style="position:fixed;top:0;left:0;right:0;z-index:50;background:#fff;border-bottom:1px solid #f1f1ef;">
+  <div id="top-bar" style="background:#162E4B;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;">
+    <div style="max-width:1280px;margin:0 auto;padding:0 24px;height:38px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;gap:20px;">
+        <a href="tel:4449232" style="display:flex;align-items:center;gap:6px;opacity:.75;color:#fff;text-decoration:none;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.75">
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>444 9 232</a>
+        <a href="/cdn-cgi/l/email-protection#fc95929a93bc97998f889d92998c9d869d8e95d2938e9bd2888e" style="display:flex;align-items:center;gap:6px;opacity:.75;color:#fff;text-decoration:none;">
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg><span class="__cf_email__" data-cfemail="167f787079567d73656277787366776c77647f38796471386264">[email&#160;protected]</span></a>
+      </div>
+      <div style="display:flex;gap:12px;">
+        <a href="#" style="opacity:.6;color:#fff;" onmouseover="this.style.color='#FF9300';this.style.opacity=1" onmouseout="this.style.color='#fff';this.style.opacity=.6"><svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg></a>
+        <a href="#" style="opacity:.6;color:#fff;" onmouseover="this.style.color='#FF9300';this.style.opacity=1" onmouseout="this.style.color='#fff';this.style.opacity=.6"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".5" fill="currentColor" stroke="none"/></svg></a>
+        <a href="#" style="opacity:.6;color:#fff;" onmouseover="this.style.color='#FF9300';this.style.opacity=1" onmouseout="this.style.color='#fff';this.style.opacity=.6"><svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+      </div>
+    </div>
+  </div>
+  <div style="max-width:1280px;margin:0 auto;padding:0 24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;height:64px;">
+      <a href="/" style="display:flex;align-items:center;gap:12px;text-decoration:none;flex-shrink:0;">
+        <span style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#162E4B,#28484C);color:#EBDFB5;font-family:'Libre Baskerville',serif;font-weight:700;font-size:17px;display:flex;align-items:center;justify-content:center;">K</span>
+        <span style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:16px;color:#162E4B;">Kestanepazarı</span>
+      </a>
+      <nav style="display:flex;align-items:center;gap:2px;" class="hidden lg:flex">
+        <div class="has-dd">
+          <button style="display:flex;align-items:center;gap:4px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;font-weight:500;color:#162E4B;background:none;border:none;cursor:pointer;padding:8px 12px;" class="nav-link">Kurumsal <svg class="chev" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M19 9l-7 7-7-7"/></svg></button>
+          <div class="dd-panel bg-white rounded-xl border border-gray-100 p-2" style="box-shadow:0 8px 32px rgba(22,46,75,.12);">
+            <a href="#" class="dd-item"><span class="dd-dot"></span>Hakkımızda</a>
+            <a href="#" class="dd-item"><span class="dd-dot"></span>Yönetim Kurulu</a>
+            <a href="#" class="dd-item"><span class="dd-dot"></span>Dernek Tüzüğü</a>
+          </div>
+        </div>
+        <a href="#" class="nav-link" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;font-weight:500;color:#162E4B;padding:8px 12px;" onmouseover="this.style.color='#B27829'" onmouseout="this.style.color='#162E4B'">Haberler</a>
+        <a href="/etkinlikler" class="nav-link active" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;font-weight:600;color:#B27829;padding:8px 12px;">Etkinlikler</a>
+        <a href="#" class="nav-link" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;font-weight:500;color:#162E4B;padding:8px 12px;" onmouseover="this.style.color='#B27829'" onmouseout="this.style.color='#162E4B'">E-Kayıt</a>
+        <a href="#" class="nav-link" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;font-weight:500;color:#162E4B;padding:8px 12px;" onmouseover="this.style.color='#B27829'" onmouseout="this.style.color='#162E4B'">Mezunlar</a>
+        <a href="#" class="nav-link" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;font-weight:500;color:#162E4B;padding:8px 12px;" onmouseover="this.style.color='#B27829'" onmouseout="this.style.color='#162E4B'">İletişim</a>
+      </nav>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <button style="display:flex;align-items:center;gap:6px;color:#162E4B;background:none;border:none;cursor:pointer;padding:8px;" onmouseover="this.style.color='#B27829'" onmouseout="this.style.color='#162E4B'">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path stroke-linecap="round" d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:500;" class="hidden md:inline">Giriş</span>
+        </button>
+        <button style="position:relative;width:36px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;color:#162E4B;">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+          <span style="position:absolute;top:-2px;right:-2px;width:17px;height:17px;background:#E95925;color:#fff;font-size:10px;font-weight:700;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;">2</span>
+        </button>
+        <a href="/bagis" style="display:flex;align-items:center;gap:6px;background:#E95925;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:13px;padding:9px 18px;border-radius:8px;text-decoration:none;margin-left:4px;" onmouseover="this.style.background='#c94620'" onmouseout="this.style.background='#E95925'">
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+          BAĞIŞ YAP
+        </a>
+        <button id="ham-btn" aria-expanded="false" style="display:flex;flex-direction:column;justify-content:center;gap:5px;padding:8px;border-radius:6px;background:none;border:none;cursor:pointer;" class="lg:hidden">
+          <span class="ham-line line1"></span><span class="ham-line line2"></span><span class="ham-line line3"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div id="mob-menu">
+    <nav style="border-top:1px solid #f1f1ef;background:#fff;padding:8px 16px 20px;">
+      <a href="/" style="display:flex;padding:10px 12px;border-radius:8px;color:#162E4B;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:3px;">Ana Sayfa</a>
+      <a href="#" style="display:flex;padding:10px 12px;border-radius:8px;color:#162E4B;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:3px;">Haberler</a>
+      <a href="/etkinlikler" style="display:flex;padding:10px 12px;border-radius:8px;background:#F7F5F0;color:#B27829;text-decoration:none;font-size:14px;font-weight:600;margin-bottom:3px;">Etkinlikler</a>
+      <a href="#" style="display:flex;padding:10px 12px;border-radius:8px;color:#162E4B;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:3px;">E-Kayıt</a>
+      <a href="#" style="display:flex;padding:10px 12px;border-radius:8px;color:#162E4B;text-decoration:none;font-size:14px;font-weight:500;">İletişim</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ══ SAYFA BAŞLIĞI ══ -->
+<div style="padding-top:102px;background:#fff;border-bottom:1px solid rgba(22,46,75,.07);">
+  <div style="max-width:1280px;margin:0 auto;padding:28px 24px 0;">
+    <!-- Breadcrumb -->
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:16px;">
+      <a href="/" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;text-decoration:none;" onmouseover="this.style.color='#B27829'" onmouseout="this.style.color='#62868D'">Ana Sayfa</a>
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="rgba(22,46,75,.25)" stroke-width="2"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
+      <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#162E4B;font-weight:500;">Etkinlikler</span>
+    </div>
+
+    <div style="padding-bottom:20px;">
+      <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;font-weight:600;color:#B27829;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;">Takvim</p>
+      <h1 style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:clamp(24px,3vw,34px);color:#162E4B;">Etkinlikler</h1>
+    </div>
+
+    <!-- Filtre bar -->
+    <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:0;-webkit-overflow-scrolling:touch;">
+      <button class="filter-pill active" data-filter="tumu" onclick="setFilter(this)">Tümü</button>
+      <button class="filter-pill inactive" data-filter="bu-ay" onclick="setFilter(this)">Bu Ay</button>
+      <button class="filter-pill inactive" data-filter="gelecek" onclick="setFilter(this)">Gelecek</button>
+      <button class="filter-pill inactive" data-filter="gecmis" onclick="setFilter(this)">Geçmiş</button>
+    </div>
+    <div style="height:3px;background:rgba(22,46,75,.06);margin-top:0;"><div id="filter-line" style="height:3px;background:#B27829;width:56px;border-radius:2px;transition:all .3s;"></div></div>
+  </div>
+</div>
+
+<!-- ══ ANA İÇERİK ══ -->
+<main style="max-width:1280px;margin:0 auto;padding:36px 24px 80px;">
+
+  <!-- ── 3:4 POSTER KARTLAR ── -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+    <!-- Poster Kart 1 -->
+    <a href="/etkinlik-detay" style="text-decoration:none;display:block;border-radius:18px;overflow:hidden;position:relative;aspect-ratio:3/4;background:linear-gradient(160deg,#1e3a58 0%,#0a1d30 100%);box-shadow:0 4px 20px rgba(22,46,75,.15);transition:box-shadow .25s,transform .25s;" onmouseover="this.style.boxShadow='0 12px 40px rgba(22,46,75,.25)';this.style.transform='translateY(-4px)'" onmouseout="this.style.boxShadow='0 4px 20px rgba(22,46,75,.15)';this.style.transform='none'">
+      <!-- Poster görseli placeholder -->
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+        <svg width="64" height="64" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,.07)" stroke-width=".5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+      </div>
+      <!-- Üst gradient (durum badge için) -->
+      <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.35) 0%,transparent 35%,transparent 50%,rgba(0,0,0,.75) 100%);"></div>
+      <!-- Üst: durum badge + logo -->
+      <div style="position:absolute;top:16px;left:16px;right:16px;display:flex;align-items:center;justify-content:space-between;z-index:2;">
+        <span style="background:#dcfce7;color:#15803d;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;">Yaklaşan</span>
+        <span style="width:28px;height:28px;border-radius:7px;background:rgba(235,223,181,.15);backdrop-filter:blur(4px);border:1px solid rgba(235,223,181,.25);display:flex;align-items:center;justify-content:center;font-family:'Libre Baskerville',serif;font-weight:700;font-size:13px;color:#EBDFB5;">K</span>
+      </div>
+      <!-- Alt: tarih + başlık + meta -->
+      <div style="position:absolute;bottom:0;left:0;right:0;padding:20px;z-index:2;">
+        <!-- Tarih pill -->
+        <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(178,120,41,.3);backdrop-filter:blur(6px);border:1px solid rgba(178,120,41,.5);border-radius:8px;padding:5px 12px;margin-bottom:10px;">
+          <span style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:16px;color:#EBDFB5;line-height:1;">12</span>
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:600;color:rgba(235,223,181,.8);text-transform:uppercase;letter-spacing:.06em;">Nisan 2025</span>
+        </div>
+        <h3 style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:17px;color:#fff;margin-bottom:10px;line-height:1.3;">Bahar Konseri &amp; Bağış Gecesi</h3>
+        <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:14px;">
+          <span style="display:flex;align-items:center;gap:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:rgba(255,255,255,.65);">
+            <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>19:00 — 22:00
+          </span>
+          <span style="display:flex;align-items:center;gap:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:rgba(255,255,255,.65);">
+            <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>Seferihisar Kültür Merkezi
+          </span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;font-weight:700;color:#FF9300;display:flex;align-items:center;gap:4px;">
+            Detay &amp; Kayıt
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
+          </span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Poster Kart 2 -->
+    <a href="/etkinlik-detay" style="text-decoration:none;display:block;border-radius:18px;overflow:hidden;position:relative;aspect-ratio:3/4;background:linear-gradient(160deg,#1a3a28 0%,#0c2018 100%);box-shadow:0 4px 20px rgba(22,46,75,.15);transition:box-shadow .25s,transform .25s;" onmouseover="this.style.boxShadow='0 12px 40px rgba(22,46,75,.25)';this.style.transform='translateY(-4px)'" onmouseout="this.style.boxShadow='0 4px 20px rgba(22,46,75,.15)';this.style.transform='none'">
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+        <svg width="64" height="64" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,.07)" stroke-width=".5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+      </div>
+      <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.35) 0%,transparent 35%,transparent 50%,rgba(0,0,0,.75) 100%);"></div>
+      <div style="position:absolute;top:16px;left:16px;right:16px;display:flex;align-items:center;justify-content:space-between;z-index:2;">
+        <span style="background:#dcfce7;color:#15803d;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;">Yaklaşan</span>
+        <span style="width:28px;height:28px;border-radius:7px;background:rgba(235,223,181,.15);backdrop-filter:blur(4px);border:1px solid rgba(235,223,181,.25);display:flex;align-items:center;justify-content:center;font-family:'Libre Baskerville',serif;font-weight:700;font-size:13px;color:#EBDFB5;">K</span>
+      </div>
+      <div style="position:absolute;bottom:0;left:0;right:0;padding:20px;z-index:2;">
+        <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(178,120,41,.3);backdrop-filter:blur(6px);border:1px solid rgba(178,120,41,.5);border-radius:8px;padding:5px 12px;margin-bottom:10px;">
+          <span style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:16px;color:#EBDFB5;line-height:1;">24</span>
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:600;color:rgba(235,223,181,.8);text-transform:uppercase;letter-spacing:.06em;">Nisan 2025</span>
+        </div>
+        <h3 style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:17px;color:#fff;margin-bottom:10px;line-height:1.3;">Mezun Buluşması 2025</h3>
+        <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:14px;">
+          <span style="display:flex;align-items:center;gap:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:rgba(255,255,255,.65);"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>14:00 — 18:00</span>
+          <span style="display:flex;align-items:center;gap:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:rgba(255,255,255,.65);"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>Kestanepazarı Derneği</span>
+        </div>
+        <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;font-weight:700;color:#FF9300;display:flex;align-items:center;gap:4px;">Detay &amp; Kayıt <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg></span>
+      </div>
+    </a>
+
+    <!-- Poster Kart 3 -->
+    <a href="/etkinlik-detay" style="text-decoration:none;display:block;border-radius:18px;overflow:hidden;position:relative;aspect-ratio:3/4;background:linear-gradient(160deg,#2c3e50 0%,#1a252f 100%);box-shadow:0 4px 20px rgba(22,46,75,.15);transition:box-shadow .25s,transform .25s;" onmouseover="this.style.boxShadow='0 12px 40px rgba(22,46,75,.25)';this.style.transform='translateY(-4px)'" onmouseout="this.style.boxShadow='0 4px 20px rgba(22,46,75,.15)';this.style.transform='none'">
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+        <svg width="64" height="64" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,.07)" stroke-width=".5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+      </div>
+      <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.35) 0%,transparent 35%,transparent 50%,rgba(0,0,0,.75) 100%);"></div>
+      <div style="position:absolute;top:16px;left:16px;right:16px;display:flex;align-items:center;justify-content:space-between;z-index:2;">
+        <span style="background:#dbeafe;color:#1d4ed8;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;">Gelecek</span>
+        <span style="width:28px;height:28px;border-radius:7px;background:rgba(235,223,181,.15);backdrop-filter:blur(4px);border:1px solid rgba(235,223,181,.25);display:flex;align-items:center;justify-content:center;font-family:'Libre Baskerville',serif;font-weight:700;font-size:13px;color:#EBDFB5;">K</span>
+      </div>
+      <div style="position:absolute;bottom:0;left:0;right:0;padding:20px;z-index:2;">
+        <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(178,120,41,.3);backdrop-filter:blur(6px);border:1px solid rgba(178,120,41,.5);border-radius:8px;padding:5px 12px;margin-bottom:10px;">
+          <span style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:16px;color:#EBDFB5;line-height:1;">05</span>
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:600;color:rgba(235,223,181,.8);text-transform:uppercase;letter-spacing:.06em;">Mayıs 2025</span>
+        </div>
+        <h3 style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:17px;color:#fff;margin-bottom:10px;line-height:1.3;">Öğrenci Ödül Töreni</h3>
+        <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:14px;">
+          <span style="display:flex;align-items:center;gap:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:rgba(255,255,255,.65);"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>17:00 — 20:00</span>
+          <span style="display:flex;align-items:center;gap:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:rgba(255,255,255,.65);"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>Seferihisar Belediye Salonu</span>
+        </div>
+        <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;font-weight:700;color:#FF9300;display:flex;align-items:center;gap:4px;">Detay &amp; Kayıt <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg></span>
+      </div>
+    </a>
+
+    <!-- Poster Kart 4 -->
+    <a href="/etkinlik-detay" style="text-decoration:none;display:block;border-radius:18px;overflow:hidden;position:relative;aspect-ratio:3/4;background:linear-gradient(160deg,#3d2a1c 0%,#201510 100%);box-shadow:0 4px 20px rgba(22,46,75,.15);transition:box-shadow .25s,transform .25s;" onmouseover="this.style.boxShadow='0 12px 40px rgba(22,46,75,.25)';this.style.transform='translateY(-4px)'" onmouseout="this.style.boxShadow='0 4px 20px rgba(22,46,75,.15)';this.style.transform='none'">
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+        <svg width="64" height="64" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,.07)" stroke-width=".5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+      </div>
+      <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.35) 0%,transparent 35%,transparent 50%,rgba(0,0,0,.75) 100%);"></div>
+      <div style="position:absolute;top:16px;left:16px;right:16px;display:flex;align-items:center;justify-content:space-between;z-index:2;">
+        <span style="background:#dbeafe;color:#1d4ed8;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;">Gelecek</span>
+        <span style="width:28px;height:28px;border-radius:7px;background:rgba(235,223,181,.15);backdrop-filter:blur(4px);border:1px solid rgba(235,223,181,.25);display:flex;align-items:center;justify-content:center;font-family:'Libre Baskerville',serif;font-weight:700;font-size:13px;color:#EBDFB5;">K</span>
+      </div>
+      <div style="position:absolute;bottom:0;left:0;right:0;padding:20px;z-index:2;">
+        <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(178,120,41,.3);backdrop-filter:blur(6px);border:1px solid rgba(178,120,41,.5);border-radius:8px;padding:5px 12px;margin-bottom:10px;">
+          <span style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:16px;color:#EBDFB5;line-height:1;">18</span>
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:600;color:rgba(235,223,181,.8);text-transform:uppercase;letter-spacing:.06em;">Mayıs 2025</span>
+        </div>
+        <h3 style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:17px;color:#fff;margin-bottom:10px;line-height:1.3;">Hafızlık Programı Mezuniyet Töreni</h3>
+        <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:14px;">
+          <span style="display:flex;align-items:center;gap:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:rgba(255,255,255,.65);"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>15:00 — 18:30</span>
+          <span style="display:flex;align-items:center;gap:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:rgba(255,255,255,.65);"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>Kestanepazarı Camii</span>
+        </div>
+        <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;font-weight:700;color:#FF9300;display:flex;align-items:center;gap:4px;">Detay &amp; Kayıt <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg></span>
+      </div>
+    </a>
+
+    <!-- Poster Kart 5 — Geçmiş -->
+    <a href="/etkinlik-detay" style="text-decoration:none;display:block;border-radius:18px;overflow:hidden;position:relative;aspect-ratio:3/4;background:linear-gradient(160deg,#2d3748 0%,#1a202c 100%);box-shadow:0 4px 20px rgba(22,46,75,.1);transition:box-shadow .25s,transform .25s;opacity:.75;" onmouseover="this.style.boxShadow='0 8px 28px rgba(22,46,75,.15)';this.style.transform='translateY(-3px)'" onmouseout="this.style.boxShadow='0 4px 20px rgba(22,46,75,.1)';this.style.transform='none'">
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+        <svg width="64" height="64" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,.07)" stroke-width=".5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+      </div>
+      <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.35) 0%,transparent 35%,transparent 50%,rgba(0,0,0,.75) 100%);"></div>
+      <div style="position:absolute;top:16px;left:16px;right:16px;display:flex;align-items:center;justify-content:space-between;z-index:2;">
+        <span style="background:#f3f4f6;color:#6b7280;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;">Tamamlandı</span>
+        <span style="width:28px;height:28px;border-radius:7px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-family:'Libre Baskerville',serif;font-weight:700;font-size:13px;color:rgba(255,255,255,.6);">K</span>
+      </div>
+      <div style="position:absolute;bottom:0;left:0;right:0;padding:20px;z-index:2;">
+        <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:5px 12px;margin-bottom:10px;">
+          <span style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:16px;color:#fff;line-height:1;">05</span>
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:600;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.06em;">Ocak 2026</span>
+        </div>
+        <h3 style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:17px;color:#fff;margin-bottom:10px;line-height:1.3;">Yeni Yılın İlk Sabah Namazı Buluşması</h3>
+        <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:14px;">
+          <span style="display:flex;align-items:center;gap:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:rgba(255,255,255,.55);"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>07:00 — 09:00</span>
+          <span style="display:flex;align-items:center;gap:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:rgba(255,255,255,.55);"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>Seferihisar Merkez Camii</span>
+        </div>
+        <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;font-weight:700;color:rgba(255,255,255,.5);display:flex;align-items:center;gap:4px;">Detay <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg></span>
+      </div>
+    </a>
+
+  </div>
+
+</main>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div style="height:3px;background:linear-gradient(to right,transparent,#B27829 30%,#B27829 70%,transparent);opacity:.7;"></div>
+  <div style="background-color:#EBDFB5;">
+    <div style="max-width:1280px;margin:0 auto;padding:48px 24px 36px;">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-10">
+        <div class="col-span-2 lg:col-span-1">
+          <a href="/" style="display:flex;align-items:center;gap:12px;margin-bottom:18px;text-decoration:none;">
+            <span class="logo-kf" style="width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;">K</span>
+            <div>
+              <p style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:15px;color:#162E4B;margin:0;line-height:1.3;">Kestanepazarı</p>
+              <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;color:rgba(22,46,75,.5);margin:2px 0 0;">Öğrenci Yetiştirme Derneği</p>
+            </div>
+          </a>
+          <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:rgba(22,46,75,.55);line-height:1.75;margin-bottom:20px;max-width:240px;">1966'dan bu yana Seferihisar gençlerinin yanındayız.</p>
+          <div style="display:flex;gap:8px;">
+            <a href="#" class="social-btn"><svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg></a>
+            <a href="#" class="social-btn"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".5" fill="currentColor" stroke="none"/></svg></a>
+            <a href="#" class="social-btn"><svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+          </div>
+        </div>
+        <div><h3 class="col-head">Kurumsal</h3><ul style="list-style:none;display:flex;flex-direction:column;gap:10px;"><li><a href="#" class="footer-link">Hakkımızda</a></li><li><a href="#" class="footer-link">Yönetim Kurulu</a></li><li><a href="#" class="footer-link">Dernek Tüzüğü</a></li><li><a href="#" class="footer-link">Faaliyet Raporları</a></li></ul></div>
+        <div><h3 class="col-head">Faaliyetler</h3><ul style="list-style:none;display:flex;flex-direction:column;gap:10px;"><li><a href="#" class="footer-link">Haberler</a></li><li><a href="#" class="footer-link">Etkinlikler</a></li><li><a href="#" class="footer-link">Bağış Yap</a></li><li><a href="#" class="footer-link">Mezunlar</a></li><li><a href="#" class="footer-link">E-Kayıt</a></li></ul></div>
+        <div>
+          <h3 class="col-head">İletişim</h3>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <a href="tel:4449232" class="contact-row"><svg class="cicon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg><span>444 9 232</span></a>
+            <a href="/cdn-cgi/l/email-protection#b1d8dfd7def1dad4c2c5d0dfd4c1d0cbd0c3d89fdec3d69fc5c3" class="contact-row"><svg class="cicon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg><span><span class="__cf_email__" data-cfemail="1970777f7659727c6a6d78777c697863786b7037766b7e376d6b">[email&#160;protected]</span></span></a>
+            <div class="contact-row"><svg class="cicon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg><span>Seferihisar, İzmir</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="max-width:1280px;margin:0 auto;padding:0 24px;"><div style="height:1px;background:rgba(22,46,75,.12);"></div></div>
+  </div>
+  <div style="background-color:#DED099;">
+    <div style="max-width:1280px;margin:0 auto;padding:14px 24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;">
+      <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:rgba(22,46,75,.6);margin:0;">© 2025 Kestanepazarı Öğrenci Yetiştirme Derneği. Tüm hakları saklıdır.</p>
+      <div style="display:flex;gap:16px;"><a href="#" class="bottom-link">Gizlilik</a><span style="color:rgba(22,46,75,.2);">|</span><a href="#" class="bottom-link">Çerez</a><span style="color:rgba(22,46,75,.2);">|</span><a href="#" class="bottom-link">KVKK</a></div>
+    </div>
+  </div>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  // Header
+  const hamBtn = document.getElementById('ham-btn');
+  const mobMenu = document.getElementById('mob-menu');
+  hamBtn.addEventListener('click', () => {
+    const open = mobMenu.classList.contains('open');
+    mobMenu.classList.toggle('open', !open);
+    hamBtn.classList.toggle('open', !open);
+  });
+  window.addEventListener('scroll', () => {
+    document.getElementById('main-header').classList.toggle('scrolled', window.scrollY > 8);
+  }, { passive: true });
+
+  // Görünüm toggle

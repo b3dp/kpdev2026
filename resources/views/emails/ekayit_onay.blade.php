@@ -5,7 +5,7 @@
 {{-- Gmail & Yahoo: JSON-LD --}}
 <script type="application/ld+json">
 {
-    "@context": "http://schema.org",
+    "@@context": "http://schema.org",
     "@type": "EventReservation",
     "reservationId": "{{ $kayitNo }}",
     "reservationStatus": "http://schema.org/ReservationConfirmed",
@@ -76,7 +76,7 @@
 {{-- Yandex Smart Widgets --}}
 <script type="application/ld+json">
 {
-    "@context": "http://schema.org",
+    "@@context": "http://schema.org",
     "@type": "EventReservation",
     "reservationId": "{{ $kayitNo }}",
     "reservationStatus": "http://schema.org/ReservationConfirmed",

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sidebar Bileşeni — Kestanepazarı</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,700;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #F7F5F0; }
+
+    /* ── Bağış kutusu ── */
+    .bagis-box {
+      background: linear-gradient(145deg, #162E4B 0%, #091420 100%);
+      border-radius: 14px;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .bagis-box::before {
+      content: '';
+      position: absolute;
+      top: -30px; right: -30px;
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: rgba(178,120,41,0.12);
+    }
+    .bagis-box::after {
+      content: '';
+      position: absolute;
+      bottom: -20px; left: -20px;
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: rgba(178,120,41,0.08);
+    }
+
+    /* ── Haber kartı ── */
+    .news-card {
+      display: flex;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(22,46,75,0.08);
+      text-decoration: none;
+      transition: background .15s;
+    }
+    .news-card:last-child { border-bottom: none; }
+    .news-card:hover .news-title { color: #B27829; }
+    .news-thumb {
+      width: 64px; height: 64px;
+      border-radius: 8px;
+      background: #DDD8CC;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+
+    /* ── Kategori pill ── */
+    .cat-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, color .15s, box-shadow .15s;
+      text-decoration: none;
+      border: 1px solid transparent;
+    }
+    .cat-pill.active {
+      background: #162E4B;
+      color: #EBDFB5;
+      border-color: #162E4B;
+    }
+    .cat-pill.inactive {
+      background: #fff;
+      color: rgba(22,46,75,0.65);
+      border-color: rgba(22,46,75,0.15);
+    }
+    .cat-pill.inactive:hover {
+      background: #F7F5F0;
+      color: #162E4B;
+      border-color: rgba(22,46,75,0.3);
+      box-shadow: 0 1px 4px rgba(22,46,75,0.08);
+    }
+
+    /* ── Etkinlik kutusu ── */
+    .event-box {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid rgba(22,46,75,0.1);
+      padding: 16px;
+      transition: box-shadow .2s;
+    }
+    .event-box:hover { box-shadow: 0 4px 16px rgba(22,46,75,0.1); }
+    .event-date-badge {
+      background: #162E4B;
+      color: #EBDFB5;
+      border-radius: 8px;
+      width: 48px;
+      text-align: center;
+      padding: 6px 4px;
+      flex-shrink: 0;
+    }
+
+    /* Section card wrapper */
+    .sidebar-card {
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid rgba(22,46,75,0.08);
+      padding: 20px;
+    }
+    .sidebar-section-title {
+      font-family: 'Libre Baskerville', serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: #162E4B;
+      margin-bottom: 4px;
+      position: relative;
+      padding-bottom: 12px;
+    }
+    .sidebar-section-title::after {
+      content: '';
+      position: absolute;
+      left: 0; bottom: 0;
+      width: 28px; height: 2px;
+      background: #B27829;
+      border-radius: 1px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="max-w-xs mx-auto px-4 py-10 space-y-5">
+
+  <!-- Demo label -->
+  <div class="text-center mb-6">
+    <span style="display:inline-flex; align-items:center; gap:8px; background:#fff; border:1px solid #e5e7eb; border-radius:999px; padding:5px 14px; font-size:12px; color:#62868D;">
+      <span style="width:7px;height:7px;border-radius:50%;background:#4ade80;display:inline-block;"></span>
+      Sidebar bileşeni — standalone önizleme
+    </span>
+  </div>
+
+  <!-- ══ 1. BAĞIŞ KUTUSU ══ -->
+  <div class="bagis-box">
+    <!-- İkon -->
+    <div style="width:40px;height:40px;border-radius:10px;background:rgba(178,120,41,0.2);display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#B27829" stroke-width="2">
+        <path stroke-linecap="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+      </svg>
+    </div>
+    <h3 style="font-family:'Libre Baskerville',serif; font-weight:700; font-size:17px; color:#EBDFB5; margin:0 0 8px; line-height:1.3; position:relative; z-index:1;">
+      Bir Öğrencinin Geleceğine Ortak Ol
+    </h3>
+    <p style="font-family:'Plus Jakarta Sans',sans-serif; font-size:13px; color:rgba(235,223,181,0.6); line-height:1.65; margin:0 0 18px; position:relative; z-index:1;">
+      Bağışlarınız doğrudan öğrencilerin burs, kırtasiye ve barınma ihtiyaçlarına aktarılmaktadır.
+    </p>
+    <a href="/bagis" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#E95925;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:13px;padding:11px 16px;border-radius:8px;text-decoration:none;transition:background .2s;position:relative;z-index:1;box-shadow:0 3px 10px rgba(233,89,37,0.35);" onmouseover="this.style.background='#c94620'" onmouseout="this.style.background='#E95925'">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+        <path stroke-linecap="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+      </svg>
+      Bağış Yap
+    </a>
+  </div>
+
+  <!-- ══ 2. SON HABERLER ══ -->
+  <div class="sidebar-card">
+    <h3 class="sidebar-section-title">Son Haberler</h3>
+    <div style="margin-top:16px;">
+
+      <!-- Haber 1 -->
+      <a href="#" class="news-card">
+        <div class="news-thumb">
+          <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="rgba(22,46,75,0.25)" stroke-width="1.5">
+            <rect x="3" y="3" width="18" height="18" rx="3"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <path stroke-linecap="round" d="M21 15l-5-5L5 21"/>
+          </svg>
+        </div>
+        <div style="flex:1; min-width:0;">
+          <p class="news-title" style="font-family:'Plus Jakarta Sans',sans-serif; font-weight:600; font-size:13px; color:#162E4B; margin:0 0 5px; line-height:1.4; transition:color .2s;">
+            2025 Burs Başvuruları Başladı
+          </p>
+          <span style="font-family:'Plus Jakarta Sans',sans-serif; font-size:11.5px; color:rgba(22,46,75,0.4); display:flex; align-items:center; gap:4px;">
+            <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            28 Mar 2025
+          </span>
+        </div>
+      </a>
+
+      <!-- Haber 2 -->
+      <a href="#" class="news-card">
+        <div class="news-thumb">
+          <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="rgba(22,46,75,0.25)" stroke-width="1.5">
+            <rect x="3" y="3" width="18" height="18" rx="3"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <path stroke-linecap="round" d="M21 15l-5-5L5 21"/>
+          </svg>
+        </div>
+        <div style="flex:1; min-width:0;">
+          <p class="news-title" style="font-family:'Plus Jakarta Sans',sans-serif; font-weight:600; font-size:13px; color:#162E4B; margin:0 0 5px; line-height:1.4; transition:color .2s;">
+            Yönetim Kurulu Yeni Dönem Toplantısı
+          </p>
+          <span style="font-family:'Plus Jakarta Sans',sans-serif; font-size:11.5px; color:rgba(22,46,75,0.4); display:flex; align-items:center; gap:4px;">
+            <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            15 Mar 2025
+          </span>
+        </div>
+      </a>
+
+      <!-- Haber 3 -->
+      <a href="#" class="news-card">
+        <div class="news-thumb">
+          <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="rgba(22,46,75,0.25)" stroke-width="1.5">
+            <rect x="3" y="3" width="18" height="18" rx="3"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <path stroke-linecap="round" d="M21 15l-5-5L5 21"/>
+          </svg>
+        </div>
+        <div style="flex:1; min-width:0;">
+          <p class="news-title" style="font-family:'Plus Jakarta Sans',sans-serif; font-weight:600; font-size:13px; color:#162E4B; margin:0 0 5px; line-height:1.4; transition:color .2s;">
+            Kurban Bağışı Kampanyası Tamamlandı
+          </p>
+          <span style="font-family:'Plus Jakarta Sans',sans-serif; font-size:11.5px; color:rgba(22,46,75,0.4); display:flex; align-items:center; gap:4px;">
+            <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            02 Mar 2025
+          </span>
+        </div>
+      </a>
+
+    </div>
+    <a href="/haberler" style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;color:#162E4B;text-decoration:none;padding:9px;border:1px solid rgba(22,46,75,0.15);border-radius:8px;transition:background .15s,border-color .15s;" onmouseover="this.style.background='#F7F5F0';this.style.borderColor='rgba(22,46,75,0.25)'" onmouseout="this.style.background='';this.style.borderColor='rgba(22,46,75,0.15)'">
+      Tüm Haberler
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+
+  <!-- ══ 3. KATEGORİLER ══ -->
+  <div class="sidebar-card">
+    <h3 class="sidebar-section-title">Kategoriler</h3>
+    <div style="margin-top:16px; display:flex; flex-wrap:wrap; gap:7px;">
+      <a href="#" class="cat-pill active">Tümü</a>
+      <a href="#" class="cat-pill inactive">Eğitim</a>
+      <a href="#" class="cat-pill inactive">Ziyaret</a>
+      <a href="#" class="cat-pill inactive">Etkinlik</a>
+      <a href="#" class="cat-pill inactive">Kurban</a>
+      <a href="#" class="cat-pill inactive">Bağış</a>
+      <a href="#" class="cat-pill inactive">Duyuru</a>
+      <a href="#" class="cat-pill inactive">Mezunlar</a>
+    </div>
+  </div>
+
+  <!-- ══ 4. YAKLAŞAN ETKİNLİK ══ -->
+  <div class="sidebar-card">
+    <h3 class="sidebar-section-title">Yaklaşan Etkinlik</h3>
+    <div style="margin-top:16px; display:flex; flex-direction:column; gap:10px;">
+
+      <!-- Etkinlik 1 -->
+      <div class="event-box">
+        <div style="display:flex; gap:12px; align-items:flex-start;">
+          <div class="event-date-badge">
+            <p style="font-family:'Libre Baskerville',serif; font-weight:700; font-size:20px; line-height:1; margin:0; color:#EBDFB5;">12</p>
+            <p style="font-family:'Plus Jakarta Sans',sans-serif; font-size:10px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:rgba(235,223,181,0.65); margin:2px 0 0;">Nis</p>
+          </div>
+          <div style="flex:1; min-width:0;">
+            <p style="font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; font-size:13.5px; color:#162E4B; margin:0 0 5px; line-height:1.35;">
+              Bahar Konseri & Bağış Gecesi
+            </p>
+            <div style="display:flex; flex-direction:column; gap:3px;">
+              <span style="font-size:12px; color:rgba(22,46,75,0.5); display:flex; align-items:center; gap:5px;">
+                <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                19:00 — 22:00
+              </span>
+              <span style="font-size:12px; color:rgba(22,46,75,0.5); display:flex; align-items:center; gap:5px;">
+                <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                Seferihisar Kültür Merkezi
+              </span>
+            </div>
+          </div>
+        </div>
+        <a href="#" style="display:inline-flex;align-items:center;gap:4px;margin-top:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;font-weight:600;color:#B27829;text-decoration:none;transition:color .15s;" onmouseover="this.style.color='#E95925'" onmouseout="this.style.color='#B27829'">
+          Detaylar
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+
+      <!-- Etkinlik 2 -->
+      <div class="event-box">
+        <div style="display:flex; gap:12px; align-items:flex-start;">
+          <div class="event-date-badge">
+            <p style="font-family:'Libre Baskerville',serif; font-weight:700; font-size:20px; line-height:1; margin:0; color:#EBDFB5;">24</p>
+            <p style="font-family:'Plus Jakarta Sans',sans-serif; font-size:10px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:rgba(235,223,181,0.65); margin:2px 0 0;">Nis</p>
+          </div>
+          <div style="flex:1; min-width:0;">
+            <p style="font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; font-size:13.5px; color:#162E4B; margin:0 0 5px; line-height:1.35;">
+              Mezun Buluşması 2025
+            </p>
+            <div style="display:flex; flex-direction:column; gap:3px;">
+              <span style="font-size:12px; color:rgba(22,46,75,0.5); display:flex; align-items:center; gap:5px;">
+                <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                14:00 — 18:00
+              </span>
+              <span style="font-size:12px; color:rgba(22,46,75,0.5); display:flex; align-items:center; gap:5px;">
+                <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                Kestanepazarı Derneği
+              </span>
+            </div>
+          </div>
+        </div>
+        <a href="#" style="display:inline-flex;align-items:center;gap:4px;margin-top:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;font-weight:600;color:#B27829;text-decoration:none;transition:color .15s;" onmouseover="this.style.color='#E95925'" onmouseout="this.style.color='#B27829'">
+          Detaylar
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+
+    </div>
+    <a href="/etkinlikler" style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;color:#162E4B;text-decoration:none;padding:9px;border:1px solid rgba(22,46,75,0.15);border-radius:8px;transition:background .15s,border-color .15s;" onmouseover="this.style.background='#F7F5F0';this.style.borderColor='rgba(22,46,75,0.25)'" onmouseout="this.style.background='';this.style.borderColor='rgba(22,46,75,0.15)'">
+      Tüm Takvim
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+
+</div>
+</body>
+</html>

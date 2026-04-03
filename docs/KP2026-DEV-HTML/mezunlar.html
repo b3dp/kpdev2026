@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mezunlar — Kestanepazarı</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,700;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #F7F5F0; color: #162E4B; min-height: 100vh; }
+
+    /* HEADER */
+    #top-bar { transition: max-height .3s, opacity .3s; max-height: 40px; overflow: hidden; }
+    #main-header { transition: box-shadow .3s, background .3s; }
+    #main-header.scrolled { box-shadow: 0 4px 24px rgba(22,46,75,.1); background: rgba(255,255,255,.98); backdrop-filter: blur(8px); }
+    #main-header.scrolled #top-bar { max-height: 0; opacity: 0; }
+    .ham-line { display:block; width:22px; height:2px; background:#162E4B; border-radius:2px; transition:transform .3s, opacity .3s; }
+    #ham-btn.open .line1 { transform:translateY(7px) rotate(45deg); }
+    #ham-btn.open .line2 { opacity:0; }
+    #ham-btn.open .line3 { transform:translateY(-7px) rotate(-45deg); }
+    #mob-menu { transition:max-height .35s, opacity .3s; max-height:0; opacity:0; overflow:hidden; }
+    #mob-menu.open { max-height:400px; opacity:1; }
+
+    /* PANEL SEKMELERİ */
+    .panel-tab {
+      flex: 1; padding: 13px 10px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 14px; font-weight: 600;
+      color: rgba(22,46,75,.5);
+      border: none; background: none; cursor: pointer;
+      border-bottom: 2.5px solid transparent;
+      transition: color .15s, border-color .15s;
+    }
+    .panel-tab.active { color: #162E4B; border-bottom-color: #B27829; }
+    .panel-tab:hover:not(.active) { color: #162E4B; }
+
+    /* FORM */
+    .form-group { display:flex; flex-direction:column; gap:6px; }
+    .form-label { font-size:13px; font-weight:600; color:#162E4B; }
+    .form-label span { color:#E95925; }
+    .form-input { padding:12px 14px; border:1.5px solid rgba(22,46,75,.15); border-radius:10px; font-size:14px; font-family:'Plus Jakarta Sans',sans-serif; color:#162E4B; background:#fff; transition:border-color .2s, box-shadow .2s; outline:none; width:100%; }
+    .form-input:focus { border-color:#B27829; box-shadow:0 0 0 3px rgba(178,120,41,.1); }
+    .form-input::placeholder { color:rgba(22,46,75,.35); }
+    .form-select { padding:12px 36px 12px 14px; border:1.5px solid rgba(22,46,75,.15); border-radius:10px; font-size:14px; font-family:'Plus Jakarta Sans',sans-serif; color:#162E4B; background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2362868D' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E") no-repeat right 14px center; appearance:none; outline:none; width:100%; transition:border-color .2s; cursor:pointer; }
+    .form-select:focus { border-color:#B27829; box-shadow:0 0 0 3px rgba(178,120,41,.1); }
+
+    /* GİRİŞ YÖNTEMI TOGGLE */
+    .giris-tip { flex:1; padding:10px; border-radius:8px; font-family:'Plus Jakarta Sans',sans-serif; font-size:13px; font-weight:600; border:1.5px solid rgba(22,46,75,.12); background:#F7F5F0; color:rgba(22,46,75,.6); cursor:pointer; transition:all .15s; }
+    .giris-tip.active { background:#162E4B; color:#EBDFB5; border-color:#162E4B; }
+
+    /* KART */
+    .auth-card { background:#fff; border-radius:20px; border:1px solid rgba(22,46,75,.08); box-shadow:0 8px 40px rgba(22,46,75,.08); overflow:hidden; width:100%; max-width:480px; }
+
+    /* Footer */
+    .footer-link { color:rgba(22,46,75,0.5); font-size:13.5px; transition:color .2s; display:inline-block; text-decoration:none; }
+    .footer-link:hover { color:#B27829; }
+    .social-btn { width:36px; height:36px; border-radius:8px; border:1px solid rgba(22,46,75,0.2); display:flex; align-items:center; justify-content:center; color:rgba(22,46,75,0.45); transition:background .2s, color .2s, border-color .2s, transform .2s; }
+    .social-btn:hover { background:rgba(178,120,41,0.15); border-color:rgba(178,120,41,0.5); color:#B27829; transform:translateY(-2px); }
+    .col-head { font-family:'Libre Baskerville',serif; font-weight:700; font-size:12.5px; color:#162E4B; letter-spacing:.06em; text-transform:uppercase; margin-bottom:16px; position:relative; padding-bottom:10px; }
+    .col-head::after { content:''; position:absolute; left:0; bottom:0; width:24px; height:2px; background:#B27829; border-radius:1px; }
+    .logo-kf { background:linear-gradient(135deg,#162E4B,#28484C); color:#EBDFB5; font-family:'Libre Baskerville',serif; font-weight:700; }
+    .bottom-link { font-size:12px; color:rgba(22,46,75,0.5); transition:color .2s; text-decoration:none; }
+    .bottom-link:hover { color:#B27829; }
+    .contact-row { display:flex; align-items:flex-start; gap:10px; color:rgba(22,46,75,.55); font-size:13.5px; line-height:1.5; transition:color .2s; text-decoration:none; }
+    .contact-row:hover { color:#162E4B; }
+    .cicon { width:16px; height:16px; flex-shrink:0; margin-top:2px; color:#B27829; }
+  </style>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header id="main-header" style="position:fixed;top:0;left:0;right:0;z-index:50;background:#fff;border-bottom:1px solid #f1f1ef;">
+  <div id="top-bar" style="background:#162E4B;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;">
+    <div style="max-width:1280px;margin:0 auto;padding:0 24px;height:38px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;gap:20px;">
+        <a href="tel:4449232" style="display:flex;align-items:center;gap:6px;opacity:.75;color:#fff;text-decoration:none;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.75"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>444 9 232</a>
+        <a href="/cdn-cgi/l/email-protection#9ef7f0f8f1def5fbedeafff0fbeeffe4ffecf7b0f1ecf9b0eaec" style="display:flex;align-items:center;gap:6px;opacity:.75;color:#fff;text-decoration:none;"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg><span class="__cf_email__" data-cfemail="fa93949c95ba919f898e9b949f8a9b809b8893d495889dd48e88">[email&#160;protected]</span></a>
+      </div>
+    </div>
+  </div>
+  <div style="max-width:1280px;margin:0 auto;padding:0 24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;height:64px;">
+      <a href="/" style="display:flex;align-items:center;gap:12px;text-decoration:none;flex-shrink:0;">
+        <span style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#162E4B,#28484C);color:#EBDFB5;font-family:'Libre Baskerville',serif;font-weight:700;font-size:17px;display:flex;align-items:center;justify-content:center;">K</span>
+        <span style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:16px;color:#162E4B;">Kestanepazarı</span>
+      </a>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <a href="/" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;text-decoration:none;display:flex;align-items:center;gap:5px;" onmouseover="this.style.color='#162E4B'" onmouseout="this.style.color='#62868D'">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+          Ana Sayfa
+        </a>
+        <a href="/bagis" style="display:flex;align-items:center;gap:6px;background:#E95925;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:13px;padding:9px 18px;border-radius:8px;text-decoration:none;" onmouseover="this.style.background='#c94620'" onmouseout="this.style.background='#E95925'">BAĞIŞ YAP</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ══ ANA İÇERİK ══ -->
+<main style="padding-top:102px;min-height:calc(100vh - 102px);display:flex;align-items:center;justify-content:center;padding-bottom:60px;">
+  <div style="width:100%;max-width:1000px;margin:0 auto;padding:40px 24px;">
+
+    <!-- Üst başlık -->
+    <div style="text-align:center;margin-bottom:36px;">
+      <div style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,#162E4B,#28484C);margin-bottom:16px;">
+        <svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="#EBDFB5" stroke-width="2"><path stroke-linecap="round" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
+      </div>
+      <h1 style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:clamp(22px,3vw,30px);color:#162E4B;margin-bottom:8px;">Mezun Portalı</h1>
+      <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:14.5px;color:#62868D;line-height:1.65;max-width:400px;margin:0 auto;">Kestanepazarı mezunlarına özel alan. Giriş yapın veya mezun kaydınızı oluşturun.</p>
+    </div>
+
+    <!-- İki kolon: Giriş + Kayıt -->
+    <div class="grid md:grid-cols-2 gap-8 items-start">
+
+      <!-- ── GİRİŞ KARTI ── -->
+      <div class="auth-card">
+        <!-- Sekme başlıkları -->
+        <div style="display:flex;border-bottom:1px solid rgba(22,46,75,.08);">
+          <button class="panel-tab active" id="tab-giris" onclick="switchPanel('giris')">Giriş Yap</button>
+          <button class="panel-tab" id="tab-kayit" onclick="switchPanel('kayit')">Mezun Kaydı</button>
+        </div>
+
+        <!-- ── GİRİŞ PANELİ ── -->
+        <div id="panel-giris" style="padding:28px;display:flex;flex-direction:column;gap:18px;">
+
+          <!-- Giriş yöntemi toggle -->
+          <div style="display:flex;gap:6px;background:#F7F5F0;padding:4px;border-radius:10px;">
+            <button class="giris-tip active" id="tip-eposta" onclick="switchGirisTip('eposta')">E-posta ile</button>
+            <button class="giris-tip" id="tip-telefon" onclick="switchGirisTip('telefon')">Telefonla</button>
+          </div>
+
+          <!-- E-posta girişi -->
+          <div id="giris-eposta" style="display:flex;flex-direction:column;gap:14px;">
+            <div class="form-group">
+              <label class="form-label">E-posta <span>*</span></label>
+              <input type="email" class="form-input" autocomplete="email" placeholder="ornek@mail.com" />
+            </div>
+          </div>
+
+          <!-- Telefon girişi -->
+          <div id="giris-telefon" style="display:none;flex-direction:column;gap:14px;">
+            <div class="form-group">
+              <label class="form-label">Telefon <span>*</span></label>
+              <input type="tel" class="form-input" autocomplete="tel" inputmode="numeric" pattern="[0-9]*" placeholder="05XX XXX XX XX" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <label class="form-label" style="margin:0;">Şifre <span>*</span></label>
+              <a href="#" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;font-weight:600;color:#B27829;text-decoration:none;" onmouseover="this.style.color='#E95925'" onmouseout="this.style.color='#B27829'">Şifremi unuttum</a>
+            </div>
+            <div style="position:relative;">
+              <input type="password" id="giris-sifre" class="form-input" autocomplete="current-password" placeholder="••••••••" style="padding-right:44px;" />
+              <button onclick="toggleSifre('giris-sifre','eye-giris')" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(22,46,75,.4);padding:4px;" onmouseover="this.style.color='#162E4B'" onmouseout="this.style.color='rgba(22,46,75,.4)'">
+                <svg id="eye-giris" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Beni hatırla -->
+          <div style="display:flex;align-items:center;gap:9px;">
+            <input type="checkbox" id="beni-hatirla" style="width:15px;height:15px;accent-color:#162E4B;cursor:pointer;" checked />
+            <label for="beni-hatirla" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;cursor:pointer;">Beni hatırla</label>
+          </div>
+
+          <button onclick="girisYap()" style="width:100%;background:#162E4B;color:#EBDFB5;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14.5px;padding:13px;border-radius:11px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;"
+            onmouseover="this.style.background='#091420';this.style.transform='translateY(-1px)'"
+            onmouseout="this.style.background='#162E4B';this.style.transform='none'">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+            Giriş Yap
+          </button>
+
+          <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;text-align:center;">
+            Hesabınız yok mu?
+            <button onclick="switchPanel('kayit')" style="background:none;border:none;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:#B27829;cursor:pointer;padding:0;" onmouseover="this.style.color='#E95925'" onmouseout="this.style.color='#B27829'">Mezun kaydı oluşturun</button>
+          </p>
+
+        </div>
+
+        <!-- ── KAYIT PANELİ ── -->
+        <div id="panel-kayit" style="padding:28px;display:none;flex-direction:column;gap:16px;">
+
+          <div style="background:#F7F5F0;border-radius:10px;padding:12px 14px;border-left:3px solid #B27829;">
+            <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#162E4B;line-height:1.55;">Kaydınız dernek yönetimi tarafından onaylandıktan sonra aktif olacaktır. Genellikle 1–2 iş günü içinde bildirim alırsınız.</p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div class="form-group">
+              <label class="form-label">Ad <span>*</span></label>
+              <input type="text" class="form-input" autocomplete="given-name" placeholder="Adınız" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Soyad <span>*</span></label>
+              <input type="text" class="form-input" autocomplete="family-name" placeholder="Soyadınız" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">E-posta <span>*</span></label>
+            <input type="email" class="form-input" autocomplete="email" placeholder="ornek@mail.com" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Telefon <span>*</span></label>
+            <input type="tel" class="form-input" autocomplete="tel" inputmode="numeric" pattern="[0-9]*" placeholder="05XX XXX XX XX" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div class="form-group">
+              <label class="form-label">Mezuniyet Yılı <span>*</span></label>
+              <select class="form-select">
+                <option value="">Yıl seçin</option>
+                <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>for(let y=2024;y>=1970;y--) document.write(`<option>${y}</option>`)</script>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Şehir</label>
+              <input type="text" class="form-input" autocomplete="address-level2" placeholder="İstanbul" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Meslek / Unvan</label>
+            <input type="text" class="form-input" placeholder="Mühendis, Öğretmen..." />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Şifre <span>*</span></label>
+            <div style="position:relative;">
+              <input type="password" id="kayit-sifre" class="form-input" autocomplete="new-password" placeholder="En az 8 karakter" style="padding-right:44px;" />
+              <button onclick="toggleSifre('kayit-sifre','eye-kayit')" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(22,46,75,.4);padding:4px;" onmouseover="this.style.color='#162E4B'" onmouseout="this.style.color='rgba(22,46,75,.4)'">
+                <svg id="eye-kayit" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- KVKK -->
+          <div style="display:flex;align-items:flex-start;gap:9px;padding:10px 12px;background:#F7F5F0;border-radius:9px;">
+            <input type="checkbox" id="kayit-kvkk" style="width:15px;height:15px;margin-top:2px;accent-color:#162E4B;flex-shrink:0;cursor:pointer;" />
+            <label for="kayit-kvkk" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;color:#62868D;line-height:1.5;cursor:pointer;">
+              <a href="#" style="color:#162E4B;font-weight:600;text-decoration:none;">KVKK Aydınlatma Metni</a>'ni okudum, kişisel verilerimin işlenmesine onay veriyorum. <span style="color:#E95925;">*</span>
+            </label>
+          </div>
+
+          <button onclick="kayitOl()" style="width:100%;background:#E95925;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14.5px;padding:13px;border-radius:11px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;box-shadow:0 4px 14px rgba(233,89,37,.25);"
+            onmouseover="this.style.background='#c94620';this.style.transform='translateY(-1px)'"
+            onmouseout="this.style.background='#E95925';this.style.transform='none'">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+            Kayıt Başvurusu Gönder
+          </button>
+
+          <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;text-align:center;">
+            Zaten hesabınız var mı?
+            <button onclick="switchPanel('giris')" style="background:none;border:none;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:#B27829;cursor:pointer;padding:0;" onmouseover="this.style.color='#E95925'" onmouseout="this.style.color='#B27829'">Giriş yapın</button>
+          </p>
+
+        </div>
+
+        <!-- Kayıt başarı (gizli) -->
+        <div id="panel-kayit-success" style="display:none;padding:36px 28px;text-align:center;">
+          <div style="width:60px;height:60px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;">
+            <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#15803d" stroke-width="2.5"><path stroke-linecap="round" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <h3 style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:19px;color:#162E4B;margin-bottom:10px;">Başvurunuz Alındı!</h3>
+          <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;color:#62868D;line-height:1.7;">Kaydınız dernek yönetimi tarafından incelenerek 1–2 iş günü içinde onaylanacaktır. Onay durumunuzu e-posta ve SMS ile bildireceğiz.</p>
+        </div>
+
+      </div>
+
+      <!-- ── SAĞ: BİLGİ PANELİ ── -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <!-- Mezun portalı hakkında -->
+        <div style="background:#fff;border-radius:16px;border:1px solid rgba(22,46,75,.08);padding:24px;">
+          <div style="width:40px;height:40px;border-radius:9px;background:linear-gradient(135deg,#162E4B,#28484C);display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#EBDFB5" stroke-width="2"><path stroke-linecap="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+          </div>
+          <h3 style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:17px;color:#162E4B;margin-bottom:10px;">Mezun Portalında Neler Var?</h3>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:flex-start;gap:9px;">
+              <div style="width:20px;height:20px;border-radius:50%;background:rgba(22,46,75,.08);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">
+                <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="#B27829" stroke-width="2.5"><path stroke-linecap="round" d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;color:#62868D;line-height:1.55;">Profil bilgilerinizi güncelleyin</p>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:9px;">
+              <div style="width:20px;height:20px;border-radius:50%;background:rgba(22,46,75,.08);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">
+                <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="#B27829" stroke-width="2.5"><path stroke-linecap="round" d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;color:#62868D;line-height:1.55;">Bağış geçmişinizi görüntüleyin</p>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:9px;">
+              <div style="width:20px;height:20px;border-radius:50%;background:rgba(22,46,75,.08);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">
+                <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="#B27829" stroke-width="2.5"><path stroke-linecap="round" d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;color:#62868D;line-height:1.55;">Etkinliklere öncelikli kayıt hakkı</p>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:9px;">
+              <div style="width:20px;height:20px;border-radius:50%;background:rgba(22,46,75,.08);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">
+                <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="#B27829" stroke-width="2.5"><path stroke-linecap="round" d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;color:#62868D;line-height:1.55;">Dernek duyurularından haberdar olun</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- İstatistik -->
+        <div style="background:linear-gradient(135deg,#162E4B,#091420);border-radius:16px;padding:24px;position:relative;overflow:hidden;">
+          <div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(178,120,41,.1);"></div>
+          <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:600;color:rgba(235,223,181,.5);letter-spacing:.08em;text-transform:uppercase;margin-bottom:18px;position:relative;z-index:1;">Mezun Ailemiz</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;position:relative;z-index:1;">
+            <div>
+              <p style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:28px;color:#EBDFB5;line-height:1;">4.500<span style="font-size:.5em;color:#B27829;">+</span></p>
+              <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:rgba(235,223,181,.5);margin-top:4px;">Kayıtlı mezun</p>
+            </div>
+            <div>
+              <p style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:28px;color:#EBDFB5;line-height:1;">58</p>
+              <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:rgba(235,223,181,.5);margin-top:4px;">Yıllık gelenek</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Yardım -->
+        <div style="background:#fff;border-radius:14px;border:1px solid rgba(22,46,75,.08);padding:18px;display:flex;align-items:center;gap:12px;">
+          <div style="width:38px;height:38px;border-radius:9px;background:#F7F5F0;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#B27829" stroke-width="2"><path stroke-linecap="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <div>
+            <p style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:13.5px;color:#162E4B;margin-bottom:3px;">Sorun mu yaşıyorsunuz?</p>
+            <a href="tel:4449232" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#B27829;text-decoration:none;font-weight:600;" onmouseover="this.style.color='#E95925'" onmouseout="this.style.color='#B27829'">444 9 232 numaralı hattı arayın</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ══ FOOTER (minimal) ══ -->
+<footer>
+  <div style="height:3px;background:linear-gradient(to right,transparent,#B27829 30%,#B27829 70%,transparent);opacity:.7;"></div>
+  <div style="background-color:#DED099;">
+    <div style="max-width:1280px;margin:0 auto;padding:16px 24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;">
+      <a href="/" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+        <span class="logo-kf" style="width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;">K</span>
+        <span style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:14px;color:#162E4B;">Kestanepazarı</span>
+      </a>
+      <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:rgba(22,46,75,.5);">© 2025 Kestanepazarı Öğrenci Yetiştirme Derneği</p>
+      <div style="display:flex;gap:14px;">
+        <a href="#" class="bottom-link">Gizlilik</a>
+        <span style="color:rgba(22,46,75,.2);">|</span>
+        <a href="#" class="bottom-link">KVKK</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  window.addEventListener('scroll', () => {
+    document.getElementById('main-header').classList.toggle('scrolled', window.scrollY > 8);
+  }, { passive: true });
+
+  // Panel switch (Giriş / Kayıt)
+  function switchPanel(panel) {
+    const isGiris = panel === 'giris';
+    document.getElementById('tab-giris').classList.toggle('active', isGiris);
+    document.getElementById('tab-kayit').classList.toggle('active', !isGiris);
+    document.getElementById('panel-giris').style.display          = isGiris ? 'flex' : 'none';
+    document.getElementById('panel-kayit').style.display          = !isGiris ? 'flex' : 'none';
+    document.getElementById('panel-kayit-success').style.display  = 'none';
+  }
+
+  // Giriş tipi (e-posta / telefon)
+  function switchGirisTip(tip) {
+    const isEposta = tip === 'eposta';
+    document.getElementById('tip-eposta').classList.toggle('active', isEposta);
+    document.getElementById('tip-telefon').classList.toggle('active', !isEposta);
+    document.getElementById('giris-eposta').style.display  = isEposta ? 'flex' : 'none';
+    document.getElementById('giris-telefon').style.display = !isEposta ? 'flex' : 'none';
+  }
+
+  // Şifre göster/gizle
+  function toggleSifre(inputId, iconId) {
+    const inp = document.getElementById(inputId);
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+  }
+
+  // Giriş yap (demo → profile redirect)
+  function girisYap() { window.location.href = 'mezunlar-profil.html'; }
+
+  // Kayıt gönder
+  function

@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Header Bileşeni — Kestanepazarı</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,700;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary:        '#162E4B',
+            'primary-dark': '#091420',
+            accent:         '#B27829',
+            'accent-bright':'#FF9300',
+            teal:           '#28484C',
+            'teal-muted':   '#62868D',
+            cream:          '#EBDFB5',
+            'orange-cta':   '#E95925',
+            bg:             '#FFFFFF',
+            'bg-soft':      '#F7F5F0',
+          },
+          fontFamily: {
+            baskerville: ['"Libre Baskerville"', 'serif'],
+            jakarta:     ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #F7F5F0; }
+
+    /* ── Top bar hide on scroll ── */
+    #top-bar {
+      transition: max-height 0.3s ease, opacity 0.3s ease;
+      max-height: 40px;
+      overflow: hidden;
+    }
+    #main-header.scrolled #top-bar { max-height: 0; opacity: 0; }
+
+    /* ── Sticky shadow ── */
+    #main-header { transition: box-shadow 0.3s ease, background 0.3s ease; }
+    #main-header.scrolled {
+      box-shadow: 0 4px 24px rgba(22,46,75,0.12);
+      background: rgba(255,255,255,0.98);
+      backdrop-filter: blur(8px);
+    }
+
+    /* ── Nav underline ── */
+    .nav-link { position: relative; transition: color 0.2s; }
+    .nav-link::after {
+      content: ''; position: absolute; left: 0; bottom: -2px;
+      width: 0; height: 2px; background: #B27829;
+      transition: width 0.25s ease;
+    }
+    .nav-link:hover::after, .nav-link.active::after { width: 100%; }
+
+    /* ── Dropdown ── */
+    .has-dropdown { position: relative; }
+    .dropdown-panel {
+      position: absolute; top: calc(100% + 10px); left: 50%;
+      transform: translateX(-50%) translateY(6px);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      min-width: 200px; z-index: 200;
+    }
+    .has-dropdown:hover .dropdown-panel,
+    .has-dropdown:focus-within .dropdown-panel {
+      opacity: 1; pointer-events: all;
+      transform: translateX(-50%) translateY(0);
+    }
+    .dropdown-panel::before {
+      content: ''; position: absolute; top: -6px; left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top: 0; border-bottom-color: white;
+    }
+    .dropdown-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 14px; font-size: 13.5px;
+      color: #162E4B; font-weight: 500;
+      border-radius: 6px;
+      transition: background 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .dropdown-item:hover { background: #F7F5F0; color: #B27829; }
+    .dropdown-item .dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: #B27829; flex-shrink: 0;
+    }
+    .chev { transition: transform 0.2s ease; }
+    .has-dropdown:hover .chev { transform: rotate(180deg); }
+
+    /* ── Hamburger ── */
+    .ham-line {
+      display: block; width: 22px; height: 2px;
+      background: #162E4B; border-radius: 2px;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+    #ham-btn.open .line1 { transform: translateY(7px) rotate(45deg); }
+    #ham-btn.open .line2 { opacity: 0; }
+    #ham-btn.open .line3 { transform: translateY(-7px) rotate(-45deg); }
+
+    /* ── Mobile menu ── */
+    #mobile-menu {
+      transition: max-height 0.35s ease, opacity 0.3s ease;
+      max-height: 0; opacity: 0; overflow: hidden;
+    }
+    #mobile-menu.open { max-height: 640px; opacity: 1; }
+
+    /* Mobile sub-accordion */
+    .mob-sub {
+      transition: max-height 0.3s ease, opacity 0.25s ease;
+      max-height: 0; opacity: 0; overflow: hidden;
+    }
+    .mob-sub.open { max-height: 300px; opacity: 1; }
+    .mob-chev { transition: transform 0.25s ease; }
+    .mob-acc-btn.open .mob-chev { transform: rotate(180deg); }
+
+    /* ── Logo K ── */
+    .logo-k {
+      background: linear-gradient(135deg, #162E4B 60%, #28484C 100%);
+      color: #EBDFB5;
+      font-family: 'Libre Baskerville', serif; font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════
+     HEADER BİLEŞENİ
+     Top bar + Main nav + Dropdowns + Cart + Sticky
+════════════════════════════════════════════════════ -->
+
+<header id="main-header" class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100">
+
+  <!-- ══ TOP BAR ══ -->
+  <div id="top-bar" class="bg-primary text-white text-[12px] font-jakarta">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[38px] flex items-center justify-between">
+
+      <!-- Sol: telefon + e-posta -->
+      <div class="flex items-center gap-4">
+        <a href="tel:4449232" class="flex items-center gap-1.5 opacity-75 hover:opacity-100 transition-opacity">
+          <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+          </svg>
+          444 9 232
+        </a>
+        <a href="/cdn-cgi/l/email-protection#dcb5b2bab39cb7b9afa8bdb2b9acbda6bdaeb5f2b3aebbf2a8ae" class="hidden sm:flex items-center gap-1.5 opacity-75 hover:opacity-100 transition-opacity">
+          <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+          <span class="__cf_email__" data-cfemail="71181f171e311a140205101f1401100b1003185f1e03165f0503">[email&#160;protected]</span>
+        </a>
+      </div>
+
+      <!-- Sağ: sosyal medya -->
+      <div class="flex items-center gap-3">
+        <span class="opacity-40 hidden sm:block text-[11px] tracking-wide uppercase">Takip Et</span>
+        <a href="#" aria-label="Facebook" class="opacity-60 hover:opacity-100 hover:text-accent-bright transition-all">
+          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/>
+          </svg>
+        </a>
+        <a href="#" aria-label="Instagram" class="opacity-60 hover:opacity-100 hover:text-accent-bright transition-all">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+            <circle cx="12" cy="12" r="4"/>
+            <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/>
+          </svg>
+        </a>
+        <a href="#" aria-label="X / Twitter" class="opacity-60 hover:opacity-100 hover:text-accent-bright transition-all">
+          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MAIN NAV ══ -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16 lg:h-[68px]">
+
+      <!-- Logo -->
+      <a href="/" class="flex items-center gap-3 flex-shrink-0">
+        <span class="logo-k w-9 h-9 rounded-lg flex items-center justify-center text-lg select-none shadow-sm">K</span>
+        <span class="font-baskerville text-primary font-bold text-[17px] leading-tight hidden sm:block">Kestanepazarı</span>
+      </a>
+
+      <!-- Desktop Nav -->
+      <nav class="hidden lg:flex items-center gap-0.5">
+
+        <!-- Kurumsal ▾ -->
+        <div class="has-dropdown">
+          <button class="nav-link active flex items-center gap-1 font-jakarta text-[13.5px] font-semibold text-accent px-3 py-2 rounded cursor-pointer">
+            Kurumsal
+            <svg class="chev w-3.5 h-3.5 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="dropdown-panel bg-white rounded-xl shadow-xl shadow-primary/10 border border-gray-100 p-2">
+            <a href="#" class="dropdown-item"><span class="dot"></span>Hakkımızda</a>
+            <a href="#" class="dropdown-item"><span class="dot"></span>Yönetim Kurulu</a>
+            <a href="#" class="dropdown-item"><span class="dot"></span>Dernek Tüzüğü</a>
+            <a href="#" class="dropdown-item"><span class="dot"></span>Faaliyet Raporları</a>
+          </div>
+        </div>
+
+        <!-- Haberler ▾ -->
+        <div class="has-dropdown">
+          <button class="nav-link flex items-center gap-1 font-jakarta text-[13.5px] font-medium text-primary hover:text-accent px-3 py-2 rounded cursor-pointer">
+            Haberler
+            <svg class="chev w-3.5 h-3.5 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="dropdown-panel bg-white rounded-xl shadow-xl shadow-primary/10 border border-gray-100 p-2">
+            <a href="#" class="dropdown-item"><span class="dot"></span>Tüm Haberler</a>
+            <a href="#" class="dropdown-item"><span class="dot"></span>Eğitim</a>
+            <a href="#" class="dropdown-item"><span class="dot"></span>Ziyaret</a>
+            <a href="#" class="dropdown-item"><span class="dot"></span>Etkinlikler</a>
+            <a href="#" class="dropdown-item"><span class="dot"></span>Kurban &amp; Bağış</a>
+          </div>
+        </div>
+
+        <!-- Etkinlikler ▾ -->
+        <div class="has-dropdown">
+          <button class="nav-link flex items-center gap-1 font-jakarta text-[13.5px] font-medium text-primary hover:text-accent px-3 py-2 rounded cursor-pointer">
+            Etkinlikler
+            <svg class="chev w-3.5 h-3.5 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="dropdown-panel bg-white rounded-xl shadow-xl shadow-primary/10 border border-gray-100 p-2">
+            <a href="#" class="dropdown-item"><span class="dot"></span>Tüm Etkinlikler</a>
+            <a href="#" class="dropdown-item"><span class="dot"></span>Bu Ay</a>
+            <a href="#" class="dropdown-item"><span class="dot"></span>Etkinlik Takvimi</a>
+          </div>
+        </div>
+
+        <a href="#" class="nav-link font-jakarta text-[13.5px] font-medium text-primary hover:text-accent px-3 py-2 rounded">E-Kayıt</a>
+        <a href="#" class="nav-link font-jakarta text-[13.5px] font-medium text-primary hover:text-accent px-3 py-2 rounded">Mezunlar</a>
+        <a href="#" class="nav-link font-jakarta text-[13.5px] font-medium text-primary hover:text-accent px-3 py-2 rounded">İletişim</a>
+      </nav>
+
+      <!-- Sağ aksiyonlar -->
+      <div class="flex items-center gap-1 lg:gap-2">
+
+        <!-- Giriş -->
+        <button aria-label="Giriş Yap"
+          class="hidden sm:flex items-center gap-1.5 text-primary hover:text-accent transition-colors px-2 py-2 rounded-md hover:bg-bg-soft">
+          <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="8" r="4"/>
+            <path stroke-linecap="round" d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+          </svg>
+          <span class="font-jakarta text-[13px] font-medium hidden md:block">Giriş</span>
+        </button>
+
+        <!-- Sepet -->
+        <button aria-label="Sepet" id="cart-btn"
+          class="relative flex items-center justify-center w-9 h-9 rounded-md text-primary hover:text-accent hover:bg-bg-soft transition-colors">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+          </svg>
+          <span class="absolute -top-0.5 -right-0.5 w-[18px] h-[18px] bg-orange-cta text-white text-[10px] font-bold font-jakarta rounded-full flex items-center justify-center leading-none shadow-sm">
+            2
+          </span>
+        </button>
+
+        <!-- Bağış Yap -->
+        <a href="/bagis"
+          class="flex items-center gap-1.5 bg-orange-cta hover:bg-[#c94620] text-white font-jakarta font-bold text-[13px] px-4 py-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md active:scale-95 ml-1">
+          <svg class="w-[14px] h-[14px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+            <path stroke-linecap="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+          </svg>
+          <span class="hidden sm:inline">BAĞIŞ YAP</span>
+          <span class="sm:hidden">Bağış</span>
+        </a>
+
+        <!-- Hamburger -->
+        <button id="ham-btn" aria-label="Menüyü Aç/Kapat" aria-expanded="false"
+          class="lg:hidden flex flex-col justify-center gap-[5px] p-2 ml-1 rounded-md hover:bg-bg-soft transition-colors">
+          <span class="ham-line line1"></span>
+          <span class="ham-line line2"></span>
+          <span class="ham-line line3"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MOBİL MENÜ ══ -->
+  <div id="mobile-menu" aria-hidden="true">
+    <nav class="border-t border-gray-100 bg-white px-4 pb-5 pt-2 space-y-0.5">
+
+      <!-- Kurumsal accordion -->
+      <div>
+        <button class="mob-acc-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-accent font-jakarta font-semibold text-[14px] bg-bg-soft"
+          data-target="mob-kurumsal">
+          <span class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>Kurumsal
+          </span>
+          <svg class="mob-chev w-4 h-4 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        <div id="mob-kurumsal" class="mob-sub pl-5 space-y-0.5 mt-0.5">
+          <a href="#" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">Hakkımızda</a>
+          <a href="#" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">Yönetim Kurulu</a>
+          <a href="#" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">Dernek Tüzüğü</a>
+          <a href="#" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">Faaliyet Raporları</a>
+        </div>
+      </div>
+
+      <!-- Haberler accordion -->
+      <div>
+        <button class="mob-acc-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta font-medium text-[14px] transition-colors"
+          data-target="mob-haberler">
+          Haberler
+          <svg class="mob-chev w-4 h-4 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        <div id="mob-haberler" class="mob-sub pl-5 space-y-0.5 mt-0.5">
+          <a href="#" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">Tüm Haberler</a>
+          <a href="#" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">Eğitim</a>
+          <a href="#" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">Ziyaret</a>
+          <a href="#" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">Etkinlikler</a>
+        </div>
+      </div>
+
+      <!-- Etkinlikler accordion -->
+      <div>
+        <button class="mob-acc-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta font-medium text-[14px] transition-colors"
+          data-target="mob-etkinlikler">
+          Etkinlikler
+          <svg class="mob-chev w-4 h-4 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        <div id="mob-etkinlikler" class="mob-sub pl-5 space-y-0.5 mt-0.5">
+          <a href="#" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">Tüm Etkinlikler</a>
+          <a href="#" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">Bu Ay</a>
+          <a href="#" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">Etkinlik Takvimi</a>
+        </div>
+      </div>
+
+      <a href="#" class="flex items-center px-3 py-2.5 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta font-medium text-[14px] transition-colors">E-Kayıt</a>
+      <a href="#" class="flex items-center px-3 py-2.5 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta font-medium text-[14px] transition-colors">Mezunlar</a>
+      <a href="#" class="flex items-center px-3 py-2.5 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta font-medium text-[14px] transition-colors">İletişim</a>
+
+      <!-- Mobil alt row -->
+      <div class="pt-3 flex items-center gap-2 border-t border-gray-100 mt-1">
+        <button class="flex items-center gap-1.5 text-primary font-jakarta font-medium text-[13px] px-3 py-2 rounded-md hover:bg-bg-soft transition-colors">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="8" r="4"/>
+            <path stroke-linecap="round" d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+          </svg>
+          Giriş Yap
+        </button>
+        <button class="flex items-center gap-1.5 text-primary font-jakarta font-medium text-[13px] px-3 py-2 rounded-md hover:bg-bg-soft transition-colors">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+          </svg>
+          Sepet (2)
+        </button>
+        <a href="/bagis"
+          class="flex-1 text-center bg-orange-cta hover:bg-[#c94620] text-white font-jakarta font-bold text-[13px] px-4 py-2 rounded-lg transition-colors">
+          BAĞIŞ YAP
+        </a>
+      </div>
+    </nav>
+  </div>
+
+</header>
+
+<!-- Demo alanı -->
+<div id="page-top" class="pt-[106px]">
+  <div class="max-w-7xl mx-auto px-4 py-16 text-center">
+    <div class="inline-flex items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-2 text-[13px] text-teal-muted font-jakarta mb-4">
+      <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+      Header bileşeni — standalone önizleme
+    </div>
+    <p class="text-primary font-baskerville text-2xl font-bold">_header.html</p>
+    <p class="text-teal-muted font-jakarta text-sm mt-2">
+      Top bar (scroll'da kaybolur) · Dropdown menüler · Sepet ikonu · Sticky · Hamburger accordion
+    </p>
+    <div class="mt-12 space-y-4 max-w-lg mx-auto">
+      <div class="h-3 bg-gray-200 rounded-full"></div>
+      <div class="h-3 bg-gray-200 rounded-full w-4/5 mx-auto"></div>
+      <div class="h-3 bg-gray-200 rounded-full w-3/5 mx-auto"></div>
+    </div>
+    <div class="mt-8 h-[700px] flex items-center justify-center text-gray-300 font-jakarta text-sm">
+      (scroll testi için boş alan)
+    </div>
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  // ── Hamburger ──
+  const hamBtn  = document.getElementById('ham-btn');
+  const mobMenu = document.getElementById('mobile-menu');
+  hamBtn.addEventListener('click', () => {
+    const isOpen = mobMenu.classList.contains('open');
+    mobMenu.classList.toggle('open', !isOpen);
+    hamBtn.classList.toggle('open', !isOpen);
+    hamBtn.setAttribute('aria-expanded', String(!isOpen));
+    mobMenu.setAttribute('aria-hidden', String(isOpen));
+  });
+
+  // ── Mobile accordions ──
+  document.querySelectorAll('.mob-acc-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const panel  = document.getElementById(btn.dataset.target);
+      const isOpen = panel.classList.contains('open');
+      document.querySelectorAll('.mob-sub').forEach(p => p.classList.remove('open'));
+      document.querySelectorAll('.mob-acc-btn').forEach(b => b.classList.remove('open'));
+      if (!isOpen) { panel.classList.add('open'); btn.classList.add('open'); }
+    });
+  });
+
+  // ── Sticky + top-bar hide + padding adjust ──
+  const header  = document.getElementById('main-header');
+  const pagePad = document.getElementById('page-top');
+  window.addEventListener('scroll', () => {
+    const scrolled = window.scrollY > 8;
+    header.classList.toggle('scrolled', scrolled);
+    pagePad.

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teşekkürler — Kestanepazarı</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,700;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #F7F5F0; color: #162E4B; min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* HEADER */
+    #main-header { transition: box-shadow .3s; }
+    #main-header.scrolled { box-shadow: 0 4px 24px rgba(22,46,75,.1); }
+
+    /* ONAY İKONU ANİMASYONU */
+    @keyframes scaleIn {
+      0%   { transform: scale(0); opacity: 0; }
+      60%  { transform: scale(1.15); opacity: 1; }
+      100% { transform: scale(1); }
+    }
+    @keyframes checkDraw {
+      0%   { stroke-dashoffset: 60; }
+      100% { stroke-dashoffset: 0; }
+    }
+    @keyframes fadeUp {
+      0%   { opacity: 0; transform: translateY(16px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes confettiFall {
+      0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(120px) rotate(360deg); opacity: 0; }
+    }
+
+    .onay-cember {
+      animation: scaleIn .5s cubic-bezier(.34,1.56,.64,1) .2s both;
+    }
+    .onay-check {
+      stroke-dasharray: 60;
+      stroke-dashoffset: 60;
+      animation: checkDraw .4s ease .7s forwards;
+    }
+    .fade-up-1 { animation: fadeUp .5s ease .9s both; }
+    .fade-up-2 { animation: fadeUp .5s ease 1.05s both; }
+    .fade-up-3 { animation: fadeUp .5s ease 1.2s both; }
+    .fade-up-4 { animation: fadeUp .5s ease 1.35s both; }
+
+    /* MAKBuz KUTUSU */
+    .makbuz-kutu {
+      background: #fff;
+      border-radius: 16px;
+      border: 1px solid rgba(22,46,75,.08);
+      overflow: hidden;
+    }
+    .makbuz-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px dashed rgba(22,46,75,.1);
+    }
+    .makbuz-row:last-child { border-bottom: none; }
+
+    /* PAYLAŞIM */
+    .share-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 9px 18px; border-radius: 8px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 13px; font-weight: 600;
+      text-decoration: none; cursor: pointer; border: none;
+      transition: opacity .2s, transform .15s;
+    }
+    .share-btn:hover { opacity: .85; transform: translateY(-1px); }
+
+    /* CONFETTI parçacıkları */
+    .confetti-piece {
+      position: absolute;
+      width: 8px; height: 8px;
+      border-radius: 2px;
+      animation: confettiFall 1.2s ease forwards;
+    }
+
+    /* Footer */
+    .logo-kf { background:linear-gradient(135deg,#162E4B,#28484C); color:#EBDFB5; font-family:'Libre Baskerville',serif; font-weight:700; }
+    .bottom-link { font-size:12px; color:rgba(22,46,75,0.5); transition:color .2s; text-decoration:none; }
+    .bottom-link:hover { color:#B27829; }
+  </style>
+</head>
+<body>
+
+<!-- ══ HEADER (minimal) ══ -->
+<header id="main-header" style="background:#fff;border-bottom:1px solid #f1f1ef;position:sticky;top:0;z-index:50;">
+  <div style="max-width:1280px;margin:0 auto;padding:0 24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;height:64px;">
+      <a href="/" style="display:flex;align-items:center;gap:12px;text-decoration:none;">
+        <span style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#162E4B,#28484C);color:#EBDFB5;font-family:'Libre Baskerville',serif;font-weight:700;font-size:17px;display:flex;align-items:center;justify-content:center;">K</span>
+        <span style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:16px;color:#162E4B;">Kestanepazarı</span>
+      </a>
+      <!-- Adim göstergesi -->
+      <div style="display:flex;align-items:center;gap:6px;" class="hidden sm:flex">
+        <div style="display:flex;align-items:center;gap:5px;">
+          <div style="width:22px;height:22px;border-radius:50%;background:#16a34a;display:flex;align-items:center;justify-content:center;">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#fff" stroke-width="2.5"><path stroke-linecap="round" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;font-weight:600;color:#16a34a;">Bağış Bilgileri</span>
+        </div>
+        <div style="width:24px;height:1px;background:#16a34a;"></div>
+        <div style="display:flex;align-items:center;gap:5px;">
+          <div style="width:22px;height:22px;border-radius:50%;background:#16a34a;display:flex;align-items:center;justify-content:center;">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#fff" stroke-width="2.5"><path stroke-linecap="round" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;font-weight:600;color:#16a34a;">Ödeme</span>
+        </div>
+        <div style="width:24px;height:1px;background:#16a34a;"></div>
+        <div style="display:flex;align-items:center;gap:5px;">
+          <div style="width:22px;height:22px;border-radius:50%;background:#16a34a;display:flex;align-items:center;justify-content:center;">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#fff" stroke-width="2.5"><path stroke-linecap="round" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;font-weight:600;color:#16a34a;">Tamamlandı</span>
+        </div>
+      </div>
+      <a href="/" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;text-decoration:none;display:flex;align-items:center;gap:5px;" onmouseover="this.style.color='#162E4B'" onmouseout="this.style.color='#62868D'">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        Ana Sayfa
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- ══ ANA İÇERİK ══ -->
+<main style="flex:1;display:flex;align-items:center;justify-content:center;padding:48px 24px;">
+  <div style="width:100%;max-width:600px;">
+
+    <!-- ONAY İKONU + BAŞLIK -->
+    <div class="fade-up-1" style="text-align:center;margin-bottom:36px;position:relative;">
+      <!-- Confetti arka plan -->
+      <div id="confetti-wrap" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;"></div>
+
+      <!-- Yeşil onay çemberi -->
+      <div class="onay-cember" style="display:inline-flex;align-items:center;justify-content:center;width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,#16a34a,#15803d);margin-bottom:20px;box-shadow:0 8px 32px rgba(22,163,74,.3);">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none">
+          <path class="onay-check" d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      <h1 style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:clamp(24px,4vw,32px);color:#162E4B;margin-bottom:10px;line-height:1.25;">
+        Bağışınız için<br/>teşekkürler!
+      </h1>
+      <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;color:#62868D;line-height:1.7;max-width:440px;margin:0 auto;">
+        Ödemeniz başarıyla alındı. Makbuzunuz <strong style="color:#162E4B;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="c3acb1ada6a883aea2aaafeda0acae">[email&#160;protected]</a></strong> adresine gönderildi.
+      </p>
+    </div>
+
+    <!-- MAKBuz ÖZET KUTUSU -->
+    <div class="makbuz-kutu fade-up-2" style="margin-bottom:20px;">
+      <!-- Kutu başlık -->
+      <div style="background:linear-gradient(135deg,#162E4B,#091420);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#EBDFB5" stroke-width="2"><path stroke-linecap="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;color:#EBDFB5;">Bağış Makbuzu</span>
+        </div>
+        <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:rgba(235,223,181,.55);">#KP-2025-00847</span>
+      </div>
+
+      <!-- Makbuz satırları -->
+      <div style="padding:4px 20px 8px;">
+        <div class="makbuz-row">
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;">Bağışçı</span>
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;font-weight:600;color:#162E4B;">Ahmet Yılmaz</span>
+        </div>
+        <div class="makbuz-row">
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;">Bağış Türü</span>
+          <span style="display:inline-flex;align-items:center;gap:5px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;font-weight:600;color:#162E4B;">
+            <span style="width:8px;height:8px;border-radius:50%;background:#B27829;display:inline-block;"></span>
+            Zekat
+          </span>
+        </div>
+        <div class="makbuz-row">
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;">Tutar</span>
+          <span style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:18px;color:#162E4B;">₺500,00</span>
+        </div>
+        <div class="makbuz-row">
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;">Bağış No</span>
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;color:#162E4B;letter-spacing:.03em;">#KP-2025-00847</span>
+        </div>
+        <div class="makbuz-row">
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;">Tarih &amp; Saat</span>
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;color:#162E4B;">02 Nisan 2025 · 21:35</span>
+        </div>
+        <div class="makbuz-row">
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;">Ödeme Yöntemi</span>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div style="width:28px;height:18px;background:#1a1f71;border-radius:3px;display:flex;align-items:center;justify-content:center;">
+              <span style="font-size:7px;font-weight:800;color:#fff;">VISA</span>
+            </div>
+            <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;color:#162E4B;">**** 4242</span>
+          </div>
+        </div>
+        <div class="makbuz-row" style="padding-bottom:16px;">
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;">Durum</span>
+          <span style="display:inline-flex;align-items:center;gap:5px;background:#dcfce7;color:#15803d;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;padding:4px 12px;border-radius:999px;">
+            <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M5 13l4 4L19 7"/></svg>
+            Ödendi
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BUTONLAR -->
+    <div class="fade-up-3" style="display:flex;flex-direction:column;gap:10px;margin-bottom:28px;">
+      <!-- Makbuzu İndir -->
+      <button
+        onclick="makbuzIndir()"
+        style="width:100%;background:#162E4B;color:#EBDFB5;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;padding:13px;border-radius:10px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .2s;"
+        onmouseover="this.style.background='#091420'" onmouseout="this.style.background='#162E4B'">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        Makbuzu İndir (PDF)
+      </button>
+
+      <!-- Ana Sayfaya Dön -->
+      <a href="/"
+        style="width:100%;background:#fff;color:#162E4B;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:14px;padding:13px;border-radius:10px;border:1.5px solid rgba(22,46,75,.15);display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;transition:all .2s;"
+        onmouseover="this.style.background='#F7F5F0';this.style.borderColor='rgba(22,46,75,.3)'" onmouseout="this.style.background='#fff';this.style.borderColor='rgba(22,46,75,.15)'">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        Ana Sayfaya Dön
+      </a>
+    </div>
+
+    <!-- SOSYAL PAYLAŞIM TEŞVİK -->
+    <div class="fade-up-4" style="background:#fff;border-radius:16px;border:1px solid rgba(22,46,75,.08);padding:20px;text-align:center;">
+      <p style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:16px;color:#162E4B;margin-bottom:6px;">İyiliği Yayalım</p>
+      <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;color:#62868D;margin-bottom:16px;line-height:1.6;">
+        Bağışınızı paylaşarak daha fazla insanı bu güzel harekete davet edin.
+      </p>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;">
+        <a href="#" class="share-btn" style="background:#1877F2;color:#fff;">
+          <svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+          Facebook'ta Paylaş
+        </a>
+        <a href="#" class="share-btn" style="background:#000;color:#fff;">
+          <svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          X'te Paylaş
+        </a>
+        <a href="#" class="share-btn" style="background:#25D366;color:#fff;">
+          <svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.145.565 4.16 1.552 5.9L.057 23.928l6.204-1.628A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.793 9.793 0 01-5.002-1.374l-.36-.213-3.682.966.982-3.589-.233-.37A9.79 9.79 0 012.182 12C2.182 6.58 6.58 2.182 12 2.182S21.818 6.58 21.818 12 17.42 21.818 12 21.818z"/></svg>
+          WhatsApp
+        </a>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- ══ FOOTER (minimal) ══ -->
+<footer>
+  <div style="height:3px;background:linear-gradient(to right,transparent,#B27829 30%,#B27829 70%,transparent);opacity:.7;"></div>
+  <div style="background-color:#EBDFB5;">
+    <div style="max-width:1280px;margin:0 auto;padding:24px;">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;">
+        <a href="/" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+          <span class="logo-kf" style="width:34px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;">K</span>
+          <span style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:14px;color:#162E4B;">Kestanepazarı</span>
+        </a>
+        <div style="display:flex;gap:14px;align-items:center;">
+          <a href="#" class="bottom-link">Gizlilik</a>
+          <span style="color:rgba(22,46,75,.2);font-size:10px;">|</span>
+          <a href="#" class="bottom-link">KVKK</a>
+          <span style="color:rgba(22,46,75,.2);font-size:10px;">|</span>
+          <a href="tel:4449232" class="bottom-link">444 9 232</a>
+        </div>
+        <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:rgba(22,46,75,.5);">© 2025 Kestanepazarı Derneği</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  // Confetti
+  function spawnConfetti() {
+    const wrap = document.getElementById('confetti-wrap');
+    const colors = ['#B27829','#E95925','#162E4B','#28484C','#EBDFB5','#FF9300'];
+    for (let i = 0; i < 24; i++) {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.style.cssText = `
+        left: ${Math.random() * 100}%;
+        top: ${-10 + Math.random() * 20}px;
+        background: ${colors[Math.floor(Math.random() * colors.length)]};
+        width: ${6 + Math.random() * 6}px;
+        height: ${6 + Math.random() * 6}px;
+        border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+        animation-delay: ${Math.random() * 0.8}s;
+        animation-duration: ${1 + Math.random() * 0.8}s;
+      `;
+      wrap.appendChild(el);
+    }
+    setTimeout(() => wrap.innerHTML = '', 2500);
+  }
+
+  // Makbuz indir (demo)
+  function makbuzIndir() {
+    const btn = event.currentTarget;
+    btn.textContent = 'Hazırlanıyor...';
+    setTimeout(() => {
+      btn.innerHTML = `<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M5 13l4 4L19 7"/></svg> Makbuz İndirildi`;
+      btn.style.background = '#16a34a';
+    }, 1200);
+  }
+
+  // Header scroll
+  window.addEventListener('scr

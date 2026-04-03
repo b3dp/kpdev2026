@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Başvurunuz Alındı — Kestanepazarı</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,700;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #F7F5F0; color: #162E4B; min-height: 100vh; }
+
+    /* Onay animasyonu */
+    @keyframes popIn {
+      0%   { transform: scale(0.5); opacity: 0; }
+      70%  { transform: scale(1.08); }
+      100% { transform: scale(1);   opacity: 1; }
+    }
+    @keyframes checkDraw {
+      from { stroke-dashoffset: 60; }
+      to   { stroke-dashoffset: 0; }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse-ring {
+      0%   { transform: scale(1);   opacity: .35; }
+      100% { transform: scale(1.5); opacity: 0; }
+    }
+
+    .onay-daire {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #162E4B, #28484C);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 24px;
+      animation: popIn .5s cubic-bezier(.34,1.56,.64,1) .2s both;
+      position: relative;
+    }
+    .onay-daire::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 2px solid rgba(178,120,41,.4);
+      animation: pulse-ring 2s ease-out 0.8s infinite;
+    }
+    .onay-check {
+      stroke-dasharray: 60;
+      stroke-dashoffset: 60;
+      animation: checkDraw .4s ease-out .7s forwards;
+    }
+
+    .fade-up-1 { animation: fadeUp .5s ease-out .4s both; }
+    .fade-up-2 { animation: fadeUp .5s ease-out .55s both; }
+    .fade-up-3 { animation: fadeUp .5s ease-out .7s both; }
+    .fade-up-4 { animation: fadeUp .5s ease-out .85s both; }
+    .fade-up-5 { animation: fadeUp .5s ease-out 1s both; }
+
+    /* Durum adımları */
+    .durum-adim {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(22,46,75,.07);
+    }
+    .durum-adim:last-child { border-bottom: none; }
+    .durum-dot {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .durum-dot.done   { background: #dcfce7; }
+    .durum-dot.active { background: rgba(178,120,41,.15); }
+    .durum-dot.wait   { background: rgba(22,46,75,.07); }
+
+    /* Footer */
+    .logo-kf { background: linear-gradient(135deg,#162E4B,#28484C); color: #EBDFB5; font-family: 'Libre Baskerville',serif; font-weight: 700; }
+    .bottom-link { font-size:12px; color:rgba(22,46,75,0.5); transition:color .2s; text-decoration:none; }
+    .bottom-link:hover { color:#B27829; }
+  </style>
+</head>
+<body>
+
+<!-- HEADER minimal -->
+<header style="background:#fff;border-bottom:1px solid #f1f1ef;position:sticky;top:0;z-index:50;">
+  <div style="max-width:1280px;margin:0 auto;padding:0 24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;height:60px;">
+      <a href="/" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+        <span style="width:32px;height:32px;border-radius:7px;background:linear-gradient(135deg,#162E4B,#28484C);color:#EBDFB5;font-family:'Libre Baskerville',serif;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;">K</span>
+        <span style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:15px;color:#162E4B;" class="hidden sm:inline">Kestanepazarı</span>
+      </a>
+      <a href="/" style="display:flex;align-items:center;gap:5px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;text-decoration:none;" onmouseover="this.style.color='#162E4B'" onmouseout="this.style.color='#62868D'">
+        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        Ana Sayfa
+      </a>
+    </div>
+  </div>
+</header>
+
+<main style="max-width:680px;margin:0 auto;padding:48px 24px 80px;">
+
+  <!-- Onay kutusu -->
+  <div style="text-align:center;margin-bottom:36px;">
+    <div class="onay-daire">
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <path class="onay-check" d="M9 18l7 7L27 12" stroke="#EBDFB5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <h1 class="fade-up-1" style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:clamp(22px,3vw,30px);color:#162E4B;margin-bottom:10px;">Başvurunuz Alındı!</h1>
+    <p class="fade-up-2" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;color:#62868D;line-height:1.7;max-width:440px;margin:0 auto;">Kayıt başvurunuz Kestanepazarı Öğrenci Yetiştirme Derneği'ne iletilmiştir. Değerlendirme sürecini takip edebilirsiniz.</p>
+  </div>
+
+  <!-- Başvuru özeti kartı -->
+  <div class="fade-up-3" style="background:#fff;border-radius:16px;border:1px solid rgba(22,46,75,.08);overflow:hidden;margin-bottom:20px;">
+    <div style="background:linear-gradient(135deg,#162E4B,#28484C);padding:16px 22px;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:600;color:rgba(235,223,181,.5);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px;">Başvuru Özeti</p>
+        <p style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:16px;color:#EBDFB5;" id="basvuru-sinif">—</p>
+      </div>
+      <div style="text-align:right;">
+        <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;color:rgba(235,223,181,.5);margin-bottom:4px;">Başvuru No</p>
+        <p style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;color:#B27829;" id="basvuru-no">—</p>
+      </div>
+    </div>
+    <div style="padding:20px 22px;display:flex;flex-direction:column;gap:12px;">
+
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:1px solid rgba(22,46,75,.07);">
+        <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;">Başvuru Tarihi</span>
+        <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;color:#162E4B;" id="basvuru-tarih">—</span>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:1px solid rgba(22,46,75,.07);">
+        <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;">Durum</span>
+        <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(178,120,41,.1);color:#B27829;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;padding:4px 12px;border-radius:999px;">
+          <span style="width:6px;height:6px;border-radius:50%;background:#B27829;display:inline-block;"></span>
+          İnceleme Bekliyor
+        </span>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;">Tahmini Sonuç</span>
+        <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;color:#162E4B;">3–7 iş günü</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Süreç adımları -->
+  <div class="fade-up-4" style="background:#fff;border-radius:16px;border:1px solid rgba(22,46,75,.08);padding:22px;margin-bottom:20px;">
+    <h3 style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:16px;color:#162E4B;margin-bottom:16px;">Başvuru Süreci</h3>
+
+    <div class="durum-adim">
+      <div class="durum-dot done">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#15803d" stroke-width="2.5"><path stroke-linecap="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <div>
+        <p style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;color:#162E4B;margin-bottom:2px;">Başvuru Alındı</p>
+        <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;color:#62868D;">Formunuz sisteme iletildi ve kayıt altına alındı.</p>
+      </div>
+      <span style="margin-left:auto;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;color:#15803d;background:#dcfce7;padding:3px 10px;border-radius:999px;white-space:nowrap;flex-shrink:0;">Tamamlandı</span>
+    </div>
+
+    <div class="durum-adim">
+      <div class="durum-dot active">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#B27829" stroke-width="2"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M12 8v4l3 3"/></svg>
+      </div>
+      <div>
+        <p style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;color:#162E4B;margin-bottom:2px;">Belge İncelemesi</p>
+        <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;color:#62868D;">Dernek yönetimi başvuru bilgilerini inceleyecektir.</p>
+      </div>
+      <span style="margin-left:auto;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;color:#B27829;background:rgba(178,120,41,.1);padding:3px 10px;border-radius:999px;white-space:nowrap;flex-shrink:0;">Beklemede</span>
+    </div>
+
+    <div class="durum-adim">
+      <div class="durum-dot wait">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="rgba(22,46,75,.35)" stroke-width="2"><path stroke-linecap="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+      </div>
+      <div>
+        <p style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;color:rgba(22,46,75,.5);margin-bottom:2px;">Bilgilendirme</p>
+        <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;color:#62868D;">Başvuru sonucu e-posta ve telefon ile bildirilecektir.</p>
+      </div>
+      <span style="margin-left:auto;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;color:rgba(22,46,75,.4);background:rgba(22,46,75,.07);padding:3px 10px;border-radius:999px;white-space:nowrap;flex-shrink:0;">Bekleniyor</span>
+    </div>
+
+    <div class="durum-adim">
+      <div class="durum-dot wait">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="rgba(22,46,75,.35)" stroke-width="2"><path stroke-linecap="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <div>
+        <p style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;color:rgba(22,46,75,.5);margin-bottom:2px;">Kayıt Onayı</p>
+        <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;color:#62868D;">Başvurunuz onaylandıktan sonra kaydınız aktif olacaktır.</p>
+      </div>
+      <span style="margin-left:auto;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;color:rgba(22,46,75,.4);background:rgba(22,46,75,.07);padding:3px 10px;border-radius:999px;white-space:nowrap;flex-shrink:0;">Bekleniyor</span>
+    </div>
+
+  </div>
+
+  <!-- Bilgilendirme notu -->
+  <div class="fade-up-4" style="background:#fff;border-radius:14px;border:1px solid rgba(22,46,75,.08);padding:18px 20px;margin-bottom:28px;display:flex;gap:14px;align-items:flex-start;">
+    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#B27829" stroke-width="2" style="flex-shrink:0;margin-top:1px;"><path stroke-linecap="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+    <div>
+      <p style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:13.5px;color:#162E4B;margin-bottom:5px;">Bilgilendirme Kanalları</p>
+      <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;line-height:1.65;">Başvuru durumunuz hakkında formdaki e-posta adresinize ve telefon numaranıza bilgi gönderilecektir. Lütfen iletişim bilgilerinizi güncel tutun.</p>
+    </div>
+  </div>
+
+  <!-- Butonlar -->
+  <div class="fade-up-5" style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;">
+    <a href="/" style="display:inline-flex;align-items:center;gap:8px;background:#162E4B;color:#EBDFB5;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;padding:13px 28px;border-radius:11px;text-decoration:none;transition:all .2s;" onmouseover="this.style.background='#091420';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#162E4B';this.style.transform='none'">
+      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      Ana Sayfaya Dön
+    </a>
+    <a href="ekayit.html" style="display:inline-flex;align-items:center;gap:8px;background:#fff;color:#162E4B;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:14px;padding:13px 24px;border-radius:11px;text-decoration:none;border:1.5px solid rgba(22,46,75,.15);transition:all .2s;" onmouseover="this.style.borderColor='rgba(22,46,75,.4)';this.style.background='#F7F5F0'" onmouseout="this.style.borderColor='rgba(22,46,75,.15)';this.style.background='#fff'">
+      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M12 4v16m8-8H4"/></svg>
+      Yeni Başvuru
+    </a>
+    <a href="/bagis" style="display:inline-flex;align-items:center;gap:8px;background:#E95925;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;padding:13px 24px;border-radius:11px;text-decoration:none;transition:background .2s;" onmouseover="this.style.background='#c94620'" onmouseout="this.style.background='#E95925'">
+      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+      Bağış Yap
+    </a>
+  </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div style="height:3px;background:linear-gradient(to right,transparent,#B27829 30%,#B27829 70%,transparent);opacity:.7;"></div>
+  <div style="background-color:#DED099;">
+    <div style="max-width:1280px;margin:0 auto;padding:14px 24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;">
+      <a href="/" style="display:flex;align-items:center;gap:9px;text-decoration:none;">
+        <span class="logo-kf" style="width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;">K</span>
+        <span style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:13px;color:#162E4B;">Kestanepazarı</span>
+      </a>
+      <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:rgba(22,46,75,.5);">© 2025 Kestanepazarı Öğrenci Yetiştirme Derneği</p>
+      <div style="display:flex;gap:12px;"><a href="#" class="bottom-link">Gizlilik</a><span style="color:rgba(22,46,75,.2);">|</span><a href="#" class="bottom-link">KVKK</a></div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // URL'den sınıf bilgisini al
+  const params = new URLSearchParams(window.location.search);
+  const sinif = params.get('sinif') || '—';
+  document.getElementById('basvuru-sinif').textContent = sinif;
+
+  // Başvuru no üret
+  const no = 'KP-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 90000) + 10000);
+  document.getElementById('basvuru-no').textContent = no;
+
+  // Tarih
+  const now = new Date();
+  const tarih = now.toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  document.getElementById('basvuru-tarih').textContent = tarih;
+</script>
+</body>
+</html>
