@@ -26,8 +26,10 @@
 
 @section('content')
 @php
-    $ilkManset = $mansetHaberler->first();
-    $ikinciManset = $mansetHaberler->skip(1)->first();
+  $sagKolonHaberler = $mansetHaberler->take(3);
+  if ($sagKolonHaberler->isEmpty()) {
+    $sagKolonHaberler = $sonHaberler->take(3);
+  }
     $buyukHaber = $sonHaberler->first();
     $ortaHaber = $sonHaberler->skip(1)->take(1)->first();
     $kucukHaberler = $sonHaberler->skip(2)->take(2);
@@ -81,55 +83,21 @@
       </div>
 
       <div class="flex flex-col gap-3">
-        @if($ilkManset)
-          <a href="{{ route('haberler.show', $ilkManset->slug) }}" class="hero-news-card">
-            <div class="hero-img-wrap" style="height:180px;">
-              @if($ilkManset->gorsel_lg)
+        @forelse($sagKolonHaberler as $index => $manset)
+          <a href="{{ route('haberler.show', $manset->slug) }}" class="hero-news-card">
+            <div class="hero-img-wrap" style="height:{{ $index === 0 ? '180px' : '150px' }};">
+              @if($manset->gorsel_lg)
                 <img
-                  src="https://cdn.kestanepazari.org.tr/{{ $ilkManset->gorsel_lg }}"
-                  alt="{{ $ilkManset->baslik }}"
+                  src="https://cdn.kestanepazari.org.tr/{{ $manset->gorsel_lg }}"
+                  alt="{{ $manset->baslik }}"
                   class="absolute inset-0 h-full w-full object-cover"
-                  loading="eager"
-                  fetchpriority="high"
+                  loading="{{ $index === 0 ? 'eager' : 'lazy' }}"
+                  @if($index === 0) fetchpriority="high" @endif
                   width="560"
-                  height="180"
+                  height="{{ $index === 0 ? '180' : '150' }}"
                 >
               @else
-                <div style="position:absolute;inset:0;background:linear-gradient(160deg,#2a4a6b 0%,#0d1f33 100%);display:flex;align-items:center;justify-content:center;">
-                  <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,0.15)" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-                </div>
-              @endif
-
-              <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(8,16,26,.9) 0%,rgba(8,16,26,.2) 60%,transparent 100%);"></div>
-
-              <div style="position:relative;z-index:1;width:100%;">
-                @if($ilkManset->kategori)
-                  <span class="badge-cat mb-2" style="background:{{ $ilkManset->kategori->renk ?? '#3B82F6' }};color:#fff;">{{ $ilkManset->kategori->ad }}</span>
-                @endif
-                <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;color:#fff;margin:0 0 8px;line-height:1.35;">{{ $ilkManset->baslik }}</h3>
-                <span class="meta-date">
-                  <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                  {{ $ilkManset->yayin_tarihi?->format('d M Y') }}
-                </span>
-              </div>
-            </div>
-          </a>
-        @endif
-
-        @if($ikinciManset)
-          <a href="{{ route('haberler.show', $ikinciManset->slug) }}" class="hero-news-card">
-            <div class="hero-img-wrap" style="height:150px;">
-              @if($ikinciManset->gorsel_lg)
-                <img
-                  src="https://cdn.kestanepazari.org.tr/{{ $ikinciManset->gorsel_lg }}"
-                  alt="{{ $ikinciManset->baslik }}"
-                  class="absolute inset-0 h-full w-full object-cover"
-                  loading="lazy"
-                  width="560"
-                  height="150"
-                >
-              @else
-                <div style="position:absolute;inset:0;background:linear-gradient(160deg,#1e3d2f 0%,#0d2618 100%);display:flex;align-items:center;justify-content:center;">
+                <div style="position:absolute;inset:0;background:linear-gradient(160deg,{{ $index % 2 === 0 ? '#2a4a6b 0%,#0d1f33 100%' : '#1e3d2f 0%,#0d2618 100%' }});display:flex;align-items:center;justify-content:center;">
                   <svg width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,0.12)" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
                 </div>
               @endif
@@ -137,45 +105,22 @@
               <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(8,16,26,.9) 0%,rgba(8,16,26,.2) 60%,transparent 100%);"></div>
 
               <div style="position:relative;z-index:1;width:100%;">
-                @if($ikinciManset->kategori)
-                  <span class="badge-cat mb-2" style="background:{{ $ikinciManset->kategori->renk ?? '#FF9300' }};color:#fff;">{{ $ikinciManset->kategori->ad }}</span>
+                @if($manset->kategori)
+                  <span class="badge-cat mb-2" style="background:{{ $manset->kategori->renk ?? ($index === 0 ? '#3B82F6' : '#FF9300') }};color:#fff;">{{ $manset->kategori->ad }}</span>
                 @endif
-                <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;color:#fff;margin:0 0 8px;line-height:1.35;">{{ $ikinciManset->baslik }}</h3>
+                <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:{{ $index === 0 ? '15px' : '14px' }};color:#fff;margin:0 0 8px;line-height:1.35;">{{ $manset->baslik }}</h3>
                 <span class="meta-date">
                   <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                  {{ $ikinciManset->yayin_tarihi?->format('d M Y') }}
+                  {{ $manset->yayin_tarihi?->format('d M Y') }}
                 </span>
               </div>
             </div>
           </a>
-        @endif
-
-        @if($ilkEtkinlik = $yaklasanEtkinlikler->first())
-          <div class="rounded-[14px] border border-primary/10 bg-white p-4">
-            <div class="mb-3 flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#E95925" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                <span class="font-jakarta text-[11.5px] font-bold uppercase tracking-[0.06em] text-orange-cta">Yaklaşan Etkinlik</span>
-              </div>
-              <a href="{{ route('etkinlikler.index') }}" class="text-primary transition-colors hover:text-accent">
-                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
-              </a>
-            </div>
-            <p class="mb-1.5 font-jakarta text-base font-bold text-primary">{{ $ilkEtkinlik->baslik }}</p>
-            <div class="flex flex-col gap-1">
-              @if($ilkEtkinlik->konum_ad)
-                <span class="flex items-center gap-1.5 font-jakarta text-[12.5px] text-teal-muted">
-                  <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                  {{ $ilkEtkinlik->konum_ad }}
-                </span>
-              @endif
-              <span class="flex items-center gap-1.5 font-jakarta text-[12.5px] text-teal-muted">
-                <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                {{ $ilkEtkinlik->baslangic_tarihi?->translatedFormat('d F Y') }} · {{ $ilkEtkinlik->baslangic_tarihi?->format('H:i') }}
-              </span>
-            </div>
+        @empty
+          <div class="rounded-[14px] border border-primary/10 bg-white p-5 text-center font-jakarta text-sm text-teal-muted">
+            Manşet haber bulunamadı.
           </div>
-        @endif
+        @endforelse
       </div>
     </div>
   </div>
