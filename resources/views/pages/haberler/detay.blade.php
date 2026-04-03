@@ -144,8 +144,8 @@
     </div>
 
     <div class="mx-auto max-w-7xl px-6 pb-20 pt-10">
-        <div class="grid gap-8 xl:gap-12 lg:grid-cols-[minmax(0,1fr)_320px]">
-            <div class="min-w-0">
+        <div class="grid gap-8 lg:grid-cols-3 xl:gap-10">
+            <div class="min-w-0 lg:col-span-2">
                 <div class="mb-6">
                     @if($haber->kategori)
                         <span class="mb-3 inline-block rounded-full px-3 py-1 font-jakarta text-xs font-bold text-white" style="background:{{ $haber->kategori->renk ?? '#3B82F6' }};">{{ $haber->kategori->ad }}</span>
@@ -342,7 +342,7 @@
                 @endif
             </div>
 
-            <aside class="haber-detay-sidebar lg:sticky lg:top-[132px] lg:self-start">
+            <aside class="haber-detay-sidebar lg:sticky lg:self-start" style="top: 132px;">
                 @include('components.sidebar')
             </aside>
         </div>
