@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
@@ -203,5 +205,33 @@ class Haber extends Model
     public function gorseller(): HasMany
     {
         return $this->hasMany(HaberGorseli::class, 'haber_id')->orderBy('sira');
+    }
+
+    public function gorselLgUrl(): string
+    {
+        return $this->olusturGorselUrl($this->gorsel_lg);
+    }
+
+    public function gorselSmUrl(): string
+    {
+        return $this->olusturGorselUrl($this->gorsel_sm);
+    }
+
+    public function gorselOgUrl(): string
+    {
+        return $this->olusturGorselUrl($this->gorsel_og);
+    }
+
+    private function olusturGorselUrl(?string $yol): string
+    {
+        if (blank($yol)) {
+            return '';
+        }
+
+        if (Str::startsWith($yol, ['http://', 'https://'])) {
+            return $yol;
+        }
+
+        return Storage::disk('spaces')->url(ltrim($yol, '/'));
     }
 }

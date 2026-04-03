@@ -63,7 +63,7 @@
         <a href="{{ route('haberler.show', $oneCikanHaber->slug) }}" class="mb-12 block overflow-hidden rounded-[18px] no-underline shadow-[0_1px_0_rgba(22,46,75,.06)] transition-shadow hover:shadow-[0_12px_40px_rgba(22,46,75,.18)]" style="height:420px; position:relative;">
             @if($oneCikanHaber->gorsel_lg)
                 <img
-                    src="https://cdn.kestanepazari.org.tr/{{ $oneCikanHaber->gorsel_lg }}"
+                    src="{{ $oneCikanHaber->gorselLgUrl() }}"
                     alt="{{ $oneCikanHaber->baslik }}"
                     class="h-full w-full object-cover"
                     loading="eager"
@@ -111,7 +111,7 @@
                     <div class="relative h-[190px] overflow-hidden">
                         @if($haber->gorsel_lg)
                             <img
-                                src="https://cdn.kestanepazari.org.tr/{{ $haber->gorsel_lg }}"
+                                src="{{ $haber->gorselLgUrl() }}"
                                 alt="{{ $haber->baslik }}"
                                 class="h-full w-full object-cover"
                                 loading="lazy"

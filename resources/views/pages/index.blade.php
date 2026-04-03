@@ -88,7 +88,7 @@
             <div class="hero-img-wrap" style="height:{{ $index === 0 ? '180px' : '150px' }};">
               @if($manset->gorsel_lg)
                 <img
-                  src="https://cdn.kestanepazari.org.tr/{{ $manset->gorsel_lg }}"
+                  src="{{ $manset->gorselLgUrl() }}"
                   alt="{{ $manset->baslik }}"
                   class="absolute inset-0 h-full w-full object-cover"
                   loading="{{ $index === 0 ? 'eager' : 'lazy' }}"
@@ -216,7 +216,7 @@
           <div class="haber-foto" style="height:320px;flex:1;">
             @if($buyukHaber->gorsel_lg)
               <img
-                src="https://cdn.kestanepazari.org.tr/{{ $buyukHaber->gorsel_lg }}"
+                src="{{ $buyukHaber->gorselLgUrl() }}"
                 alt="{{ $buyukHaber->baslik }}"
                 class="h-full w-full object-cover"
                 loading="lazy"
@@ -251,7 +251,7 @@
             <div class="haber-foto" style="height:160px;">
               @if($ortaHaber->gorsel_lg)
                 <img
-                  src="https://cdn.kestanepazari.org.tr/{{ $ortaHaber->gorsel_lg }}"
+                  src="{{ $ortaHaber->gorselLgUrl() }}"
                   alt="{{ $ortaHaber->baslik }}"
                   class="h-full w-full object-cover"
                   loading="lazy"

@@ -10,7 +10,7 @@
   "@@context": "https://schema.org",
     "@@type": "NewsArticle",
   "headline": "{{ $haber->baslik }}",
-  "image": "{{ $haber->gorsel_og ? 'https://cdn.kestanepazari.org.tr/'.$haber->gorsel_og : asset('img/og-default.jpg') }}",
+    "image": "{{ $haber->gorselOgUrl() ?: asset('img/og-default.jpg') }}",
   "datePublished": "{{ $haber->yayin_tarihi?->toIso8601String() }}",
   "dateModified": "{{ $haber->updated_at?->toIso8601String() }}",
   "description": "{{ $haber->meta_description ?? $haber->ozet }}",
@@ -90,6 +90,45 @@
         .rel-card:hover { box-shadow: 0 6px 24px rgba(22,46,75,.12); transform: translateY(-2px); }
         .rel-foto { height: 160px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
         .rel-overlay { position: absolute; inset: 0; background: linear-gradient(to top,rgba(8,16,28,.7) 0%,transparent 60%); }
+        .haber-detay-sidebar > div { max-width: none; margin: 0; padding: 0; }
+        .galeri-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+        }
+        .galeri-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 22px;
+            background: linear-gradient(160deg,#1e3a58 0%,#0a1d30 100%);
+            min-height: 220px;
+        }
+        .galeri-item--buyuk {
+            grid-column: span 2;
+            min-height: 375px;
+        }
+        .galeri-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform .25s;
+        }
+        .galeri-item:hover img { transform: scale(1.03); }
+        .galeri-ek-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(9,20,32,.72);
+            color: #EBDFB5;
+        }
+        @media (max-width: 767px) {
+            .galeri-grid { grid-template-columns: 1fr; }
+            .galeri-item,
+            .galeri-item--buyuk { grid-column: span 1; min-height: 220px; }
+        }
     </style>
 
     <div class="border-b border-primary/10 bg-white pb-5 pt-[102px]">
@@ -105,8 +144,8 @@
     </div>
 
     <div class="mx-auto max-w-7xl px-6 pb-20 pt-10">
-        <div class="grid gap-10 lg:grid-cols-3">
-            <div class="lg:col-span-2">
+        <div class="grid gap-8 xl:gap-12 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <div class="min-w-0">
                 <div class="mb-6">
                     @if($haber->kategori)
                         <span class="mb-3 inline-block rounded-full px-3 py-1 font-jakarta text-xs font-bold text-white" style="background:{{ $haber->kategori->renk ?? '#3B82F6' }};">{{ $haber->kategori->ad }}</span>
@@ -140,7 +179,7 @@
                 <div class="relative mb-8 flex h-[400px] items-center justify-center overflow-hidden rounded-2xl bg-[linear-gradient(160deg,#1e3a58_0%,#0a1d30_100%)]">
                     @if($haber->gorsel_lg)
                         <img
-                            src="https://cdn.kestanepazari.org.tr/{{ $haber->gorsel_lg }}"
+                            src="{{ $haber->gorselLgUrl() }}"
                             alt="{{ $haber->baslik }}"
                             class="h-full w-full object-cover"
                             loading="eager"
@@ -165,6 +204,52 @@
                 @elseif($haber->ozet)
                     <div class="article-body">
                         <p>{{ $haber->ozet }}</p>
+                    </div>
+                @endif
+
+                @if($haber->gorseller->count())
+                    @php
+                        $galeriGorselleri = $haber->gorseller->take(4)->values();
+                        $kalanGorselSayisi = max($haber->gorseller->count() - 4, 0);
+                    @endphp
+
+                    <div class="mt-14 border-t border-primary/10 pt-8">
+                        <div class="mb-6 flex flex-wrap items-start justify-between gap-3">
+                            <div>
+                                <h2 class="font-baskerville text-[clamp(24px,3vw,32px)] font-bold text-primary">Etkinlik Galerisi</h2>
+                                <p class="mt-1 font-jakarta text-[15px] leading-[1.6] text-teal-muted">Habere ait fotoğraf kareleri</p>
+                            </div>
+                            <span class="inline-flex items-center rounded-full bg-[#F4EFE5] px-4 py-2 font-jakarta text-[15px] font-medium text-teal-muted">
+                                {{ $haber->gorseller->count() }} fotoğraf
+                            </span>
+                        </div>
+
+                        <div class="galeri-grid">
+                            @foreach($galeriGorselleri as $index => $gorsel)
+                                <a
+                                    href="{{ $gorsel->lgUrl() }}"
+                                    target="_blank"
+                                    rel="noopener"
+                                    class="galeri-item {{ $index === 0 ? 'galeri-item--buyuk' : '' }}"
+                                    aria-label="{{ $haber->baslik }} galeri görseli {{ $index + 1 }}"
+                                >
+                                    <img
+                                        src="{{ $index === 0 ? $gorsel->lgUrl() : ($gorsel->smUrl() ?: $gorsel->lgUrl()) }}"
+                                        alt="{{ $gorsel->alt_text ?: $haber->baslik }}"
+                                        loading="lazy"
+                                        width="{{ $index === 0 ? '820' : '360' }}"
+                                        height="{{ $index === 0 ? '375' : '220' }}"
+                                    >
+
+                                    @if($index === 3 && $kalanGorselSayisi > 0)
+                                        <div class="galeri-ek-overlay">
+                                            <span class="font-baskerville text-[44px] font-bold leading-none">+{{ $kalanGorselSayisi }}</span>
+                                            <span class="mt-2 font-jakarta text-[15px] font-medium">fotoğraf daha</span>
+                                        </div>
+                                    @endif
+                                </a>
+                            @endforeach
+                        </div>
                     </div>
                 @endif
 
@@ -229,7 +314,7 @@
                                     <div class="rel-foto" style="background:linear-gradient(160deg,#1a3d30 0%,#0c2018 100%);">
                                         @if($ilgili->gorsel_sm)
                                             <img
-                                                src="https://cdn.kestanepazari.org.tr/{{ $ilgili->gorsel_sm }}"
+                                                src="{{ $ilgili->gorselSmUrl() }}"
                                                 alt="{{ $ilgili->baslik }}"
                                                 class="h-full w-full object-cover"
                                                 loading="lazy"
@@ -257,7 +342,7 @@
                 @endif
             </div>
 
-            <aside>
+            <aside class="haber-detay-sidebar lg:sticky lg:top-[132px] lg:self-start">
                 @include('components.sidebar')
             </aside>
         </div>

@@ -38,7 +38,7 @@
                     <div class="news-thumb">
                         @if($haber->gorsel_sm)
                             <img
-                                src="https://cdn.kestanepazari.org.tr/{{ $haber->gorsel_sm }}"
+                                src="{{ $haber->gorselSmUrl() }}"
                                 alt="{{ $haber->baslik }}"
                                 class="h-full w-full object-cover"
                                 loading="lazy"
