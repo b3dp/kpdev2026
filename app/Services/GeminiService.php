@@ -40,7 +40,8 @@ class GeminiService
         $varsayilan = $this->metniAnlamliSinirla((string) strip_tags($metin), 280);
 
         $yanit = $this->metinCevabiAl(
-            "Aşağıdaki metin için Türkçe özet üret. En fazla 280 karakter olsun, cümle yarım kalmasın. "
+            "Aşağıdaki metin için Türkçe özet üret. En az 120, en fazla 280 karakter olsun; cümle yarım kalmasın. "
+            . "Mümkünse olayı, kişileri ve sonucu kapsayan bilgilendirici bir cümle kur. "
             . "Gereksiz giriş cümlesi yazma, doğrudan özeti ver:\n\n" . $metin,
             $varsayilan
         );
@@ -50,15 +51,15 @@ class GeminiService
 
     public function metaDescriptionUret(string $metin): string
     {
-        $varsayilan = $this->metniAnlamliSinirla((string) strip_tags($metin), 150);
+        $varsayilan = $this->metniAnlamliSinirla((string) strip_tags($metin), 155);
 
         $yanit = $this->metinCevabiAl(
-            "Aşağıdaki metin için Türkçe SEO uyumlu meta description üret. En fazla 150 karakter olsun, "
-            . "cümle yarım kalmasın:\n\n" . $metin,
+            "Aşağıdaki metin için Türkçe SEO uyumlu meta description üret. En az 120, en fazla 155 karakter olsun; "
+            . "cümle yarım kalmasın. Anahtar kelime içermeli, okuyucuyu sayfaya çekici olmalı:\n\n" . $metin,
             $varsayilan
         );
 
-        return $this->metniAnlamliSinirla($yanit, 150);
+        return $this->metniAnlamliSinirla($yanit, 155);
     }
 
     public function seoBaslikUret(string $baslik): string

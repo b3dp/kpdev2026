@@ -10,8 +10,10 @@ class HaberController extends Controller
 {
     public function index()
     {
-        $kategoriSlug = request('kategori');
-        $arama = trim((string) request('q', ''));
+        $kategoriSlug  = request('kategori');
+        $arama        = trim((string) request('q', ''));
+        $kisiId       = (int) request('kisi_id', 0);
+        $kurumSlug    = request('kurum', '');
 
         $kategoriler = HaberKategorisi::where('aktif', 1)
             ->orderBy('sira')
@@ -29,7 +31,9 @@ class HaberController extends Controller
                     $altQuery->where('baslik', 'like', "%{$arama}%")
                         ->orWhere('ozet', 'like', "%{$arama}%");
                 });
-            });
+            })
+            ->when($kisiId > 0, fn ($q) => $q->whereHas('kisiler', fn ($k) => $k->where('kisiler.id', $kisiId)))
+            ->when($kurumSlug !== '', fn ($q) => $q->whereHas('kurumlar', fn ($k) => $k->where('kurumlar.slug', $kurumSlug)));
 
         $oneCikanHaber = (clone $listeQuery)
             ->where('manset', true)
@@ -59,7 +63,7 @@ class HaberController extends Controller
 
     public function show(string $slug)
     {
-        $haber = Haber::with(['kategori', 'etiketler', 'gorseller'])
+        $haber = Haber::with(['kategori', 'etiketler', 'gorseller', 'kisiler', 'kurumlar'])
             ->where('slug', $slug)
             ->where('durum', 'yayinda')
             ->firstOrFail();

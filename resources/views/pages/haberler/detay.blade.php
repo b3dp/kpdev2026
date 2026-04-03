@@ -344,7 +344,7 @@
                     <div class="mt-14 border-t border-primary/10 pt-8">
                         <div class="mb-6 flex flex-wrap items-start justify-between gap-3">
                             <div>
-                                <h2 class="font-baskerville text-[clamp(24px,3vw,32px)] font-bold text-primary">Etkinlik Galerisi</h2>
+                                <h2 class="font-baskerville text-[clamp(24px,3vw,32px)] font-bold text-primary">Haber Galerisi</h2>
                                 <p class="mt-1 font-jakarta text-[15px] leading-[1.6] text-teal-muted">Habere ait fotoğraf kareleri</p>
                             </div>
                             <span class="inline-flex items-center rounded-full bg-[#F4EFE5] px-4 py-2 font-jakarta text-[15px] font-medium text-teal-muted">
@@ -437,6 +437,32 @@
                         <div class="flex flex-wrap gap-2">
                             @foreach($haber->etiketler as $etiket)
                                 <a href="{{ route('haberler.index', ['q' => $etiket->ad]) }}" class="tag-pill">{{ $etiket->ad }}</a>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                @if($haber->kisiler->count() || $haber->kurumlar->count())
+                    <div class="mt-5 border-t border-primary/10 pt-5">
+                        <p class="mb-2.5 font-jakarta text-[13px] font-semibold uppercase tracking-[0.04em] text-teal-muted">Bu Haberde</p>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach($haber->kisiler as $kisi)
+                                <a
+                                    href="{{ route('haberler.index', ['kisi_id' => $kisi->id]) }}"
+                                    class="inline-flex items-center gap-1.5 rounded-full border border-primary/15 bg-white px-3 py-[5px] font-jakarta text-[12.5px] font-semibold text-primary transition-colors hover:border-primary hover:bg-primary hover:text-cream"
+                                >
+                                    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path stroke-linecap="round" d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                                    {{ $kisi->ad_soyad }}
+                                </a>
+                            @endforeach
+                            @foreach($haber->kurumlar as $kurum)
+                                <a
+                                    href="{{ route('haberler.index', ['kurum' => $kurum->slug]) }}"
+                                    class="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-[#FBF6ED] px-3 py-[5px] font-jakarta text-[12.5px] font-semibold text-accent transition-colors hover:border-accent hover:bg-accent hover:text-white"
+                                >
+                                    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path stroke-linecap="round" d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+                                    {{ $kurum->ad }}
+                                </a>
                             @endforeach
                         </div>
                     </div>
