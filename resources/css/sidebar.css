@@ -1,0 +1,140 @@
+.bagis-box {
+    background: linear-gradient(145deg, #162e4b 0%, #091420 100%);
+    border-radius: 14px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.bagis-box::before {
+    content: '';
+    position: absolute;
+    top: -30px;
+    right: -30px;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: rgba(178, 120, 41, 0.12);
+}
+
+.bagis-box::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: -20px;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(178, 120, 41, 0.08);
+}
+
+.news-card {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(22, 46, 75, 0.08);
+    text-decoration: none;
+    transition: background 0.15s;
+}
+
+.news-card:last-child {
+    border-bottom: none;
+}
+
+.news-card:hover .news-title {
+    color: #b27829;
+}
+
+.news-thumb {
+    width: 64px;
+    height: 64px;
+    border-radius: 8px;
+    background: #ddd8cc;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.cat-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+    text-decoration: none;
+    border: 1px solid transparent;
+}
+
+.cat-pill.active {
+    background: #162e4b;
+    color: #ebdfb5;
+    border-color: #162e4b;
+}
+
+.cat-pill.inactive {
+    background: #fff;
+    color: rgba(22, 46, 75, 0.65);
+    border-color: rgba(22, 46, 75, 0.15);
+}
+
+.cat-pill.inactive:hover {
+    background: #f7f5f0;
+    color: #162e4b;
+    border-color: rgba(22, 46, 75, 0.3);
+    box-shadow: 0 1px 4px rgba(22, 46, 75, 0.08);
+}
+
+.event-box {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid rgba(22, 46, 75, 0.1);
+    padding: 16px;
+    transition: box-shadow 0.2s;
+}
+
+.event-box:hover {
+    box-shadow: 0 4px 16px rgba(22, 46, 75, 0.1);
+}
+
+.event-date-badge {
+    background: #162e4b;
+    color: #ebdfb5;
+    border-radius: 8px;
+    width: 48px;
+    text-align: center;
+    padding: 6px 4px;
+    flex-shrink: 0;
+}
+
+.sidebar-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid rgba(22, 46, 75, 0.08);
+    padding: 20px;
+}
+
+.sidebar-section-title {
+    font-family: 'Libre Baskerville', serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: #162e4b;
+    margin-bottom: 4px;
+    position: relative;
+    padding-bottom: 12px;
+}
+
+.sidebar-section-title::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 28px;
+    height: 2px;
+    background: #b27829;
+    border-radius: 1px;
+}
