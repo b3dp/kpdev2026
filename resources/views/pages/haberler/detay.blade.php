@@ -1,5 +1,17 @@
 @extends('layouts.app')
 
+@php
+    $kelimeSayisi = count(preg_split('/\s+/', trim(strip_tags($haber->icerik ?? '')), -1, PREG_SPLIT_NO_EMPTY));
+    $okumaSuresi = max(1, (int) ceil($kelimeSayisi / 200));
+    $tumGorsellerJson = $haber->gorseller->map(fn($g) => [
+        'lg'  => $g->lgUrl(),
+        'alt' => $g->alt_text ?: $haber->baslik,
+    ])->toJson(JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE);
+@endphp
+
+@section('og_type', 'article')
+@section('og_image', $haber->gorselLgUrl() ?: $haber->gorselOgUrl() ?: asset('img/og-default.jpg'))
+
 @section('title', $haber->seo_baslik ?? $haber->baslik)
 @section('meta_description', $haber->meta_description ?? $haber->ozet)
 @section('robots', $haber->robots ?? 'index, follow')
@@ -8,17 +20,23 @@
 <script type="application/ld+json">
 {
   "@@context": "https://schema.org",
-    "@@type": "NewsArticle",
+  "@@type": "NewsArticle",
   "headline": "{{ $haber->baslik }}",
-    "image": "{{ $haber->gorselOgUrl() ?: asset('img/og-default.jpg') }}",
+  "image": ["{{ $haber->gorselLgUrl() ?: $haber->gorselOgUrl() ?: asset('img/og-default.jpg') }}"],
   "datePublished": "{{ $haber->yayin_tarihi?->toIso8601String() }}",
   "dateModified": "{{ $haber->updated_at?->toIso8601String() }}",
   "description": "{{ $haber->meta_description ?? $haber->ozet }}",
-    "author": {"@@type": "Organization", "name": "Kestanepazarı Derneği"},
+  "wordCount": {{ $kelimeSayisi }},
+  "timeRequired": "PT{{ $okumaSuresi }}M",
+  "speakable": {
+    "@@type": "SpeakableSpecification",
+    "cssSelector": ["h1", ".haber-ozet"]
+  },
+  "author": {"@@type": "Organization", "name": "Kestanepazarı Derneği"},
   "publisher": {
-        "@@type": "Organization",
+    "@@type": "Organization",
     "name": "Kestanepazarı Derneği",
-        "logo": {"@@type": "ImageObject", "url": "https://cdn.kestanepazari.org.tr/logo.png"}
+    "logo": {"@@type": "ImageObject", "url": "https://cdn.kestanepazari.org.tr/logo.png"}
   }
 }
 </script>
@@ -129,6 +147,103 @@
             .galeri-item,
             .galeri-item--buyuk { grid-column: span 1; min-height: 220px; }
         }
+        /* Okuma progress bar */
+        #okuma-cubugu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, #B27829 0%, #162E4B 100%);
+            z-index: 9999;
+            transition: width .08s linear;
+            pointer-events: none;
+            border-radius: 0 2px 2px 0;
+        }
+        /* Galeri lightbox */
+        .lightbox {
+            position: fixed;
+            inset: 0;
+            z-index: 9990;
+            background: rgba(5, 10, 18, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(6px);
+        }
+        .lightbox-kapat {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.12);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+            transition: background .15s;
+        }
+        .lightbox-kapat:hover { background: rgba(255,255,255,.24); }
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.12);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .15s;
+            z-index: 1;
+        }
+        .lightbox-nav:hover { background: rgba(255,255,255,.24); }
+        .lightbox-nav--sol { left: 18px; }
+        .lightbox-nav--sag { right: 18px; }
+        .lightbox-icerik {
+            max-width: min(90vw, 1200px);
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .lightbox-gorsel {
+            max-width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,.5);
+        }
+        .lightbox-alt {
+            margin-top: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            color: rgba(255,255,255,.75);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 13.5px;
+            width: 100%;
+        }
+        .lightbox-sayac {
+            white-space: nowrap;
+            color: rgba(255,255,255,.5);
+            font-size: 13px;
+        }
+        @media (max-width: 640px) {
+            .lightbox-nav--sol { left: 8px; }
+            .lightbox-nav--sag { right: 8px; }
+        }
     </style>
 
     <div class="border-b border-primary/10 bg-white pb-5 pt-[102px]">
@@ -167,7 +282,7 @@
                         </div>
                         <div class="flex items-center gap-1.5 font-jakarta text-[13px] text-teal-muted">
                             <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                            3 dk okuma
+                            {{ $okumaSuresi }} dk okuma
                         </div>
                         <div class="flex items-center gap-1.5 font-jakarta text-[13px] text-teal-muted">
                             <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
@@ -175,6 +290,13 @@
                         </div>
                     </div>
                 </div>
+
+                @if($haber->ozet)
+                    <div class="haber-ozet mb-7 rounded-xl border-l-[3px] border-accent bg-[#F9F6EF] px-6 py-4">
+                        <p class="mb-1.5 font-jakarta text-[11px] font-bold uppercase tracking-[0.12em] text-accent">Özet</p>
+                        <p class="m-0 font-jakarta text-[15px] leading-relaxed text-primary/80">{{ $haber->ozet }}</p>
+                    </div>
+                @endif
 
                 <div class="relative mb-8 flex h-[400px] items-center justify-center overflow-hidden rounded-2xl bg-[linear-gradient(160deg,#1e3a58_0%,#0a1d30_100%)]">
                     @if($haber->gorsel_lg)
@@ -224,31 +346,81 @@
                             </span>
                         </div>
 
-                        <div class="galeri-grid">
-                            @foreach($galeriGorselleri as $index => $gorsel)
-                                <a
-                                    href="{{ $gorsel->lgUrl() }}"
-                                    target="_blank"
-                                    rel="noopener"
-                                    class="galeri-item {{ $index === 0 ? 'galeri-item--buyuk' : '' }}"
-                                    aria-label="{{ $haber->baslik }} galeri görseli {{ $index + 1 }}"
-                                >
-                                    <img
-                                        src="{{ $index === 0 ? $gorsel->lgUrl() : ($gorsel->smUrl() ?: $gorsel->lgUrl()) }}"
-                                        alt="{{ $gorsel->alt_text ?: $haber->baslik }}"
-                                        loading="lazy"
-                                        width="{{ $index === 0 ? '820' : '360' }}"
-                                        height="{{ $index === 0 ? '375' : '220' }}"
+                        <div
+                            x-data="{
+                                acik: false,
+                                aktifIndex: 0,
+                                gorseller: {{ $tumGorsellerJson }},
+                                ac(i) { this.aktifIndex = i; this.acik = true; document.body.style.overflow = 'hidden'; },
+                                kapat() { this.acik = false; document.body.style.overflow = ''; },
+                                onceki() { this.aktifIndex = (this.aktifIndex - 1 + this.gorseller.length) % this.gorseller.length; },
+                                sonraki() { this.aktifIndex = (this.aktifIndex + 1) % this.gorseller.length; }
+                            }"
+                            @keydown.escape.window="kapat()"
+                            @keydown.arrow-left.window="if(acik) onceki()"
+                            @keydown.arrow-right.window="if(acik) sonraki()"
+                        >
+                            <div class="galeri-grid">
+                                @foreach($galeriGorselleri as $index => $gorsel)
+                                    <button
+                                        type="button"
+                                        @click="ac({{ $index }})"
+                                        class="galeri-item {{ $index === 0 ? 'galeri-item--buyuk' : '' }}"
+                                        aria-label="{{ $haber->baslik }} fotoğraf {{ $index + 1 }}"
                                     >
+                                        <img
+                                            src="{{ $index === 0 ? $gorsel->lgUrl() : ($gorsel->smUrl() ?: $gorsel->lgUrl()) }}"
+                                            alt="{{ $gorsel->alt_text ?: $haber->baslik }}"
+                                            loading="lazy"
+                                            width="{{ $index === 0 ? '820' : '360' }}"
+                                            height="{{ $index === 0 ? '375' : '220' }}"
+                                        >
 
-                                    @if($index === 3 && $kalanGorselSayisi > 0)
-                                        <div class="galeri-ek-overlay">
-                                            <span class="font-baskerville text-[44px] font-bold leading-none">+{{ $kalanGorselSayisi }}</span>
-                                            <span class="mt-2 font-jakarta text-[15px] font-medium">fotoğraf daha</span>
-                                        </div>
-                                    @endif
-                                </a>
-                            @endforeach
+                                        @if($index === 3 && $kalanGorselSayisi > 0)
+                                            <div class="galeri-ek-overlay">
+                                                <span class="font-baskerville text-[44px] font-bold leading-none">+{{ $kalanGorselSayisi }}</span>
+                                                <span class="mt-2 font-jakarta text-[15px] font-medium">fotoğraf daha</span>
+                                            </div>
+                                        @endif
+                                    </button>
+                                @endforeach
+                            </div>
+
+                            {{-- Lightbox overlay --}}
+                            <div
+                                x-show="acik"
+                                x-transition:enter="transition ease-out duration-200"
+                                x-transition:enter-start="opacity-0"
+                                x-transition:enter-end="opacity-100"
+                                x-transition:leave="transition ease-in duration-150"
+                                x-transition:leave-start="opacity-100"
+                                x-transition:leave-end="opacity-0"
+                                class="lightbox"
+                                style="display:none;"
+                                role="dialog"
+                                aria-modal="true"
+                                @click.self="kapat()"
+                            >
+                                <button type="button" @click="kapat()" class="lightbox-kapat" aria-label="Kapat">
+                                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                </button>
+
+                                <button type="button" @click.stop="onceki()" class="lightbox-nav lightbox-nav--sol" aria-label="Önceki" x-show="gorseller.length > 1">
+                                    <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M15 19l-7-7 7-7"/></svg>
+                                </button>
+
+                                <div class="lightbox-icerik" @click.stop>
+                                    <img :src="gorseller[aktifIndex]?.lg" :alt="gorseller[aktifIndex]?.alt" class="lightbox-gorsel">
+                                    <div class="lightbox-alt">
+                                        <span x-text="gorseller[aktifIndex]?.alt" class="truncate"></span>
+                                        <span x-show="gorseller.length > 1" class="lightbox-sayac" x-text="(aktifIndex + 1) + ' / ' + gorseller.length"></span>
+                                    </div>
+                                </div>
+
+                                <button type="button" @click.stop="sonraki()" class="lightbox-nav lightbox-nav--sag" aria-label="Sonraki" x-show="gorseller.length > 1">
+                                    <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 @endif
@@ -348,3 +520,16 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+(function () {
+    const cubuk = document.getElementById('okuma-cubugu');
+    if (!cubuk) return;
+    window.addEventListener('scroll', function () {
+        const toplam = document.documentElement.scrollHeight - window.innerHeight;
+        cubuk.style.width = toplam > 0 ? (window.scrollY / toplam * 100) + '%' : '100%';
+    }, { passive: true });
+})();
+</script>
+@endpush

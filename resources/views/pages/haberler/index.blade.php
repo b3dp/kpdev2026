@@ -4,6 +4,7 @@
 @section('meta_description', 'Kestanepazarı haberleri ve duyurular')
 @section('robots', 'index, follow')
 @section('og_type', 'website')
+@section('og_image', $oneCikanHaber?->gorselLgUrl() ?: asset('img/og-default.jpg'))
 
 @section('content')
 <section class="border-b border-primary/10 bg-white pb-0 pt-[102px]">
