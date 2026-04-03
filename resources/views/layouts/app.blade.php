@@ -1,64 +1,68 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Kestane Pazarı')</title>
-    
-    {{-- Tailwind CSS --}}
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    {{-- Vite Assets --}}
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>@yield('title', config('site.ad')) — Kestanepazarı</title>
+<meta name="description" content="@yield('meta_description', config('site.aciklama'))">
+<meta name="robots" content="@yield('robots', 'index, follow')">
+<link rel="canonical" href="@yield('canonical', url()->current())">
+
+<!-- Open Graph -->
+<meta property="og:type" content="@yield('og_type', 'website')">
+<meta property="og:title" content="@yield('title') — Kestanepazarı">
+<meta property="og:description" content="@yield('meta_description', config('site.aciklama'))">
+<meta property="og:image" content="@yield('og_image', asset('img/og-default.jpg'))">
+<meta property="og:url" content="{{ url()->current() }}">
+<meta property="og:locale" content="tr_TR">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="@yield('title') — Kestanepazarı">
+<meta name="twitter:description" content="@yield('meta_description')">
+<meta name="twitter:image" content="@yield('og_image', asset('img/og-default.jpg'))">
+
+<!-- GEO -->
+<meta name="geo.region" content="TR-35">
+<meta name="geo.placename" content="Seferihisar, İzmir">
+<meta name="geo.position" content="38.1956;26.8344">
+<meta name="ICBM" content="38.1956, 26.8344">
+
+<!-- Font preload -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,700;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Organization Schema (tüm sayfalarda) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "{{ config('site.ad') }} Öğrenci Yetiştirme Derneği",
+  "url": "{{ url('/') }}",
+  "logo": "https://cdn.kestanepazari.org.tr/logo.png",
+  "telephone": "{{ config('site.telefon') }}",
+  "email": "{{ config('site.eposta') }}",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Seferihisar",
+    "addressRegion": "İzmir",
+    "addressCountry": "TR"
+  },
+  "sameAs": ["{{ config('site.facebook') }}", "{{ config('site.instagram') }}", "{{ config('site.x') }}"]
+}
+</script>
+
+<!-- Sayfa bazlı Schema -->
+@yield('schema')
+
+@vite(['resources/css/app.css','resources/js/app.js'])
 </head>
-<body class="bg-gray-50">
-    {{-- Navigation --}}
-    <nav class="bg-white shadow">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <a href="/" class="text-2xl font-bold text-blue-600">
-                        Kestane Pazarı
-                    </a>
-                </div>
-                <div class="flex items-center space-x-4">
-                    @auth('uye')
-                        <span class="text-gray-700">{{ auth('uye')->user()->ad_soyad }}</span>
-                        <a href="{{ route('uye.profil.index') }}" class="text-blue-600 hover:text-blue-700">
-                            Profil
-                        </a>
-                        <form action="{{ route('uye.cikis') }}" method="POST" class="inline">
-                            @csrf
-                            <button type="submit" class="text-red-600 hover:text-red-700">
-                                Çıkış
-                            </button>
-                        </form>
-                    @endauth
-                    @guest('uye')
-                        <a href="{{ route('uye.giris.form') }}" class="text-blue-600 hover:text-blue-700">
-                            Giriş
-                        </a>
-                        <a href="{{ route('uye.kayit.form') }}" class="text-blue-600 hover:text-blue-700">
-                            Kayıt
-                        </a>
-                    @endguest
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    {{-- Main Content --}}
-    <main class="py-8">
-        @yield('content')
-    </main>
-
-    {{-- Footer --}}
-    <footer class="bg-gray-800 text-white mt-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <p class="text-center text-gray-400">
-                &copy; 2026 Kestane Pazarı Derneği. Tüm hakları saklıdır.
-            </p>
-        </div>
-    </footer>
+<body class="font-jakarta bg-bg-soft">
+  @include('components.header')
+  <main>
+    @yield('content')
+  </main>
+  @include('components.footer')
 </body>
 </html>
