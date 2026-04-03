@@ -7,14 +7,20 @@
         'lg'  => $g->lgUrl(),
         'alt' => $g->alt_text ?: $haber->baslik,
     ])->toJson(JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE);
+    $yayinTarihi = $haber->yayin_tarihi ?? $haber->created_at;
+    $metaAciklama = html_entity_decode($haber->meta_description ?? $haber->ozet ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $robotsDeger = $haber->robots ?? 'index, follow';
+    if ($robotsDeger && !str_contains($robotsDeger, 'follow') && !str_contains($robotsDeger, 'nofollow')) {
+        $robotsDeger .= ', follow';
+    }
 @endphp
 
 @section('og_type', 'article')
 @section('og_image', $haber->gorselLgUrl() ?: $haber->gorselOgUrl() ?: asset('img/og-default.jpg'))
 
 @section('title', $haber->seo_baslik ?? $haber->baslik)
-@section('meta_description', $haber->meta_description ?? $haber->ozet)
-@section('robots', $haber->robots ?? 'index, follow')
+@section('meta_description', $metaAciklama)
+@section('robots', $robotsDeger)
 
 @section('schema')
 <script type="application/ld+json">
@@ -23,9 +29,9 @@
   "@@type": "NewsArticle",
   "headline": "{{ $haber->baslik }}",
   "image": ["{{ $haber->gorselLgUrl() ?: $haber->gorselOgUrl() ?: asset('img/og-default.jpg') }}"],
-  "datePublished": "{{ $haber->yayin_tarihi?->toIso8601String() }}",
+  "datePublished": "{{ $yayinTarihi?->toIso8601String() }}",
   "dateModified": "{{ $haber->updated_at?->toIso8601String() }}",
-  "description": "{{ $haber->meta_description ?? $haber->ozet }}",
+  "description": "{{ $metaAciklama }}",
   "wordCount": {{ $kelimeSayisi }},
   "timeRequired": "PT{{ $okumaSuresi }}M",
   "speakable": {
