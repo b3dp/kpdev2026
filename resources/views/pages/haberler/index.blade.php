@@ -20,7 +20,7 @@
                 <h1 class="font-baskerville text-[clamp(26px,3.5vw,38px)] font-bold leading-[1.2] text-primary">Haberler &amp; Duyurular</h1>
             </div>
 
-            <form method="GET" action="{{ route('haberler.index') }}" class="relative w-full max-w-[280px]">
+            <form method="GET" action="{{ route('haberler.index') }}" class="relative w-full max-w-[260px]">
                 @if($kategoriSlug)
                     <input type="hidden" name="kategori" value="{{ $kategoriSlug }}">
                 @endif
@@ -60,7 +60,7 @@
 
 <main class="mx-auto max-w-7xl px-6 pb-20 pt-10">
     @if($oneCikanHaber)
-        <a href="{{ route('haberler.show', $oneCikanHaber->slug) }}" class="mb-12 block overflow-hidden rounded-[18px] no-underline transition-shadow hover:shadow-[0_12px_40px_rgba(22,46,75,.18)]" style="height:420px; position:relative;">
+        <a href="{{ route('haberler.show', $oneCikanHaber->slug) }}" class="mb-12 block overflow-hidden rounded-[18px] no-underline shadow-[0_1px_0_rgba(22,46,75,.06)] transition-shadow hover:shadow-[0_12px_40px_rgba(22,46,75,.18)]" style="height:420px; position:relative;">
             @if($oneCikanHaber->gorsel_lg)
                 <img
                     src="https://cdn.kestanepazari.org.tr/{{ $oneCikanHaber->gorsel_lg }}"
@@ -107,7 +107,7 @@
     @if($haberler->count())
         <div class="mb-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             @foreach($haberler as $haber)
-                <a href="{{ route('haberler.show', $haber->slug) }}" class="flex flex-col overflow-hidden rounded-2xl border border-primary/10 bg-white no-underline transition-all hover:-translate-y-[3px] hover:shadow-[0_8px_28px_rgba(22,46,75,.12)]">
+            <a href="{{ route('haberler.show', $haber->slug) }}" class="flex flex-col overflow-hidden rounded-2xl border border-primary/10 bg-white no-underline shadow-[0_1px_0_rgba(22,46,75,.05)] transition-all hover:-translate-y-[3px] hover:shadow-[0_8px_28px_rgba(22,46,75,.12)]">
                     <div class="relative h-[190px] overflow-hidden">
                         @if($haber->gorsel_lg)
                             <img
@@ -136,25 +136,69 @@
                     </div>
 
                     <div class="flex flex-1 flex-col p-[18px]">
-                        <h3 class="mb-2 font-jakarta text-[15px] font-bold leading-[1.4] text-primary">{{ $haber->baslik }}</h3>
+                        <h3 class="mb-2 line-clamp-2 font-jakarta text-[15px] font-bold leading-[1.4] text-primary">{{ $haber->baslik }}</h3>
                         @if($haber->ozet)
-                            <p class="mb-4 flex-1 font-jakarta text-[13px] leading-[1.6] text-teal-muted">{{ $haber->ozet }}</p>
+                            <p class="mb-4 line-clamp-2 flex-1 font-jakarta text-[13px] leading-[1.6] text-teal-muted">{{ $haber->ozet }}</p>
                         @endif
                         <div class="flex items-center justify-between">
                             <span class="flex items-center gap-1.5 font-jakarta text-[12px] text-teal-muted">
                                 <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
                                 {{ $haber->yayin_tarihi?->translatedFormat('d F Y') }}
                             </span>
-                            <span class="font-jakarta text-[12px] font-semibold text-accent">Detay →</span>
+                            <span class="font-jakarta text-[12px] font-semibold text-accent">2 dk →</span>
                         </div>
                     </div>
                 </a>
             @endforeach
         </div>
 
-        <div>
-            {{ $haberler->links() }}
-        </div>
+        @if($haberler->hasPages())
+            @php
+                $current = $haberler->currentPage();
+                $last = $haberler->lastPage();
+                $pages = [];
+
+                if ($last <= 7) {
+                    $pages = range(1, $last);
+                } else {
+                    $pages[] = 1;
+                    if ($current > 3) {
+                        $pages[] = '...';
+                    }
+                    for ($i = max(2, $current - 1); $i <= min($last - 1, $current + 1); $i++) {
+                        $pages[] = $i;
+                    }
+                    if ($current < $last - 2) {
+                        $pages[] = '...';
+                    }
+                    $pages[] = $last;
+                }
+            @endphp
+
+            <div class="flex items-center justify-center gap-1.5">
+                @if($haberler->onFirstPage())
+                    <span class="flex h-9 items-center justify-center gap-1 rounded-lg border border-primary/15 px-3 font-jakarta text-[13px] font-semibold text-primary/35">Önceki</span>
+                @else
+                    <a href="{{ $haberler->previousPageUrl() }}" class="flex h-9 items-center justify-center gap-1 rounded-lg border border-primary/15 px-3 font-jakarta text-[13px] font-semibold text-primary/65 transition-colors hover:border-primary/30 hover:bg-bg-soft hover:text-primary">Önceki</a>
+                @endif
+
+                @foreach($pages as $page)
+                    @if($page === '...')
+                        <span class="flex h-9 w-9 items-center justify-center font-jakarta text-[13px] text-primary/40">…</span>
+                    @elseif($page === $current)
+                        <span class="flex h-9 w-9 items-center justify-center rounded-lg border border-primary bg-primary font-jakarta text-[13px] font-semibold text-cream">{{ $page }}</span>
+                    @else
+                        <a href="{{ $haberler->url($page) }}" class="flex h-9 w-9 items-center justify-center rounded-lg border border-primary/15 font-jakarta text-[13px] font-semibold text-primary/65 transition-colors hover:border-primary/30 hover:bg-bg-soft hover:text-primary">{{ $page }}</a>
+                    @endif
+                @endforeach
+
+                @if($haberler->hasMorePages())
+                    <a href="{{ $haberler->nextPageUrl() }}" class="flex h-9 items-center justify-center gap-1 rounded-lg border border-primary/15 px-3 font-jakarta text-[13px] font-semibold text-primary/65 transition-colors hover:border-primary/30 hover:bg-bg-soft hover:text-primary">Sonraki</a>
+                @else
+                    <span class="flex h-9 items-center justify-center gap-1 rounded-lg border border-primary/15 px-3 font-jakarta text-[13px] font-semibold text-primary/35">Sonraki</span>
+                @endif
+            </div>
+        @endif
     @else
         <div class="rounded-2xl border border-primary/10 bg-white p-8 text-center font-jakarta text-sm text-teal-muted">
             Kriterlere uygun haber bulunamadı.
