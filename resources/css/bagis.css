@@ -1,0 +1,73 @@
+.bagis-kart {
+    background: #fff;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid rgba(22, 46, 75, 0.07);
+    transition: box-shadow 0.25s, transform 0.25s;
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+}
+
+.bagis-kart:hover {
+    box-shadow: 0 12px 36px rgba(22, 46, 75, 0.14);
+    transform: translateY(-4px);
+}
+
+.bagis-foto {
+    height: 200px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bagis-arrow {
+    position: absolute;
+    right: 14px;
+    bottom: 14px;
+    display: flex;
+    height: 42px;
+    width: 42px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: #ff9300;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.bagis-kart:hover .bagis-arrow {
+    background: #e07800;
+    transform: scale(1.1);
+}
+
+.duzenli-band {
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #e95925 0%, #c94620 100%);
+    box-shadow: 0 16px 48px rgba(233, 89, 37, 0.35);
+}
+
+.duzenli-band::before {
+    content: '';
+    position: absolute;
+    top: -80px;
+    right: -80px;
+    height: 280px;
+    width: 280px;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.duzenli-band::after {
+    content: '';
+    position: absolute;
+    bottom: -50px;
+    left: -50px;
+    height: 180px;
+    width: 180px;
+    border-radius: 9999px;
+    background: rgba(0, 0, 0, 0.06);
+}
