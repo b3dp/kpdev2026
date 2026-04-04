@@ -1,4 +1,14 @@
 /* Arama sayfasi */
+.arama-sonuclar-alani {
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .arama-sonuclar-alani {
+    grid-column: span 2 / span 2;
+  }
+}
+
 .search-big {
   width: 100%;
   padding: 16px 56px 16px 20px;

@@ -32,77 +32,86 @@
   <div class="mx-auto max-w-7xl px-6">
     <div class="mb-8">
       <form action="{{ route('arama.index') }}" method="GET" role="search">
-        <div style="position:relative;">
-          <svg style="position:absolute;left:18px;top:50%;transform:translateY(-50%);color:rgba(22,46,75,.4);pointer-events:none;" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8" />
-            <path stroke-linecap="round" d="M21 21l-4.35-4.35" />
-          </svg>
-          <input
-            id="main-search"
-            type="search"
-            name="q"
-            value="{{ $q }}"
-            class="search-big pl-14"
-            placeholder="Ne aramak istiyorsunuz?"
-            autocomplete="off"
-            autofocus
-          />
-          <button type="submit" class="sr-only">Ara</button>
+        <div class="flex flex-col gap-3 md:flex-row md:items-center">
+          <div class="relative flex-1">
+            <svg style="position:absolute;left:18px;top:50%;transform:translateY(-50%);color:rgba(22,46,75,.4);pointer-events:none;" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8" />
+              <path stroke-linecap="round" d="M21 21l-4.35-4.35" />
+            </svg>
+            <input
+              id="main-search"
+              type="search"
+              name="q"
+              value="{{ $q }}"
+              class="search-big pl-14"
+              placeholder="Ne aramak istiyorsunuz?"
+              autocomplete="off"
+              autofocus
+            />
 
-          @if($q)
-            <a
-              href="{{ route('arama.index') }}"
-              style="position:absolute;right:16px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:999px;background:rgba(22,46,75,.1);display:flex;align-items:center;justify-content:center;color:rgba(22,46,75,.5);"
-              class="transition-colors hover:bg-primary/15 hover:text-primary"
-              aria-label="Aramayı temizle"
-            >
-              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </a>
-          @endif
+            @if($q)
+              <a
+                href="{{ route('arama.index') }}"
+                style="position:absolute;right:16px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:999px;background:rgba(22,46,75,.1);display:flex;align-items:center;justify-content:center;color:rgba(22,46,75,.5);"
+                class="transition-colors hover:bg-primary/15 hover:text-primary"
+                aria-label="Aramayı temizle"
+              >
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </a>
+            @endif
+          </div>
+
+          <button type="submit" class="inline-flex h-[58px] items-center justify-center rounded-[14px] bg-orange-cta px-6 font-jakarta text-sm font-bold text-white transition-colors hover:bg-[#c94620]">
+            Ara
+          </button>
         </div>
       </form>
+
+      <p class="mt-3 font-jakarta text-sm text-teal-muted">
+        Kelime yazıp <span class="font-semibold text-primary">Ara</span> butonuna basabilirsiniz.
+      </p>
     </div>
 
     <div class="grid gap-10 lg:grid-cols-3">
-      <div class="lg:col-span-2">
-        <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
-          <div id="filter-bar" class="flex flex-wrap gap-2">
-            <a href="{{ route('arama.index', ['q' => $q, 'tip' => 'tumu']) }}" class="filter-pill {{ $aktifTip === 'tumu' ? 'active' : 'inactive' }}">Tümü</a>
+      <div class="arama-sonuclar-alani">
+        @if($q)
+          <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <div id="filter-bar" class="flex flex-wrap gap-2">
+              <a href="{{ route('arama.index', ['q' => $q, 'tip' => 'tumu']) }}" class="filter-pill {{ $aktifTip === 'tumu' ? 'active' : 'inactive' }}">Tümü</a>
 
-            <a href="{{ route('arama.index', ['q' => $q, 'tip' => 'haber']) }}" class="filter-pill {{ $aktifTip === 'haber' ? 'active' : 'inactive' }}">
-              <span style="display:flex;align-items:center;gap:5px;">
-                <span style="width:7px;height:7px;border-radius:50%;background:#3B82F6;display:inline-block;"></span>
-                Haberler
-                <span style="border-radius:999px;background:rgba(59,130,246,.12);padding:2px 8px;font-size:11px;font-weight:700;color:#1D4ED8;">{{ $haberler->count() }}</span>
-              </span>
-            </a>
+              <a href="{{ route('arama.index', ['q' => $q, 'tip' => 'haber']) }}" class="filter-pill {{ $aktifTip === 'haber' ? 'active' : 'inactive' }}">
+                <span style="display:flex;align-items:center;gap:5px;">
+                  <span style="width:7px;height:7px;border-radius:50%;background:#3B82F6;display:inline-block;"></span>
+                  Haberler
+                  <span style="border-radius:999px;background:rgba(59,130,246,.12);padding:2px 8px;font-size:11px;font-weight:700;color:#1D4ED8;">{{ $haberler->count() }}</span>
+                </span>
+              </a>
 
-            <a href="{{ route('arama.index', ['q' => $q, 'tip' => 'etkinlik']) }}" class="filter-pill {{ $aktifTip === 'etkinlik' ? 'active' : 'inactive' }}">
-              <span style="display:flex;align-items:center;gap:5px;">
-                <span style="width:7px;height:7px;border-radius:50%;background:#FF9300;display:inline-block;"></span>
-                Etkinlikler
-                <span style="border-radius:999px;background:rgba(255,147,0,.12);padding:2px 8px;font-size:11px;font-weight:700;color:#C2410C;">{{ $etkinlikler->count() }}</span>
-              </span>
-            </a>
+              <a href="{{ route('arama.index', ['q' => $q, 'tip' => 'etkinlik']) }}" class="filter-pill {{ $aktifTip === 'etkinlik' ? 'active' : 'inactive' }}">
+                <span style="display:flex;align-items:center;gap:5px;">
+                  <span style="width:7px;height:7px;border-radius:50%;background:#FF9300;display:inline-block;"></span>
+                  Etkinlikler
+                  <span style="border-radius:999px;background:rgba(255,147,0,.12);padding:2px 8px;font-size:11px;font-weight:700;color:#C2410C;">{{ $etkinlikler->count() }}</span>
+                </span>
+              </a>
 
-            <a href="{{ route('arama.index', ['q' => $q, 'tip' => 'sayfa']) }}" class="filter-pill {{ $aktifTip === 'sayfa' ? 'active' : 'inactive' }}">
-              <span style="display:flex;align-items:center;gap:5px;">
-                <span style="width:7px;height:7px;border-radius:50%;background:#28484C;display:inline-block;"></span>
-                Sayfalar
-                <span style="border-radius:999px;background:rgba(40,72,76,.12);padding:2px 8px;font-size:11px;font-weight:700;color:#166534;">{{ $sayfalar->count() }}</span>
-              </span>
-            </a>
-          </div>
+              <a href="{{ route('arama.index', ['q' => $q, 'tip' => 'sayfa']) }}" class="filter-pill {{ $aktifTip === 'sayfa' ? 'active' : 'inactive' }}">
+                <span style="display:flex;align-items:center;gap:5px;">
+                  <span style="width:7px;height:7px;border-radius:50%;background:#28484C;display:inline-block;"></span>
+                  Sayfalar
+                  <span style="border-radius:999px;background:rgba(40,72,76,.12);padding:2px 8px;font-size:11px;font-weight:700;color:#166534;">{{ $sayfalar->count() }}</span>
+                </span>
+              </a>
+            </div>
 
-          <p class="font-jakarta text-[13.5px] text-teal-muted">
-            <strong class="font-bold text-primary">{{ $toplamSonuc }}</strong> sonuç bulundu
-            @if($q)
+            <p class="font-jakarta text-[13.5px] text-teal-muted">
+              <strong class="font-bold text-primary">{{ $toplamSonuc }}</strong> sonuç bulundu
               <span class="font-semibold text-accent"> &quot;{{ $q }}&quot;</span> için
-            @endif
-          </p>
-        </div>
+            </p>
+          </div>
+        @endif
 
         @if($toplamSonuc > 0)
           <div id="results-list" class="flex flex-col gap-2.5">
