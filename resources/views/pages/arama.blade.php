@@ -25,7 +25,7 @@
     $gosterHaber = in_array($aktifTip, ['tumu', 'haber']);
     $gosterEtkinlik = in_array($aktifTip, ['tumu', 'etkinlik']);
     $gosterSayfa = in_array($aktifTip, ['tumu', 'sayfa']);
-    $populerAramalar = ['burs', 'etkinlik', 'kurban', 'kayıt', 'zekat', 'mezun', 'yurt', 'hafızlık'];
+    $populerAramalar = $populerAramalar ?? app(\App\Services\AramaService::class)->getirPopulerAramalar();
 @endphp
 
 <section class="bg-bg-soft pb-20 pt-[126px]">

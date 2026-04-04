@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Etkinlik;
 use App\Models\Haber;
 use App\Models\KurumsalSayfa;
+use App\Services\AramaService;
 use Illuminate\Http\Request;
 
 class AramaController extends Controller
@@ -12,12 +13,18 @@ class AramaController extends Controller
     public function index(Request $request)
     {
         $q = trim((string) $request->input('q', ''));
+        /** @var AramaService $arama_servisi */
+        $arama_servisi = app(AramaService::class);
 
         $haberler = collect();
         $etkinlikler = collect();
         $sayfalar = collect();
 
         if (mb_strlen($q) >= 2) {
+            if (! $request->filled('tip')) {
+                $arama_servisi->kaydetArama($q);
+            }
+
             $haberler = Haber::with('kategori')
                 ->where('durum', 'yayinda')
                 ->where(fn ($query) => $query
@@ -51,8 +58,10 @@ class AramaController extends Controller
             + $etkinlikler->count()
             + $sayfalar->count();
 
+        $populerAramalar = $arama_servisi->getirPopulerAramalar();
+
         return view('pages.arama', compact(
-            'q', 'haberler', 'etkinlikler', 'sayfalar', 'toplamSonuc'
+            'q', 'haberler', 'etkinlikler', 'sayfalar', 'toplamSonuc', 'populerAramalar'
         ));
     }
 }

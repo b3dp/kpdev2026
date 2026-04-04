@@ -3,7 +3,7 @@
     $sepet = session('sepet', []);
     $sepet_adet = is_array($sepet) ? count($sepet) : 0;
     $header_arama = trim((string) request('q', ''));
-    $populer_aramalar = ['burs', 'etkinlik', 'kurban', 'kayıt', 'zekat', 'mezun'];
+    $populer_aramalar = app(\App\Services\AramaService::class)->getirPopulerAramalar(6);
 @endphp
 
 <header id="main-header" class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100">
