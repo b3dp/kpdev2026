@@ -11,10 +11,11 @@
 
 .search-big {
   width: 100%;
-  padding: 16px 56px 16px 20px;
+  padding: 16px 56px 16px 58px;
   border: 2px solid rgba(22, 46, 75, 0.15);
   border-radius: 14px;
   font-size: 17px;
+  line-height: 1.4;
   font-family: 'Plus Jakarta Sans', sans-serif;
   color: #162e4b;
   background: #fff;

@@ -43,7 +43,7 @@
               type="search"
               name="q"
               value="{{ $q }}"
-              class="search-big pl-14"
+              class="search-big"
               placeholder="Ne aramak istiyorsunuz?"
               autocomplete="off"
               autofocus
