@@ -23,6 +23,7 @@ Route::get('/etkinlikler', [EtkinlikController::class, 'index'])->name('etkinlik
 Route::get('/etkinlikler/{slug}', [EtkinlikController::class, 'show'])->name('etkinlikler.show');
 Route::get('/bagis', [BagisController::class, 'index'])->name('bagis.index');
 Route::get('/bagis/tesekkur', [BagisController::class, 'tesekkur'])->name('bagis.tesekkur');
+Route::post('/bagis/sepete-ekle', [BagisController::class, 'sepeteEkle'])->name('bagis.sepete-ekle');
 Route::get('/bagis/{slug}', [BagisController::class, 'show'])->name('bagis.show');
 Route::get('/kurumsal/{slug?}', [KurumsalController::class, 'show'])->name('kurumsal.show');
 Route::get('/iletisim', [IletisimController::class, 'index'])->name('iletisim.index');

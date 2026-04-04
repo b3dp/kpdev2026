@@ -1,6 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const tutarButonlari = document.querySelectorAll('.tutar-btn');
+    const tutarGrid = document.getElementById('tutar-grid');
     const baslaMetni = document.getElementById('aylik-basla-text');
+
+    if (!tutarGrid || !baslaMetni) {
+        return;
+    }
+
+    const tutarButonlari = tutarGrid.querySelectorAll('.tutar-btn');
 
     if (!tutarButonlari.length) {
         return;

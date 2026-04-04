@@ -19,7 +19,8 @@ class SepetService
         BagisSepet $sepet,
         BagisTuru $tur,
         int $adet,
-        string $sahipTipi = 'kendi'
+        string $sahipTipi = 'kendi',
+        ?float $birimFiyat = null
     ): BagisSepetSatir|false {
         $varMi = $sepet->satirlar()
             ->where('bagis_turu_id', $tur->id)
@@ -30,7 +31,13 @@ class SepetService
         }
 
         $adet = max(1, $adet);
-        $birimFiyat = (float) ($tur->fiyat ?? 0);
+        $birimFiyat = $birimFiyat !== null
+            ? max((float) $birimFiyat, 0)
+            : (float) ($tur->fiyat ?? $tur->minimum_tutar ?? 0);
+
+        if ($tur->minimum_tutar) {
+            $birimFiyat = max($birimFiyat, (float) $tur->minimum_tutar);
+        }
 
         $satir = $sepet->satirlar()->create([
             'bagis_turu_id' => $tur->id,
