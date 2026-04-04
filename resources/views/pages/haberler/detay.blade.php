@@ -284,7 +284,7 @@
                         </div>
                         <div class="flex items-center gap-1.5 font-jakarta text-[13px] text-teal-muted">
                             <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                            {{ $haber->yayin_tarihi?->translatedFormat('d F Y') }}
+                            {{ $yayinTarihi?->translatedFormat('d F Y') }}
                         </div>
                         <div class="flex items-center gap-1.5 font-jakarta text-[13px] text-teal-muted">
                             <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
@@ -537,7 +537,7 @@
                                     </div>
                                     <div class="p-3.5">
                                         <h3 class="mb-1.5 line-clamp-2 font-jakarta text-[13.5px] font-bold leading-[1.4] text-primary">{{ $ilgili->baslik }}</h3>
-                                        <span class="font-jakarta text-xs text-teal-muted">{{ $ilgili->yayin_tarihi?->translatedFormat('d F Y') }}</span>
+                                        <span class="font-jakarta text-xs text-teal-muted">{{ ($ilgili->yayin_tarihi ?? $ilgili->created_at)?->translatedFormat('d F Y') }}</span>
                                     </div>
                                 </a>
                             @endforeach
