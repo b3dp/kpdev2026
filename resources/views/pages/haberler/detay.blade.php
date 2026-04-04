@@ -452,7 +452,7 @@
                                     class="inline-flex items-center gap-1.5 rounded-full border border-primary/15 bg-white px-3 py-[5px] font-jakarta text-[12.5px] font-semibold text-primary transition-colors hover:border-primary hover:bg-primary hover:text-cream"
                                 >
                                     <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path stroke-linecap="round" d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-                                    {{ $kisi->ad_soyad }}
+                                    {{ $kisi->full_ad ?: trim(($kisi->ad ?? '') . ' ' . ($kisi->soyad ?? '')) ?: 'İsimsiz kişi' }}
                                 </a>
                             @endforeach
                             @foreach($haber->kurumlar as $kurum)
