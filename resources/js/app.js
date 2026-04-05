@@ -5,6 +5,7 @@ import './bagis-detay';
 import './tesekkur';
 import './etkinlik-detay';
 import './kurumsal';
+import './iletisim';
 import Alpine from 'alpinejs';
 
 window.Alpine = Alpine;
