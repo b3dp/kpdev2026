@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Bagis;
 use App\Models\BagisTuru;
 use App\Services\SepetService;
 use Illuminate\Http\JsonResponse;
@@ -82,6 +83,18 @@ class BagisController extends Controller
 
     public function tesekkur()
     {
-        return view('welcome');
+        $bagis = Bagis::where('bagis_no', session('son_bagis_no'))
+            ->with(['kisiler', 'kalemler.bagisTuru'])
+            ->first();
+
+        if (! $bagis) {
+            return redirect()
+                ->route('bagis.index')
+                ->with('info', 'Bağış bilgisi bulunamadı.');
+        }
+
+        $sepet = session('sepet', []);
+
+        return view('pages.bagis.tesekkur', compact('bagis', 'sepet'));
     }
 }

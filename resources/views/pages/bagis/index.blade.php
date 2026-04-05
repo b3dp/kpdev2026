@@ -51,6 +51,12 @@
 @section('content')
 <section class="border-b border-primary/10 bg-white pt-[102px]">
     <div class="mx-auto max-w-7xl px-6 pb-0 pt-8">
+        @if(session('info'))
+            <div class="mb-5 flex items-start gap-3 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 font-jakarta text-sm text-sky-800">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" class="mt-0.5 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8h.01M11 12h1v4h1m-1-12a9 9 0 100 18 9 9 0 000-18z"/></svg>
+                <span>{{ session('info') }}</span>
+            </div>
+        @endif
         <div class="mb-4 flex items-center gap-1.5">
             <a href="{{ route('home') }}" class="font-jakarta text-[13px] text-teal-muted transition-colors hover:text-accent">Ana Sayfa</a>
             <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="rgba(22,46,75,.25)" stroke-width="2"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
