@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
@@ -180,5 +181,48 @@ class KurumsalSayfa extends Model
     public function gorseller(): HasMany
     {
         return $this->hasMany(KurumsalSayfaGorseli::class, 'sayfa_id')->orderBy('sira');
+    }
+
+    public function gorselLgUrl(): string
+    {
+        return $this->olusturGorselUrl($this->gorsel_lg);
+    }
+
+    public function gorselSmUrl(): string
+    {
+        return $this->olusturGorselUrl($this->gorsel_sm);
+    }
+
+    public function gorselOgUrl(): string
+    {
+        return $this->olusturGorselUrl($this->gorsel_og);
+    }
+
+    public function ogGorselUrl(): string
+    {
+        return $this->olusturGorselUrl($this->og_gorsel);
+    }
+
+    public function bannerMasaustuUrl(): string
+    {
+        return $this->olusturGorselUrl($this->banner_masaustu);
+    }
+
+    public function bannerMobilUrl(): string
+    {
+        return $this->olusturGorselUrl($this->banner_mobil ?: $this->banner_masaustu);
+    }
+
+    private function olusturGorselUrl(?string $yol): string
+    {
+        if (blank($yol)) {
+            return '';
+        }
+
+        if (filter_var((string) $yol, FILTER_VALIDATE_URL)) {
+            return (string) $yol;
+        }
+
+        return Storage::disk('spaces')->url(ltrim((string) $yol, '/'));
     }
 }

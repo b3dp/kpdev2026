@@ -1,0 +1,420 @@
+.kurumsal-hero {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #162e4b 0%, #0d2035 100%);
+}
+
+.kurumsal-hero-image {
+    position: absolute;
+    inset: 0;
+    background-position: center;
+    background-size: cover;
+    opacity: 0.28;
+}
+
+.kurumsal-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(22, 46, 75, 0.94) 0%, rgba(13, 32, 53, 0.96) 100%);
+}
+
+.kurumsal-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 999px;
+    border: 1px solid rgba(235, 223, 181, 0.18);
+    background: rgba(235, 223, 181, 0.08);
+    padding: 0.45rem 0.9rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(235, 223, 181, 0.92);
+}
+
+.kurumsal-hero-badge-box {
+    border-radius: 20px;
+    border: 1px solid rgba(235, 223, 181, 0.12);
+    background: rgba(255, 255, 255, 0.08);
+    padding: 1rem;
+    backdrop-filter: blur(8px);
+}
+
+.kurumsal-top-nav {
+    position: sticky;
+    top: 64px;
+    z-index: 30;
+    border-bottom: 1px solid rgba(22, 46, 75, 0.08);
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(10px);
+}
+
+.kurumsal-top-nav-inner {
+    display: flex;
+    gap: 0.35rem;
+    overflow-x: auto;
+    padding: 0.75rem 0;
+    -webkit-overflow-scrolling: touch;
+}
+
+.page-nav-link {
+    display: inline-flex;
+    white-space: nowrap;
+    border-radius: 999px;
+    padding: 0.55rem 0.95rem;
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: rgba(22, 46, 75, 0.6);
+    transition: 0.2s ease;
+}
+
+.page-nav-link:hover {
+    background: #f7f5f0;
+    color: #162e4b;
+}
+
+.page-nav-link.active {
+    background: #162e4b;
+    color: #ebdfb5;
+}
+
+.kurumsal-menu-card,
+.kurumsal-section-card {
+    border-radius: 24px;
+    border: 1px solid rgba(22, 46, 75, 0.08);
+    background: #fff;
+    box-shadow: 0 10px 35px rgba(22, 46, 75, 0.06);
+}
+
+.kurumsal-menu-card {
+    padding: 1rem;
+}
+
+.kurumsal-menu-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #62868d;
+}
+
+.kurumsal-menu-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    border-radius: 14px;
+    border: 1px solid transparent;
+    padding: 0.75rem 0.85rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #162e4b;
+    transition: 0.2s ease;
+}
+
+.kurumsal-menu-link:hover {
+    border-color: rgba(178, 120, 41, 0.25);
+    background: #f7f5f0;
+    color: #b27829;
+}
+
+.kurumsal-menu-link.is-active {
+    border-color: rgba(22, 46, 75, 0.08);
+    background: #162e4b;
+    color: #ebdfb5;
+}
+
+.kurumsal-cta-card {
+    border-radius: 24px;
+    background: linear-gradient(135deg, #162e4b 0%, #28484c 100%);
+    padding: 1rem;
+    box-shadow: 0 18px 35px rgba(22, 46, 75, 0.16);
+}
+
+.kurumsal-section-card {
+    padding: 1.2rem;
+}
+
+@media (min-width: 768px) {
+    .kurumsal-section-card {
+        padding: 1.5rem;
+    }
+}
+
+.kurumsal-eyebrow {
+    margin-bottom: 0.45rem;
+    font-size: 0.73rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #b27829;
+}
+
+.kurumsal-section-title {
+    font-family: 'Libre Baskerville', serif;
+    font-size: clamp(1.45rem, 2.4vw, 2rem);
+    font-weight: 700;
+    color: #162e4b;
+}
+
+.kurumsal-stat-box,
+.kurumsal-mini-card,
+.kurumsal-info-box,
+.kurumsal-list-card,
+.kurumsal-purpose-card {
+    border-radius: 18px;
+    border: 1px solid rgba(22, 46, 75, 0.08);
+    background: #fff;
+}
+
+.kurumsal-stat-box {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.9rem;
+    background: #f7f5f0;
+}
+
+.kurumsal-stat-box strong,
+.kurumsal-info-box strong {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #162e4b;
+}
+
+.kurumsal-stat-box span,
+.kurumsal-info-box span {
+    font-size: 0.82rem;
+    color: #62868d;
+}
+
+.kurumsal-timeline-item {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 0.9rem;
+    align-items: start;
+}
+
+.kurumsal-timeline-dot {
+    display: flex;
+    height: 44px;
+    width: 44px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: #162e4b;
+    font-family: 'Libre Baskerville', serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #ebdfb5;
+}
+
+.kurumsal-timeline-dot.is-alt {
+    background: #28484c;
+}
+
+.kurumsal-timeline-dot.is-gold {
+    background: #b27829;
+    color: #fff;
+}
+
+.kurumsal-timeline-dot.is-orange {
+    background: #e95925;
+    color: #fff;
+}
+
+.kurumsal-timeline-item h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #162e4b;
+}
+
+.kurumsal-timeline-item p {
+    margin-top: 0.3rem;
+    font-size: 0.87rem;
+    line-height: 1.65;
+    color: #62868d;
+}
+
+.kurumsal-purpose-card {
+    padding: 1.25rem;
+}
+
+.kurumsal-purpose-card.is-dark {
+    background: #162e4b;
+    color: #ebdfb5;
+}
+
+.kurumsal-purpose-card h3 {
+    margin-top: 0.95rem;
+    font-family: 'Libre Baskerville', serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.kurumsal-purpose-card p {
+    margin-top: 0.65rem;
+    font-size: 0.92rem;
+    line-height: 1.8;
+    color: #62868d;
+}
+
+.kurumsal-purpose-card.is-dark p {
+    color: rgba(235, 223, 181, 0.72);
+}
+
+.kurumsal-icon-box {
+    display: inline-flex;
+    height: 44px;
+    width: 44px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #162e4b 0%, #28484c 100%);
+    color: #ebdfb5;
+}
+
+.kurumsal-icon-box.is-dark {
+    background: rgba(178, 120, 41, 0.18);
+    color: #b27829;
+}
+
+.kurumsal-mini-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 1rem;
+}
+
+.kurumsal-mini-card strong {
+    color: #162e4b;
+}
+
+.kurumsal-mini-card span {
+    font-size: 0.84rem;
+    line-height: 1.65;
+    color: #62868d;
+}
+
+.kurumsal-prose {
+    color: #2c3e50;
+}
+
+.kurumsal-prose p,
+.kurumsal-prose ul,
+.kurumsal-prose ol {
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    line-height: 1.9;
+}
+
+.kurumsal-prose h2,
+.kurumsal-prose h3,
+.kurumsal-prose h4 {
+    margin: 1.5rem 0 0.75rem;
+    font-family: 'Libre Baskerville', serif;
+    color: #162e4b;
+}
+
+.kurumsal-prose ul,
+.kurumsal-prose ol {
+    padding-left: 1.2rem;
+}
+
+.kurumsal-info-box {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1rem;
+}
+
+.kurumsal-info-box.is-dark {
+    background: #162e4b;
+}
+
+.kurumsal-info-box.is-dark strong {
+    color: #ebdfb5;
+}
+
+.kurumsal-info-box.is-dark span {
+    color: rgba(235, 223, 181, 0.72);
+}
+
+.yonetim-kart {
+    overflow: hidden;
+    border-radius: 18px;
+    border: 1px solid rgba(22, 46, 75, 0.08);
+    background: #fff;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.yonetim-kart:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 30px rgba(22, 46, 75, 0.1);
+}
+
+.yonetim-foto {
+    position: relative;
+    display: flex;
+    min-height: 170px;
+    align-items: center;
+    justify-content: center;
+}
+
+.yonetim-avatar {
+    display: flex;
+    height: 76px;
+    width: 76px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 2px solid rgba(235, 223, 181, 0.25);
+    background: rgba(235, 223, 181, 0.12);
+    font-family: 'Libre Baskerville', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ebdfb5;
+}
+
+.yonetim-rozet {
+    position: absolute;
+    bottom: 0.85rem;
+    left: 0.85rem;
+    display: inline-flex;
+    border-radius: 999px;
+    background: rgba(233, 89, 37, 0.95);
+    padding: 0.25rem 0.65rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.kurumsal-list-card {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1rem;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.kurumsal-list-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(178, 120, 41, 0.22);
+    box-shadow: 0 12px 24px rgba(22, 46, 75, 0.08);
+}
+
+.kurumsal-gallery-item {
+    overflow: hidden;
+    border-radius: 18px;
+    border: 1px solid rgba(22, 46, 75, 0.08);
+    background: #fff;
+}
+
+.kurumsal-gallery-item figcaption {
+    padding: 0.8rem 0.9rem;
+    font-size: 0.82rem;
+    color: #62868d;
+}
