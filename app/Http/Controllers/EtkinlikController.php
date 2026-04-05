@@ -10,7 +10,20 @@ class EtkinlikController extends Controller
 {
     public function index()
     {
-        return view('welcome');
+        $filtre = request('filtre', 'tumu');
+
+        $etkinlikler = Etkinlik::where('durum', 'yayinda')
+            ->when($filtre === 'bu-ay', fn ($q) => $q
+                ->whereMonth('baslangic_tarihi', now()->month)
+                ->whereYear('baslangic_tarihi', now()->year))
+            ->when($filtre === 'gelecek', fn ($q) => $q
+                ->where('baslangic_tarihi', '>=', now()))
+            ->when($filtre === 'gecmis', fn ($q) => $q
+                ->where('baslangic_tarihi', '<', now()))
+            ->orderBy('baslangic_tarihi')
+            ->paginate(12);
+
+        return view('pages.etkinlikler.index', compact('etkinlikler', 'filtre'));
     }
 
     public function show(string $slug)

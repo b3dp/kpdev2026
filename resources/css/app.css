@@ -9,6 +9,7 @@
 @import './bagis.css';
 @import './bagis-detay.css';
 @import './tesekkur.css';
+@import './etkinlikler.css';
 @import './arama.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';

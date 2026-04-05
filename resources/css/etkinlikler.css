@@ -1,0 +1,121 @@
+.filter-pill {
+    padding: 7px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.15s;
+    text-decoration: none;
+    border: 1.5px solid transparent;
+    white-space: nowrap;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.filter-pill.active {
+    background: #162e4b;
+    color: #ebdfb5;
+    border-color: #162e4b;
+}
+
+.filter-pill.inactive {
+    background: #fff;
+    color: rgba(22, 46, 75, 0.65);
+    border-color: rgba(22, 46, 75, 0.15);
+}
+
+.filter-pill.inactive:hover {
+    background: #f7f5f0;
+    color: #162e4b;
+    border-color: rgba(22, 46, 75, 0.3);
+}
+
+.view-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid rgba(22, 46, 75, 0.15);
+    background: #fff;
+    color: rgba(22, 46, 75, 0.45);
+}
+
+.view-btn.active {
+    background: #162e4b;
+    border-color: #162e4b;
+    color: #ebdfb5;
+}
+
+.etk-liste-kart {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid rgba(22, 46, 75, 0.08);
+    padding: 20px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    transition: box-shadow 0.2s, transform 0.15s;
+    text-decoration: none;
+}
+
+.etk-liste-kart:hover {
+    box-shadow: 0 6px 24px rgba(22, 46, 75, 0.1);
+    transform: translateY(-2px);
+}
+
+.tarih-badge {
+    color: #ebdfb5;
+}
+
+.etk-grid-kart {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(22, 46, 75, 0.08);
+    transition: box-shadow 0.2s, transform 0.15s;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+}
+
+.etk-grid-kart:hover {
+    box-shadow: 0 8px 28px rgba(22, 46, 75, 0.12);
+    transform: translateY(-3px);
+}
+
+.etk-grid-foto {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+    min-height: 420px;
+    background: linear-gradient(160deg, #1e3a58 0%, #0a1d30 100%);
+}
+
+.etk-grid-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.35) 0%, transparent 35%, transparent 50%, rgba(0, 0, 0, 0.75) 100%);
+}
+
+.detay-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #ff9300;
+    text-decoration: none;
+    transition: color 0.15s;
+}
+
+.etk-grid-kart:hover .detay-link {
+    color: #e95925;
+}
+
+@media (max-width: 640px) {
+    .etk-grid-foto {
+        min-height: 360px;
+    }
+}
