@@ -7,6 +7,7 @@ import './etkinlik-detay';
 import './kurumsal';
 import './iletisim';
 import './mezunlar';
+import './uye-profil';
 import Alpine from 'alpinejs';
 
 window.Alpine = Alpine;

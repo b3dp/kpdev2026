@@ -7,6 +7,7 @@ use Filament\Models\Contracts\HasName;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -102,6 +103,11 @@ class Uye extends Authenticatable implements HasName
     public function rozetler(): HasMany
     {
         return $this->hasMany(UyeRozet::class, 'uye_id');
+    }
+
+    public function mezunProfil(): HasOne
+    {
+        return $this->hasOne(MezunProfil::class, 'uye_id');
     }
 
     public function bildirimler(): HasMany
