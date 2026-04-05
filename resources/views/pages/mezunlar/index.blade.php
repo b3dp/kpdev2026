@@ -66,43 +66,82 @@
                     </div>
 
                     <div id="panel-giris" class="flex flex-col gap-[18px] p-7">
-                        <div class="flex gap-1.5 rounded-[10px] bg-bg-soft p-1">
-                            <button type="button" class="giris-tip active" id="tip-eposta" onclick="switchGirisTip('eposta')">E-posta ile</button>
-                            <button type="button" class="giris-tip" id="tip-telefon" onclick="switchGirisTip('telefon')">Telefonla</button>
-                        </div>
-
-                        <div id="giris-eposta" class="flex flex-col gap-3.5">
-                            <div class="form-group">
-                                <label class="form-label">E-posta <span>*</span></label>
-                                <input type="email" class="form-input" placeholder="ornek@mail.com">
-                            </div>
-                        </div>
-
-                        <div id="giris-telefon" class="hidden flex-col gap-3.5">
-                            <div class="form-group">
-                                <label class="form-label">Telefon <span>*</span></label>
-                                <input type="text" class="form-input" placeholder="05XX XXX XX XX">
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <div class="mb-1 flex items-center justify-between gap-3">
-                                <label class="form-label !mb-0">Güvenli doğrulama</label>
-                                <a href="{{ route('uye.giris.form') }}" class="text-[12.5px] font-semibold text-accent transition hover:text-orange-cta">Şifremi unuttum</a>
-                            </div>
-                            <input type="password" class="form-input" placeholder="Devamında güvenli giriş ekranı açılır">
-                        </div>
-
                         @auth('uye')
+                            <div class="rounded-[12px] border border-emerald-200 bg-emerald-50 px-4 py-3 text-[13px] text-emerald-700">
+                                Zaten giriş yapmış görünüyorsunuz. Profil sayfanıza devam edebilirsiniz.
+                            </div>
+
                             <a href="{{ route('uye.profil.index') }}" class="mezun-primary-btn">
                                 <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
                                 Profilime Git
                             </a>
                         @else
-                            <a href="{{ route('uye.giris.form') }}" class="mezun-primary-btn">
-                                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
-                                Güvenli Giriş Ekranına Geç
-                            </a>
+                            <form id="mezun-giris-formu" action="{{ route('uye.giris.giris') }}" method="POST" class="flex flex-col gap-[18px]" data-mezun-giris-form data-otp-url="{{ route('uye.giris.otp') }}">
+                                @csrf
+                                <input type="hidden" name="g-recaptcha-response" id="mezun-recaptcha-response" data-sitekey="{{ config('services.recaptcha.site_key') }}">
+
+                                <div class="flex gap-1.5 rounded-[10px] bg-bg-soft p-1">
+                                    <button type="button" class="giris-tip active" id="tip-eposta" onclick="switchGirisTip('eposta')">E-posta ile</button>
+                                    <button type="button" class="giris-tip" id="tip-telefon" onclick="switchGirisTip('telefon')">Telefonla</button>
+                                </div>
+
+                                <div id="giris-eposta" class="flex flex-col gap-3.5">
+                                    <div class="form-group">
+                                        <label class="form-label">E-posta <span>*</span></label>
+                                        <input type="email" name="eposta" class="form-input" placeholder="ornek@mail.com" autocomplete="email">
+                                    </div>
+                                </div>
+
+                                <div id="giris-telefon" class="hidden flex-col gap-3.5">
+                                    <div class="form-group">
+                                        <label class="form-label">Telefon <span>*</span></label>
+                                        <input type="text" name="telefon" class="form-input" placeholder="05XX XXX XX XX" autocomplete="tel">
+                                    </div>
+                                </div>
+
+                                <div class="rounded-[10px] border-l-[3px] border-accent bg-bg-soft px-3.5 py-3 text-[13px] leading-6 text-primary">
+                                    Şifre yerine telefonunuza veya e-postanıza <strong>tek kullanımlık doğrulama kodu</strong> gönderilir.
+                                </div>
+
+                                <div id="mezun-giris-hata-alani" class="hidden rounded-[10px] border border-rose-200 bg-rose-50 px-3.5 py-3 text-[13px] text-rose-700">
+                                    <p id="mezun-giris-hata-mesaji"></p>
+                                </div>
+
+                                <button type="submit" id="mezun-giris-submit" class="mezun-primary-btn">
+                                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+                                    OTP ile Giriş Yap
+                                </button>
+                            </form>
+
+                            <div id="mezun-otp-modal" class="hidden fixed inset-0 z-[80] bg-primary/50 px-4">
+                                <div class="mx-auto mt-24 max-w-md rounded-[16px] bg-white p-6 shadow-2xl">
+                                    <div class="mb-4 flex items-start justify-between gap-3">
+                                        <div>
+                                            <h3 class="font-baskerville text-[20px] font-bold text-primary">Doğrulama Kodu</h3>
+                                            <p class="mt-1 text-[13px] text-teal-muted">Telefonunuza veya e-posta adresinize gönderilen 6 haneli kodu girin.</p>
+                                        </div>
+                                        <button type="button" id="mezun-otp-kapat" class="rounded-full p-1 text-teal-muted transition hover:bg-bg-soft hover:text-primary">✕</button>
+                                    </div>
+
+                                    <form id="mezun-otp-formu" class="space-y-4">
+                                        @csrf
+                                        <input type="text" name="kod" maxlength="6" class="form-input text-center text-[24px] tracking-[0.4em]" placeholder="000000" required>
+
+                                        <div id="mezun-otp-hata-alani" class="hidden rounded-[10px] border border-rose-200 bg-rose-50 px-3.5 py-3 text-[13px] text-rose-700">
+                                            <p id="mezun-otp-hata-mesaji"></p>
+                                        </div>
+
+                                        <button type="submit" id="mezun-otp-submit" class="mezun-secondary-btn w-full justify-center">
+                                            Kodu Doğrula
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <p class="text-center text-[13px] text-teal-muted">
+                                Sorun yaşarsanız
+                                <a href="{{ route('uye.giris.form') }}" class="font-bold text-accent transition hover:text-orange-cta">ayrı giriş ekranını açın</a>.
+                            </p>
                         @endauth
 
                         <p class="text-center text-[13px] text-teal-muted">
@@ -261,3 +300,9 @@
         </div>
     </section>
 @endsection
+
+@push('scripts')
+    @if (filled(config('services.recaptcha.site_key')))
+        <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site_key') }}"></script>
+    @endif
+@endpush

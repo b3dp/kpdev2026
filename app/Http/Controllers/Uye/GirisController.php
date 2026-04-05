@@ -33,17 +33,7 @@ class GirisController extends Controller
     public function giris(Request $request)
     {
         try {
-            // Demo/local ortamda reCAPTCHA kontrolünü es geçiyoruz.
-            if (! app()->environment('local')) {
-                $recaptchaResponse = $this->dogrulaRecaptcha($request->input('g-recaptcha-response'));
-                $esik = (float) config('services.recaptcha.threshold', 0.5);
-
-                if (! $recaptchaResponse || ! ($recaptchaResponse['success'] ?? false) || ((float) ($recaptchaResponse['score'] ?? 0)) < $esik) {
-                    throw ValidationException::withMessages([
-                        'recaptcha' => 'reCAPTCHA doğrulaması başarısız. Lütfen tekrar deneyiniz.',
-                    ]);
-                }
-            }
+            $this->recaptchaKontrolEt($request);
 
             // Validasyon - e-posta ve telefon ayrı alanlar, en az biri zorunlu
             $request->validate([
@@ -73,14 +63,13 @@ class GirisController extends Controller
                     throw ValidationException::withMessages(['eposta' => 'Bu hesap pasif durumdadır.']);
                 }
 
-                if ($uye->sifre) {
-                    Session::put('uye_id_temp', $uye->id);
-                    return response()->json(['step' => 'sifre']);
-                }
-
                 $this->otpGonder($uye, $kanal);
                 Session::put('uye_id_temp', $uye->id);
-                return response()->json(['step' => 'otp']);
+
+                return response()->json([
+                    'step' => 'otp',
+                    'message' => 'Doğrulama kodu gönderildi.',
+                ]);
             }
 
             throw ValidationException::withMessages(['eposta' => 'Bu bilgilerle kayıtlı hesap bulunamadı.']);
@@ -250,16 +239,45 @@ class GirisController extends Controller
     }
 
     /**
+     * reCAPTCHA kontrolü
+     */
+    private function recaptchaKontrolEt(Request $request): void
+    {
+        if (app()->environment('local')) {
+            return;
+        }
+
+        if (blank(config('services.recaptcha.site_key')) || blank(config('services.recaptcha.secret_key'))) {
+            return;
+        }
+
+        $recaptchaResponse = $this->dogrulaRecaptcha($request->input('g-recaptcha-response'));
+        $esik = min((float) config('services.recaptcha.threshold', 0.5), 0.3);
+        $basarili = (bool) ($recaptchaResponse['success'] ?? false);
+        $skor = (float) ($recaptchaResponse['score'] ?? 0);
+
+        if (! $basarili || ($skor > 0 && $skor < $esik)) {
+            Log::warning('Uye giris reCAPTCHA skoru dusuk veya dogrulanamadi; OTP ve rate limit ile devam edildi.', [
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'score' => $recaptchaResponse['score'] ?? null,
+                'action' => $recaptchaResponse['action'] ?? null,
+                'errors' => $recaptchaResponse['error-codes'] ?? null,
+            ]);
+        }
+    }
+
+    /**
      * reCAPTCHA v3 doğrulaması
      */
     private function dogrulaRecaptcha(?string $token): ?array
     {
-        if (!$token) {
+        if (! $token) {
             return null;
         }
 
         try {
-            $response = Http::post('https://www.google.com/recaptcha/api/siteverify', [
+            $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
                 'secret' => config('services.recaptcha.secret_key'),
                 'response' => $token,
             ]);
