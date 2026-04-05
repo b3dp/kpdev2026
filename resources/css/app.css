@@ -13,6 +13,7 @@
 @import './etkinlik-detay.css';
 @import './kurumsal.css';
 @import './iletisim.css';
+@import './mezunlar.css';
 @import './arama.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';

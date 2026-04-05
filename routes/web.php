@@ -29,6 +29,7 @@ Route::get('/kurumsal/{slug?}', [KurumsalController::class, 'show'])->name('kuru
 Route::get('/iletisim', [IletisimController::class, 'index'])->name('iletisim.index');
 Route::post('/iletisim', [IletisimController::class, 'store'])->name('iletisim.store');
 Route::get('/mezunlar', [MezunController::class, 'index'])->name('mezunlar.index');
+Route::post('/mezunlar/basvuru', [MezunController::class, 'store'])->name('mezunlar.store');
 Route::get('/mezunlar/{id}', [MezunController::class, 'show'])->name('mezunlar.show');
 Route::get('/kayit', [EkayitController::class, 'index'])->name('ekayit.index');
 Route::get('/kayit/form', [EkayitController::class, 'form'])->name('ekayit.form');
