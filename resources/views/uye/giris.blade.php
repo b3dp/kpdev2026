@@ -5,7 +5,7 @@
     <div class="max-w-md w-full bg-white rounded-lg shadow-md p-8">
         <div class="text-center mb-8">
             <h1 class="text-3xl font-bold text-gray-900">Giriş Yap</h1>
-            <p class="text-gray-600 mt-2">E-posta veya telefon numaranız ile giriş yapın</p>
+            <p class="text-gray-600 mt-2">E-posta veya telefon numaranız ile OTP kodu alarak giriş yapın</p>
         </div>
 
         <form id="giriş-formu" class="space-y-6">
@@ -67,7 +67,7 @@
                 id="giris-submit"
                 class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition font-medium"
             >
-                Giriş Yap
+                OTP Gönder
             </button>
 
             {{-- Kayıt Linki --}}
@@ -136,7 +136,7 @@ document.getElementById('giriş-formu').addEventListener('submit', async functio
     const girisButonu = document.getElementById('giris-submit');
     const hataBolumu = document.getElementById('hata-alani');
     const hataMesaji = document.getElementById('hata-mesaji');
-    butonYukleniyorYap(girisButonu, true, 'Giriş Yap', 'Gönderiliyor...');
+    butonYukleniyorYap(girisButonu, true, 'OTP Gönder', 'Gönderiliyor...');
     hataBolumu.classList.add('hidden');
     hataMesaji.textContent = '';
 
@@ -190,16 +190,13 @@ document.getElementById('giriş-formu').addEventListener('submit', async functio
         const data = await response.json();
         if (data.step === 'otp') {
             document.getElementById('otp-modal').classList.remove('hidden');
-        } else if (data.step === 'sifre') {
-            // Şifre formu göster (opsiyonel)
-            alert('Şifre kontrolü');
         }
     } catch (error) {
         hataMesaji.textContent = `Network hatası: ${error.message}`;
         hataBolumu.classList.remove('hidden');
     } finally {
         girisGonderiliyor = false;
-        butonYukleniyorYap(girisButonu, false, 'Giriş Yap', 'Gönderiliyor...');
+        butonYukleniyorYap(girisButonu, false, 'OTP Gönder', 'Gönderiliyor...');
     }
 });
 

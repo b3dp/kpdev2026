@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Uye;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 class UyeAuthSayfalariTest extends TestCase
@@ -21,7 +22,13 @@ class UyeAuthSayfalariTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Giriş Yap');
+        $response->assertSee('OTP Gönder');
         $response->assertSee('Kayıt Ol');
+    }
+
+    public function test_uye_icin_sifre_guncelleme_routeu_yoktur(): void
+    {
+        $this->assertFalse(Route::has('uye.sifre.guncelle'));
     }
 
     public function test_mevcut_uye_sifre_olsa_bile_otp_ile_giris_yapabilir(): void

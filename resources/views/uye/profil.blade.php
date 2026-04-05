@@ -150,7 +150,6 @@
                         <button type="button" class="uye-profil__tab is-active rounded-t-xl px-4 py-3 text-sm font-semibold" data-profil-tab="bilgiler" aria-selected="true">Bilgilerimi Düzenle</button>
                         <button type="button" class="uye-profil__tab rounded-t-xl px-4 py-3 text-sm font-semibold" data-profil-tab="bagis" aria-selected="false">Bağış Geçmişim</button>
                         <button type="button" class="uye-profil__tab rounded-t-xl px-4 py-3 text-sm font-semibold" data-profil-tab="etkinlik" aria-selected="false">Etkinlikler</button>
-                        <button type="button" class="uye-profil__tab rounded-t-xl px-4 py-3 text-sm font-semibold" data-profil-tab="sifre" aria-selected="false">Şifre & Güvenlik</button>
                     </div>
 
                     <div class="p-5 md:p-7">
@@ -236,20 +235,49 @@
                                     </div>
                                 </div>
 
-                                <div class="space-y-3 rounded-2xl border border-slate-200 bg-[#F7F5F0] p-4">
-                                    <p class="text-sm font-semibold text-[#162E4B]">Bildirim Tercihleri</p>
-                                    <label class="flex items-center gap-3 text-sm text-slate-600">
-                                        <input type="checkbox" name="eposta_abonelik" value="1" @checked($uye->eposta_abonelik) class="h-4 w-4 rounded border-slate-300 text-[#162E4B] focus:ring-[#B27829]">
-                                        Etkinlik ve mezun ağı duyurularını e-posta ile almak istiyorum.
-                                    </label>
-                                    <label class="flex items-center gap-3 text-sm text-slate-600">
-                                        <input type="checkbox" name="sms_abonelik" value="1" @checked($uye->sms_abonelik) class="h-4 w-4 rounded border-slate-300 text-[#162E4B] focus:ring-[#B27829]">
-                                        Kısa hatırlatmaları SMS ile almak istiyorum.
-                                    </label>
-                                    <label class="flex items-center gap-3 text-sm text-slate-600">
-                                        <input type="checkbox" name="hafiz" value="1" @checked($mezunProfil?->hafiz) class="h-4 w-4 rounded border-slate-300 text-[#162E4B] focus:ring-[#B27829]">
-                                        Hafız mezun olarak görünmek istiyorum.
-                                    </label>
+                                <div class="space-y-4 rounded-2xl border border-slate-200 bg-[#F7F5F0] p-4">
+                                    <div class="rounded-2xl border border-[#B27829]/20 bg-[#B27829]/10 px-4 py-3 text-sm text-[#162E4B]">
+                                        <p class="font-semibold text-[#B27829]">OTP ile giriş</p>
+                                        <p class="mt-1 text-slate-600">Bu hesapta girişler e-posta veya telefonunuza gönderilen <strong>OTP ile yapılır</strong>. Ayrı bir şifre kullanmıyoruz.</p>
+                                    </div>
+
+                                    <div>
+                                        <p class="text-sm font-semibold text-[#162E4B]">Bildirim Tercihleri</p>
+                                        <div class="mt-3 space-y-3">
+                                            <label class="flex items-center gap-3 text-sm text-slate-600">
+                                                <input type="checkbox" name="eposta_abonelik" value="1" @checked($uye->eposta_abonelik) class="h-4 w-4 rounded border-slate-300 text-[#162E4B] focus:ring-[#B27829]">
+                                                Etkinlik ve mezun ağı duyurularını e-posta ile almak istiyorum.
+                                            </label>
+                                            <label class="flex items-center gap-3 text-sm text-slate-600">
+                                                <input type="checkbox" name="sms_abonelik" value="1" @checked($uye->sms_abonelik) class="h-4 w-4 rounded border-slate-300 text-[#162E4B] focus:ring-[#B27829]">
+                                                Kısa hatırlatmaları SMS ile almak istiyorum.
+                                            </label>
+                                            <label class="flex items-center gap-3 text-sm text-slate-600">
+                                                <input type="checkbox" name="hafiz" value="1" @checked($mezunProfil?->hafiz) class="h-4 w-4 rounded border-slate-300 text-[#162E4B] focus:ring-[#B27829]">
+                                                Hafız mezun olarak görünmek istiyorum.
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="border-t border-slate-200 pt-4">
+                                        <p class="text-sm font-semibold text-[#162E4B]">İletişim Doğrulama Durumu</p>
+                                        <div class="mt-3 space-y-3">
+                                            <div class="flex flex-col gap-2 rounded-2xl bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                                                <div>
+                                                    <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">E-posta</p>
+                                                    <p class="text-sm font-medium text-[#162E4B]">{{ $uye->eposta ?: 'Tanımlı değil' }}</p>
+                                                </div>
+                                                <span class="{{ $uye->eposta_dogrulandi ? 'uye-profil__pill uye-profil__pill--green' : 'uye-profil__pill uye-profil__pill--gold' }}">{{ $uye->eposta_dogrulandi ? 'Doğrulandı' : 'Doğrulama Bekliyor' }}</span>
+                                            </div>
+                                            <div class="flex flex-col gap-2 rounded-2xl bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                                                <div>
+                                                    <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Telefon</p>
+                                                    <p class="text-sm font-medium text-[#162E4B]">{{ $uye->telefon ?: 'Tanımlı değil' }}</p>
+                                                </div>
+                                                <span class="{{ $uye->telefon_dogrulandi ? 'uye-profil__pill uye-profil__pill--green' : 'uye-profil__pill uye-profil__pill--gold' }}">{{ $uye->telefon_dogrulandi ? 'Doğrulandı' : 'Doğrulama Bekliyor' }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div class="flex justify-end">
@@ -356,57 +384,6 @@
                             </div>
                         </div>
 
-                        <div data-profil-panel="sifre" class="hidden space-y-6">
-                            <form action="{{ route('uye.sifre.guncelle') }}" method="POST" data-ajax-form class="space-y-4">
-                                @csrf
-
-                                <div>
-                                    <h3 class="font-['Libre_Baskerville'] text-xl font-bold text-[#162E4B]">Şifre & Güvenlik</h3>
-                                    <p class="mt-1 text-sm text-slate-500">Hesabınızın güvenliği için güçlü bir şifre kullanın ve iletişim bilgilerinizi doğrulayın.</p>
-                                </div>
-
-                                <div>
-                                    <label for="mevcut_sifre" class="mb-1.5 block text-sm font-semibold text-[#162E4B]">Mevcut Şifre</label>
-                                    <input type="password" id="mevcut_sifre" name="mevcut_sifre" class="uye-profil__input" autocomplete="current-password" placeholder="••••••••">
-                                    <p class="mt-1 hidden text-sm text-red-600" data-error-for="mevcut_sifre"></p>
-                                </div>
-                                <div>
-                                    <label for="yeni_sifre" class="mb-1.5 block text-sm font-semibold text-[#162E4B]">Yeni Şifre</label>
-                                    <input type="password" id="yeni_sifre" name="yeni_sifre" class="uye-profil__input" autocomplete="new-password" placeholder="En az 8 karakter">
-                                    <p class="mt-1 hidden text-sm text-red-600" data-error-for="yeni_sifre"></p>
-                                </div>
-                                <div>
-                                    <label for="yeni_sifre_confirmation" class="mb-1.5 block text-sm font-semibold text-[#162E4B]">Yeni Şifre Tekrar</label>
-                                    <input type="password" id="yeni_sifre_confirmation" name="yeni_sifre_confirmation" class="uye-profil__input" autocomplete="new-password" placeholder="••••••••">
-                                </div>
-
-                                <div class="flex justify-end">
-                                    <button type="submit" data-label="Şifremi Güncelle" class="rounded-xl bg-[#162E4B] px-5 py-3 text-sm font-bold text-[#EBDFB5] transition hover:bg-[#091420]">Şifremi Güncelle</button>
-                                </div>
-
-                                <div data-success-box class="hidden rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700"></div>
-                            </form>
-
-                            <div class="border-t border-slate-200 pt-5">
-                                <h4 class="text-sm font-bold text-[#162E4B]">Bağlı İletişim Bilgileri</h4>
-                                <div class="mt-3 space-y-3">
-                                    <div class="flex flex-col gap-2 rounded-2xl bg-[#F7F5F0] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                                        <div>
-                                            <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">E-posta</p>
-                                            <p class="text-sm font-medium text-[#162E4B]">{{ $uye->eposta ?: 'Tanımlı değil' }}</p>
-                                        </div>
-                                        <span class="{{ $uye->eposta_dogrulandi ? 'uye-profil__pill uye-profil__pill--green' : 'uye-profil__pill uye-profil__pill--gold' }}">{{ $uye->eposta_dogrulandi ? 'Doğrulandı' : 'Doğrulama Bekliyor' }}</span>
-                                    </div>
-                                    <div class="flex flex-col gap-2 rounded-2xl bg-[#F7F5F0] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                                        <div>
-                                            <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Telefon</p>
-                                            <p class="text-sm font-medium text-[#162E4B]">{{ $uye->telefon ?: 'Tanımlı değil' }}</p>
-                                        </div>
-                                        <span class="{{ $uye->telefon_dogrulandi ? 'uye-profil__pill uye-profil__pill--green' : 'uye-profil__pill uye-profil__pill--gold' }}">{{ $uye->telefon_dogrulandi ? 'Doğrulandı' : 'Doğrulama Bekliyor' }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>

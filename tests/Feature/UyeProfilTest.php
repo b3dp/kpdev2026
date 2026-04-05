@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\MezunProfil;
 use App\Models\Uye;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class UyeProfilTest extends TestCase
@@ -72,27 +71,20 @@ class UyeProfilTest extends TestCase
         $this->assertSame('Uskudar', $mezunProfil->ikamet_ilce);
     }
 
-    public function test_uye_sifresini_degistirebilir(): void
+    public function test_uye_profili_otp_tabanli_bilgilendirme_gosterir(): void
     {
         $uye = Uye::query()->create([
             'ad_soyad' => 'Ayse Kaya',
             'telefon' => '05550000002',
             'eposta' => 'ayse@example.com',
-            'sifre' => 'EskiSifre123!',
             'durum' => 'aktif',
             'aktif' => true,
         ]);
 
-        $response = $this->actingAs($uye, 'uye')->postJson(route('uye.sifre.guncelle'), [
-            'mevcut_sifre' => 'EskiSifre123!',
-            'yeni_sifre' => 'YeniSifre123!',
-            'yeni_sifre_confirmation' => 'YeniSifre123!',
-        ]);
+        $response = $this->actingAs($uye, 'uye')->get(route('uye.profil.index'));
 
-        $response->assertOk()->assertJson([
-            'success' => true,
-        ]);
-
-        $this->assertTrue(Hash::check('YeniSifre123!', $uye->fresh()->sifre));
+        $response->assertOk();
+        $response->assertDontSee('Şifre & Güvenlik');
+        $response->assertSee('OTP ile yapılır');
     }
 }

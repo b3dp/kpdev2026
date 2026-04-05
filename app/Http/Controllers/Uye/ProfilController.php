@@ -12,7 +12,6 @@ use App\Models\MezunProfil;
 use App\Models\Uye;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class ProfilController extends Controller
@@ -166,34 +165,4 @@ class ProfilController extends Controller
         ]);
     }
 
-    /**
-     * Şifre güncelle
-     */
-    public function sifreGuncelle(Request $request)
-    {
-        /** @var Uye $uye */
-        $uye = Auth::guard('uye')->user();
-
-        $veri = $request->validate([
-            'mevcut_sifre' => ['required', 'string'],
-            'yeni_sifre' => ['required', 'string', 'min:8', 'confirmed'],
-        ], [
-            'yeni_sifre.confirmed' => 'Yeni şifre tekrarı eşleşmiyor.',
-        ]);
-
-        if (! Hash::check($veri['mevcut_sifre'], (string) $uye->sifre)) {
-            throw ValidationException::withMessages([
-                'mevcut_sifre' => 'Mevcut şifreniz hatalı.',
-            ]);
-        }
-
-        $uye->update([
-            'sifre' => $veri['yeni_sifre'],
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Şifreniz başarıyla güncellendi.',
-        ]);
-    }
 }

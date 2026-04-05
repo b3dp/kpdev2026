@@ -31,7 +31,6 @@ Route::middleware('auth:uye')->group(function () {
     Route::get('/profilim', [ProfilController::class, 'index'])->name('uye.profil.index');
     Route::post('/profilim', [ProfilController::class, 'guncelle'])->name('uye.profil.guncelle');
     Route::post('/profil/abonelik', [ProfilController::class, 'abonelikGuncelle'])->name('uye.abonelik.guncelle');
-    Route::post('/profil/sifre', [ProfilController::class, 'sifreGuncelle'])->name('uye.sifre.guncelle');
 });
 
 // Abonelik iptal (token bazlı, unauthenticated)
