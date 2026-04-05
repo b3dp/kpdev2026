@@ -30,6 +30,7 @@ class EtkinlikController extends Controller
     {
         $etkinlik = Etkinlik::where('slug', $slug)
             ->where('durum', 'yayinda')
+            ->with('gorseller')
             ->firstOrFail();
 
         $sonHaberler = Haber::where('durum', 'yayinda')
@@ -43,6 +44,7 @@ class EtkinlikController extends Controller
 
         $yaklasanEtkinlikler = Etkinlik::where('durum', 'yayinda')
             ->where('baslangic_tarihi', '>=', now())
+            ->where('id', '!=', $etkinlik->id)
             ->orderBy('baslangic_tarihi')
             ->take(2)
             ->get();

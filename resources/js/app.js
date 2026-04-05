@@ -3,6 +3,7 @@ import './header';
 import './bagis';
 import './bagis-detay';
 import './tesekkur';
+import './etkinlik-detay';
 import Alpine from 'alpinejs';
 
 window.Alpine = Alpine;
