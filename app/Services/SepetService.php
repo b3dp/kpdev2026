@@ -21,15 +21,7 @@ class SepetService
         int $adet,
         string $sahipTipi = 'kendi',
         ?float $birimFiyat = null
-    ): BagisSepetSatir|false {
-        $varMi = $sepet->satirlar()
-            ->where('bagis_turu_id', $tur->id)
-            ->exists();
-
-        if ($varMi) {
-            return false;
-        }
-
+    ): BagisSepetSatir {
         $adet = max(1, $adet);
         $birimFiyat = $birimFiyat !== null
             ? max((float) $birimFiyat, 0)

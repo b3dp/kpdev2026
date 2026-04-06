@@ -81,7 +81,6 @@ class BagisOdemeService
             $tutar = max((float) ($veri['tutar'] ?? 0), 0);
             $adet = min(max((int) ($veri['adet'] ?? 1), 1), 7);
             $sahipTipi = (string) ($veri['sahip_tipi'] ?? 'kendi');
-            $ozellik = $bagisTuru->ozellik?->value ?? (string) $bagisTuru->ozellik;
             $formVerisi = is_array($veri['form_verisi'] ?? null) ? $veri['form_verisi'] : [];
 
             if ($bagisTuru->minimum_tutar && $tutar < (float) $bagisTuru->minimum_tutar) {
@@ -101,18 +100,37 @@ class BagisOdemeService
             $odeyen = $this->odeyenBilgileriniHazirla($formVerisi);
             $sepetService = app(SepetService::class);
             $sepet = $sepetService->aktifSepetAl($request);
-            $sepetService->sepetiBosalt($sepet);
+            $sessionSepet = collect($request->session()->get('sepet', []))->values();
 
-            $satir = $sepetService->sepeteEkle($sepet, $bagisTuru, $adet, $sahipTipi, $tutar);
+            if ($sessionSepet->isEmpty()) {
+                $ilkSatir = $sepetService->sepeteEkle($sepet, $bagisTuru, $adet, $sahipTipi, $tutar);
 
-            if (! $satir) {
+                $sessionSepet->push([
+                    'satir_id' => $ilkSatir->id,
+                    'bagis_turu_id' => $bagisTuru->id,
+                    'slug' => $bagisTuru->slug,
+                    'ad' => $bagisTuru->ad,
+                    'adet' => $adet,
+                    'birim_fiyat' => $tutar,
+                    'toplam' => $tutar * $adet,
+                    'sahip_tipi' => $sahipTipi,
+                    'form_verisi' => $formVerisi,
+                ]);
+
+                $request->session()->put('sepet', $sessionSepet->all());
+            }
+
+            $toplamTutar = (float) $sessionSepet->sum(fn ($satir) => (float) ($satir['toplam'] ?? 0));
+
+            if ($toplamTutar <= 0) {
                 throw ValidationException::withMessages([
-                    'genel' => 'Bağış sepeti hazırlanamadı.',
+                    'genel' => 'Ödeme için sepetinizde en az bir bağış kalemi olmalıdır.',
                 ]);
             }
 
             $sepet->update([
                 'durum' => SepetDurumu::OdemeBekleniyor->value,
+                'toplam_tutar' => $toplamTutar,
             ]);
 
             $bagis = Bagis::query()->create([
@@ -120,23 +138,47 @@ class BagisOdemeService
                 'sepet_id' => $sepet->id,
                 'uye_id' => $request->user('uye')?->id,
                 'durum' => BagisDurumu::Beklemede->value,
-                'toplam_tutar' => (float) $satir->toplam,
+                'toplam_tutar' => $toplamTutar,
                 'odeme_saglayici' => $this->odemeSaglayicisiniHazirla($veri['odeme_yontemi'] ?? null),
                 'makbuz_gonderildi' => false,
                 'kurban_aktarildi' => false,
             ]);
 
-            $kalem = $bagis->kalemler()->create([
-                'bagis_id' => $bagis->id,
-                'bagis_turu_id' => $bagisTuru->id,
-                'adet' => $adet,
-                'birim_fiyat' => $tutar,
-                'toplam' => $tutar * $adet,
-                'sahip_tipi' => $sahipTipi,
-                'vekalet_onay' => $sahipTipi === 'baskasi',
-            ]);
+            foreach ($sessionSepet as $sepetSatiri) {
+                $kalemBagisTuru = BagisTuru::query()->find($sepetSatiri['bagis_turu_id'] ?? 0)
+                    ?? BagisTuru::query()->where('slug', $sepetSatiri['slug'] ?? '')->first();
 
-            $this->bagisKisileriniOlustur($bagis, $kalem, $formVerisi, $odeyen, $sahipTipi, $ozellik, $adet);
+                if (! $kalemBagisTuru) {
+                    continue;
+                }
+
+                $kalemAdet = min(max((int) ($sepetSatiri['adet'] ?? 1), 1), 7);
+                $kalemBirimFiyat = max((float) ($sepetSatiri['birim_fiyat'] ?? 0), 0);
+                $kalemToplam = max((float) ($sepetSatiri['toplam'] ?? ($kalemBirimFiyat * $kalemAdet)), 0);
+                $kalemSahipTipi = in_array(($sepetSatiri['sahip_tipi'] ?? 'kendi'), ['kendi', 'baskasi'], true)
+                    ? (string) $sepetSatiri['sahip_tipi']
+                    : 'kendi';
+                $kalemFormVerisi = is_array($sepetSatiri['form_verisi'] ?? null) ? $sepetSatiri['form_verisi'] : [];
+                $ozellik = $kalemBagisTuru->ozellik?->value ?? (string) $kalemBagisTuru->ozellik;
+
+                $kalem = $bagis->kalemler()->create([
+                    'bagis_id' => $bagis->id,
+                    'bagis_turu_id' => $kalemBagisTuru->id,
+                    'adet' => $kalemAdet,
+                    'birim_fiyat' => $kalemBirimFiyat,
+                    'toplam' => $kalemToplam,
+                    'sahip_tipi' => $kalemSahipTipi,
+                    'vekalet_onay' => $kalemSahipTipi === 'baskasi',
+                ]);
+
+                $this->bagisKisileriniOlustur($bagis, $kalem, $kalemFormVerisi, $odeyen, $kalemSahipTipi, $ozellik, $kalemAdet);
+            }
+
+            if (! $bagis->kalemler()->exists()) {
+                throw ValidationException::withMessages([
+                    'genel' => 'Ödeme için işlenebilir bir bağış kalemi bulunamadı.',
+                ]);
+            }
 
             Bagis::withoutEvents(function () use ($bagis): void {
                 $bagis->update([
@@ -149,6 +191,7 @@ class BagisOdemeService
             MakbuzOlusturJob::dispatch($bagis)->onQueue('default');
             app(KisiEslestirmeService::class)->bagisEslestir($bagis->fresh(['kisiler', 'uye']));
 
+            $sepetService->sepetiBosalt($sepet);
             $sepet->update([
                 'durum' => SepetDurumu::Tamamlandi->value,
             ]);

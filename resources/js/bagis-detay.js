@@ -20,13 +20,50 @@ const slugToTur = {
     'buyukbas-kurban-hissesi': 'buyukbas',
 };
 
+const turToSlug = {
+    zekat: 'zekat',
+    fitre: 'fitre',
+    normal: 'genel-bagis',
+    kucukbas: 'kucukbas-kurban',
+    buyukbas: 'buyukbas-kurban-hissesi',
+};
+
 let aktifTur = 'zekat';
 let aktifTutar = 100;
 let hisseSayisi = 1;
 let kopyalaOn = false;
+let sepetKalemleri = [];
+
+function escapeHtml(deger = '') {
+    return String(deger)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function formatPara(deger = 0) {
+    return `₺${Number(deger || 0).toLocaleString('tr-TR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    })}`;
+}
 
 function bagisFormunuAl() {
     return document.getElementById('bagis-form');
+}
+
+function aktifSlugAl() {
+    const form = bagisFormunuAl();
+    const initSlug = form?.dataset.slug || 'zekat';
+    const initTur = slugToTur[initSlug] || 'zekat';
+
+    if (aktifTur === initTur) {
+        return initSlug;
+    }
+
+    return turToSlug[aktifTur] || initSlug;
 }
 
 function mevcutTurBilgisiniAl(tur) {
@@ -288,7 +325,7 @@ function toggleKopyala() {
 }
 
 function selectOdeme(tip) {
-    document.querySelectorAll('[id^="odeme-"]').forEach((element) => element.classList.remove('selected'));
+    document.querySelectorAll('.radio-opt[id^="odeme-"]').forEach((element) => element.classList.remove('selected'));
     const seciliOdeme = document.getElementById(`odeme-${tip}`);
 
     if (seciliOdeme) {
@@ -306,6 +343,64 @@ function seciliSahipMetni() {
         : 'Kendi adıma';
 }
 
+function sepetToplaminiHesapla() {
+    return sepetKalemleri.reduce((toplam, satir) => toplam + Number(satir?.toplam || 0), 0);
+}
+
+function renderSepetOzeti() {
+    const elIcerik = document.getElementById('sepet-icerik');
+    const elToplam = document.getElementById('sepet-toplam');
+    const elAdet = document.getElementById('sepet-adet');
+    const badge = document.getElementById('sepet-badge');
+    const seciliToplam = (aktifTur === 'buyukbas' ? hisseSayisi : 1) * (aktifTutar || 0);
+    const sepetToplam = sepetToplaminiHesapla();
+
+    if (elIcerik) {
+        if (!sepetKalemleri.length) {
+            elIcerik.innerHTML = `
+                <div id="sepet-bos" style="border:1px dashed rgba(22,46,75,.12);border-radius:12px;padding:12px;background:#F7F5F0;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:#62868D;">
+                    Henüz sepetinizde ekli bir bağış bulunmuyor. Seçtiğiniz bağışı “Sepete Ekle” ile burada biriktirebilirsiniz.
+                </div>`;
+        } else {
+            elIcerik.innerHTML = sepetKalemleri.map((satir) => {
+                const sahipMetni = satir?.sahip_tipi === 'baskasi' ? 'Başkası adına' : 'Kendi adıma';
+                const adet = Number(satir?.adet || 1);
+                const adetMetni = adet > 1 ? `${adet} adet / hisse` : '1 adet';
+
+                return `
+                    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;border:1px solid rgba(22,46,75,.08);border-radius:12px;padding:10px 12px;background:#fff;">
+                        <div>
+                            <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:#162E4B;">${escapeHtml(satir?.ad || 'Bağış Kalemi')}</p>
+                            <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:11.5px;color:#62868D;margin-top:2px;">${adetMetni} · ${sahipMetni}</p>
+                        </div>
+                        <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+                            <span style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:15px;color:#162E4B;white-space:nowrap;">${formatPara(satir?.toplam || 0)}</span>
+                            <button type="button" onclick="sepettenCikar(${Number(satir?.satir_id || 0)})" style="border:none;background:transparent;padding:0;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;color:#dc2626;cursor:pointer;">Sil</button>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+    }
+
+    if (elToplam) {
+        elToplam.textContent = formatPara(sepetKalemleri.length ? sepetToplam : seciliToplam);
+    }
+
+    if (elAdet) {
+        elAdet.textContent = sepetKalemleri.length ? `${sepetKalemleri.length} kalem` : 'Sepet boş';
+    }
+
+    if (badge) {
+        if (sepetKalemleri.length) {
+            badge.textContent = `${sepetKalemleri.length}`;
+            badge.style.display = 'flex';
+        } else {
+            badge.textContent = '0';
+            badge.style.display = 'none';
+        }
+    }
+}
+
 function updateSepet() {
     const t = mevcutTurBilgisiniAl(aktifTur);
     const tutar = aktifTutar || 0;
@@ -313,29 +408,23 @@ function updateSepet() {
     const toplam = tutar * carpan;
 
     const elTutar = document.getElementById('sepet-tutar-goster');
-    const elToplam = document.getElementById('sepet-toplam');
-    const elIcerik = document.getElementById('sepet-icerik');
-
-    if (elTutar) {
-        elTutar.textContent = `₺${tutar.toLocaleString('tr-TR')}`;
-    }
-
-    if (elToplam) {
-        elToplam.textContent = `₺${toplam.toLocaleString('tr-TR')}`;
-    }
-
+    const elSecili = document.getElementById('sepet-secili-onizleme');
     const hisseText = aktifTur === 'buyukbas' ? ` · ${hisseSayisi} hisse` : '';
 
-    if (elIcerik) {
-        elIcerik.innerHTML = `
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid rgba(22,46,75,.07);">
-        <div>
-          <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;font-weight:600;color:#162E4B;">${t.baslik}${hisseText}</p>
-          <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:#62868D;margin-top:2px;">${aktifTur === 'buyukbas' ? `Hisse başı: ₺${tutar.toLocaleString('tr-TR')}` : seciliSahipMetni()}</p>
-        </div>
-        <p style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:16px;color:#162E4B;white-space:nowrap;">₺${toplam.toLocaleString('tr-TR')}</p>
-      </div>`;
+    if (elTutar) {
+        elTutar.textContent = formatPara(toplam);
     }
+
+    if (elSecili) {
+        elSecili.innerHTML = `
+            <div>
+                <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;font-weight:600;color:#162E4B;">${escapeHtml(t.baslik)}${hisseText}</p>
+                <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:#62868D;margin-top:2px;">${aktifTur === 'buyukbas' ? `Hisse başı: ${formatPara(tutar)}` : seciliSahipMetni()}</p>
+            </div>
+            <p id="sepet-tutar-goster" style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:16px;color:#162E4B;white-space:nowrap;">${formatPara(toplam)}</p>`;
+    }
+
+    renderSepetOzeti();
 }
 
 function formVerisiniTopla() {
@@ -410,7 +499,7 @@ async function sepeteEkle() {
                 'X-CSRF-TOKEN': csrfToken,
             },
             body: JSON.stringify({
-                slug: form.dataset.slug || 'zekat',
+                slug: aktifSlugAl(),
                 tutar: aktifTutar || 0,
                 adet: aktifTur === 'buyukbas' ? hisseSayisi : 1,
                 sahip_tipi: document.getElementById('radio-baskasi')?.classList.contains('selected') ? 'baskasi' : 'kendi',
@@ -440,6 +529,11 @@ async function sepeteEkle() {
             adet.textContent = `${data.sepet_adet} kalem`;
         }
 
+        if (Array.isArray(data.sepet)) {
+            sepetKalemleri = data.sepet;
+            renderSepetOzeti();
+        }
+
         sepetMesajiGoster(data.message || 'Bağış sepetinize eklendi.');
     } catch (error) {
         sepetMesajiGoster(error.message || 'Sepete ekleme sırasında bir hata oluştu.', 'error');
@@ -448,6 +542,39 @@ async function sepeteEkle() {
             buton.disabled = false;
             buton.classList.remove('opacity-70');
         }
+    }
+}
+
+async function sepettenCikar(satirId) {
+    const form = bagisFormunuAl();
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+    const baseUrl = form?.dataset?.sepettenCikarUrl;
+
+    if (!baseUrl || !csrfToken || !satirId) {
+        sepetMesajiGoster('Silme bağlantısı şu anda hazır değil.', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${baseUrl}/${satirId}`, {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+            },
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Sepet kalemi silinemedi.');
+        }
+
+        sepetKalemleri = Array.isArray(data.sepet) ? data.sepet : [];
+        renderSepetOzeti();
+        sepetMesajiGoster(data.message || 'Bağış kalemi sepetten çıkarıldı.');
+    } catch (error) {
+        sepetMesajiGoster(error.message || 'Sepet kalemi silinirken bir hata oluştu.', 'error');
     }
 }
 
@@ -513,7 +640,7 @@ async function odemeyiTamamla() {
                 'X-CSRF-TOKEN': csrfToken,
             },
             body: JSON.stringify({
-                slug: form.dataset.slug || 'zekat',
+                slug: aktifSlugAl(),
                 tutar: aktifTutar || 0,
                 adet: aktifTur === 'buyukbas' ? hisseSayisi : 1,
                 sahip_tipi: document.getElementById('radio-baskasi')?.classList.contains('selected') ? 'baskasi' : 'kendi',
@@ -597,11 +724,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const initTur = slugToTur[initSlug] || form?.dataset.initTur || 'zekat';
     const ilkTutar = document.querySelector('.tutar-btn[data-tutar].selected');
 
+    try {
+        sepetKalemleri = JSON.parse(form?.dataset.sepet || '[]');
+    } catch (error) {
+        sepetKalemleri = [];
+    }
+
     if (ilkTutar) {
         aktifTutar = parseInt(ilkTutar.dataset.tutar, 10) || 100;
     }
 
     setTur(initTur);
+    renderSepetOzeti();
     updateSepet();
 });
 
@@ -611,6 +745,7 @@ window.selectRadio = selectRadio;
 window.toggleKopyala = toggleKopyala;
 window.selectOdeme = selectOdeme;
 window.sepeteEkle = sepeteEkle;
+window.sepettenCikar = sepettenCikar;
 window.testKartiniDoldur = testKartiniDoldur;
 window.odemeyiTamamla = odemeyiTamamla;
 window.updateSepet = updateSepet;

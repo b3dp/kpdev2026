@@ -12,6 +12,7 @@
     $facebookPaylasimUrl = 'https://www.facebook.com/sharer/sharer.php?u='.urlencode($anaSayfaUrl);
     $xPaylasimUrl = 'https://twitter.com/intent/tweet?text='.urlencode($paylasimMetni).'&url='.urlencode($anaSayfaUrl);
     $whatsappPaylasimUrl = 'https://wa.me/?text='.urlencode($paylasimMetni.' '.$anaSayfaUrl);
+    $makbuzDurumUrl = route('bagis.makbuz-durum', ['bagisNo' => $bagis->bagis_no]);
 @endphp
 
 @section('title', 'Teşekkürler — Bağışınız Alındı')
@@ -132,7 +133,7 @@
 
             <section class="fade-up-3 mb-7 flex flex-col gap-2.5">
                 @if($makbuzUrl)
-                    <a href="{{ $makbuzUrl }}"
+                    <a id="makbuz-buton" href="{{ $makbuzUrl }}"
                        target="_blank"
                        download
                        class="flex w-full items-center justify-center gap-2 rounded-[10px] bg-primary px-4 py-[13px] font-jakarta text-sm font-bold text-[#EBDFB5] transition-colors hover:bg-[#091420]">
@@ -140,12 +141,15 @@
                         Makbuzu İndir (PDF)
                     </a>
                 @else
-                    <button type="button"
+                    <button id="makbuz-buton"
+                            type="button"
                             disabled
+                            data-durum-url="{{ $makbuzDurumUrl }}"
                             class="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-[10px] bg-primary px-4 py-[13px] font-jakarta text-sm font-bold text-[#EBDFB5] opacity-50">
                         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                         Makbuz Hazırlanıyor...
                     </button>
+                    <p id="makbuz-durum-notu" class="mt-2 text-center font-jakarta text-[12px] text-teal-muted">Makbuz hazırlanıyor. Bu alan otomatik olarak yenilenecek.</p>
                 @endif
 
                 <a href="{{ route('home') }}"
@@ -179,3 +183,64 @@
         </div>
     </main>
 @endsection
+
+@push('scripts')
+    @if (! $makbuzUrl)
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const buton = document.getElementById('makbuz-buton');
+                const durumNotu = document.getElementById('makbuz-durum-notu');
+                const durumUrl = buton?.dataset?.durumUrl;
+
+                if (!buton || !durumUrl) {
+                    return;
+                }
+
+                let deneme = 0;
+                const zamanlayici = window.setInterval(async () => {
+                    deneme += 1;
+
+                    try {
+                        const response = await fetch(durumUrl, {
+                            headers: {
+                                Accept: 'application/json',
+                            },
+                        });
+
+                        const data = await response.json();
+
+                        if (data?.hazir && data?.makbuz_url) {
+                            const link = document.createElement('a');
+                            link.id = 'makbuz-buton';
+                            link.href = data.makbuz_url;
+                            link.target = '_blank';
+                            link.download = '';
+                            link.className = 'flex w-full items-center justify-center gap-2 rounded-[10px] bg-primary px-4 py-[13px] font-jakarta text-sm font-bold text-[#EBDFB5] transition-colors hover:bg-[#091420]';
+                            link.innerHTML = '<svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Makbuzu İndir (PDF)';
+                            buton.replaceWith(link);
+
+                            if (durumNotu) {
+                                durumNotu.textContent = 'Makbuzunuz hazırlandı. İndirme bağlantısı güncellendi.';
+                            }
+
+                            window.clearInterval(zamanlayici);
+                            return;
+                        }
+
+                        if (durumNotu) {
+                            durumNotu.textContent = 'Makbuz hazırlanıyor. Sistem bağlantıyı otomatik olarak kontrol ediyor.';
+                        }
+                    } catch (error) {
+                        if (durumNotu) {
+                            durumNotu.textContent = 'Makbuz hâlâ hazırlanıyor. Birkaç saniye içinde tekrar kontrol edilecek.';
+                        }
+                    }
+
+                    if (deneme >= 18) {
+                        window.clearInterval(zamanlayici);
+                    }
+                }, 10000);
+            });
+        </script>
+    @endif
+@endpush

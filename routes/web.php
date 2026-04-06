@@ -22,8 +22,11 @@ Route::get('/haberler/{slug}', [HaberController::class, 'show'])->name('haberler
 Route::get('/etkinlikler', [EtkinlikController::class, 'index'])->name('etkinlikler.index');
 Route::get('/etkinlikler/{slug}', [EtkinlikController::class, 'show'])->name('etkinlikler.show');
 Route::get('/bagis', [BagisController::class, 'index'])->name('bagis.index');
+Route::get('/bagis/sepet', [BagisController::class, 'sepet'])->name('bagis.sepet');
 Route::get('/bagis/tesekkur', [BagisController::class, 'tesekkur'])->name('bagis.tesekkur');
+Route::get('/bagis/makbuz-durum/{bagisNo}', [BagisController::class, 'makbuzDurum'])->name('bagis.makbuz-durum');
 Route::post('/bagis/sepete-ekle', [BagisController::class, 'sepeteEkle'])->name('bagis.sepete-ekle');
+Route::post('/bagis/sepetten-cikar/{satirId}', [BagisController::class, 'sepettenCikar'])->name('bagis.sepetten-cikar');
 Route::post('/bagis/odeme', [BagisController::class, 'odemeYap'])->name('bagis.odeme');
 Route::get('/bagis/{slug}', [BagisController::class, 'show'])->name('bagis.show');
 Route::get('/kurumsal/{slug?}', [KurumsalController::class, 'show'])->name('kurumsal.show');

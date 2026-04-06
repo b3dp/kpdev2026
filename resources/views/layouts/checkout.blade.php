@@ -58,14 +58,14 @@
               <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
               Bağış Türleri
             </a>
-            <div style="position:relative;width:36px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#162E4B;flex-shrink:0;">
+            <a href="{{ route('bagis.sepet') }}" style="position:relative;width:36px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#162E4B;flex-shrink:0;text-decoration:none;">
               <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
               @if(count($sepet ?? []) > 0)
                 <span id="sepet-badge" style="position:absolute;top:-2px;right:-2px;width:17px;height:17px;background:#E95925;color:#fff;font-size:10px;font-weight:700;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;">{{ count($sepet) }}</span>
               @else
                 <span id="sepet-badge" style="position:absolute;top:-2px;right:-2px;width:17px;height:17px;background:#E95925;color:#fff;font-size:10px;font-weight:700;border-radius:50%;display:none;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;">0</span>
               @endif
-            </div>
+            </a>
           </div>
         @endif
       </div>

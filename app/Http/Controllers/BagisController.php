@@ -21,11 +21,22 @@ class BagisController extends Controller
     public function show(string $slug)
     {
         $bagisTuru = BagisTuru::where('slug', $slug)->firstOrFail();
-        $sepet = session('sepet', []);
+        $sepet = $this->sessionSepetiGetir(request());
         $testOdemeAktif = app(BagisOdemeService::class)->testModuAktifMi();
         $testKartlari = $testOdemeAktif ? app(BagisOdemeService::class)->testKartlariniGetir() : [];
 
         return view('pages.bagis.detay', compact('bagisTuru', 'sepet', 'testOdemeAktif', 'testKartlari'));
+    }
+
+    public function sepet(Request $request)
+    {
+        $sepet = $this->sessionSepetiGetir($request);
+        $sepetToplam = $this->sepetToplaminiHesapla($sepet);
+        $odemeSayfasiUrl = filled($sepet[0]['slug'] ?? null)
+            ? route('bagis.show', $sepet[0]['slug'])
+            : route('bagis.index');
+
+        return view('pages.bagis.sepet', compact('sepet', 'sepetToplam', 'odemeSayfasiUrl'));
     }
 
     public function sepeteEkle(Request $request): JsonResponse
@@ -53,18 +64,9 @@ class BagisController extends Controller
         $dbSepet = $sepetService->aktifSepetAl($request);
         $satir = $sepetService->sepeteEkle($dbSepet, $bagisTuru, $adet, $sahipTipi, $tutar);
 
-        if ($satir === false) {
-            return response()->json([
-                'message' => 'Bu bağış türü sepetinizde zaten var.',
-            ], 409);
-        }
-
-        $sessionSepet = collect($request->session()->get('sepet', []))
-            ->reject(fn (array $satir) => ($satir['bagis_turu_id'] ?? null) === $bagisTuru->id)
-            ->values()
-            ->all();
-
+        $sessionSepet = $this->sessionSepetiGetir($request);
         $sessionSepet[] = [
+            'satir_id' => $satir->id,
             'bagis_turu_id' => $bagisTuru->id,
             'slug' => $bagisTuru->slug,
             'ad' => $bagisTuru->ad,
@@ -79,8 +81,36 @@ class BagisController extends Controller
 
         return response()->json([
             'message' => 'Bağış sepetinize eklendi.',
+            'sepet' => $sessionSepet,
             'sepet_adet' => count($sessionSepet),
-            'toplam' => collect($sessionSepet)->sum('toplam'),
+            'toplam' => $this->sepetToplaminiHesapla($sessionSepet),
+        ]);
+    }
+
+    public function sepettenCikar(Request $request, int $satirId): JsonResponse|
+\Illuminate\Http\RedirectResponse
+    {
+        $sepetService = app(SepetService::class);
+        $dbSepet = $sepetService->aktifSepetAl($request);
+        $sepetService->sepettenCikar($dbSepet, $satirId);
+
+        $sessionSepet = collect($this->sessionSepetiGetir($request))
+            ->reject(fn (array $satir) => (int) ($satir['satir_id'] ?? 0) === $satirId)
+            ->values()
+            ->all();
+
+        $request->session()->put('sepet', $sessionSepet);
+
+        if (! $request->expectsJson()) {
+            return back()->with('success', 'Bağış kalemi sepetten çıkarıldı.');
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Bağış kalemi sepetten çıkarıldı.',
+            'sepet' => $sessionSepet,
+            'sepet_adet' => count($sessionSepet),
+            'toplam' => $this->sepetToplaminiHesapla($sessionSepet),
         ]);
     }
 
@@ -114,6 +144,18 @@ class BagisController extends Controller
         ]);
     }
 
+    public function makbuzDurum(string $bagisNo): JsonResponse
+    {
+        $bagis = Bagis::query()->where('bagis_no', $bagisNo)->firstOrFail();
+
+        return response()->json([
+            'hazir' => filled($bagis->makbuz_yol),
+            'bagis_no' => $bagis->bagis_no,
+            'makbuz_url' => $bagis->makbuzUrl(),
+            'makbuz_gonderildi' => (bool) $bagis->makbuz_gonderildi,
+        ]);
+    }
+
     public function tesekkur()
     {
         $bagis = Bagis::where('bagis_no', session('son_bagis_no'))
@@ -129,5 +171,17 @@ class BagisController extends Controller
         $sepet = session('sepet', []);
 
         return view('pages.bagis.tesekkur', compact('bagis', 'sepet'));
+    }
+
+    private function sessionSepetiGetir(Request $request): array
+    {
+        $sepet = $request->session()->get('sepet', []);
+
+        return is_array($sepet) ? array_values($sepet) : [];
+    }
+
+    private function sepetToplaminiHesapla(array $sepet): float
+    {
+        return (float) collect($sepet)->sum(fn (array $satir) => (float) ($satir['toplam'] ?? 0));
     }
 }

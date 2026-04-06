@@ -35,6 +35,7 @@
     };
 
     $sepetAdet = count($sepet ?? []);
+    $sepetToplam = (float) collect($sepet ?? [])->sum(fn ($satir) => (float) ($satir['toplam'] ?? 0));
     $testOdemeAktif = $testOdemeAktif ?? false;
     $testKartlari = $testKartlari ?? [];
 @endphp
@@ -107,7 +108,9 @@
            data-baslik="{{ $bagisTuru->ad }}"
            data-aciklama="{{ $bagisTuru->aciklama }}"
            data-init-tur="{{ $aktifTurKey }}"
+           data-sepet='@json($sepet)'
            data-sepet-url="{{ route('bagis.sepete-ekle') }}"
+           data-sepetten-cikar-url="{{ url('/bagis/sepetten-cikar') }}"
            data-odeme-url="{{ route('bagis.odeme') }}"
            data-test-modu="{{ $testOdemeAktif ? '1' : '0' }}"
            style="background:#fff;border-radius:16px;border:1px solid rgba(22,46,75,.08);overflow:hidden;">
@@ -353,8 +356,9 @@
             </div>
             <span id="sepet-adet" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:rgba(235,223,181,.6);">{{ $sepetAdet > 0 ? $sepetAdet.' kalem' : '1 kalem' }}</span>
           </div>
-          <div id="sepet-icerik" style="padding:16px 20px;">
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid rgba(22,46,75,.07);">
+          <div style="padding:16px 20px 12px;border-bottom:1px solid rgba(22,46,75,.06);">
+            <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#62868D;margin-bottom:10px;">Seçili Bağış</p>
+            <div id="sepet-secili-onizleme" style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
               <div>
                 <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;font-weight:600;color:#162E4B;">{{ $bagisTuru->ad }}</p>
                 <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:#62868D;margin-top:2px;">Kendi adıma</p>
@@ -362,10 +366,38 @@
               <p id="sepet-tutar-goster" style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:16px;color:#162E4B;white-space:nowrap;">₺{{ number_format($ilkTutar, 0, ',', '.') }}</p>
             </div>
           </div>
+
+          <div style="padding:14px 20px 10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;">
+              <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#62868D;">Sepettekiler</p>
+              <a href="{{ route('bagis.sepet') }}" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;color:#B27829;text-decoration:none;">Sepete Git</a>
+            </div>
+            <div id="sepet-icerik" style="display:flex;flex-direction:column;gap:8px;">
+              @forelse ($sepet as $satir)
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;border:1px solid rgba(22,46,75,.08);border-radius:12px;padding:10px 12px;background:#fff;">
+                  <div>
+                    <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:#162E4B;">{{ $satir['ad'] ?? 'Bağış Kalemi' }}</p>
+                    <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:11.5px;color:#62868D;margin-top:2px;">
+                      {{ ($satir['adet'] ?? 1) > 1 ? ($satir['adet'].' adet / hisse') : '1 adet' }} · {{ ($satir['sahip_tipi'] ?? 'kendi') === 'baskasi' ? 'Başkası adına' : 'Kendi adıma' }}
+                    </p>
+                  </div>
+                  <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+                    <span style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:15px;color:#162E4B;white-space:nowrap;">₺{{ number_format((float) ($satir['toplam'] ?? 0), 2, ',', '.') }}</span>
+                    <button type="button" onclick="sepettenCikar({{ (int) ($satir['satir_id'] ?? 0) }})" style="border:none;background:transparent;padding:0;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;color:#dc2626;cursor:pointer;">Sil</button>
+                  </div>
+                </div>
+              @empty
+                <div id="sepet-bos" style="border:1px dashed rgba(22,46,75,.12);border-radius:12px;padding:12px;background:#F7F5F0;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:#62868D;">
+                  Henüz sepetinizde ekli bir bağış bulunmuyor. Seçtiğiniz bağışı “Sepete Ekle” ile burada biriktirebilirsiniz.
+                </div>
+              @endforelse
+            </div>
+          </div>
+
           <div style="padding:12px 20px 16px;border-top:1px solid rgba(22,46,75,.06);">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
               <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;">Toplam</span>
-              <span id="sepet-toplam" style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:22px;color:#162E4B;">₺{{ number_format($ilkTutar, 0, ',', '.') }}</span>
+              <span id="sepet-toplam" style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:22px;color:#162E4B;">₺{{ number_format($sepetToplam > 0 ? $sepetToplam : $ilkTutar, 2, ',', '.') }}</span>
             </div>
             <button type="button" id="odeme-ozet-btn" onclick="odemeyiTamamla()" class="flex w-full items-center justify-center gap-2 rounded-[10px] border-none bg-orange-cta px-4 py-[13px] font-jakarta text-sm font-bold text-white transition-colors hover:bg-[#c94620]">
               <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>

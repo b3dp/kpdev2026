@@ -190,17 +190,19 @@
           @endif
         @endauth
 
-        <button aria-label="Sepet" id="cart-btn" class="relative flex items-center justify-center w-9 h-9 rounded-md text-primary hover:text-accent hover:bg-bg-soft transition-colors">
+        <a href="{{ route('bagis.sepet') }}" aria-label="Sepet" id="cart-btn" class="relative flex items-center justify-center w-9 h-9 rounded-md text-primary hover:text-accent hover:bg-bg-soft transition-colors">
           <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
             <path stroke-linecap="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
           </svg>
 
           @if(session('sepet') && count(session('sepet')) > 0)
-            <span class="absolute -top-0.5 -right-0.5 w-[18px] h-[18px] bg-orange-cta text-white text-[10px] font-bold font-jakarta rounded-full flex items-center justify-center leading-none shadow-sm">
+            <span id="sepet-badge" class="absolute -top-0.5 -right-0.5 w-[18px] h-[18px] bg-orange-cta text-white text-[10px] font-bold font-jakarta rounded-full flex items-center justify-center leading-none shadow-sm">
               {{ $sepet_adet }}
             </span>
+          @else
+            <span id="sepet-badge" class="absolute -top-0.5 -right-0.5 hidden w-[18px] h-[18px] bg-orange-cta text-white text-[10px] font-bold font-jakarta rounded-full items-center justify-center leading-none shadow-sm">0</span>
           @endif
-        </button>
+        </a>
 
         <a href="{{ route('bagis.index') }}" class="flex items-center gap-1.5 bg-orange-cta hover:bg-[#c94620] text-white font-jakarta font-bold text-[13px] px-4 py-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md active:scale-95 ml-1">
           <svg class="w-[14px] h-[14px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
@@ -336,12 +338,12 @@
           @endif
         @endauth
 
-        <div class="flex items-center gap-1.5 text-primary font-jakarta font-medium text-[13px] px-3 py-2 rounded-md hover:bg-bg-soft transition-colors">
+        <a href="{{ route('bagis.sepet') }}" class="flex items-center gap-1.5 text-primary font-jakarta font-medium text-[13px] px-3 py-2 rounded-md hover:bg-bg-soft transition-colors">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
             <path stroke-linecap="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
           </svg>
           Sepet ({{ $sepet_adet }})
-        </div>
+        </a>
 
         <a href="{{ route('bagis.index') }}" class="flex-1 text-center bg-orange-cta hover:bg-[#c94620] text-white font-jakarta font-bold text-[13px] px-4 py-2 rounded-lg transition-colors">
           BAĞIŞ YAP
