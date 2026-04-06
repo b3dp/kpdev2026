@@ -31,6 +31,21 @@ class UyeAuthSayfalariTest extends TestCase
         $this->assertFalse(Route::has('uye.sifre.guncelle'));
     }
 
+    public function test_standart_login_ve_register_aliaslari_tanimlidir(): void
+    {
+        $this->assertTrue(Route::has('login'));
+        $this->assertTrue(Route::has('register'));
+        $this->assertSame('/login', route('login', absolute: false));
+        $this->assertSame('/register', route('register', absolute: false));
+    }
+
+    public function test_misafir_kullanici_profilim_sayfasindan_giris_ekranina_yonlendirilir(): void
+    {
+        $response = $this->get(route('uye.profil.index'));
+
+        $response->assertRedirect(route('uye.giris.form'));
+    }
+
     public function test_mevcut_uye_sifre_olsa_bile_otp_ile_giris_yapabilir(): void
     {
         Uye::query()->create([

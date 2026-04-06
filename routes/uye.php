@@ -14,6 +14,10 @@ Route::get('/basari', function () {
     ]);
 })->name('uye.basari');
 
+// Laravel varsayılan auth aliasları (public yönlendirme uyumluluğu)
+Route::redirect('/login', '/giris')->name('login');
+Route::redirect('/register', '/uye-kayit')->name('register');
+
 // Giriş yapılmamış üyeler
 Route::middleware('guest:uye')->group(function () {
     Route::get('/giris', [GirisController::class, 'form'])->name('uye.giris.form');
