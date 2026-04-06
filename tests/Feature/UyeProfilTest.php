@@ -2,6 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\Bagis;
+use App\Models\BagisKalemi;
+use App\Models\BagisSepet;
+use App\Models\BagisTuru;
 use App\Models\EkayitDonem;
 use App\Models\EkayitKayit;
 use App\Models\EkayitOgrenciBilgisi;
@@ -92,6 +96,70 @@ class UyeProfilTest extends TestCase
         $response->assertOk();
         $response->assertDontSee('Şifre & Güvenlik');
         $response->assertSee('OTP ile yapılır');
+    }
+
+    public function test_uye_bagis_gecmisini_iletisim_bilgisiyle_gorebilir(): void
+    {
+        $uye = Uye::query()->create([
+            'ad_soyad' => 'Bağışçı Kullanıcı',
+            'telefon' => '05550000004',
+            'eposta' => 'bagisci@example.com',
+            'durum' => 'aktif',
+            'aktif' => true,
+        ]);
+
+        $sepet = BagisSepet::query()->create([
+            'session_id' => 'bagis-test-session',
+            'durum' => 'tamamlandi',
+            'toplam_tutar' => 750,
+        ]);
+
+        $bagisTuru = BagisTuru::query()->create([
+            'ad' => 'Genel Bağış',
+            'slug' => 'genel-bagis-profil',
+            'ozellik' => 'normal',
+            'fiyat_tipi' => 'serbest',
+            'minimum_tutar' => 100,
+            'oneri_tutarlar' => [100, 250, 500],
+            'aciklama' => 'Profil testi için bağış',
+            'acilis_tipi' => 'manuel',
+            'kurban_modulu' => false,
+            'aktif' => true,
+        ]);
+
+        $bagis = Bagis::query()->create([
+            'bagis_no' => 'KP-TEST-0001',
+            'sepet_id' => $sepet->id,
+            'durum' => 'odendi',
+            'toplam_tutar' => 750,
+            'odeme_saglayici' => 'albaraka',
+            'odeme_referans' => 'TEST-REF-1',
+            'odeme_tarihi' => now(),
+        ]);
+
+        BagisKalemi::query()->create([
+            'bagis_id' => $bagis->id,
+            'bagis_turu_id' => $bagisTuru->id,
+            'adet' => 1,
+            'birim_fiyat' => 750,
+            'toplam' => 750,
+            'sahip_tipi' => 'kendi',
+            'vekalet_onay' => false,
+        ]);
+
+        $bagis->kisiler()->create([
+            'tip' => ['odeyen'],
+            'ad_soyad' => 'Bağışçı Kullanıcı',
+            'telefon' => '05550000004',
+            'eposta' => 'bagisci@example.com',
+        ]);
+
+        $response = $this->actingAs($uye, 'uye')->get(route('uye.profil.index'));
+
+        $response->assertOk();
+        $response->assertSee('Bağış Geçmişim');
+        $response->assertSee('KP-TEST-0001');
+        $response->assertSee('750,00');
     }
 
     public function test_veli_ekayit_durumunu_profilinde_gorebilir(): void

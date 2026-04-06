@@ -26,17 +26,41 @@ class ProfilController extends Controller
         /** @var Uye $uye */
         $uye = Auth::guard('uye')->user()->load(['rozetler', 'mezunProfil.kurum']);
 
-        $bagislar = Bagis::query()
-            ->where('uye_id', $uye->id)
+        $uyeEposta = filled($uye->eposta) ? trim((string) $uye->eposta) : null;
+        $telefonAdaylari = collect([
+            $uye->telefon,
+            preg_replace('/[^0-9]/', '', (string) $uye->telefon),
+        ])->filter()->unique()->values();
+
+        $bagisSorgusu = Bagis::query()
             ->where('durum', BagisDurumu::Odendi)
+            ->where(function ($query) use ($uye, $uyeEposta, $telefonAdaylari): void {
+                $query->where('uye_id', $uye->id);
+
+                if ($uyeEposta || $telefonAdaylari->isNotEmpty()) {
+                    $query->orWhereHas('kisiler', function ($kisiQuery) use ($uyeEposta, $telefonAdaylari): void {
+                        $kisiQuery->where(function ($iletisimQuery) use ($uyeEposta, $telefonAdaylari): void {
+                            if ($uyeEposta) {
+                                $iletisimQuery->orWhere('eposta', $uyeEposta);
+                            }
+
+                            foreach ($telefonAdaylari as $telefon) {
+                                $iletisimQuery->orWhere('telefon', $telefon);
+                            }
+                        });
+                    });
+                }
+            });
+
+        $bagislar = (clone $bagisSorgusu)
             ->latest('odeme_tarihi')
             ->latest('id')
             ->take(6)
             ->get();
 
         $bagisOzeti = [
-            'adet' => Bagis::query()->where('uye_id', $uye->id)->where('durum', BagisDurumu::Odendi)->count(),
-            'toplam' => (float) Bagis::query()->where('uye_id', $uye->id)->where('durum', BagisDurumu::Odendi)->sum('toplam_tutar'),
+            'adet' => (clone $bagisSorgusu)->count(),
+            'toplam' => (float) (clone $bagisSorgusu)->sum('toplam_tutar'),
             'son_bagis' => optional($bagislar->first())->toplam_tutar,
         ];
 
@@ -53,12 +77,6 @@ class ProfilController extends Controller
             ->orderByDesc('baslangic_tarihi')
             ->take(3)
             ->get();
-
-        $uyeEposta = filled($uye->eposta) ? trim((string) $uye->eposta) : null;
-        $telefonAdaylari = collect([
-            $uye->telefon,
-            preg_replace('/[^0-9]/', '', (string) $uye->telefon),
-        ])->filter()->unique()->values();
 
         $ekayitSorgusu = EkayitKayit::query()
             ->with(['sinif.donem', 'sinif.kurum', 'ogrenciBilgisi', 'veliBilgisi'])

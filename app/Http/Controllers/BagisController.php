@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Bagis;
 use App\Models\BagisTuru;
+use App\Services\BagisOdemeService;
 use App\Services\SepetService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,8 +22,10 @@ class BagisController extends Controller
     {
         $bagisTuru = BagisTuru::where('slug', $slug)->firstOrFail();
         $sepet = session('sepet', []);
+        $testOdemeAktif = app(BagisOdemeService::class)->testModuAktifMi();
+        $testKartlari = $testOdemeAktif ? app(BagisOdemeService::class)->testKartlariniGetir() : [];
 
-        return view('pages.bagis.detay', compact('bagisTuru', 'sepet'));
+        return view('pages.bagis.detay', compact('bagisTuru', 'sepet', 'testOdemeAktif', 'testKartlari'));
     }
 
     public function sepeteEkle(Request $request): JsonResponse
@@ -78,6 +81,36 @@ class BagisController extends Controller
             'message' => 'Bağış sepetinize eklendi.',
             'sepet_adet' => count($sessionSepet),
             'toplam' => collect($sessionSepet)->sum('toplam'),
+        ]);
+    }
+
+    public function odemeYap(Request $request): JsonResponse
+    {
+        $veri = $request->validate([
+            'slug' => ['required', 'string', 'exists:bagis_turleri,slug'],
+            'tutar' => ['required', 'numeric', 'min:1'],
+            'adet' => ['nullable', 'integer', 'min:1', 'max:7'],
+            'sahip_tipi' => ['nullable', 'in:kendi,baskasi'],
+            'odeme_yontemi' => ['nullable', 'in:albaraka,paytr'],
+            'kart_no' => ['required', 'string', 'min:12'],
+            'kart_sahibi' => ['required', 'string', 'max:255'],
+            'son_kullanma_ay' => ['required', 'string', 'min:2', 'max:2'],
+            'son_kullanma_yil' => ['required', 'string', 'min:2', 'max:4'],
+            'cvv' => ['required', 'string', 'min:3', 'max:4'],
+            'form_verisi' => ['nullable', 'array'],
+        ]);
+
+        $bagis = app(BagisOdemeService::class)->odemeYap($request, $veri);
+
+        $request->session()->put('son_bagis_no', $bagis->bagis_no);
+        $request->session()->forget('sepet');
+
+        return response()->json([
+            'success' => true,
+            'test_modu' => true,
+            'message' => 'Test ödeme başarıyla alındı. Gerçek tahsilat yapılmadı.',
+            'redirect_url' => route('bagis.tesekkur'),
+            'bagis_no' => $bagis->bagis_no,
         ]);
     }
 

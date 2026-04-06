@@ -24,7 +24,11 @@ class Bagis extends Model
                 return;
             }
 
-            $oncekiDurum = (string) $bagis->getOriginal('durum');
+            $oncekiDurumHam = $bagis->getRawOriginal('durum');
+            $oncekiDurum = $oncekiDurumHam instanceof BagisDurumu
+                ? $oncekiDurumHam->value
+                : (string) $oncekiDurumHam;
+
             $yeniDurum = $bagis->durum instanceof BagisDurumu
                 ? $bagis->durum->value
                 : (string) $bagis->durum;

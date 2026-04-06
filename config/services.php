@@ -89,4 +89,34 @@ return [
         'validity_period' => (int) env('ILETISIM_MAKINESI_VALIDITY_PERIOD', 1440),
     ],
 
+    'bagis' => [
+        'test_mode' => (bool) env('BAGIS_TEST_ODEME_AKTIF', true),
+        'test_cards' => [
+            [
+                'etiket' => 'Başarılı Visa',
+                'kart_no' => '4111 1111 1111 1111',
+                'sonuc' => 'basarili',
+                'mesaj' => 'Test ödeme başarıyla tamamlandı.',
+            ],
+            [
+                'etiket' => 'Başarılı Mastercard',
+                'kart_no' => '5555 5555 5555 4444',
+                'sonuc' => 'basarili',
+                'mesaj' => 'Test ödeme başarıyla tamamlandı.',
+            ],
+            [
+                'etiket' => 'Yetersiz Bakiye',
+                'kart_no' => '4000 0000 0000 0002',
+                'sonuc' => 'hatali',
+                'mesaj' => 'Test kartı yetersiz bakiye senaryosuna düştü.',
+            ],
+            [
+                'etiket' => 'Banka Reddi',
+                'kart_no' => '4000 0000 0000 9995',
+                'sonuc' => 'hatali',
+                'mesaj' => 'Test kartı banka reddi senaryosuna düştü.',
+            ],
+        ],
+    ],
+
 ];

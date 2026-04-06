@@ -35,6 +35,8 @@
     };
 
     $sepetAdet = count($sepet ?? []);
+    $testOdemeAktif = $testOdemeAktif ?? false;
+    $testKartlari = $testKartlari ?? [];
 @endphp
 
 @section('title', $bagisTuru->seo_baslik ?? $bagisTuru->ad.' — Bağış Yap')
@@ -106,6 +108,8 @@
            data-aciklama="{{ $bagisTuru->aciklama }}"
            data-init-tur="{{ $aktifTurKey }}"
            data-sepet-url="{{ route('bagis.sepete-ekle') }}"
+           data-odeme-url="{{ route('bagis.odeme') }}"
+           data-test-modu="{{ $testOdemeAktif ? '1' : '0' }}"
            style="background:#fff;border-radius:16px;border:1px solid rgba(22,46,75,.08);overflow:hidden;">
 
         <div style="padding:24px 24px 0;">
@@ -261,7 +265,7 @@
                 <div class="radio-circle"><div class="radio-dot"></div></div>
                 <div style="flex:1;">
                   <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;color:#162E4B;">Kredi / Banka Kartı</p>
-                  <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:#62868D;margin-top:1px;">Albaraka Türk güvencesiyle — Visa, Mastercard, Troy</p>
+                  <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:#62868D;margin-top:1px;">@if($testOdemeAktif) Test ödeme modu aktif — gerçek tahsilat yapılmaz @else Albaraka Türk güvencesiyle — Visa, Mastercard, Troy @endif</p>
                 </div>
                 <div style="display:flex;gap:4px;flex-shrink:0;">
                   <div style="width:32px;height:20px;background:#1a1f71;border-radius:4px;display:flex;align-items:center;justify-content:center;">
@@ -276,11 +280,57 @@
                 </div>
               </div>
             </div>
+
+            @if($testOdemeAktif)
+              <div style="margin-top:14px;border:1px solid rgba(22,163,74,.2);background:#ecfdf5;border-radius:14px;padding:14px;">
+                <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:#166534;margin-bottom:4px;">Test ödeme modu</p>
+                <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;line-height:1.6;color:#166534;margin-bottom:12px;">Aşağıdaki kartlardan biri ile normal ödeme adımlarını deneyebilirsiniz. Gerçek çekim yapılmaz; sadece başarı / hata akışı simüle edilir.</p>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;">
+                  @foreach($testKartlari as $kart)
+                    <button type="button"
+                            onclick="testKartiniDoldur('{{ $kart['kart_no'] }}')"
+                            style="text-align:left;border:1px solid rgba(22,46,75,.08);background:#fff;border-radius:12px;padding:10px 12px;cursor:pointer;">
+                      <span style="display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;color:#162E4B;">{{ $kart['etiket'] }}</span>
+                      <span style="display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:#62868D;margin-top:2px;">{{ $kart['kart_no'] }}</span>
+                      <span style="display:inline-flex;margin-top:8px;border-radius:999px;padding:3px 8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;{{ $kart['sonuc'] === 'basarili' ? 'background:#dcfce7;color:#166534;' : 'background:#fef2f2;color:#b91c1c;' }}">{{ $kart['sonuc'] === 'basarili' ? 'Başarılı' : 'Hata' }}</span>
+                    </button>
+                  @endforeach
+                </div>
+              </div>
+            @endif
+
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-top:14px;">
+              <div class="form-group">
+                <label class="form-label">Kart Üzerindeki İsim <span>*</span></label>
+                <input type="text" id="kart-sahibi" class="form-input" autocomplete="cc-name" placeholder="Ad Soyad" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Son Kullanma Ay <span>*</span></label>
+                <input type="text" id="kart-ay" class="form-input" inputmode="numeric" maxlength="2" placeholder="12" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Son Kullanma Yıl <span>*</span></label>
+                <input type="text" id="kart-yil" class="form-input" inputmode="numeric" maxlength="4" placeholder="2030" />
+              </div>
+              <div class="form-group" style="grid-column:span 2;">
+                <label class="form-label">Kart Numarası <span>*</span></label>
+                <input type="text" id="kart-no" class="form-input" inputmode="numeric" autocomplete="cc-number" placeholder="0000 0000 0000 0000" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">CVV <span>*</span></label>
+                <input type="text" id="kart-cvv" class="form-input" inputmode="numeric" maxlength="4" autocomplete="cc-csc" placeholder="123" />
+              </div>
+            </div>
           </div>
 
           <button type="button" id="sepete-ekle-btn" onclick="sepeteEkle()" class="mt-1 flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-xl border-none bg-orange-cta py-4 font-jakarta text-[15px] font-bold text-white shadow-[0_4px_16px_rgba(233,89,37,.25)] transition-all hover:-translate-y-px hover:bg-[#c94620]">
             <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
             Sepete Ekle
+          </button>
+
+          <button type="button" id="odeme-tamamla-btn" onclick="odemeyiTamamla()" class="flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-xl border-none bg-[#162E4B] py-4 font-jakarta text-[15px] font-bold text-white shadow-[0_4px_16px_rgba(22,46,75,.18)] transition-all hover:-translate-y-px hover:bg-[#0f2238]">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            {{ $testOdemeAktif ? 'Test Ödemeyi Tamamla' : 'Ödemeyi Tamamla' }}
           </button>
 
           <div id="sepet-mesaj" style="display:none;" class="rounded-xl border px-4 py-3 font-jakarta text-[13px]"></div>
@@ -317,10 +367,9 @@
               <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;">Toplam</span>
               <span id="sepet-toplam" style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:22px;color:#162E4B;">₺{{ number_format($ilkTutar, 0, ',', '.') }}</span>
             </div>
-            <button type="button" disabled title="Ödeme entegrasyonu yakında aktif olacak" class="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-[10px] border-none bg-orange-cta px-4 py-[13px] font-jakarta text-sm font-bold text-white opacity-50">
+            <button type="button" id="odeme-ozet-btn" onclick="odemeyiTamamla()" class="flex w-full items-center justify-center gap-2 rounded-[10px] border-none bg-orange-cta px-4 py-[13px] font-jakarta text-sm font-bold text-white transition-colors hover:bg-[#c94620]">
               <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-              Ödemeyi Tamamla
-              <span style="font-size:11px;opacity:.8;">(Yakında)</span>
+              {{ $testOdemeAktif ? 'Test Ödemeyi Tamamla' : 'Ödemeyi Tamamla' }}
             </button>
           </div>
         </div>

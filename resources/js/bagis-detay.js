@@ -451,6 +451,106 @@ async function sepeteEkle() {
     }
 }
 
+function kartAlaniDegeriniAl(id) {
+    return document.getElementById(id)?.value?.trim() || '';
+}
+
+function testKartiniDoldur(kartNo) {
+    const kartNoAlani = document.getElementById('kart-no');
+    const kartSahibi = document.getElementById('kart-sahibi');
+    const ayAlani = document.getElementById('kart-ay');
+    const yilAlani = document.getElementById('kart-yil');
+    const cvvAlani = document.getElementById('kart-cvv');
+
+    if (kartNoAlani) {
+        kartNoAlani.value = kartNo;
+    }
+
+    if (kartSahibi && !kartSahibi.value) {
+        kartSahibi.value = kartAlaniDegeriniAl('odeyen-ad') || 'Test Bağışçı';
+    }
+
+    if (ayAlani && !ayAlani.value) {
+        ayAlani.value = '12';
+    }
+
+    if (yilAlani && !yilAlani.value) {
+        yilAlani.value = String(new Date().getFullYear() + 1);
+    }
+
+    if (cvvAlani && !cvvAlani.value) {
+        cvvAlani.value = '123';
+    }
+}
+
+async function odemeyiTamamla() {
+    const form = bagisFormunuAl();
+
+    if (!form) {
+        return;
+    }
+
+    const odemeUrl = form.dataset.odemeUrl;
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+    const butonlar = [document.getElementById('odeme-tamamla-btn'), document.getElementById('odeme-ozet-btn')].filter(Boolean);
+
+    if (!odemeUrl || !csrfToken) {
+        sepetMesajiGoster('Ödeme bağlantısı şu anda hazır değil.', 'error');
+        return;
+    }
+
+    try {
+        butonlar.forEach((buton) => {
+            buton.disabled = true;
+            buton.classList.add('opacity-70');
+        });
+
+        const response = await fetch(odemeUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+            },
+            body: JSON.stringify({
+                slug: form.dataset.slug || 'zekat',
+                tutar: aktifTutar || 0,
+                adet: aktifTur === 'buyukbas' ? hisseSayisi : 1,
+                sahip_tipi: document.getElementById('radio-baskasi')?.classList.contains('selected') ? 'baskasi' : 'kendi',
+                odeme_yontemi: document.getElementById('odeme-paytr')?.classList.contains('selected') ? 'paytr' : 'albaraka',
+                kart_no: kartAlaniDegeriniAl('kart-no'),
+                kart_sahibi: kartAlaniDegeriniAl('kart-sahibi'),
+                son_kullanma_ay: kartAlaniDegeriniAl('kart-ay'),
+                son_kullanma_yil: kartAlaniDegeriniAl('kart-yil'),
+                cvv: kartAlaniDegeriniAl('kart-cvv'),
+                form_verisi: formVerisiniTopla(),
+            }),
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            const ilkHata = data.errors ? Object.values(data.errors).flat()[0] : null;
+            throw new Error(ilkHata || data.message || 'Test ödeme tamamlanamadı.');
+        }
+
+        sepetMesajiGoster(data.message || 'Test ödeme başarıyla tamamlandı.');
+
+        if (data.redirect_url) {
+            window.setTimeout(() => {
+                window.location.href = data.redirect_url;
+            }, 500);
+        }
+    } catch (error) {
+        sepetMesajiGoster(error.message || 'Ödeme sırasında bir hata oluştu.', 'error');
+    } finally {
+        butonlar.forEach((buton) => {
+            buton.disabled = false;
+            buton.classList.remove('opacity-70');
+        });
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.tutar-btn[data-tutar]').forEach((buton) => {
         buton.addEventListener('click', () => {
@@ -511,4 +611,6 @@ window.selectRadio = selectRadio;
 window.toggleKopyala = toggleKopyala;
 window.selectOdeme = selectOdeme;
 window.sepeteEkle = sepeteEkle;
+window.testKartiniDoldur = testKartiniDoldur;
+window.odemeyiTamamla = odemeyiTamamla;
 window.updateSepet = updateSepet;
