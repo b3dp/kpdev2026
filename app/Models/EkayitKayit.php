@@ -93,4 +93,28 @@ class EkayitKayit extends Model
     {
         return $this->hasMany(EkayitOlusturulanEvrak::class, 'kayit_id');
     }
+
+    public function getDurumNotuFormatliAttribute(): ?string
+    {
+        return $this->durumNotunuFormatla($this->durum_notu, $this->durum);
+    }
+
+    public function durumNotunuFormatla(?string $metin = null, ?EkayitDurumu $durum = null): ?string
+    {
+        $hamMetin = trim((string) ($metin ?? $this->durum_notu ?? ''));
+
+        if ($hamMetin === '') {
+            return null;
+        }
+
+        $this->loadMissing(['ogrenciBilgisi', 'sinif.kurum']);
+
+        return strtr($hamMetin, [
+            '{AD_SOYAD}' => (string) ($this->ogrenciBilgisi?->ad_soyad ?? ''),
+            '{SINIF}' => (string) ($this->sinif?->ad ?? ''),
+            '{KURUM}' => (string) ($this->sinif?->kurum?->ad ?? ''),
+            '{DURUM}' => (string) (($durum ?? $this->durum)?->label() ?? ''),
+            '{TARIH}' => (string) (optional($this->durum_tarihi ?? $this->updated_at)->format('d.m.Y H:i') ?? now()->format('d.m.Y H:i')),
+        ]);
+    }
 }

@@ -430,10 +430,10 @@
                                                 </div>
                                             </div>
 
-                                            @if (filled($kayit->durum_notu))
+                                            @if (filled($kayit->durum_notu_formatli))
                                                 <div class="mt-3 rounded-xl bg-[#F7F5F0] px-3.5 py-3 text-sm text-slate-600">
                                                     <span class="font-semibold text-[#162E4B]">Not:</span>
-                                                    {{ $kayit->durum_notu }}
+                                                    {{ $kayit->durum_notu_formatli }}
                                                 </div>
                                             @endif
                                         </div>

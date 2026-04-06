@@ -131,8 +131,8 @@ class UyeProfilTest extends TestCase
         $kayit = EkayitKayit::query()->create([
             'sinif_id' => $sinif->id,
             'uye_id' => $uye->id,
-            'durum' => 'beklemede',
-            'durum_notu' => 'Evrak kontrolü devam ediyor.',
+            'durum' => 'reddedildi',
+            'durum_notu' => 'Sayın {AD_SOYAD}, {SINIF} sınıfı başvurunuz kontenjan dolduğundan kabul edilememiştir.',
             'durum_tarihi' => now(),
         ]);
 
@@ -155,7 +155,9 @@ class UyeProfilTest extends TestCase
         $response->assertOk();
         $response->assertSee('E-Kayıt Takibi');
         $response->assertSee('Ogrenci Deneme');
-        $response->assertSee('Beklemede');
-        $response->assertSee('Evrak kontrolü devam ediyor.');
+        $response->assertSee('Reddedildi');
+        $response->assertSee('Sayın Ogrenci Deneme, 8. Sınıf Hafızlık sınıfı başvurunuz kontenjan dolduğundan kabul edilememiştir.');
+        $response->assertDontSee('{AD_SOYAD}');
+        $response->assertDontSee('{SINIF}');
     }
 }

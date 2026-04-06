@@ -719,15 +719,7 @@ class ViewEkayitKayit extends ViewRecord
 
     private function mesajDegiskenleriniDoldur(string $metin, EkayitDurumu $durum): string
     {
-        $degiskenler = [
-            '{AD_SOYAD}' => (string) ($this->record->ogrenciBilgisi?->ad_soyad ?? ''),
-            '{SINIF}' => (string) ($this->record->sinif?->ad ?? ''),
-            '{KURUM}' => (string) ($this->record->sinif?->kurum?->ad ?? ''),
-            '{DURUM}' => $durum->label(),
-            '{TARIH}' => now()->format('d.m.Y H:i'),
-        ];
-
-        return strtr($metin, $degiskenler);
+        return $this->record->durumNotunuFormatla($metin, $durum) ?? '';
     }
 
     private function whatsappUrlOlustur(string $telefon, string $mesaj): ?string
