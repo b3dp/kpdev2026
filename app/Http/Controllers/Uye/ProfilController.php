@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Uye;
 
 use App\Data\TurkiyeIller;
 use App\Enums\BagisDurumu;
+use App\Enums\EkayitDurumu;
 use App\Enums\EtkinlikDurumu;
 use App\Http\Controllers\Controller;
 use App\Models\Bagis;
+use App\Models\EkayitKayit;
 use App\Models\Etkinlik;
 use App\Models\MezunProfil;
 use App\Models\Uye;
@@ -52,6 +54,50 @@ class ProfilController extends Controller
             ->take(3)
             ->get();
 
+        $uyeEposta = filled($uye->eposta) ? trim((string) $uye->eposta) : null;
+        $telefonAdaylari = collect([
+            $uye->telefon,
+            preg_replace('/[^0-9]/', '', (string) $uye->telefon),
+        ])->filter()->unique()->values();
+
+        $ekayitSorgusu = EkayitKayit::query()
+            ->with(['sinif.donem', 'sinif.kurum', 'ogrenciBilgisi', 'veliBilgisi'])
+            ->where(function ($query) use ($uye, $uyeEposta, $telefonAdaylari): void {
+                $query->where('uye_id', $uye->id);
+
+                if ($uyeEposta || $telefonAdaylari->isNotEmpty()) {
+                    $query->orWhereHas('veliBilgisi', function ($veliQuery) use ($uyeEposta, $telefonAdaylari): void {
+                        $veliQuery->where(function ($iletisimQuery) use ($uyeEposta, $telefonAdaylari): void {
+                            if ($uyeEposta) {
+                                $iletisimQuery->orWhere('eposta', $uyeEposta);
+                            }
+
+                            foreach ($telefonAdaylari as $telefon) {
+                                $iletisimQuery->orWhere('telefon_1', $telefon)
+                                    ->orWhere('telefon_2', $telefon);
+                            }
+                        });
+                    });
+                }
+            });
+
+        $ekayitKayitlar = (clone $ekayitSorgusu)
+            ->latest('durum_tarihi')
+            ->latest('updated_at')
+            ->latest('id')
+            ->take(5)
+            ->get();
+
+        $ekayitOzeti = [
+            'adet' => (clone $ekayitSorgusu)->count(),
+            'bekleyen' => (clone $ekayitSorgusu)
+                ->whereIn('durum', [EkayitDurumu::Beklemede->value, EkayitDurumu::Yedek->value])
+                ->count(),
+            'onaylanan' => (clone $ekayitSorgusu)
+                ->where('durum', EkayitDurumu::Onaylandi->value)
+                ->count(),
+        ];
+
         $mezuniyetYillari = range((int) now()->year, 1970);
         $iller = TurkiyeIller::secenekler();
 
@@ -60,6 +106,8 @@ class ProfilController extends Controller
             'mezunProfil' => $uye->mezunProfil,
             'bagislar' => $bagislar,
             'bagisOzeti' => $bagisOzeti,
+            'ekayitKayitlar' => $ekayitKayitlar,
+            'ekayitOzeti' => $ekayitOzeti,
             'yaklasanEtkinlikler' => $yaklasanEtkinlikler,
             'gecmisEtkinlikler' => $gecmisEtkinlikler,
             'mezuniyetYillari' => $mezuniyetYillari,

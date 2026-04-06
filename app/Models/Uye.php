@@ -110,6 +110,11 @@ class Uye extends Authenticatable implements HasName
         return $this->hasOne(MezunProfil::class, 'uye_id');
     }
 
+    public function ekayitKayitlar(): HasMany
+    {
+        return $this->hasMany(EkayitKayit::class, 'uye_id');
+    }
+
     public function bildirimler(): HasMany
     {
         return $this->hasMany(UyeBildirim::class, 'uye_id');

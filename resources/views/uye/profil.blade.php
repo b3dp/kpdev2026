@@ -24,18 +24,38 @@
     $ilkHarfler = $adParcalari->take(2)->map(fn ($parca) => mb_strtoupper(mb_substr($parca, 0, 1, 'UTF-8'), 'UTF-8'))->implode('');
     $ilkHarfler = $ilkHarfler !== '' ? $ilkHarfler : 'KP';
 
+    $sonEkayit = $ekayitKayitlar->first();
+    $profilTipi = $mezunProfil
+        ? 'Mezun'
+        : (($ekayitOzeti['adet'] ?? 0) > 0
+            ? 'Veli'
+            : (($bagisOzeti['adet'] ?? 0) > 0 ? 'Bağışçı' : 'Portal Üyesi'));
+
     $profilOzeti = collect([
-        $mezunProfil ? 'Mezun' : 'Portal Üyesi',
-        $mezunProfil?->mezuniyet_yili,
-        $mezunProfil?->meslek,
+        $profilTipi,
+        $mezunProfil?->mezuniyet_yili ?: (($ekayitOzeti['adet'] ?? 0) > 0 ? (($ekayitOzeti['adet'] ?? 0).' başvuru') : null),
+        $mezunProfil?->meslek ?: (($ekayitOzeti['adet'] ?? 0) > 0 ? 'E-Kayıt Takibi' : null),
         $mezunProfil?->ikamet_il,
     ])->filter()->implode(' · ');
 
-    $durumBilgisi = match ($mezunProfil?->durum) {
-        'aktif' => ['etiket' => 'Aktif Mezun', 'sinif' => 'uye-profil__pill uye-profil__pill--green'],
-        'reddedildi' => ['etiket' => 'Tekrar Düzenleme Gerekli', 'sinif' => 'uye-profil__pill uye-profil__pill--red'],
-        default => ['etiket' => $mezunProfil ? 'Onay Bekliyor' : 'Profilinizi Tamamlayın', 'sinif' => 'uye-profil__pill uye-profil__pill--gold'],
-    };
+    if ($mezunProfil) {
+        $durumBilgisi = match ($mezunProfil?->durum) {
+            'aktif' => ['etiket' => 'Aktif Mezun', 'sinif' => 'uye-profil__pill uye-profil__pill--green'],
+            'reddedildi' => ['etiket' => 'Tekrar Düzenleme Gerekli', 'sinif' => 'uye-profil__pill uye-profil__pill--red'],
+            default => ['etiket' => 'Onay Bekliyor', 'sinif' => 'uye-profil__pill uye-profil__pill--gold'],
+        };
+    } elseif ($sonEkayit) {
+        $durumBilgisi = match ($sonEkayit->durum?->value) {
+            'onaylandi' => ['etiket' => 'Veli Başvurusu Onaylandı', 'sinif' => 'uye-profil__pill uye-profil__pill--green'],
+            'reddedildi' => ['etiket' => 'Veli Başvurusu Reddedildi', 'sinif' => 'uye-profil__pill uye-profil__pill--red'],
+            'yedek' => ['etiket' => 'Yedek Liste', 'sinif' => 'uye-profil__pill uye-profil__pill--gold'],
+            default => ['etiket' => 'Başvuru İncelemede', 'sinif' => 'uye-profil__pill uye-profil__pill--gold'],
+        };
+    } elseif (($bagisOzeti['adet'] ?? 0) > 0) {
+        $durumBilgisi = ['etiket' => 'Aktif Destekçi', 'sinif' => 'uye-profil__pill uye-profil__pill--green'];
+    } else {
+        $durumBilgisi = ['etiket' => 'Profilinizi Tamamlayın', 'sinif' => 'uye-profil__pill uye-profil__pill--gold'];
+    }
 @endphp
 
 <section class="uye-profil py-10 md:py-14" data-uye-profil>
@@ -57,8 +77,8 @@
                 <div class="uye-profil__avatar h-20 w-20 text-2xl">{{ $ilkHarfler }}</div>
                 <div>
                     <p class="text-xs font-medium text-[#ebdfb5]/60">Hoş geldiniz</p>
-                    <h1 class="mt-1 font-['Libre_Baskerville'] text-2xl font-bold text-[#EBDFB5]">{{ $uye->ad_soyad ?: 'Kıymetli Mezunumuz' }}</h1>
-                    <p class="mt-2 text-sm text-[#ebdfb5]/75">{{ $profilOzeti !== '' ? $profilOzeti : 'Bilgilerinizi güncelleyerek mezun ağımızdaki yerinizi güçlendirin.' }}</p>
+                    <h1 class="mt-1 font-['Libre_Baskerville'] text-2xl font-bold text-[#EBDFB5]">{{ $uye->ad_soyad ?: 'Kıymetli Üyemiz' }}</h1>
+                    <p class="mt-2 text-sm text-[#ebdfb5]/75">{{ $profilOzeti !== '' ? $profilOzeti : 'Bilgilerinizi güncelleyerek başvurularınızı ve destek geçmişinizi tek ekrandan yönetin.' }}</p>
                 </div>
             </div>
 
@@ -94,7 +114,7 @@
 
                         <div class="mt-4">
                             <h2 class="font-['Libre_Baskerville'] text-xl font-bold text-[#162E4B]">{{ $uye->ad_soyad ?: 'Portal Üyesi' }}</h2>
-                            <p class="mt-1 text-sm text-slate-500">{{ $mezunProfil?->meslek ?: 'Kestanepazarı mezun ağı üyesi' }}</p>
+                            <p class="mt-1 text-sm text-slate-500">{{ $mezunProfil?->meslek ?: (($ekayitOzeti['adet'] ?? 0) > 0 ? 'Veli başvuru takibi aktif' : (($bagisOzeti['adet'] ?? 0) > 0 ? 'Kestanepazarı destekçisi' : 'Kestanepazarı topluluk üyesi')) }}</p>
                         </div>
 
                         <div class="mt-4 flex flex-wrap gap-2">
@@ -107,7 +127,17 @@
                         <div class="mt-5 space-y-3 border-t border-slate-200 pt-4 text-sm text-slate-600">
                             <div class="flex items-start gap-2">
                                 <span class="mt-0.5 text-[#B27829]">✦</span>
-                                <span>{{ $mezunProfil?->mezuniyet_yili ? 'Mezuniyet yılı: '.$mezunProfil->mezuniyet_yili : 'Mezuniyet yılınızı ekleyin' }}</span>
+                                <span>
+                                    @if ($mezunProfil?->mezuniyet_yili)
+                                        {{ 'Mezuniyet yılı: '.$mezunProfil->mezuniyet_yili }}
+                                    @elseif (($ekayitOzeti['adet'] ?? 0) > 0)
+                                        {{ 'E-Kayıt başvurusu: '.($ekayitOzeti['adet'] ?? 0).' adet' }}
+                                    @elseif (($bagisOzeti['adet'] ?? 0) > 0)
+                                        {{ 'Toplam bağış: '.($bagisOzeti['adet'] ?? 0).' adet' }}
+                                    @else
+                                        Profil bilgilerinizi tamamlayın
+                                    @endif
+                                </span>
                             </div>
                             <div class="flex items-start gap-2">
                                 <span class="mt-0.5 text-[#B27829]">✉</span>
@@ -119,7 +149,7 @@
                             </div>
                             <div class="flex items-start gap-2">
                                 <span class="mt-0.5 text-[#B27829]">⌂</span>
-                                <span>{{ collect([$mezunProfil?->ikamet_ilce, $mezunProfil?->ikamet_il])->filter()->implode(' / ') ?: 'İkamet bilgisi girilmemiş' }}</span>
+                                <span>{{ collect([$mezunProfil?->ikamet_ilce, $mezunProfil?->ikamet_il])->filter()->implode(' / ') ?: ($sonEkayit?->sinif?->ad ? 'Başvuru sınıfı: '.$sonEkayit->sinif->ad : 'İkamet bilgisi girilmemiş') }}</span>
                             </div>
                         </div>
 
@@ -149,6 +179,7 @@
                     <div class="flex flex-wrap gap-1 overflow-x-auto border-b border-slate-200 px-2 pt-2">
                         <button type="button" class="uye-profil__tab is-active rounded-t-xl px-4 py-3 text-sm font-semibold" data-profil-tab="bilgiler" aria-selected="true">Bilgilerimi Düzenle</button>
                         <button type="button" class="uye-profil__tab rounded-t-xl px-4 py-3 text-sm font-semibold" data-profil-tab="bagis" aria-selected="false">Bağış Geçmişim</button>
+                        <button type="button" class="uye-profil__tab rounded-t-xl px-4 py-3 text-sm font-semibold" data-profil-tab="ekayit" aria-selected="false">E-Kayıt Takibi</button>
                         <button type="button" class="uye-profil__tab rounded-t-xl px-4 py-3 text-sm font-semibold" data-profil-tab="etkinlik" aria-selected="false">Etkinlikler</button>
                     </div>
 
@@ -335,6 +366,84 @@
                                     Henüz tamamlanmış bağış kaydınız bulunmuyor. Dilerseniz bağış sayfasından yeni bir destek oluşturabilirsiniz.
                                 </div>
                             @endforelse
+                        </div>
+
+                        <div data-profil-panel="ekayit" class="hidden">
+                            <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                    <h3 class="font-['Libre_Baskerville'] text-xl font-bold text-[#162E4B]">E-Kayıt Takibi</h3>
+                                    <p class="mt-1 text-sm text-slate-500">Velisi olduğunuz öğrencilerin başvuru durumunu ve son notlarını buradan izleyebilirsiniz.</p>
+                                </div>
+                                @if (($ekayitOzeti['adet'] ?? 0) > 0)
+                                    <span class="uye-profil__pill uye-profil__pill--gold">{{ $ekayitOzeti['adet'] }} Başvuru</span>
+                                @endif
+                            </div>
+
+                            @if (($ekayitOzeti['adet'] ?? 0) > 0)
+                                <div class="mb-6 grid gap-3 md:grid-cols-3">
+                                    <div class="uye-profil__stat-card bg-[#F7F5F0]">
+                                        <p class="font-['Libre_Baskerville'] text-2xl font-bold text-[#162E4B]">{{ $ekayitOzeti['adet'] }}</p>
+                                        <p class="mt-1 text-xs text-slate-500">Toplam Başvuru</p>
+                                    </div>
+                                    <div class="uye-profil__stat-card border border-[#B27829]/20 bg-[#B27829]/10">
+                                        <p class="font-['Libre_Baskerville'] text-2xl font-bold text-[#B27829]">{{ $ekayitOzeti['bekleyen'] }}</p>
+                                        <p class="mt-1 text-xs text-[#B27829]">Bekleyen / Yedek</p>
+                                    </div>
+                                    <div class="uye-profil__stat-card bg-[#ecfdf5]">
+                                        <p class="font-['Libre_Baskerville'] text-2xl font-bold text-[#15803d]">{{ $ekayitOzeti['onaylanan'] }}</p>
+                                        <p class="mt-1 text-xs text-emerald-700">Onaylanan</p>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-4">
+                                    @foreach ($ekayitKayitlar as $kayit)
+                                        @php
+                                            $durumSinifi = match ($kayit->durum?->value) {
+                                                'onaylandi' => 'uye-profil__pill uye-profil__pill--green',
+                                                'reddedildi' => 'uye-profil__pill uye-profil__pill--red',
+                                                'yedek' => 'uye-profil__pill uye-profil__pill--gold',
+                                                default => 'uye-profil__pill uye-profil__pill--gold',
+                                            };
+                                        @endphp
+                                        <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                                            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                                <div>
+                                                    <p class="text-sm font-semibold text-[#162E4B]">{{ $kayit->ogrenciBilgisi?->ad_soyad ?: 'Öğrenci bilgisi bekleniyor' }}</p>
+                                                    <p class="mt-1 text-xs text-slate-500">
+                                                        {{ $kayit->sinif?->ad ?: 'Sınıf bilgisi yok' }}
+                                                        @if (filled($kayit->sinif?->donem?->ogretim_yili))
+                                                            · {{ $kayit->sinif->donem->ogretim_yili }}
+                                                        @endif
+                                                    </p>
+                                                </div>
+                                                <span class="{{ $durumSinifi }}">{{ $kayit->durum?->label() ?? 'Beklemede' }}</span>
+                                            </div>
+
+                                            <div class="mt-3 grid gap-3 text-sm text-slate-600 md:grid-cols-2">
+                                                <div>
+                                                    <span class="font-semibold text-[#162E4B]">Veli:</span>
+                                                    {{ $kayit->veliBilgisi?->ad_soyad ?: ($uye->ad_soyad ?: 'Belirtilmedi') }}
+                                                </div>
+                                                <div>
+                                                    <span class="font-semibold text-[#162E4B]">Son Güncelleme:</span>
+                                                    {{ $kayit->durum_tarihi?->format('d.m.Y H:i') ?: $kayit->updated_at?->format('d.m.Y H:i') ?: 'Bekleniyor' }}
+                                                </div>
+                                            </div>
+
+                                            @if (filled($kayit->durum_notu))
+                                                <div class="mt-3 rounded-xl bg-[#F7F5F0] px-3.5 py-3 text-sm text-slate-600">
+                                                    <span class="font-semibold text-[#162E4B]">Not:</span>
+                                                    {{ $kayit->durum_notu }}
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <div class="uye-profil__notice">
+                                    Henüz aktif bir veli başvurunuz görünmüyor. E-kayıt başvurunuz oluştuğunda öğrenci adı, sınıfı ve güncel durum bilgisi burada listelenecek.
+                                </div>
+                            @endif
                         </div>
 
                         <div data-profil-panel="etkinlik" class="hidden space-y-6">

@@ -2,6 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\EkayitDonem;
+use App\Models\EkayitKayit;
+use App\Models\EkayitOgrenciBilgisi;
+use App\Models\EkayitSinif;
+use App\Models\EkayitVeliBilgisi;
+use App\Models\Kurum;
 use App\Models\MezunProfil;
 use App\Models\Uye;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -86,5 +92,70 @@ class UyeProfilTest extends TestCase
         $response->assertOk();
         $response->assertDontSee('Şifre & Güvenlik');
         $response->assertSee('OTP ile yapılır');
+    }
+
+    public function test_veli_ekayit_durumunu_profilinde_gorebilir(): void
+    {
+        $uye = Uye::query()->create([
+            'ad_soyad' => 'Veli Deneme',
+            'telefon' => '05550000003',
+            'eposta' => 'veli@example.com',
+            'durum' => 'aktif',
+            'aktif' => true,
+        ]);
+
+        $kurum = Kurum::query()->create([
+            'ad' => 'Test Kurumu',
+            'slug' => 'test-kurumu',
+            'tip' => 'kurs',
+            'aktif' => true,
+        ]);
+
+        $donem = EkayitDonem::query()->create([
+            'ad' => '2026-2027 Kayıt Dönemi',
+            'ogretim_yili' => '2026-2027',
+            'baslangic' => now()->subDay(),
+            'bitis' => now()->addMonth(),
+            'aktif' => true,
+        ]);
+
+        $sinif = EkayitSinif::query()->create([
+            'ad' => '8. Sınıf Hafızlık',
+            'ogretim_yili' => '2026-2027',
+            'kurum_id' => $kurum->id,
+            'donem_id' => $donem->id,
+            'renk' => 'blue',
+            'aktif' => true,
+        ]);
+
+        $kayit = EkayitKayit::query()->create([
+            'sinif_id' => $sinif->id,
+            'uye_id' => $uye->id,
+            'durum' => 'beklemede',
+            'durum_notu' => 'Evrak kontrolü devam ediyor.',
+            'durum_tarihi' => now(),
+        ]);
+
+        EkayitOgrenciBilgisi::query()->create([
+            'kayit_id' => $kayit->id,
+            'ad_soyad' => 'Ogrenci Deneme',
+            'tc_kimlik' => '12345678901',
+            'dogum_tarihi' => '2012-05-20',
+        ]);
+
+        EkayitVeliBilgisi::query()->create([
+            'kayit_id' => $kayit->id,
+            'ad_soyad' => 'Veli Deneme',
+            'eposta' => 'veli@example.com',
+            'telefon_1' => '05550000003',
+        ]);
+
+        $response = $this->actingAs($uye, 'uye')->get(route('uye.profil.index'));
+
+        $response->assertOk();
+        $response->assertSee('E-Kayıt Takibi');
+        $response->assertSee('Ogrenci Deneme');
+        $response->assertSee('Beklemede');
+        $response->assertSee('Evrak kontrolü devam ediyor.');
     }
 }
