@@ -161,6 +161,8 @@ document.addEventListener('DOMContentLoaded', () => {
           return [il, ilce].filter(Boolean).join(' / ');
         },
       },
+      { label: 'Kimlik Seri No', deger: () => form.querySelector('[name="kimlik_seri_no"]')?.value },
+      { label: 'Kan Grubu', deger: () => form.querySelector('[name="kimlik_kan_grubu"]')?.value },
       { label: 'Veli Ad Soyad', deger: () => form.querySelector('[name="veli_ad_soyad"]')?.value },
       { label: 'Veli Telefon', deger: () => form.querySelector('[name="veli_telefon"]')?.value },
       { label: 'Veli E-posta', deger: () => form.querySelector('[name="veli_eposta"]')?.value },

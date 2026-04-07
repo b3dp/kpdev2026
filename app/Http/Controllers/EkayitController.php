@@ -180,6 +180,9 @@ class EkayitController extends Controller
                 'kimlik_cilt_no' => preg_replace('/\D+/', '', (string) $request->input('kimlik_cilt_no')),
                 'kimlik_aile_sira_no' => preg_replace('/\D+/', '', (string) $request->input('kimlik_aile_sira_no')),
                 'kimlik_sira_no' => preg_replace('/\D+/', '', (string) $request->input('kimlik_sira_no')),
+                'kimlik_kan_grubu' => filled($request->input('kimlik_kan_grubu'))
+                    ? mb_strtoupper(trim((string) $request->input('kimlik_kan_grubu')), 'UTF-8')
+                    : null,
                 'veli_telefon' => $this->telefonuTemizle($request->input('veli_telefon')),
                 'veli_eposta' => filled($request->input('veli_eposta'))
                     ? mb_strtolower(trim((string) $request->input('veli_eposta')), 'UTF-8')
@@ -208,6 +211,9 @@ class EkayitController extends Controller
                 'kimlik_cilt_no' => ['nullable', 'string', 'max:50', 'required_with:eski_tip_kimlik_var'],
                 'kimlik_aile_sira_no' => ['nullable', 'string', 'max:50', 'required_with:eski_tip_kimlik_var'],
                 'kimlik_sira_no' => ['nullable', 'string', 'max:50', 'required_with:eski_tip_kimlik_var'],
+                'kimlik_cuzdanin_verildigi_yer' => ['nullable', 'string', 'max:255'],
+                'kimlik_seri_no' => ['nullable', 'string', 'max:50'],
+                'kimlik_kan_grubu' => ['nullable', 'in:A+,A-,B+,B-,AB+,AB-,0+,0-'],
                 'ogrenci_cinsiyet' => ['required', 'in:E,K'],
                 'veli_ad_soyad' => ['required', 'string', 'max:255', 'regex:/^[A-ZÇĞİÖŞÜa-zçğıöşü\s]+$/u'],
                 'veli_telefon' => ['required', 'string', 'min:10', 'max:20'],
@@ -305,6 +311,9 @@ class EkayitController extends Controller
                 'cilt_no' => $veri['eski_tip_kimlik_var'] ? ($veri['kimlik_cilt_no'] ?? null) : null,
                 'aile_sira_no' => $veri['eski_tip_kimlik_var'] ? ($veri['kimlik_aile_sira_no'] ?? null) : null,
                 'sira_no' => $veri['eski_tip_kimlik_var'] ? ($veri['kimlik_sira_no'] ?? null) : null,
+                'cuzdanin_verildigi_yer' => $veri['kimlik_cuzdanin_verildigi_yer'] ?? null,
+                'kimlik_seri_no' => $veri['kimlik_seri_no'] ?? null,
+                'kan_grubu' => $veri['kimlik_kan_grubu'] ?? null,
             ]);
 
             $okulNotu = collect([

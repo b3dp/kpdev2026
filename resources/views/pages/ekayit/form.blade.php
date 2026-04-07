@@ -220,6 +220,26 @@
                 <label class="form-label">Sıra No <span>*</span></label>
                 <input type="text" name="kimlik_sira_no" lang="tr" class="form-input @error('kimlik_sira_no') border-red-400 @enderror" data-kimlik-alani="true" inputmode="numeric" pattern="[0-9]+" placeholder="SIRA NO" {{ old('eski_tip_kimlik_var') ? 'required' : '' }} value="{{ old('kimlik_sira_no') }}">
               </div>
+
+              <div class="form-group sm:col-span-2">
+                <label class="form-label">Cüzdanın Verildiği Yer</label>
+                <input type="text" name="kimlik_cuzdanin_verildigi_yer" lang="tr" class="form-input uppercase-input @error('kimlik_cuzdanin_verildigi_yer') border-red-400 @enderror" placeholder="ÖRN. KONAK" value="{{ old('kimlik_cuzdanin_verildigi_yer') }}">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Kimlik Seri No</label>
+                <input type="text" name="kimlik_seri_no" lang="tr" class="form-input uppercase-input @error('kimlik_seri_no') border-red-400 @enderror" placeholder="SERİ NO" value="{{ old('kimlik_seri_no') }}">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Kan Grubu</label>
+                <select name="kimlik_kan_grubu" lang="tr" class="form-select @error('kimlik_kan_grubu') border-red-400 @enderror">
+                  <option value="">Seçiniz</option>
+                  @foreach(['A+','A-','B+','B-','AB+','AB-','0+','0-'] as $kan_grubu)
+                    <option value="{{ $kan_grubu }}" @selected(old('kimlik_kan_grubu') === $kan_grubu)>{{ $kan_grubu }}</option>
+                  @endforeach
+                </select>
+              </div>
             </div>
           </div>
         </div>
