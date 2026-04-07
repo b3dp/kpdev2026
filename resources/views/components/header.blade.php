@@ -5,6 +5,16 @@
     $sepet_toplam = collect($sepet)->sum(fn (array $satir) => (float) ($satir['toplam'] ?? 0));
     $header_arama = trim((string) request('q', ''));
     $populer_aramalar = app(\App\Services\AramaService::class)->getirPopulerAramalar(6);
+    $uye_oturumu_acik = \Illuminate\Support\Facades\Auth::guard('uye')->check();
+    $aktif_uye = $uye_oturumu_acik ? \Illuminate\Support\Facades\Auth::guard('uye')->user() : null;
+    $yonetici_oturumu_acik = auth()->guard('web')->check();
+    $uye_bas_harfleri = $aktif_uye
+        ? collect(preg_split('/\s+/', trim((string) $aktif_uye->ad_soyad)))
+            ->filter()
+            ->take(2)
+            ->map(fn ($parca) => \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($parca, 0, 1)))
+            ->implode('')
+        : 'Ü';
 @endphp
 
 <header id="main-header" class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100">
@@ -166,30 +176,41 @@
           </svg>
         </button>
 
-        @auth
-          <span class="font-jakarta text-[13px] font-medium hidden md:block">{{ Auth::user()->name }}</span>
-          @if(Route::has('logout'))
-            <a href="{{ route('logout') }}"
-               onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-               class="hidden sm:flex items-center gap-1.5 text-primary hover:text-accent transition-colors px-2 py-2 rounded-md hover:bg-bg-soft">
-              <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+        @if($uye_oturumu_acik && $aktif_uye)
+          <a href="{{ route('uye.profil.index') }}"
+             class="hidden sm:flex items-center gap-2 rounded-full border border-primary/10 bg-white py-1 pl-1 pr-3 no-underline transition-colors hover:bg-bg-soft">
+            <span class="flex h-8 w-8 items-center justify-center rounded-full bg-primary font-jakarta text-[11px] font-bold text-cream">
+              {{ $uye_bas_harfleri }}
+            </span>
+            <span class="hidden md:block text-left">
+              <span class="block font-jakarta text-[11px] leading-none text-teal-muted">Profilim</span>
+              <span class="mt-0.5 block max-w-[120px] truncate font-jakarta text-[12.5px] font-semibold text-primary">
+                {{ $aktif_uye->ad_soyad }}
+              </span>
+            </span>
+          </a>
+
+          <form action="{{ route('uye.cikis') }}" method="POST" class="hidden lg:block">
+            @csrf
+            <button type="submit"
+                    class="hidden sm:flex items-center gap-1.5 rounded-md px-2 py-2 text-primary transition-colors hover:bg-bg-soft hover:text-accent">
+              <svg class="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1m0-10V7m0 0V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2h5a2 2 0 002-2v-1"/>
               </svg>
-              <span class="font-jakarta text-[13px] font-medium hidden md:block">Çıkış</span>
-            </a>
-            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">@csrf</form>
-          @endif
-        @else
-          @if(Route::has('login'))
-            <a href="{{ route('login') }}" class="hidden sm:flex items-center gap-1.5 text-primary hover:text-accent transition-colors px-2 py-2 rounded-md hover:bg-bg-soft">
-              <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                <circle cx="12" cy="8" r="4"/>
-                <path stroke-linecap="round" d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-              </svg>
-              <span class="font-jakarta text-[13px] font-medium hidden md:block">Giriş</span>
-            </a>
-          @endif
-        @endauth
+              <span class="hidden font-jakarta text-[13px] font-medium md:block">Çıkış</span>
+            </button>
+          </form>
+        @elseif($yonetici_oturumu_acik)
+          <span class="hidden font-jakarta text-[13px] font-medium md:block">{{ auth()->guard('web')->user()->name }}</span>
+        @elseif(Route::has('login'))
+          <a href="{{ route('login') }}" class="hidden sm:flex items-center gap-1.5 text-primary hover:text-accent transition-colors px-2 py-2 rounded-md hover:bg-bg-soft">
+            <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+              <circle cx="12" cy="8" r="4"/>
+              <path stroke-linecap="round" d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+            </svg>
+            <span class="font-jakarta text-[13px] font-medium hidden md:block">Giriş</span>
+          </a>
+        @endif
 
         <a href="{{ route('bagis.sepet') }}" aria-label="Sepet" id="cart-btn" data-cart-trigger="true" aria-controls="cart-drawer" aria-expanded="false" class="relative flex items-center justify-center w-9 h-9 rounded-md text-primary hover:text-accent hover:bg-bg-soft transition-colors">
           <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -315,29 +336,32 @@
       <a href="{{ route('iletisim.index') }}" class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('iletisim*') ? 'text-accent font-semibold bg-bg-soft' : 'text-primary font-medium hover:bg-bg-soft hover:text-accent' }} font-jakarta text-[14px] transition-colors">İletişim</a>
 
       <div class="pt-3 flex items-center gap-2 border-t border-gray-100 mt-1">
-        @auth
-          @if(Route::has('logout'))
-            <a href="{{ route('logout') }}"
-               onclick="event.preventDefault(); document.getElementById('logout-form-mobile').submit();"
-               class="flex items-center gap-1.5 text-primary font-jakarta font-medium text-[13px] px-3 py-2 rounded-md hover:bg-bg-soft transition-colors">
+        @if($uye_oturumu_acik && $aktif_uye)
+          <a href="{{ route('uye.profil.index') }}" class="flex items-center gap-2 text-primary font-jakarta font-medium text-[13px] px-3 py-2 rounded-md hover:bg-bg-soft transition-colors">
+            <span class="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-cream">
+              {{ $uye_bas_harfleri }}
+            </span>
+            Profilim
+          </a>
+
+          <form id="logout-form-mobile" action="{{ route('uye.cikis') }}" method="POST">
+            @csrf
+            <button type="submit" class="flex items-center gap-1.5 text-primary font-jakarta font-medium text-[13px] px-3 py-2 rounded-md hover:bg-bg-soft transition-colors">
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1m0-10V7m0 0V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2h5a2 2 0 002-2v-1"/>
               </svg>
               Çıkış
-            </a>
-            <form id="logout-form-mobile" action="{{ route('logout') }}" method="POST" class="hidden">@csrf</form>
-          @endif
-        @else
-          @if(Route::has('login'))
-            <a href="{{ route('login') }}" class="flex items-center gap-1.5 text-primary font-jakarta font-medium text-[13px] px-3 py-2 rounded-md hover:bg-bg-soft transition-colors">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                <circle cx="12" cy="8" r="4"/>
-                <path stroke-linecap="round" d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-              </svg>
-              Giriş Yap
-            </a>
-          @endif
-        @endauth
+            </button>
+          </form>
+        @elseif(Route::has('login'))
+          <a href="{{ route('login') }}" class="flex items-center gap-1.5 text-primary font-jakarta font-medium text-[13px] px-3 py-2 rounded-md hover:bg-bg-soft transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+              <circle cx="12" cy="8" r="4"/>
+              <path stroke-linecap="round" d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+            </svg>
+            Giriş Yap
+          </a>
+        @endif
 
         <a href="{{ route('bagis.sepet') }}" class="flex items-center gap-1.5 text-primary font-jakarta font-medium text-[13px] px-3 py-2 rounded-md hover:bg-bg-soft transition-colors">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
