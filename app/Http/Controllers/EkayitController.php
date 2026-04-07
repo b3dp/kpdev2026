@@ -201,12 +201,13 @@ class EkayitController extends Controller
                 'ogrenci_adres' => ['nullable', 'string', 'max:1000'],
                 'ogrenci_ikamet_il' => ['nullable', 'string', 'max:100', 'required_with:ogrenci_ikamet_ilce'],
                 'ogrenci_ikamet_ilce' => ['nullable', 'string', 'max:100', 'required_with:ogrenci_ikamet_il'],
-                'kimlik_kayitli_il' => ['required', 'string', 'max:100'],
-                'kimlik_kayitli_ilce' => ['required', 'string', 'max:100'],
-                'kimlik_kayitli_mahalle_koy' => ['required', 'string', 'max:255'],
-                'kimlik_cilt_no' => ['required', 'string', 'max:50'],
-                'kimlik_aile_sira_no' => ['required', 'string', 'max:50'],
-                'kimlik_sira_no' => ['required', 'string', 'max:50'],
+                'eski_tip_kimlik_var' => ['nullable', 'accepted'],
+                'kimlik_kayitli_il' => ['nullable', 'string', 'max:100', 'required_with:eski_tip_kimlik_var'],
+                'kimlik_kayitli_ilce' => ['nullable', 'string', 'max:100', 'required_with:eski_tip_kimlik_var'],
+                'kimlik_kayitli_mahalle_koy' => ['nullable', 'string', 'max:255', 'required_with:eski_tip_kimlik_var'],
+                'kimlik_cilt_no' => ['nullable', 'string', 'max:50', 'required_with:eski_tip_kimlik_var'],
+                'kimlik_aile_sira_no' => ['nullable', 'string', 'max:50', 'required_with:eski_tip_kimlik_var'],
+                'kimlik_sira_no' => ['nullable', 'string', 'max:50', 'required_with:eski_tip_kimlik_var'],
                 'ogrenci_cinsiyet' => ['required', 'in:E,K'],
                 'veli_ad_soyad' => ['required', 'string', 'max:255', 'regex:/^[A-ZÇĞİÖŞÜa-zçğıöşü\s]+$/u'],
                 'veli_telefon' => ['required', 'string', 'min:10', 'max:20'],
@@ -298,12 +299,12 @@ class EkayitController extends Controller
 
             EkayitKimlikBilgisi::create([
                 'kayit_id' => $kayit->id,
-                'kayitli_il' => $veri['kimlik_kayitli_il'],
-                'kayitli_ilce' => $veri['kimlik_kayitli_ilce'],
-                'kayitli_mahalle_koy' => $veri['kimlik_kayitli_mahalle_koy'],
-                'cilt_no' => $veri['kimlik_cilt_no'],
-                'aile_sira_no' => $veri['kimlik_aile_sira_no'],
-                'sira_no' => $veri['kimlik_sira_no'],
+                'kayitli_il' => $veri['eski_tip_kimlik_var'] ? ($veri['kimlik_kayitli_il'] ?? null) : null,
+                'kayitli_ilce' => $veri['eski_tip_kimlik_var'] ? ($veri['kimlik_kayitli_ilce'] ?? null) : null,
+                'kayitli_mahalle_koy' => $veri['eski_tip_kimlik_var'] ? ($veri['kimlik_kayitli_mahalle_koy'] ?? null) : null,
+                'cilt_no' => $veri['eski_tip_kimlik_var'] ? ($veri['kimlik_cilt_no'] ?? null) : null,
+                'aile_sira_no' => $veri['eski_tip_kimlik_var'] ? ($veri['kimlik_aile_sira_no'] ?? null) : null,
+                'sira_no' => $veri['eski_tip_kimlik_var'] ? ($veri['kimlik_sira_no'] ?? null) : null,
             ]);
 
             $okulNotu = collect([

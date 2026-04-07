@@ -26,6 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const onayInputler = document.querySelectorAll('.onay-cb');
   const basvurBtn = document.getElementById('basvur-btn');
+  const eskiTipKimlikCb = document.getElementById('eski_tip_kimlik_var');
+  const eskiKimlikAlanlari = document.getElementById('eski-kimlik-alanlari');
   const ilcelerDataEl = document.getElementById('ekayit-ilceler-data');
   let ilcelerHaritasi = {};
   let aktifAdim = 1;
@@ -36,6 +38,26 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (error) {
       ilcelerHaritasi = {};
     }
+  }
+
+  function eskiKimlikAlanlariniGuncelle() {
+    if (!eskiTipKimlikCb || !eskiKimlikAlanlari) {
+      return;
+    }
+
+    const acikMi = eskiTipKimlikCb.checked;
+    const alanlar = eskiKimlikAlanlari.querySelectorAll('[data-kimlik-alani="true"]');
+
+    eskiKimlikAlanlari.classList.toggle('hidden', !acikMi);
+
+    alanlar.forEach((alan) => {
+      if (acikMi) {
+        alan.setAttribute('required', 'required');
+      } else {
+        alan.removeAttribute('required');
+        alan.classList.remove('border-red-400');
+      }
+    });
   }
 
   function tumOnaylariKontrolEt() {
@@ -241,6 +263,11 @@ document.addEventListener('DOMContentLoaded', () => {
     ilceSecenekleriniGuncelle(grup, true);
     ilSelect.addEventListener('change', () => ilceSecenekleriniGuncelle(grup));
   });
+
+  if (eskiTipKimlikCb) {
+    eskiKimlikAlanlariniGuncelle();
+    eskiTipKimlikCb.addEventListener('change', eskiKimlikAlanlariniGuncelle);
+  }
 
   onayInputler.forEach((cb) => cb.addEventListener('change', tumOnaylariKontrolEt));
 
