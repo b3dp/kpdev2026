@@ -49,7 +49,7 @@
 @endsection
 
 @section('content')
-<section class="border-b border-primary/10 bg-white pt-[102px]">
+<section class="border-b border-primary/10 bg-white pt-[106px] lg:pt-[114px]">
     <div class="mx-auto max-w-7xl px-6 pb-0 pt-8">
         @if(session('info'))
             <div class="mb-5 flex items-start gap-3 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 font-jakarta text-sm text-sky-800">

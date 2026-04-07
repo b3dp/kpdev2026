@@ -7,7 +7,7 @@
 @section('og_image', $oneCikanHaber?->gorselLgUrl() ?: asset('img/og-default.jpg'))
 
 @section('content')
-<section class="border-b border-primary/10 bg-white pb-0 pt-[102px]">
+<section class="border-b border-primary/10 bg-white pb-0 pt-[106px] lg:pt-[114px]">
     <div class="mx-auto max-w-7xl px-6 pb-0 pt-8">
         <div class="mb-4 flex items-center gap-1.5">
             <a href="{{ route('home') }}" class="font-jakarta text-[13px] text-teal-muted transition-colors hover:text-accent">Ana Sayfa</a>
