@@ -26,7 +26,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const onayInputler = document.querySelectorAll('.onay-cb');
   const basvurBtn = document.getElementById('basvur-btn');
+  const ilcelerDataEl = document.getElementById('ekayit-ilceler-data');
+  let ilcelerHaritasi = {};
   let aktifAdim = 1;
+
+  if (ilcelerDataEl?.textContent) {
+    try {
+      ilcelerHaritasi = JSON.parse(ilcelerDataEl.textContent);
+    } catch (error) {
+      ilcelerHaritasi = {};
+    }
+  }
 
   function tumOnaylariKontrolEt() {
     const hepsiIsaretli = [...onayInputler].every((cb) => cb.checked);
@@ -65,6 +75,40 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function ilceSecenekleriniGuncelle(grup, ilkKurulum = false) {
+    const ilSelect = form.querySelector(`[data-il-select="${grup}"]`);
+    const ilceSelect = form.querySelector(`[data-ilce-select="${grup}"]`);
+
+    if (!ilSelect || !ilceSelect) {
+      return;
+    }
+
+    const seciliIl = ilSelect.value;
+    const saklananIlce = ilkKurulum ? (ilceSelect.dataset.selected || ilceSelect.value) : '';
+    const ilceler = Array.isArray(ilcelerHaritasi[seciliIl]) ? ilcelerHaritasi[seciliIl] : [];
+
+    ilceSelect.innerHTML = '';
+
+    const varsayilanSecenek = document.createElement('option');
+    varsayilanSecenek.value = '';
+    varsayilanSecenek.textContent = seciliIl ? 'İlçe Seçiniz' : 'Önce il seçiniz';
+    ilceSelect.appendChild(varsayilanSecenek);
+
+    ilceler.forEach((ilce) => {
+      const secenek = document.createElement('option');
+      secenek.value = ilce;
+      secenek.textContent = ilce;
+
+      if (saklananIlce && saklananIlce === ilce) {
+        secenek.selected = true;
+      }
+
+      ilceSelect.appendChild(secenek);
+    });
+
+    ilceSelect.disabled = !seciliIl;
+  }
+
   function ozetTablosunuDoldur() {
     const ozetEl = document.getElementById('ozet-tablo');
 
@@ -80,6 +124,14 @@ document.addEventListener('DOMContentLoaded', () => {
       { label: 'Veli Ad Soyad', deger: () => form.querySelector('[name="veli_ad_soyad"]')?.value },
       { label: 'Veli Telefon', deger: () => form.querySelector('[name="veli_telefon"]')?.value },
       { label: 'Veli E-posta', deger: () => form.querySelector('[name="veli_eposta"]')?.value },
+      {
+        label: 'Veli İl / İlçe',
+        deger: () => {
+          const il = form.querySelector('[name="veli_il"]')?.value;
+          const ilce = form.querySelector('[name="veli_ilce"]')?.value;
+          return [il, ilce].filter(Boolean).join(' / ');
+        },
+      },
       { label: 'Okul Adı', deger: () => form.querySelector('[name="okul_adi"]')?.value },
       {
         label: 'Okul İl / İlçe',
@@ -159,6 +211,17 @@ document.addEventListener('DOMContentLoaded', () => {
     textInputs.forEach((input) => {
       input.value = input.value.toLocaleUpperCase('tr-TR');
     });
+  });
+
+  ['veli', 'okul'].forEach((grup) => {
+    const ilSelect = form.querySelector(`[data-il-select="${grup}"]`);
+
+    if (!ilSelect) {
+      return;
+    }
+
+    ilceSecenekleriniGuncelle(grup, true);
+    ilSelect.addEventListener('change', () => ilceSecenekleriniGuncelle(grup));
   });
 
   onayInputler.forEach((cb) => cb.addEventListener('change', tumOnaylariKontrolEt));

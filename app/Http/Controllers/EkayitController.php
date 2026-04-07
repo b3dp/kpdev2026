@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\TurkiyeIlceler;
+use App\Data\TurkiyeIller;
 use App\Enums\EkayitDurumu;
 use App\Jobs\EkayitSmsJob;
 use App\Models\EkayitBabaBilgisi;
@@ -130,8 +132,20 @@ class EkayitController extends Controller
         }
 
         $sinifSecenekleri = $this->getirDonemSiniflari((int) $aktifDonem->id);
+        $iller = TurkiyeIller::secenekler();
+        $veliIlceleri = TurkiyeIlceler::ilceSecenekleri((string) old('veli_il'));
+        $okulIlceleri = TurkiyeIlceler::ilceSecenekleri((string) old('okul_il'));
+        $ilceler_haritasi = TurkiyeIlceler::tumu();
 
-        return view('pages.ekayit.form', compact('sinif', 'aktifDonem', 'sinifSecenekleri'));
+        return view('pages.ekayit.form', compact(
+            'sinif',
+            'aktifDonem',
+            'sinifSecenekleri',
+            'iller',
+            'veliIlceleri',
+            'okulIlceleri',
+            'ilceler_haritasi'
+        ));
     }
 
     public function store(Request $request)
@@ -146,7 +160,7 @@ class EkayitController extends Controller
             $metinAlanlar = [
                 'ogrenci_ad', 'ogrenci_soyad', 'ogrenci_dogum_yeri', 'ogrenci_baba_adi', 'ogrenci_anne_adi',
                 'ogrenci_adres', 'ogrenci_ikamet_il', 'veli_ad_soyad', 'veli_adres', 'baba_dogum_yeri',
-                'baba_nufus_il_ilce', 'okul_adi', 'okul_il', 'okul_ilce', 'otp_kodu',
+                'baba_nufus_il_ilce', 'okul_adi', 'otp_kodu',
             ];
 
             foreach ($metinAlanlar as $alan) {
@@ -179,6 +193,8 @@ class EkayitController extends Controller
                 'veli_ad_soyad' => ['required', 'string', 'max:255', 'regex:/^[A-ZÇĞİÖŞÜa-zçğıöşü\s]+$/u'],
                 'veli_telefon' => ['required', 'string', 'min:10', 'max:20'],
                 'veli_eposta' => ['required', 'email', 'max:255'],
+                'veli_il' => ['nullable', 'string', 'max:100'],
+                'veli_ilce' => ['nullable', 'string', 'max:100', 'required_with:veli_il'],
                 'veli_adres' => ['nullable', 'string', 'max:1000'],
                 'baba_dogum_yeri' => ['nullable', 'string', 'max:255'],
                 'baba_nufus_il_ilce' => ['nullable', 'string', 'max:255'],
@@ -233,6 +249,10 @@ class EkayitController extends Controller
 
             $ekNotlar = collect([
                 'Cinsiyet: '.($veri['ogrenci_cinsiyet'] === 'E' ? 'ERKEK' : 'KIZ'),
+                filled($veri['veli_il'] ?? null) || filled($veri['veli_ilce'] ?? null)
+                    ? 'Veli Konumu: '.collect([$veri['veli_il'] ?? null, $veri['veli_ilce'] ?? null])->filter()->implode(' / ')
+                    : null,
+                filled($veri['veli_adres'] ?? null) ? 'Veli Adresi: '.$veri['veli_adres'] : null,
                 filled($veri['okul_turu'] ?? null) ? 'Okul Türü: '.mb_strtoupper((string) $veri['okul_turu'], 'UTF-8') : null,
                 filled($veri['not_ortalamasi'] ?? null) ? 'Not Ortalaması: '.$veri['not_ortalamasi'] : null,
                 filled($veri['otp_kodu'] ?? null) ? 'Ön Doğrulama Kodu: '.$veri['otp_kodu'] : null,
