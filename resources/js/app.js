@@ -1,5 +1,7 @@
 import './bootstrap';
 import './header';
+import './ekayit-form';
+import './ekayit-tesekkur';
 import './bagis';
 import './bagis-detay';
 import './tesekkur';

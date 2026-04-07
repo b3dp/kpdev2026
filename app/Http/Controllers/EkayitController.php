@@ -2,12 +2,25 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\EkayitDurumu;
+use App\Jobs\EkayitSmsJob;
+use App\Models\EkayitBabaBilgisi;
 use App\Models\EkayitDonem;
+use App\Models\EkayitKayit;
+use App\Models\EkayitKimlikBilgisi;
+use App\Models\EkayitOgrenciBilgisi;
+use App\Models\EkayitOkulBilgisi;
 use App\Models\EkayitSinif;
+use App\Models\EkayitVeliBilgisi;
+use App\Models\Uye;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class EkayitController extends Controller
 {
@@ -97,18 +110,248 @@ class EkayitController extends Controller
         };
     }
 
-    public function form()
+    public function form(Request $request)
     {
-        return view('welcome');
+        $sinifId = $request->query('sinif_id');
+        $sinif = null;
+
+        if ($sinifId) {
+            $sinif = EkayitSinif::find($sinifId);
+        }
+
+        $aktifDonem = EkayitDonem::where('aktif', 1)->first();
+
+        if (! $aktifDonem) {
+            return redirect()->route('ekayit.index')->with('error', 'Aktif kayıt dönemi bulunamadı.');
+        }
+
+        if ($sinif && (int) $sinif->donem_id !== (int) $aktifDonem->id) {
+            return redirect()->route('ekayit.index')->with('error', 'Seçilen sınıf aktif kayıt dönemine ait değil.');
+        }
+
+        $sinifSecenekleri = $this->getirDonemSiniflari((int) $aktifDonem->id);
+
+        return view('pages.ekayit.form', compact('sinif', 'aktifDonem', 'sinifSecenekleri'));
     }
 
     public function store(Request $request)
     {
-        return redirect()->route('ekayit.tesekkur');
+        try {
+            $aktifDonem = EkayitDonem::where('aktif', 1)->first();
+
+            if (! $aktifDonem) {
+                return redirect()->route('ekayit.index')->with('error', 'Aktif kayıt dönemi bulunamadı.');
+            }
+
+            $metinAlanlar = [
+                'ogrenci_ad', 'ogrenci_soyad', 'ogrenci_dogum_yeri', 'ogrenci_baba_adi', 'ogrenci_anne_adi',
+                'ogrenci_adres', 'ogrenci_ikamet_il', 'veli_ad_soyad', 'veli_adres', 'baba_dogum_yeri',
+                'baba_nufus_il_ilce', 'okul_adi', 'okul_il', 'okul_ilce', 'otp_kodu',
+            ];
+
+            foreach ($metinAlanlar as $alan) {
+                if ($request->has($alan) && filled($request->input($alan))) {
+                    $request->merge([$alan => mb_strtoupper(trim((string) $request->input($alan)), 'UTF-8')]);
+                }
+            }
+
+            $request->merge([
+                'ogrenci_tc' => preg_replace('/\D+/', '', (string) $request->input('ogrenci_tc')),
+                'veli_telefon' => $this->telefonuTemizle($request->input('veli_telefon')),
+                'veli_eposta' => filled($request->input('veli_eposta'))
+                    ? mb_strtolower(trim((string) $request->input('veli_eposta')), 'UTF-8')
+                    : null,
+            ]);
+
+            $veri = $request->validate([
+                'sinif_id' => ['required', 'integer', 'exists:ekayit_siniflar,id'],
+                'donem_id' => ['nullable', 'integer'],
+                'ogrenci_ad' => ['required', 'string', 'max:100', 'regex:/^[A-ZÇĞİÖŞÜa-zçğıöşü\s]+$/u'],
+                'ogrenci_soyad' => ['required', 'string', 'max:100', 'regex:/^[A-ZÇĞİÖŞÜa-zçğıöşü\s]+$/u'],
+                'ogrenci_tc' => ['required', 'digits:11'],
+                'ogrenci_dogum_tarihi' => ['required', 'date'],
+                'ogrenci_dogum_yeri' => ['nullable', 'string', 'max:255'],
+                'ogrenci_baba_adi' => ['nullable', 'string', 'max:255'],
+                'ogrenci_anne_adi' => ['nullable', 'string', 'max:255'],
+                'ogrenci_adres' => ['nullable', 'string', 'max:1000'],
+                'ogrenci_ikamet_il' => ['nullable', 'string', 'max:100'],
+                'ogrenci_cinsiyet' => ['required', 'in:E,K'],
+                'veli_ad_soyad' => ['required', 'string', 'max:255', 'regex:/^[A-ZÇĞİÖŞÜa-zçğıöşü\s]+$/u'],
+                'veli_telefon' => ['required', 'string', 'min:10', 'max:20'],
+                'veli_eposta' => ['required', 'email', 'max:255'],
+                'veli_adres' => ['nullable', 'string', 'max:1000'],
+                'baba_dogum_yeri' => ['nullable', 'string', 'max:255'],
+                'baba_nufus_il_ilce' => ['nullable', 'string', 'max:255'],
+                'okul_adi' => ['required', 'string', 'max:255'],
+                'okul_il' => ['required', 'string', 'max:100'],
+                'okul_ilce' => ['required', 'string', 'max:100'],
+                'okul_turu' => ['nullable', 'in:devlet,ozel,imam-hatip'],
+                'not_ortalamasi' => ['nullable', 'numeric', 'between:0,100'],
+                'otp_kodu' => ['nullable', 'digits:6'],
+                'onay_bilgi' => ['accepted'],
+                'onay_kvkk' => ['accepted'],
+                'onay_iletisim' => ['accepted'],
+                'onay_tuzuk' => ['accepted'],
+            ], [
+                'onay_bilgi.accepted' => 'Bilgi doğruluğu onayı gereklidir.',
+                'onay_kvkk.accepted' => 'KVKK onayı gereklidir.',
+                'onay_iletisim.accepted' => 'İletişim izni onayı gereklidir.',
+                'onay_tuzuk.accepted' => 'Dernek tüzüğü onayı gereklidir.',
+            ]);
+
+            $sinif = EkayitSinif::query()
+                ->whereKey($veri['sinif_id'])
+                ->where('donem_id', $aktifDonem->id)
+                ->where('aktif', true)
+                ->first();
+
+            if (! $sinif) {
+                throw ValidationException::withMessages([
+                    'sinif_id' => 'Geçerli ve aktif bir sınıf seçiniz.',
+                ]);
+            }
+
+            $mevcutKayit = EkayitKayit::withTrashed()
+                ->whereHas('ogrenciBilgisi', fn ($query) => $query->where('tc_kimlik', $veri['ogrenci_tc']))
+                ->whereHas('sinif', fn ($query) => $query->where('donem_id', $aktifDonem->id))
+                ->first();
+
+            if ($mevcutKayit) {
+                throw ValidationException::withMessages([
+                    'ogrenci_tc' => 'Bu TC kimlik numarasıyla bu dönem için zaten başvuru bulunmaktadır.',
+                ]);
+            }
+
+            $uye = Auth::guard('uye')->user();
+
+            if (! $uye) {
+                $uye = Uye::query()
+                    ->where('telefon', $veri['veli_telefon'])
+                    ->orWhere('eposta', $veri['veli_eposta'])
+                    ->first();
+            }
+
+            $ekNotlar = collect([
+                'Cinsiyet: '.($veri['ogrenci_cinsiyet'] === 'E' ? 'ERKEK' : 'KIZ'),
+                filled($veri['okul_turu'] ?? null) ? 'Okul Türü: '.mb_strtoupper((string) $veri['okul_turu'], 'UTF-8') : null,
+                filled($veri['not_ortalamasi'] ?? null) ? 'Not Ortalaması: '.$veri['not_ortalamasi'] : null,
+                filled($veri['otp_kodu'] ?? null) ? 'Ön Doğrulama Kodu: '.$veri['otp_kodu'] : null,
+            ])->filter()->implode(PHP_EOL);
+
+            $kayit = EkayitKayit::create([
+                'sinif_id' => $sinif->id,
+                'uye_id' => $uye?->id,
+                'durum' => EkayitDurumu::Beklemede->value,
+                'genel_not' => $ekNotlar !== '' ? $ekNotlar : null,
+            ]);
+
+            EkayitOgrenciBilgisi::create([
+                'kayit_id' => $kayit->id,
+                'ad_soyad' => trim($veri['ogrenci_ad'].' '.$veri['ogrenci_soyad']),
+                'tc_kimlik' => $veri['ogrenci_tc'],
+                'dogum_yeri' => $veri['ogrenci_dogum_yeri'] ?? null,
+                'dogum_tarihi' => $veri['ogrenci_dogum_tarihi'],
+                'baba_adi' => $veri['ogrenci_baba_adi'] ?? null,
+                'anne_adi' => $veri['ogrenci_anne_adi'] ?? null,
+                'adres' => $veri['ogrenci_adres'] ?? null,
+                'ikamet_il' => $veri['ogrenci_ikamet_il'] ?? null,
+            ]);
+
+            EkayitKimlikBilgisi::create([
+                'kayit_id' => $kayit->id,
+            ]);
+
+            $okulNotu = collect([
+                filled($veri['okul_turu'] ?? null) ? 'Okul Türü: '.mb_strtoupper((string) $veri['okul_turu'], 'UTF-8') : null,
+                filled($veri['okul_il'] ?? null) || filled($veri['okul_ilce'] ?? null)
+                    ? 'Okul Konumu: '.collect([$veri['okul_il'] ?? null, $veri['okul_ilce'] ?? null])->filter()->implode(' / ')
+                    : null,
+                filled($veri['not_ortalamasi'] ?? null) ? 'Not Ortalaması: '.$veri['not_ortalamasi'] : null,
+            ])->filter()->implode(' | ');
+
+            EkayitOkulBilgisi::create([
+                'kayit_id' => $kayit->id,
+                'okul_adi' => $veri['okul_adi'],
+                'not' => $okulNotu !== '' ? $okulNotu : null,
+            ]);
+
+            EkayitVeliBilgisi::create([
+                'kayit_id' => $kayit->id,
+                'ad_soyad' => $veri['veli_ad_soyad'],
+                'eposta' => $veri['veli_eposta'],
+                'telefon_1' => $veri['veli_telefon'],
+            ]);
+
+            EkayitBabaBilgisi::create([
+                'kayit_id' => $kayit->id,
+                'dogum_yeri' => $veri['baba_dogum_yeri'] ?? null,
+                'nufus_il_ilce' => $veri['baba_nufus_il_ilce'] ?? null,
+            ]);
+
+            if (filled($veri['veli_telefon'])) {
+                try {
+                    dispatch(new EkayitSmsJob(
+                        $kayit->id,
+                        'basvuru_alindi',
+                        $veri['veli_telefon'],
+                        false,
+                        1
+                    ));
+                } catch (Throwable $e) {
+                    Log::warning('E-Kayıt başvuru SMS kuyruğa alınamadı', [
+                        'kayit_id' => $kayit->id,
+                        'mesaj' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            return redirect()->route('ekayit.tesekkur')
+                ->with('son_ekayit_id', $kayit->id);
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (Throwable $e) {
+            Log::error('E-Kayıt başvurusu kaydedilemedi', [
+                'mesaj' => $e->getMessage(),
+                'dosya' => $e->getFile(),
+                'satir' => $e->getLine(),
+                'ip' => $request->ip(),
+            ]);
+
+            return back()
+                ->withInput()
+                ->with('error', 'Başvurunuz kaydedilirken beklenmeyen bir sorun oluştu. Lütfen tekrar deneyin.');
+        }
     }
 
     public function tesekkur()
     {
-        return view('welcome');
+        $kayitId = session('son_ekayit_id');
+
+        if (! $kayitId) {
+            return redirect()->route('ekayit.index')
+                ->with('info', 'Başvuru bilgisi bulunamadı.');
+        }
+
+        $kayit = EkayitKayit::with(['sinif', 'ogrenciBilgisi', 'veliBilgisi'])->find($kayitId);
+
+        if (! $kayit) {
+            return redirect()->route('ekayit.index')
+                ->with('info', 'Başvuru bilgisi bulunamadı.');
+        }
+
+        return view('pages.ekayit.tesekkur', compact('kayit'));
+    }
+
+    protected function telefonuTemizle(?string $telefon): string
+    {
+        $temizTelefon = preg_replace('/\D+/', '', (string) $telefon) ?: '';
+
+        if (str_starts_with($temizTelefon, '0090')) {
+            $temizTelefon = substr($temizTelefon, 4);
+        } elseif (str_starts_with($temizTelefon, '90')) {
+            $temizTelefon = substr($temizTelefon, 2);
+        }
+
+        return str_starts_with($temizTelefon, '0') ? $temizTelefon : ('0'.$temizTelefon);
     }
 }

@@ -1,0 +1,113 @@
+@keyframes popIn {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes checkDraw {
+  from {
+    stroke-dashoffset: 60;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.35;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.onay-daire {
+  width: 80px;
+  height: 80px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #162e4b, #28484c);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+  position: relative;
+}
+
+.onay-daire::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 999px;
+  border: 2px solid rgba(178, 120, 41, 0.4);
+  animation: pulse-ring 2s ease-out 0.8s infinite;
+}
+
+.onay-check {
+  stroke-dasharray: 60;
+  stroke-dashoffset: 60;
+  animation: checkDraw 0.4s ease-out 0.7s forwards;
+}
+
+.fade-up-1 { animation: fadeUp 0.5s ease-out 0.4s both; }
+.fade-up-2 { animation: fadeUp 0.5s ease-out 0.55s both; }
+.fade-up-3 { animation: fadeUp 0.5s ease-out 0.7s both; }
+.fade-up-4 { animation: fadeUp 0.5s ease-out 0.85s both; }
+.fade-up-5 { animation: fadeUp 0.5s ease-out 1s both; }
+
+.durum-adim {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(22, 46, 75, 0.07);
+}
+
+.durum-adim:last-child {
+  border-bottom: none;
+}
+
+.durum-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.durum-dot.done {
+  background: #dcfce7;
+}
+
+.durum-dot.active {
+  background: rgba(178, 120, 41, 0.15);
+}
+
+.durum-dot.wait {
+  background: rgba(22, 46, 75, 0.07);
+}

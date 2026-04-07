@@ -1,0 +1,99 @@
+.ekayit-form-wrap input[type='text'],
+.ekayit-form-wrap input[type='search'] {
+  text-transform: uppercase;
+}
+
+.uppercase-input {
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #162e4b;
+}
+
+.form-label span {
+  color: #e95925;
+}
+
+.form-input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid rgba(22, 46, 75, 0.15);
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: #162e4b;
+  background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+.form-input:focus,
+.form-select:focus {
+  border-color: #b27829;
+  box-shadow: 0 0 0 3px rgba(178, 120, 41, 0.1);
+}
+
+.form-input::placeholder {
+  color: rgba(22, 46, 75, 0.35);
+}
+
+.form-select {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid rgba(22, 46, 75, 0.15);
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: #162e4b;
+  background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2362868D' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  cursor: pointer;
+}
+
+.adim-daire {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  background: rgba(22, 46, 75, 0.1);
+  color: rgba(22, 46, 75, 0.4);
+  transition: all 0.2s;
+}
+
+.adim-daire.aktif {
+  background: #162e4b;
+  color: #ebdfb5;
+}
+
+.adim-daire.tamamlandi {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.onay-cb:checked {
+  accent-color: #b27829;
+}
+
+.adim-panel.hidden {
+  display: none;
+}
