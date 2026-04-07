@@ -336,6 +336,7 @@ class ZeptomailService
         string $kurum,
         string $durum,
         ?string $durumNotu = null,
+        ?string $evrakUrl = null,
     ): bool {
         $htmlIcerik = view('emails.ekayit-durum', [
             'veliAdSoyad' => $ad,
@@ -344,6 +345,7 @@ class ZeptomailService
             'kurum' => $kurum,
             'durum' => $durum,
             'durumNotu' => $durumNotu,
+            'evrakUrl' => $evrakUrl,
         ])->render();
 
         return $this->gonderTemel(

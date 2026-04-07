@@ -1,0 +1,184 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\EkayitDonem;
+use App\Models\EkayitKayit;
+use App\Models\EkayitKimlikBilgisi;
+use App\Models\EkayitOgrenciBilgisi;
+use App\Models\EkayitOkulBilgisi;
+use App\Models\EkayitSinif;
+use App\Models\EkayitVeliBilgisi;
+use App\Models\Kurum;
+use App\Services\EkayitPdfService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
+use Tests\TestCase;
+
+class EkayitPdfTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_public_ekayit_basvurusu_yeni_veli_ve_okul_alanlarini_kaydeder(): void
+    {
+        $kurum = Kurum::query()->create([
+            'ad' => 'Hatay Kursu',
+            'slug' => 'hatay-kursu',
+            'tip' => 'kurs',
+            'aktif' => true,
+        ]);
+
+        $donem = EkayitDonem::query()->create([
+            'ad' => '2026-2027 Kayıt Dönemi',
+            'ogretim_yili' => '2026-2027',
+            'baslangic' => now()->subDay(),
+            'bitis' => now()->addMonth(),
+            'aktif' => true,
+        ]);
+
+        $sinif = EkayitSinif::query()->create([
+            'ad' => '8. Sınıf Hafızlık',
+            'ogretim_yili' => '2026-2027',
+            'kurum_id' => $kurum->id,
+            'donem_id' => $donem->id,
+            'renk' => 'blue',
+            'aktif' => true,
+        ]);
+
+        $response = $this->post(route('ekayit.store'), [
+            'sinif_id' => $sinif->id,
+            'donem_id' => $donem->id,
+            'ogrenci_ad' => 'Ahmet',
+            'ogrenci_soyad' => 'Yılmaz',
+            'ogrenci_tc' => '12345678901',
+            'ogrenci_telefon' => '0555 111 22 33',
+            'ogrenci_eposta' => 'ogrenci@example.com',
+            'ogrenci_dogum_tarihi' => '2012-01-15',
+            'ogrenci_dogum_yeri' => 'İzmir',
+            'ogrenci_baba_adi' => 'Mehmet',
+            'ogrenci_anne_adi' => 'Ayşe',
+            'ogrenci_adres' => 'Öğrenci adresi',
+            'ogrenci_ikamet_il' => 'İzmir',
+            'ogrenci_ikamet_ilce' => 'Karabağlar',
+            'ogrenci_cinsiyet' => 'E',
+            'veli_ad_soyad' => 'Fatma Yılmaz',
+            'veli_telefon' => '0555 444 55 66',
+            'veli_telefon_2' => '0555 777 88 99',
+            'veli_eposta' => 'veli@example.com',
+            'veli_il' => 'İzmir',
+            'veli_ilce' => 'Konak',
+            'veli_adres' => 'Veli açık adresi',
+            'okul_adi' => 'Şehitler Ortaokulu',
+            'okul_numarasi' => '456',
+            'okul_il' => 'İzmir',
+            'okul_ilce' => 'Konak',
+            'okul_turu' => 'devlet',
+            'not_ortalamasi' => '92.5',
+            'onay_bilgi' => '1',
+            'onay_kvkk' => '1',
+            'onay_iletisim' => '1',
+            'onay_tuzuk' => '1',
+        ]);
+
+        $response->assertRedirect(route('ekayit.tesekkur'));
+
+        $kayit = EkayitKayit::query()->with(['veliBilgisi', 'okulBilgisi'])->firstOrFail();
+
+        $this->assertSame('05554445566', preg_replace('/\D+/', '', (string) $kayit->veliBilgisi?->telefon_1));
+        $this->assertSame('05557778899', preg_replace('/\D+/', '', (string) $kayit->veliBilgisi?->telefon_2));
+        $this->assertSame('VELİ AÇIK ADRESİ', $kayit->veliBilgisi?->adres);
+        $this->assertSame('İzmir', $kayit->veliBilgisi?->ikamet_il);
+        $this->assertSame('Konak', $kayit->veliBilgisi?->ikamet_ilce);
+        $this->assertSame('456', $kayit->okulBilgisi?->okul_numarasi);
+    }
+
+    public function test_ekayit_pdf_servisi_ogrenci_adi_ve_kayit_no_ile_pdf_olusturur(): void
+    {
+        Storage::fake('spaces');
+        config()->set('filesystems.disks.spaces.url', 'https://cdn.test');
+
+        $kurum = Kurum::query()->create([
+            'ad' => 'Hatay Kursu',
+            'slug' => 'hatay-kursu-2',
+            'tip' => 'kurs',
+            'aktif' => true,
+        ]);
+
+        $donem = EkayitDonem::query()->create([
+            'ad' => '2026-2027 Kayıt Dönemi',
+            'ogretim_yili' => '2026-2027',
+            'baslangic' => now()->subDay(),
+            'bitis' => now()->addMonth(),
+            'aktif' => true,
+        ]);
+
+        $sinif = EkayitSinif::query()->create([
+            'ad' => 'Hazırlık Sınıfı',
+            'ogretim_yili' => '2026-2027',
+            'kurum_id' => $kurum->id,
+            'donem_id' => $donem->id,
+            'renk' => 'green',
+            'aktif' => true,
+        ]);
+
+        $kayit = EkayitKayit::query()->create([
+            'sinif_id' => $sinif->id,
+            'durum' => 'onaylandi',
+        ]);
+
+        EkayitOgrenciBilgisi::query()->create([
+            'kayit_id' => $kayit->id,
+            'ad_soyad' => 'Ahmet Emin Günden',
+            'tc_kimlik' => '12345678901',
+            'telefon' => '05551112233',
+            'eposta' => 'ogrenci@example.com',
+            'dogum_yeri' => 'İzmir',
+            'dogum_tarihi' => '2012-01-15',
+            'baba_adi' => 'Mehmet',
+            'anne_adi' => 'Ayşe',
+            'adres' => 'Öğrenci adresi',
+            'ikamet_il' => 'İzmir',
+            'ikamet_ilce' => 'Karabağlar',
+        ]);
+
+        EkayitKimlikBilgisi::query()->create([
+            'kayit_id' => $kayit->id,
+            'kayitli_il' => 'İzmir',
+            'kayitli_ilce' => 'Konak',
+            'kayitli_mahalle_koy' => 'Mithatpaşa',
+            'cilt_no' => '12',
+            'aile_sira_no' => '34',
+            'sira_no' => '56',
+        ]);
+
+        EkayitOkulBilgisi::query()->create([
+            'kayit_id' => $kayit->id,
+            'okul_adi' => 'Şehitler Ortaokulu',
+            'okul_numarasi' => '456',
+        ]);
+
+        EkayitVeliBilgisi::query()->create([
+            'kayit_id' => $kayit->id,
+            'ad_soyad' => 'Fatma Günden',
+            'eposta' => 'veli@example.com',
+            'telefon_1' => '05554445566',
+            'telefon_2' => '05557778899',
+            'adres' => 'Veli adresi',
+            'ikamet_il' => 'İzmir',
+            'ikamet_ilce' => 'Konak',
+        ]);
+
+        $sonuc = app(EkayitPdfService::class)->olustur($kayit->fresh());
+
+        $this->assertNotNull($sonuc);
+        $this->assertSame('Ahmet Emin Günden - 0000'.$kayit->id.'.pdf', $sonuc['indirme_dosya_adi']);
+        $this->assertStringEndsWith('.pdf', $sonuc['dosya_yol']);
+        $this->assertStringContainsString('ahmet-emin-gunden', $sonuc['dosya_yol']);
+
+        Storage::disk('spaces')->assertExists($sonuc['dosya_yol']);
+        $this->assertDatabaseHas('ekayit_olusturulan_evraklar', [
+            'kayit_id' => $kayit->id,
+            'dosya_yol' => $sonuc['dosya_yol'],
+        ]);
+    }
+}

@@ -11,7 +11,7 @@ class EkayitOlusturulanEvrak extends Model
 
     protected $table = 'ekayit_olusturulan_evraklar';
 
-    protected $fillable = ['kayit_id', 'sablon_id', 'dosya_yol'];
+    protected $fillable = ['kayit_id', 'sablon_id', 'dosya_yol', 'olusturulma_tarihi'];
 
     protected function casts(): array
     {

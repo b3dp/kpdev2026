@@ -165,7 +165,9 @@ document.addEventListener('DOMContentLoaded', () => {
       { label: 'Kan Grubu', deger: () => form.querySelector('[name="kimlik_kan_grubu"]')?.value },
       { label: 'Veli Ad Soyad', deger: () => form.querySelector('[name="veli_ad_soyad"]')?.value },
       { label: 'Veli Telefon', deger: () => form.querySelector('[name="veli_telefon"]')?.value },
+      { label: 'Veli Telefon 2', deger: () => form.querySelector('[name="veli_telefon_2"]')?.value },
       { label: 'Veli E-posta', deger: () => form.querySelector('[name="veli_eposta"]')?.value },
+      { label: 'Veli Adres', deger: () => form.querySelector('[name="veli_adres"]')?.value },
       {
         label: 'Veli İl / İlçe',
         deger: () => {
@@ -175,6 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
       },
       { label: 'Okul Adı', deger: () => form.querySelector('[name="okul_adi"]')?.value },
+      { label: 'Okul Numarası', deger: () => form.querySelector('[name="okul_numarasi"]')?.value },
       {
         label: 'Okul İl / İlçe',
         deger: () => {

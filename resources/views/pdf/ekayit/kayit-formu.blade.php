@@ -167,10 +167,16 @@
             <td>{{ $ogrenci->anne_adi ?? '—' }}</td>
         </tr>
         <tr>
+            <td class="lbl">Cep Telefonu</td>
+            <td>{{ $ogrenci->telefon ?? '—' }}</td>
+            <td class="lbl">E-posta</td>
+            <td>{{ $ogrenci->eposta ?? '—' }}</td>
+        </tr>
+        <tr>
             <td class="lbl">İkamet İl</td>
             <td>{{ $ogrenci->ikamet_il ?? '—' }}</td>
-            <td class="lbl">&nbsp;</td>
-            <td>&nbsp;</td>
+            <td class="lbl">İkamet İlçe</td>
+            <td>{{ $ogrenci->ikamet_ilce ?? '—' }}</td>
         </tr>
         <tr>
             <td class="lbl">Adres</td>
@@ -238,7 +244,7 @@
         <tr>
             <td class="lbl">Veli Adı Soyadı</td>
             <td>{{ $veli->ad_soyad ?? '—' }}</td>
-            <td class="lbl">Telefon</td>
+            <td class="lbl">Telefon 1</td>
             <td>{{ $veli->telefon_1 ?? '—' }}</td>
         </tr>
         <tr>
@@ -246,6 +252,14 @@
             <td>{{ $veli->telefon_2 ?? '—' }}</td>
             <td class="lbl">E-posta</td>
             <td>{{ $veli->eposta ?? '—' }}</td>
+        </tr>
+        <tr>
+            <td class="lbl">İl / İlçe</td>
+            <td colspan="3">{{ collect([$veli->ikamet_il ?? null, $veli->ikamet_ilce ?? null])->filter()->implode(' / ') ?: '—' }}</td>
+        </tr>
+        <tr>
+            <td class="lbl">Adres</td>
+            <td colspan="3">{{ $veli->adres ?? '—' }}</td>
         </tr>
     </table>
 

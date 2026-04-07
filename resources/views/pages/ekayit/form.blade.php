@@ -267,6 +267,11 @@
               <input type="tel" name="veli_telefon" lang="tr" class="form-input @error('veli_telefon') border-red-400 @enderror" autocomplete="tel" inputmode="numeric" pattern="[0-9\s]+" placeholder="05XX XXX XX XX" required value="{{ old('veli_telefon') }}">
             </div>
 
+            <div class="form-group">
+              <label class="form-label">Telefon 2</label>
+              <input type="tel" name="veli_telefon_2" lang="tr" class="form-input @error('veli_telefon_2') border-red-400 @enderror" autocomplete="tel" inputmode="numeric" pattern="[0-9\s]+" placeholder="05XX XXX XX XX" value="{{ old('veli_telefon_2') }}">
+            </div>
+
             <div class="form-group sm:col-span-2">
               <label class="form-label">E-posta <span>*</span></label>
               <input type="email" name="veli_eposta" lang="tr" class="form-input @error('veli_eposta') border-red-400 @enderror" autocomplete="email" placeholder="ornek@mail.com" required value="{{ old('veli_eposta') }}">
@@ -320,7 +325,12 @@
           <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <div class="form-group sm:col-span-2">
               <label class="form-label">Okul Adı <span>*</span></label>
-              <input type="text" name="okul_adi" lang="tr" class="form-input uppercase-input @error('okul_adi') border-red-400 @enderror" pattern="[A-ZÇĞİÖŞÜa-zçğıöşü0-9\s\.\-]+" placeholder="ÖĞRENCİNİN GİTTİĞİ OKULUN ADI" required value="{{ old('okul_adi') }}">
+              <input type="text" name="okul_adi" lang="tr" class="form-input uppercase-input @error('okul_adi') border-red-400 @enderror" pattern="[A-ZÇĞİÖŞÜa-zçğıöşü0-9\s\.\-]+" placeholder="ÖĞRENCİNİN GİTTİĞİ / MEZUN OLDUĞU OKUL" required value="{{ old('okul_adi') }}">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Okul No</label>
+              <input type="text" name="okul_numarasi" lang="tr" class="form-input @error('okul_numarasi') border-red-400 @enderror" inputmode="numeric" maxlength="50" placeholder="OKUL NUMARASI" value="{{ old('okul_numarasi') }}">
             </div>
 
             <div class="form-group">

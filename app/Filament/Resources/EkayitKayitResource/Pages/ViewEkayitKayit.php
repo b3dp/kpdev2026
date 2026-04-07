@@ -22,6 +22,7 @@ use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\URL;
 
 class ViewEkayitKayit extends ViewRecord
 {
@@ -154,7 +155,7 @@ class ViewEkayitKayit extends ViewRecord
                     ->schema([
                         TextEntry::make('dokuman_bilgi')
                             ->label('Bilgi')
-                            ->state('Henüz evrak şablonu tanımlanmamış')
+                            ->state('Kayıt verileriyle PDF evrakı oluşturup indirebilirsiniz.')
                             ->columnSpanFull(),
                     ])
                     ->footerActions([
@@ -163,10 +164,15 @@ class ViewEkayitKayit extends ViewRecord
                             ->icon('heroicon-o-document-arrow-down')
                             ->color('primary')
                             ->action(function (): void {
+                                $indirmeUrl = URL::temporarySignedRoute('ekayit.evrak.indir', now()->addMinutes(15), [
+                                    'kayit' => $this->record->id,
+                                ]);
+
+                                $this->js("window.open('" . addslashes((string) $indirmeUrl) . "', '_blank')");
+
                                 Notification::make()
-                                    ->title('Döküman altyapısı henüz hazır değil')
-                                    ->body('Henüz evrak şablonu tanımlanmamış')
-                                    ->info()
+                                    ->title('PDF hazırlanıyor')
+                                    ->success()
                                     ->send();
                             }),
                     ]),
@@ -236,6 +242,9 @@ class ViewEkayitKayit extends ViewRecord
                         TextEntry::make('veliBilgisi.eposta')->label('E-posta')->default('—'),
                         TextEntry::make('veliBilgisi.telefon_1')->label('Telefon 1')->default('—'),
                         TextEntry::make('veliBilgisi.telefon_2')->label('Telefon 2')->default('—'),
+                        TextEntry::make('veliBilgisi.ikamet_il')->label('İl')->default('—'),
+                        TextEntry::make('veliBilgisi.ikamet_ilce')->label('İlçe')->default('—'),
+                        TextEntry::make('veliBilgisi.adres')->label('Adres')->default('—')->columnSpanFull(),
                     ])
                     ->headerActions([
                         $this->veliBilgisiDuzenleAksiyonu(),
@@ -375,12 +384,18 @@ class ViewEkayitKayit extends ViewRecord
                 TextInput::make('eposta')->label('E-posta')->email()->maxLength(255),
                 TextInput::make('telefon_1')->label('Telefon 1')->required()->maxLength(20),
                 TextInput::make('telefon_2')->label('Telefon 2')->maxLength(20),
+                TextInput::make('ikamet_il')->label('İl')->maxLength(100),
+                TextInput::make('ikamet_ilce')->label('İlçe')->maxLength(100),
+                Textarea::make('adres')->label('Adres')->rows(3)->columnSpanFull(),
             ])
             ->fillForm(fn (): array => [
                 'ad_soyad' => $this->record->veliBilgisi?->ad_soyad,
                 'eposta' => $this->record->veliBilgisi?->eposta,
                 'telefon_1' => $this->record->veliBilgisi?->telefon_1,
                 'telefon_2' => $this->record->veliBilgisi?->telefon_2,
+                'ikamet_il' => $this->record->veliBilgisi?->ikamet_il,
+                'ikamet_ilce' => $this->record->veliBilgisi?->ikamet_ilce,
+                'adres' => $this->record->veliBilgisi?->adres,
             ])
             ->action(function (array $data): void {
                 $this->record->veliBilgisi()->updateOrCreate(
@@ -390,6 +405,9 @@ class ViewEkayitKayit extends ViewRecord
                         'eposta' => $data['eposta'] ?? null,
                         'telefon_1' => $data['telefon_1'],
                         'telefon_2' => $data['telefon_2'] ?? null,
+                        'ikamet_il' => $data['ikamet_il'] ?? null,
+                        'ikamet_ilce' => $data['ikamet_ilce'] ?? null,
+                        'adres' => $data['adres'] ?? null,
                     ]
                 );
 

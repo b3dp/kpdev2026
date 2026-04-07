@@ -90,6 +90,11 @@ class CreateEkayitKayit extends CreateRecord
                 TextInput::make('vel_eposta')->label('E-posta')->nullable()->email()->maxLength(255),
                 TextInput::make('vel_telefon_1')->label('Telefon 1 (WhatsApp)')->required()->maxLength(20),
                 TextInput::make('vel_telefon_2')->label('Telefon 2')->nullable()->maxLength(20),
+                Select::make('vel_ikamet_il')->label('İl')->nullable()
+                    ->options(fn () => collect(TurkiyeIller::tumu())->mapWithKeys(fn ($il) => [$il => $il])->all())
+                    ->searchable(),
+                TextInput::make('vel_ikamet_ilce')->label('İlçe')->nullable()->maxLength(100),
+                Textarea::make('vel_adres')->label('Adres')->nullable()->rows(2)->columnSpanFull(),
             ])->columns(2),
         ]);
     }
@@ -176,11 +181,14 @@ class CreateEkayitKayit extends CreateRecord
 
         // Veli bilgileri
         EkayitVeliBilgisi::create([
-            'kayit_id'   => $kayit->id,
-            'ad_soyad'   => $data['vel_ad_soyad'],
-            'eposta'     => $data['vel_eposta'] ?? null,
-            'telefon_1'  => $data['vel_telefon_1'],
-            'telefon_2'  => $data['vel_telefon_2'] ?? null,
+            'kayit_id'    => $kayit->id,
+            'ad_soyad'    => $data['vel_ad_soyad'],
+            'eposta'      => $data['vel_eposta'] ?? null,
+            'telefon_1'   => $data['vel_telefon_1'],
+            'telefon_2'   => $data['vel_telefon_2'] ?? null,
+            'ikamet_il'   => $data['vel_ikamet_il'] ?? null,
+            'ikamet_ilce' => $data['vel_ikamet_ilce'] ?? null,
+            'adres'       => $data['vel_adres'] ?? null,
         ]);
 
         // Başvuru alındı SMS'i

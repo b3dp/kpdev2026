@@ -4,9 +4,11 @@ namespace App\Jobs;
 
 use App\Enums\EkayitDurumu;
 use App\Models\EkayitKayit;
+use App\Services\EkayitPdfService;
 use App\Services\ZeptomailService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\URL;
 
 class EkayitDurumEpostasiJob implements ShouldQueue
 {
@@ -39,6 +41,15 @@ class EkayitDurumEpostasiJob implements ShouldQueue
         }
 
         $durumEnum = EkayitDurumu::tryFrom($this->durum);
+        $evrakUrl = null;
+
+        if ($durumEnum === EkayitDurumu::Onaylandi) {
+            app(EkayitPdfService::class)->olustur($kayit);
+
+            $evrakUrl = URL::temporarySignedRoute('ekayit.evrak.indir', now()->addDays(7), [
+                'kayit' => $kayit->id,
+            ]);
+        }
 
         $zeptomailService->ekayitDurumGonder(
             eposta: (string) $kayit->veliBilgisi->eposta,
@@ -48,6 +59,7 @@ class EkayitDurumEpostasiJob implements ShouldQueue
             kurum: (string) ($kayit->sinif?->kurum?->ad ?? ''),
             durum: $durumEnum?->label() ?? (string) $this->durum,
             durumNotu: $kayit->durum_notu,
+            evrakUrl: $evrakUrl,
         );
     }
 }

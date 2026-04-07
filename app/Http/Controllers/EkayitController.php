@@ -14,6 +14,7 @@ use App\Models\EkayitOkulBilgisi;
 use App\Models\EkayitSinif;
 use App\Models\EkayitVeliBilgisi;
 use App\Models\Uye;
+use App\Services\EkayitPdfService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -167,7 +168,7 @@ class EkayitController extends Controller
 
             foreach ($metinAlanlar as $alan) {
                 if ($request->has($alan) && filled($request->input($alan))) {
-                    $request->merge([$alan => mb_strtoupper(trim((string) $request->input($alan)), 'UTF-8')]);
+                    $request->merge([$alan => $this->metniBuyukHarfYap($request->input($alan))]);
                 }
             }
 
@@ -181,11 +182,15 @@ class EkayitController extends Controller
                 'kimlik_aile_sira_no' => preg_replace('/\D+/', '', (string) $request->input('kimlik_aile_sira_no')),
                 'kimlik_sira_no' => preg_replace('/\D+/', '', (string) $request->input('kimlik_sira_no')),
                 'kimlik_kan_grubu' => filled($request->input('kimlik_kan_grubu'))
-                    ? mb_strtoupper(trim((string) $request->input('kimlik_kan_grubu')), 'UTF-8')
+                    ? $this->metniBuyukHarfYap($request->input('kimlik_kan_grubu'))
                     : null,
                 'veli_telefon' => $this->telefonuTemizle($request->input('veli_telefon')),
+                'veli_telefon_2' => $this->telefonuTemizle($request->input('veli_telefon_2')),
                 'veli_eposta' => filled($request->input('veli_eposta'))
                     ? mb_strtolower(trim((string) $request->input('veli_eposta')), 'UTF-8')
+                    : null,
+                'okul_numarasi' => filled($request->input('okul_numarasi'))
+                    ? trim((string) $request->input('okul_numarasi'))
                     : null,
             ]);
 
@@ -204,7 +209,7 @@ class EkayitController extends Controller
                 'ogrenci_adres' => ['nullable', 'string', 'max:1000'],
                 'ogrenci_ikamet_il' => ['nullable', 'string', 'max:100', 'required_with:ogrenci_ikamet_ilce'],
                 'ogrenci_ikamet_ilce' => ['nullable', 'string', 'max:100', 'required_with:ogrenci_ikamet_il'],
-                'eski_tip_kimlik_var' => ['nullable', 'accepted'],
+                'eski_tip_kimlik_var' => ['nullable', 'boolean'],
                 'kimlik_kayitli_il' => ['nullable', 'string', 'max:100', 'required_with:eski_tip_kimlik_var'],
                 'kimlik_kayitli_ilce' => ['nullable', 'string', 'max:100', 'required_with:eski_tip_kimlik_var'],
                 'kimlik_kayitli_mahalle_koy' => ['nullable', 'string', 'max:255', 'required_with:eski_tip_kimlik_var'],
@@ -217,11 +222,13 @@ class EkayitController extends Controller
                 'ogrenci_cinsiyet' => ['required', 'in:E,K'],
                 'veli_ad_soyad' => ['required', 'string', 'max:255', 'regex:/^[A-ZÇĞİÖŞÜa-zçğıöşü\s]+$/u'],
                 'veli_telefon' => ['required', 'string', 'min:10', 'max:20'],
+                'veli_telefon_2' => ['nullable', 'string', 'min:10', 'max:20'],
                 'veli_eposta' => ['required', 'email', 'max:255'],
                 'veli_il' => ['nullable', 'string', 'max:100'],
                 'veli_ilce' => ['nullable', 'string', 'max:100', 'required_with:veli_il'],
                 'veli_adres' => ['nullable', 'string', 'max:1000'],
                 'okul_adi' => ['required', 'string', 'max:255'],
+                'okul_numarasi' => ['nullable', 'string', 'max:50'],
                 'okul_il' => ['required', 'string', 'max:100'],
                 'okul_ilce' => ['required', 'string', 'max:100'],
                 'okul_turu' => ['nullable', 'in:devlet,ozel,imam-hatip'],
@@ -303,14 +310,16 @@ class EkayitController extends Controller
                 'ikamet_ilce' => $veri['ogrenci_ikamet_ilce'] ?? null,
             ]);
 
+            $eskiTipKimlikVar = (bool) ($veri['eski_tip_kimlik_var'] ?? false);
+
             EkayitKimlikBilgisi::create([
                 'kayit_id' => $kayit->id,
-                'kayitli_il' => $veri['eski_tip_kimlik_var'] ? ($veri['kimlik_kayitli_il'] ?? null) : null,
-                'kayitli_ilce' => $veri['eski_tip_kimlik_var'] ? ($veri['kimlik_kayitli_ilce'] ?? null) : null,
-                'kayitli_mahalle_koy' => $veri['eski_tip_kimlik_var'] ? ($veri['kimlik_kayitli_mahalle_koy'] ?? null) : null,
-                'cilt_no' => $veri['eski_tip_kimlik_var'] ? ($veri['kimlik_cilt_no'] ?? null) : null,
-                'aile_sira_no' => $veri['eski_tip_kimlik_var'] ? ($veri['kimlik_aile_sira_no'] ?? null) : null,
-                'sira_no' => $veri['eski_tip_kimlik_var'] ? ($veri['kimlik_sira_no'] ?? null) : null,
+                'kayitli_il' => $eskiTipKimlikVar ? ($veri['kimlik_kayitli_il'] ?? null) : null,
+                'kayitli_ilce' => $eskiTipKimlikVar ? ($veri['kimlik_kayitli_ilce'] ?? null) : null,
+                'kayitli_mahalle_koy' => $eskiTipKimlikVar ? ($veri['kimlik_kayitli_mahalle_koy'] ?? null) : null,
+                'cilt_no' => $eskiTipKimlikVar ? ($veri['kimlik_cilt_no'] ?? null) : null,
+                'aile_sira_no' => $eskiTipKimlikVar ? ($veri['kimlik_aile_sira_no'] ?? null) : null,
+                'sira_no' => $eskiTipKimlikVar ? ($veri['kimlik_sira_no'] ?? null) : null,
                 'cuzdanin_verildigi_yer' => $veri['kimlik_cuzdanin_verildigi_yer'] ?? null,
                 'kimlik_seri_no' => $veri['kimlik_seri_no'] ?? null,
                 'kan_grubu' => $veri['kimlik_kan_grubu'] ?? null,
@@ -327,6 +336,7 @@ class EkayitController extends Controller
             EkayitOkulBilgisi::create([
                 'kayit_id' => $kayit->id,
                 'okul_adi' => $veri['okul_adi'],
+                'okul_numarasi' => $veri['okul_numarasi'] ?? null,
                 'not' => $okulNotu !== '' ? $okulNotu : null,
             ]);
 
@@ -335,6 +345,10 @@ class EkayitController extends Controller
                 'ad_soyad' => $veri['veli_ad_soyad'],
                 'eposta' => $veri['veli_eposta'],
                 'telefon_1' => $veri['veli_telefon'],
+                'telefon_2' => $veri['veli_telefon_2'] ?? null,
+                'adres' => $veri['veli_adres'] ?? null,
+                'ikamet_il' => $veri['veli_il'] ?? null,
+                'ikamet_ilce' => $veri['veli_ilce'] ?? null,
             ]);
 
             if (filled($veri['veli_telefon'])) {
@@ -372,6 +386,29 @@ class EkayitController extends Controller
         }
     }
 
+    public function evrakIndir(Request $request, EkayitKayit $kayit)
+    {
+        $uyeId = Auth::guard('uye')->id();
+        $erisimeIzinVar = $request->hasValidSignature()
+            || Auth::guard('admin')->check()
+            || ($uyeId && (int) $kayit->uye_id === (int) $uyeId);
+
+        abort_unless($erisimeIzinVar, 403);
+
+        $sonuc = app(EkayitPdfService::class)->olustur($kayit);
+
+        if (! $sonuc) {
+            return redirect()->route('ekayit.index')
+                ->with('error', 'PDF hazırlanırken bir sorun oluştu. Lütfen tekrar deneyin.');
+        }
+
+        return response()->streamDownload(function () use ($sonuc): void {
+            echo $sonuc['icerik'];
+        }, $sonuc['indirme_dosya_adi'], [
+            'Content-Type' => 'application/pdf',
+        ]);
+    }
+
     public function tesekkur()
     {
         $kayitId = session('son_ekayit_id');
@@ -391,14 +428,33 @@ class EkayitController extends Controller
         return view('pages.ekayit.tesekkur', compact('kayit'));
     }
 
-    protected function telefonuTemizle(?string $telefon): string
+    protected function metniBuyukHarfYap(?string $metin): ?string
+    {
+        $temizMetin = trim((string) $metin);
+
+        if ($temizMetin === '') {
+            return null;
+        }
+
+        return mb_strtoupper(strtr($temizMetin, ['i' => 'İ', 'ı' => 'I']), 'UTF-8');
+    }
+
+    protected function telefonuTemizle(?string $telefon): ?string
     {
         $temizTelefon = preg_replace('/\D+/', '', (string) $telefon) ?: '';
+
+        if ($temizTelefon === '') {
+            return null;
+        }
 
         if (str_starts_with($temizTelefon, '0090')) {
             $temizTelefon = substr($temizTelefon, 4);
         } elseif (str_starts_with($temizTelefon, '90')) {
             $temizTelefon = substr($temizTelefon, 2);
+        }
+
+        if ($temizTelefon === '') {
+            return null;
         }
 
         return str_starts_with($temizTelefon, '0') ? $temizTelefon : ('0'.$temizTelefon);

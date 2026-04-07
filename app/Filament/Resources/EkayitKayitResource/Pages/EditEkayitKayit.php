@@ -83,6 +83,11 @@ class EditEkayitKayit extends EditRecord
                 TextInput::make('vel_eposta')->label('E-posta')->nullable()->email()->maxLength(255),
                 TextInput::make('vel_telefon_1')->label('Telefon 1 (WhatsApp)')->required()->maxLength(20),
                 TextInput::make('vel_telefon_2')->label('Telefon 2')->nullable()->maxLength(20),
+                Select::make('vel_ikamet_il')->label('İl')->nullable()
+                    ->options(fn () => collect(TurkiyeIller::tumu())->mapWithKeys(fn ($il) => [$il => $il])->all())
+                    ->searchable(),
+                TextInput::make('vel_ikamet_ilce')->label('İlçe')->nullable()->maxLength(100),
+                Textarea::make('vel_adres')->label('Adres')->nullable()->rows(2)->columnSpanFull(),
             ])->columns(2),
         ]);
     }
@@ -127,10 +132,13 @@ class EditEkayitKayit extends EditRecord
             'okl_sube'          => $okl?->sube,
             'okl_not'           => $okl?->not,
             // Veli
-            'vel_ad_soyad'  => $vel?->ad_soyad,
-            'vel_eposta'    => $vel?->eposta,
-            'vel_telefon_1' => $vel?->telefon_1,
-            'vel_telefon_2' => $vel?->telefon_2,
+            'vel_ad_soyad'   => $vel?->ad_soyad,
+            'vel_eposta'     => $vel?->eposta,
+            'vel_telefon_1'  => $vel?->telefon_1,
+            'vel_telefon_2'  => $vel?->telefon_2,
+            'vel_ikamet_il'  => $vel?->ikamet_il,
+            'vel_ikamet_ilce'=> $vel?->ikamet_ilce,
+            'vel_adres'      => $vel?->adres,
         ]);
     }
 
@@ -194,10 +202,13 @@ class EditEkayitKayit extends EditRecord
 
         // Veli
         $kayit->veliBilgisi()->updateOrCreate(['kayit_id' => $kayit->id], [
-            'ad_soyad'  => $data['vel_ad_soyad'],
-            'eposta'    => $data['vel_eposta'] ?? null,
-            'telefon_1' => $data['vel_telefon_1'],
-            'telefon_2' => $data['vel_telefon_2'] ?? null,
+            'ad_soyad'    => $data['vel_ad_soyad'],
+            'eposta'      => $data['vel_eposta'] ?? null,
+            'telefon_1'   => $data['vel_telefon_1'],
+            'telefon_2'   => $data['vel_telefon_2'] ?? null,
+            'ikamet_il'   => $data['vel_ikamet_il'] ?? null,
+            'ikamet_ilce' => $data['vel_ikamet_ilce'] ?? null,
+            'adres'       => $data['vel_adres'] ?? null,
         ]);
 
         return $kayit;

@@ -38,6 +38,7 @@ Route::get('/mezunlar/{id}', [MezunController::class, 'show'])->name('mezunlar.s
 Route::get('/kayit', [EkayitController::class, 'index'])->name('ekayit.index');
 Route::get('/kayit/form', [EkayitController::class, 'form'])->name('ekayit.form');
 Route::post('/kayit/store', [EkayitController::class, 'store'])->name('ekayit.store');
+Route::get('/kayit/evrak/{kayit}', [EkayitController::class, 'evrakIndir'])->name('ekayit.evrak.indir');
 Route::get('/kayit/tesekkur', [EkayitController::class, 'tesekkur'])->name('ekayit.tesekkur');
 Route::get('/arama', [AramaController::class, 'index'])->name('arama.index');
 
