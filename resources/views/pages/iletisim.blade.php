@@ -40,7 +40,7 @@
 @endsection
 
 @section('content')
-    <section class="border-b border-primary/8 bg-white pt-[106px] lg:pt-[114px]">
+    <section class="border-b border-primary/8 bg-white pt-0">
         <div class="mx-auto max-w-7xl px-4 pb-6 pt-7 lg:px-6">
             <div class="mb-4 flex items-center gap-2 text-[13px] text-teal-muted">
                 <a href="{{ route('home') }}" class="transition hover:text-accent">Ana Sayfa</a>

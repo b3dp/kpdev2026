@@ -1,3 +1,26 @@
+:root {
+  --app-header-offset: 106px;
+  --checkout-header-offset: 64px;
+}
+
+html {
+  scroll-padding-top: calc(var(--app-header-offset) + 12px);
+}
+
+body.site-layout main {
+  padding-top: var(--app-header-offset);
+}
+
+body.checkout-layout main {
+  padding-top: var(--checkout-header-offset);
+}
+
+@media (max-width: 1023px) {
+  :root {
+    --app-header-offset: 104px;
+  }
+}
+
 #top-bar {
   transition: max-height 0.3s ease, opacity 0.3s ease;
   max-height: 40px;

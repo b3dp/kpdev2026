@@ -80,7 +80,7 @@
 @endsection
 
 @section('content')
-<div style="padding-top:114px;background:#fff;border-bottom:1px solid rgba(22,46,75,.07);">
+<div style="padding-top:0;background:#fff;border-bottom:1px solid rgba(22,46,75,.07);">
   <div style="max-width:1280px;margin:0 auto;padding:16px 24px;">
     <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
       <a href="{{ route('home') }}" class="font-jakarta text-[13px] text-teal-muted no-underline transition-colors hover:text-accent">Ana Sayfa</a>

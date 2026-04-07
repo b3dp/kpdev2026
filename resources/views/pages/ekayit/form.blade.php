@@ -5,7 +5,7 @@
 @section('robots', 'noindex, nofollow')
 
 @section('content')
-<div class="ekayit-form-wrap px-6 pb-20 pt-[106px] lg:pt-[114px]">
+<div class="ekayit-form-wrap px-6 pb-20 pt-5 md:pt-6">
   <div class="mx-auto max-w-4xl">
     <div class="mb-5 flex items-center gap-1.5 text-[13px] font-jakarta text-teal-muted">
       <a href="{{ route('home') }}" class="transition-colors hover:text-accent">Ana Sayfa</a>

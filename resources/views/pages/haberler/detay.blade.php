@@ -252,7 +252,7 @@
         }
     </style>
 
-    <div class="border-b border-primary/10 bg-white pb-5 pt-[106px] lg:pt-[114px]">
+    <div class="border-b border-primary/10 bg-white pb-5 pt-0">
         <div class="mx-auto max-w-7xl px-6 pt-6">
             <div class="flex flex-wrap items-center gap-1.5">
                 <a href="{{ route('home') }}" class="font-jakarta text-[13px] text-teal-muted transition-colors hover:text-accent">Ana Sayfa</a>

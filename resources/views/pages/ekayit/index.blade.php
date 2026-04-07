@@ -18,7 +18,7 @@
 @endsection
 
 @section('content')
-<div class="pt-[106px] lg:pt-[114px]">
+<div class="pt-0">
   <section class="border-b border-primary/10 bg-white">
     <div class="mx-auto flex max-w-7xl flex-wrap items-end justify-between gap-4 px-6 py-7">
       <div>

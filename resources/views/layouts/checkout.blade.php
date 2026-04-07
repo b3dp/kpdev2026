@@ -30,7 +30,7 @@
 @yield('schema')
 @vite(['resources/css/app.css','resources/js/app.js'])
 </head>
-<body class="font-jakarta bg-bg-soft">
+<body class="checkout-layout font-jakarta bg-bg-soft">
 
   @php
     $checkout_sepet = session('sepet', $sepet ?? []);
