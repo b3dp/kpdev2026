@@ -51,14 +51,17 @@ class CreateEkayitKayit extends CreateRecord
                 TextInput::make('ogr_ad_soyad')->label('Ad Soyad')->required()->maxLength(255),
                 TextInput::make('ogr_tc_kimlik')->label('TC Kimlik')
                     ->required()->length(11)->numeric(),
+                TextInput::make('ogr_telefon')->label('Cep Telefonu')->tel()->maxLength(20),
+                TextInput::make('ogr_eposta')->label('E-posta')->email()->maxLength(255),
                 TextInput::make('ogr_dogum_yeri')->label('Doğum Yeri')->nullable()->maxLength(255),
                 DatePicker::make('ogr_dogum_tarihi')->label('Doğum Tarihi')->required(),
                 TextInput::make('ogr_baba_adi')->label('Baba Adı')->nullable()->maxLength(255),
                 TextInput::make('ogr_anne_adi')->label('Anne Adı')->nullable()->maxLength(255),
                 Textarea::make('ogr_adres')->label('Adres')->nullable()->rows(2)->columnSpanFull(),
-                Select::make('ogr_ikamet_il')->label('İkamet İl / İlçe')->nullable()
+                Select::make('ogr_ikamet_il')->label('İkamet İl')->nullable()
                     ->options(fn () => collect(TurkiyeIller::tumu())->mapWithKeys(fn ($il) => [$il => $il])->all())
                     ->searchable(),
+                TextInput::make('ogr_ikamet_ilce')->label('İkamet İlçesi')->nullable()->maxLength(100),
             ])->columns(2),
 
             Section::make('Kimlik Bilgileri')->schema([
@@ -137,12 +140,15 @@ class CreateEkayitKayit extends CreateRecord
             'kayit_id'    => $kayit->id,
             'ad_soyad'    => $data['ogr_ad_soyad'],
             'tc_kimlik'   => $tcKimlik,
+            'telefon'     => $data['ogr_telefon'] ?? null,
+            'eposta'      => $data['ogr_eposta'] ?? null,
             'dogum_yeri'  => $data['ogr_dogum_yeri'] ?? null,
             'dogum_tarihi'=> $data['ogr_dogum_tarihi'],
             'baba_adi'    => $data['ogr_baba_adi'] ?? null,
             'anne_adi'    => $data['ogr_anne_adi'] ?? null,
             'adres'       => $data['ogr_adres'] ?? null,
             'ikamet_il'   => $data['ogr_ikamet_il'] ?? null,
+            'ikamet_ilce' => $data['ogr_ikamet_ilce'] ?? null,
         ]);
 
         // Kimlik bilgileri

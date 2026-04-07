@@ -12,8 +12,8 @@ class EkayitOgrenciBilgisi extends Model
     protected $table = 'ekayit_ogrenci_bilgileri';
 
     protected $fillable = [
-        'kayit_id', 'ad_soyad', 'tc_kimlik', 'dogum_yeri',
-        'dogum_tarihi', 'baba_adi', 'anne_adi', 'adres', 'ikamet_il',
+        'kayit_id', 'ad_soyad', 'tc_kimlik', 'telefon', 'eposta', 'dogum_yeri',
+        'dogum_tarihi', 'baba_adi', 'anne_adi', 'adres', 'ikamet_il', 'ikamet_ilce',
     ];
 
     protected function casts(): array

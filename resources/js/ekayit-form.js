@@ -120,6 +120,8 @@ document.addEventListener('DOMContentLoaded', () => {
       { label: 'Öğrenci Adı', deger: () => form.querySelector('[name="ogrenci_ad"]')?.value },
       { label: 'Öğrenci Soyadı', deger: () => form.querySelector('[name="ogrenci_soyad"]')?.value },
       { label: 'TC Kimlik', deger: () => form.querySelector('[name="ogrenci_tc"]')?.value },
+      { label: 'Öğrenci Telefon', deger: () => form.querySelector('[name="ogrenci_telefon"]')?.value },
+      { label: 'Öğrenci E-posta', deger: () => form.querySelector('[name="ogrenci_eposta"]')?.value },
       { label: 'Doğum Tarihi', deger: () => form.querySelector('[name="ogrenci_dogum_tarihi"]')?.value },
       {
         label: 'Öğrenci İl / İlçe',

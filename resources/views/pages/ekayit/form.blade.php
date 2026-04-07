@@ -19,19 +19,20 @@
       <span class="font-medium text-primary">Başvuru Formu</span>
     </div>
 
-    <div class="mb-8 flex flex-wrap items-end justify-between gap-3">
+    <div class="mb-8 space-y-4">
+      @if($sinif)
+        <div class="rounded-[22px] border border-accent/20 bg-[linear-gradient(135deg,#fff,#f7f5f0)] px-5 py-4 shadow-sm">
+          <p class="font-jakarta text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">Seçilen Sınıf</p>
+          <p class="mt-1 font-baskerville text-[clamp(24px,3vw,30px)] font-bold text-primary">{{ $sinif->ad }}</p>
+          <p class="mt-1 font-jakarta text-sm text-teal-muted">Başvurunuz bu sınıf için oluşturulacaktır.</p>
+        </div>
+      @endif
+
       <div>
         <p class="mb-1.5 font-jakarta text-[12.5px] font-semibold uppercase tracking-[0.18em] text-accent">Online Başvuru</p>
         <h1 class="font-baskerville text-[clamp(24px,3vw,34px)] font-bold text-primary">E-Kayıt Başvuru Formu</h1>
         <p class="mt-2 font-jakarta text-sm text-teal-muted">Öğrenci, veli ve okul bilgilerini eksiksiz doldurup başvurunuzu tamamlayın.</p>
       </div>
-
-      @if($sinif)
-        <div class="rounded-2xl border border-primary/10 bg-white px-4 py-3">
-          <p class="font-jakarta text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-muted">Seçilen Sınıf</p>
-          <p class="mt-1 font-baskerville text-base font-bold text-primary">{{ $sinif->ad }}</p>
-        </div>
-      @endif
     </div>
 
     @if(session('error'))
@@ -93,6 +94,16 @@
             </div>
 
             <div class="form-group">
+              <label class="form-label">Cep Telefonu <span>*</span></label>
+              <input type="tel" name="ogrenci_telefon" lang="tr" class="form-input @error('ogrenci_telefon') border-red-400 @enderror" autocomplete="tel" inputmode="numeric" pattern="[0-9\s]+" placeholder="05XX XXX XX XX" required value="{{ old('ogrenci_telefon') }}">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">E-posta <span>*</span></label>
+              <input type="email" name="ogrenci_eposta" lang="tr" class="form-input @error('ogrenci_eposta') border-red-400 @enderror" autocomplete="email" placeholder="ogrenci@mail.com" required value="{{ old('ogrenci_eposta') }}">
+            </div>
+
+            <div class="form-group">
               <label class="form-label">Doğum Yeri</label>
               <input type="text" name="ogrenci_dogum_yeri" lang="tr" class="form-input uppercase-input" pattern="[A-ZÇĞİÖŞÜa-zçğıöşü\s]+" placeholder="İL / İLÇE" value="{{ old('ogrenci_dogum_yeri') }}">
             </div>
@@ -128,10 +139,6 @@
               </div>
             @else
               <input type="hidden" name="sinif_id" value="{{ $sinif->id }}">
-              <div class="form-group">
-                <label class="form-label">Seçilen Sınıf</label>
-                <div class="form-input bg-bg-soft opacity-70 cursor-not-allowed">{{ $sinif->ad }}</div>
-              </div>
             @endif
 
             <div class="form-group sm:col-span-2">

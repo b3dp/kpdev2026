@@ -216,10 +216,13 @@ class ViewEkayitKayit extends ViewRecord
                             }),
                         TextEntry::make('ogrenciBilgisi.dogum_tarihi')->label('Doğum Tarihi')
                             ->formatStateUsing(fn ($state): string => $state ? Carbon::parse($state)->format('d.m.Y') : '—'),
+                        TextEntry::make('ogrenciBilgisi.telefon')->label('Cep Telefonu')->default('—'),
+                        TextEntry::make('ogrenciBilgisi.eposta')->label('E-posta')->default('—'),
                         TextEntry::make('ogrenciBilgisi.dogum_yeri')->label('Doğum Yeri')->default('—'),
                         TextEntry::make('ogrenciBilgisi.baba_adi')->label('Baba Adı')->default('—'),
                         TextEntry::make('ogrenciBilgisi.anne_adi')->label('Anne Adı')->default('—'),
-                        TextEntry::make('ogrenciBilgisi.ikamet_il')->label('İkamet İl / İlçe')->default('—'),
+                        TextEntry::make('ogrenciBilgisi.ikamet_il')->label('İkamet İl')->default('—'),
+                        TextEntry::make('ogrenciBilgisi.ikamet_ilce')->label('İkamet İlçe')->default('—'),
                         TextEntry::make('ogrenciBilgisi.adres')->label('Adres')->default('—')->columnSpanFull(),
                     ])
                     ->headerActions([
@@ -314,21 +317,27 @@ class ViewEkayitKayit extends ViewRecord
             ->form([
                 TextInput::make('ad_soyad')->label('Ad Soyad')->required()->maxLength(255),
                 TextInput::make('tc_kimlik')->label('TC Kimlik')->required()->maxLength(11),
+                TextInput::make('telefon')->label('Cep Telefonu')->tel()->maxLength(20),
+                TextInput::make('eposta')->label('E-posta')->email()->maxLength(255),
                 DatePicker::make('dogum_tarihi')->label('Doğum Tarihi')->required(),
                 TextInput::make('dogum_yeri')->label('Doğum Yeri')->maxLength(255),
                 TextInput::make('baba_adi')->label('Baba Adı')->maxLength(255),
                 TextInput::make('anne_adi')->label('Anne Adı')->maxLength(255),
-                TextInput::make('ikamet_il')->label('İkamet İl / İlçe')->maxLength(100),
+                TextInput::make('ikamet_il')->label('İkamet İl')->maxLength(100),
+                TextInput::make('ikamet_ilce')->label('İkamet İlçe')->maxLength(100),
                 Textarea::make('adres')->label('Adres')->rows(3)->columnSpanFull(),
             ])
             ->fillForm(fn (): array => [
                 'ad_soyad' => $this->record->ogrenciBilgisi?->ad_soyad,
                 'tc_kimlik' => $this->record->ogrenciBilgisi?->tc_kimlik,
+                'telefon' => $this->record->ogrenciBilgisi?->telefon,
+                'eposta' => $this->record->ogrenciBilgisi?->eposta,
                 'dogum_tarihi' => $this->record->ogrenciBilgisi?->dogum_tarihi?->toDateString(),
                 'dogum_yeri' => $this->record->ogrenciBilgisi?->dogum_yeri,
                 'baba_adi' => $this->record->ogrenciBilgisi?->baba_adi,
                 'anne_adi' => $this->record->ogrenciBilgisi?->anne_adi,
                 'ikamet_il' => $this->record->ogrenciBilgisi?->ikamet_il,
+                'ikamet_ilce' => $this->record->ogrenciBilgisi?->ikamet_ilce,
                 'adres' => $this->record->ogrenciBilgisi?->adres,
             ])
             ->action(function (array $data): void {
@@ -337,11 +346,14 @@ class ViewEkayitKayit extends ViewRecord
                     [
                         'ad_soyad' => $data['ad_soyad'],
                         'tc_kimlik' => $data['tc_kimlik'],
+                        'telefon' => $data['telefon'] ?? null,
+                        'eposta' => $data['eposta'] ?? null,
                         'dogum_tarihi' => $data['dogum_tarihi'],
                         'dogum_yeri' => $data['dogum_yeri'] ?? null,
                         'baba_adi' => $data['baba_adi'] ?? null,
                         'anne_adi' => $data['anne_adi'] ?? null,
                         'ikamet_il' => $data['ikamet_il'] ?? null,
+                        'ikamet_ilce' => $data['ikamet_ilce'] ?? null,
                         'adres' => $data['adres'] ?? null,
                     ]
                 );

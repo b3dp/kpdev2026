@@ -171,6 +171,10 @@ class EkayitController extends Controller
 
             $request->merge([
                 'ogrenci_tc' => preg_replace('/\D+/', '', (string) $request->input('ogrenci_tc')),
+                'ogrenci_telefon' => $this->telefonuTemizle($request->input('ogrenci_telefon')),
+                'ogrenci_eposta' => filled($request->input('ogrenci_eposta'))
+                    ? mb_strtolower(trim((string) $request->input('ogrenci_eposta')), 'UTF-8')
+                    : null,
                 'veli_telefon' => $this->telefonuTemizle($request->input('veli_telefon')),
                 'veli_eposta' => filled($request->input('veli_eposta'))
                     ? mb_strtolower(trim((string) $request->input('veli_eposta')), 'UTF-8')
@@ -183,6 +187,8 @@ class EkayitController extends Controller
                 'ogrenci_ad' => ['required', 'string', 'max:100', 'regex:/^[A-ZÇĞİÖŞÜa-zçğıöşü\s]+$/u'],
                 'ogrenci_soyad' => ['required', 'string', 'max:100', 'regex:/^[A-ZÇĞİÖŞÜa-zçğıöşü\s]+$/u'],
                 'ogrenci_tc' => ['required', 'digits:11'],
+                'ogrenci_telefon' => ['required', 'string', 'min:10', 'max:20'],
+                'ogrenci_eposta' => ['required', 'email', 'max:255'],
                 'ogrenci_dogum_tarihi' => ['required', 'date'],
                 'ogrenci_dogum_yeri' => ['nullable', 'string', 'max:255'],
                 'ogrenci_baba_adi' => ['nullable', 'string', 'max:255'],
@@ -268,15 +274,15 @@ class EkayitController extends Controller
                 'kayit_id' => $kayit->id,
                 'ad_soyad' => trim($veri['ogrenci_ad'].' '.$veri['ogrenci_soyad']),
                 'tc_kimlik' => $veri['ogrenci_tc'],
+                'telefon' => $veri['ogrenci_telefon'],
+                'eposta' => $veri['ogrenci_eposta'],
                 'dogum_yeri' => $veri['ogrenci_dogum_yeri'] ?? null,
                 'dogum_tarihi' => $veri['ogrenci_dogum_tarihi'],
                 'baba_adi' => $veri['ogrenci_baba_adi'] ?? null,
                 'anne_adi' => $veri['ogrenci_anne_adi'] ?? null,
                 'adres' => $veri['ogrenci_adres'] ?? null,
-                'ikamet_il' => collect([
-                    $veri['ogrenci_ikamet_il'] ?? null,
-                    $veri['ogrenci_ikamet_ilce'] ?? null,
-                ])->filter()->implode(' / ') ?: null,
+                'ikamet_il' => $veri['ogrenci_ikamet_il'] ?? null,
+                'ikamet_ilce' => $veri['ogrenci_ikamet_ilce'] ?? null,
             ]);
 
             EkayitKimlikBilgisi::create([
