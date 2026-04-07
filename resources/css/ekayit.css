@@ -1,0 +1,131 @@
+.sinif-kart {
+  background: #fff;
+  border: 2px solid rgba(22, 46, 75, 0.09);
+  border-radius: 16px;
+  min-height: 158px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  padding: 16px 12px;
+  text-align: center;
+}
+
+.sinif-kart::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #162E4B, #28484C);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.sinif-kart:hover {
+  border-color: #B27829;
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(22, 46, 75, 0.15);
+}
+
+.sinif-kart:hover::before {
+  opacity: 1;
+}
+
+.sinif-kart:hover .sk-num {
+  color: #EBDFB5;
+}
+
+.sinif-kart:hover .sk-label,
+.sinif-kart:hover .sk-name {
+  color: rgba(235, 223, 181, 0.75);
+}
+
+.sinif-kart:hover .sk-badge {
+  background: rgba(178, 120, 41, 0.3);
+  color: #EBDFB5;
+}
+
+.sinif-kart:hover .sk-arrow {
+  opacity: 1;
+  color: #B27829;
+}
+
+.sk-num {
+  font-family: 'Libre Baskerville', serif;
+  font-weight: 700;
+  font-size: clamp(24px, 3vw, 36px);
+  color: #162E4B;
+  position: relative;
+  z-index: 1;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.sk-label {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #62868D;
+  position: relative;
+  z-index: 1;
+  transition: color 0.2s;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sk-badge {
+  position: relative;
+  z-index: 1;
+  background: rgba(22, 46, 75, 0.07);
+  color: #62868D;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: all 0.2s;
+}
+
+.sk-name {
+  position: relative;
+  z-index: 1;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 11px;
+  line-height: 1.45;
+  color: rgba(22, 46, 75, 0.6);
+  max-width: 100%;
+}
+
+.sk-arrow {
+  position: absolute;
+  bottom: 12px;
+  right: 14px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 1;
+}
+
+.grup-baslik {
+  font-family: 'Libre Baskerville', serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: rgba(22, 46, 75, 0.45);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.grup-baslik::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(22, 46, 75, 0.1);
+}
