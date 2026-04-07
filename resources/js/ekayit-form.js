@@ -121,6 +121,14 @@ document.addEventListener('DOMContentLoaded', () => {
       { label: 'Öğrenci Soyadı', deger: () => form.querySelector('[name="ogrenci_soyad"]')?.value },
       { label: 'TC Kimlik', deger: () => form.querySelector('[name="ogrenci_tc"]')?.value },
       { label: 'Doğum Tarihi', deger: () => form.querySelector('[name="ogrenci_dogum_tarihi"]')?.value },
+      {
+        label: 'Öğrenci İl / İlçe',
+        deger: () => {
+          const il = form.querySelector('[name="ogrenci_ikamet_il"]')?.value;
+          const ilce = form.querySelector('[name="ogrenci_ikamet_ilce"]')?.value;
+          return [il, ilce].filter(Boolean).join(' / ');
+        },
+      },
       { label: 'Veli Ad Soyad', deger: () => form.querySelector('[name="veli_ad_soyad"]')?.value },
       { label: 'Veli Telefon', deger: () => form.querySelector('[name="veli_telefon"]')?.value },
       { label: 'Veli E-posta', deger: () => form.querySelector('[name="veli_eposta"]')?.value },
@@ -213,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  ['veli', 'okul'].forEach((grup) => {
+  ['ogrenci', 'veli', 'okul'].forEach((grup) => {
     const ilSelect = form.querySelector(`[data-il-select="${grup}"]`);
 
     if (!ilSelect) {

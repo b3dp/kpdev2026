@@ -49,7 +49,7 @@ class EditEkayitKayit extends EditRecord
                 TextInput::make('ogr_baba_adi')->label('Baba Adı')->nullable()->maxLength(255),
                 TextInput::make('ogr_anne_adi')->label('Anne Adı')->nullable()->maxLength(255),
                 Textarea::make('ogr_adres')->label('Adres')->nullable()->rows(2)->columnSpanFull(),
-                Select::make('ogr_ikamet_il')->label('İkamet İl')->nullable()
+                Select::make('ogr_ikamet_il')->label('İkamet İl / İlçe')->nullable()
                     ->options(fn () => collect(TurkiyeIller::tumu())->mapWithKeys(fn ($il) => [$il => $il])->all())
                     ->searchable(),
             ])->columns(2),
@@ -81,11 +81,6 @@ class EditEkayitKayit extends EditRecord
                 TextInput::make('vel_telefon_1')->label('Telefon 1 (WhatsApp)')->required()->maxLength(20),
                 TextInput::make('vel_telefon_2')->label('Telefon 2')->nullable()->maxLength(20),
             ])->columns(2),
-
-            Section::make('Baba Bilgileri')->schema([
-                TextInput::make('bab_dogum_yeri')->label('Doğum Yeri')->nullable()->maxLength(255),
-                TextInput::make('bab_nufus_il_ilce')->label('Nüfusa Kayıtlı Olduğu İl/İlçe')->nullable()->maxLength(255),
-            ])->columns(2),
         ]);
     }
 
@@ -93,13 +88,12 @@ class EditEkayitKayit extends EditRecord
     {
         /** @var EkayitKayit $kayit */
         $kayit = $this->record;
-        $kayit->loadMissing(['ogrenciBilgisi', 'kimlikBilgisi', 'okulBilgisi', 'veliBilgisi', 'babaBilgisi']);
+        $kayit->loadMissing(['ogrenciBilgisi', 'kimlikBilgisi', 'okulBilgisi', 'veliBilgisi']);
 
         $ogr = $kayit->ogrenciBilgisi;
         $kim = $kayit->kimlikBilgisi;
         $okl = $kayit->okulBilgisi;
         $vel = $kayit->veliBilgisi;
-        $bab = $kayit->babaBilgisi;
 
         return array_merge($data, [
             // Öğrenci
@@ -131,9 +125,6 @@ class EditEkayitKayit extends EditRecord
             'vel_eposta'    => $vel?->eposta,
             'vel_telefon_1' => $vel?->telefon_1,
             'vel_telefon_2' => $vel?->telefon_2,
-            // Baba
-            'bab_dogum_yeri'    => $bab?->dogum_yeri,
-            'bab_nufus_il_ilce' => $bab?->nufus_il_ilce,
         ]);
     }
 
@@ -198,12 +189,6 @@ class EditEkayitKayit extends EditRecord
             'eposta'    => $data['vel_eposta'] ?? null,
             'telefon_1' => $data['vel_telefon_1'],
             'telefon_2' => $data['vel_telefon_2'] ?? null,
-        ]);
-
-        // Baba
-        $kayit->babaBilgisi()->updateOrCreate(['kayit_id' => $kayit->id], [
-            'dogum_yeri'    => $data['bab_dogum_yeri'] ?? null,
-            'nufus_il_ilce' => $data['bab_nufus_il_ilce'] ?? null,
         ]);
 
         return $kayit;

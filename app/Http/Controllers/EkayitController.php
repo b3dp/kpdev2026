@@ -6,7 +6,6 @@ use App\Data\TurkiyeIlceler;
 use App\Data\TurkiyeIller;
 use App\Enums\EkayitDurumu;
 use App\Jobs\EkayitSmsJob;
-use App\Models\EkayitBabaBilgisi;
 use App\Models\EkayitDonem;
 use App\Models\EkayitKayit;
 use App\Models\EkayitKimlikBilgisi;
@@ -133,6 +132,7 @@ class EkayitController extends Controller
 
         $sinifSecenekleri = $this->getirDonemSiniflari((int) $aktifDonem->id);
         $iller = TurkiyeIller::secenekler();
+        $ogrenciIlceleri = TurkiyeIlceler::ilceSecenekleri((string) old('ogrenci_ikamet_il'));
         $veliIlceleri = TurkiyeIlceler::ilceSecenekleri((string) old('veli_il'));
         $okulIlceleri = TurkiyeIlceler::ilceSecenekleri((string) old('okul_il'));
         $ilceler_haritasi = TurkiyeIlceler::tumu();
@@ -142,6 +142,7 @@ class EkayitController extends Controller
             'aktifDonem',
             'sinifSecenekleri',
             'iller',
+            'ogrenciIlceleri',
             'veliIlceleri',
             'okulIlceleri',
             'ilceler_haritasi'
@@ -159,8 +160,7 @@ class EkayitController extends Controller
 
             $metinAlanlar = [
                 'ogrenci_ad', 'ogrenci_soyad', 'ogrenci_dogum_yeri', 'ogrenci_baba_adi', 'ogrenci_anne_adi',
-                'ogrenci_adres', 'ogrenci_ikamet_il', 'veli_ad_soyad', 'veli_adres', 'baba_dogum_yeri',
-                'baba_nufus_il_ilce', 'okul_adi', 'otp_kodu',
+                'ogrenci_adres', 'veli_ad_soyad', 'veli_adres', 'okul_adi', 'otp_kodu',
             ];
 
             foreach ($metinAlanlar as $alan) {
@@ -188,7 +188,8 @@ class EkayitController extends Controller
                 'ogrenci_baba_adi' => ['nullable', 'string', 'max:255'],
                 'ogrenci_anne_adi' => ['nullable', 'string', 'max:255'],
                 'ogrenci_adres' => ['nullable', 'string', 'max:1000'],
-                'ogrenci_ikamet_il' => ['nullable', 'string', 'max:100'],
+                'ogrenci_ikamet_il' => ['nullable', 'string', 'max:100', 'required_with:ogrenci_ikamet_ilce'],
+                'ogrenci_ikamet_ilce' => ['nullable', 'string', 'max:100', 'required_with:ogrenci_ikamet_il'],
                 'ogrenci_cinsiyet' => ['required', 'in:E,K'],
                 'veli_ad_soyad' => ['required', 'string', 'max:255', 'regex:/^[A-ZÇĞİÖŞÜa-zçğıöşü\s]+$/u'],
                 'veli_telefon' => ['required', 'string', 'min:10', 'max:20'],
@@ -196,8 +197,6 @@ class EkayitController extends Controller
                 'veli_il' => ['nullable', 'string', 'max:100'],
                 'veli_ilce' => ['nullable', 'string', 'max:100', 'required_with:veli_il'],
                 'veli_adres' => ['nullable', 'string', 'max:1000'],
-                'baba_dogum_yeri' => ['nullable', 'string', 'max:255'],
-                'baba_nufus_il_ilce' => ['nullable', 'string', 'max:255'],
                 'okul_adi' => ['required', 'string', 'max:255'],
                 'okul_il' => ['required', 'string', 'max:100'],
                 'okul_ilce' => ['required', 'string', 'max:100'],
@@ -274,7 +273,10 @@ class EkayitController extends Controller
                 'baba_adi' => $veri['ogrenci_baba_adi'] ?? null,
                 'anne_adi' => $veri['ogrenci_anne_adi'] ?? null,
                 'adres' => $veri['ogrenci_adres'] ?? null,
-                'ikamet_il' => $veri['ogrenci_ikamet_il'] ?? null,
+                'ikamet_il' => collect([
+                    $veri['ogrenci_ikamet_il'] ?? null,
+                    $veri['ogrenci_ikamet_ilce'] ?? null,
+                ])->filter()->implode(' / ') ?: null,
             ]);
 
             EkayitKimlikBilgisi::create([
@@ -300,12 +302,6 @@ class EkayitController extends Controller
                 'ad_soyad' => $veri['veli_ad_soyad'],
                 'eposta' => $veri['veli_eposta'],
                 'telefon_1' => $veri['veli_telefon'],
-            ]);
-
-            EkayitBabaBilgisi::create([
-                'kayit_id' => $kayit->id,
-                'dogum_yeri' => $veri['baba_dogum_yeri'] ?? null,
-                'nufus_il_ilce' => $veri['baba_nufus_il_ilce'] ?? null,
             ]);
 
             if (filled($veri['veli_telefon'])) {

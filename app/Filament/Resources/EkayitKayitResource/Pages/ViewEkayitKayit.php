@@ -219,7 +219,7 @@ class ViewEkayitKayit extends ViewRecord
                         TextEntry::make('ogrenciBilgisi.dogum_yeri')->label('Doğum Yeri')->default('—'),
                         TextEntry::make('ogrenciBilgisi.baba_adi')->label('Baba Adı')->default('—'),
                         TextEntry::make('ogrenciBilgisi.anne_adi')->label('Anne Adı')->default('—'),
-                        TextEntry::make('ogrenciBilgisi.ikamet_il')->label('İkamet İl')->default('—'),
+                        TextEntry::make('ogrenciBilgisi.ikamet_il')->label('İkamet İl / İlçe')->default('—'),
                         TextEntry::make('ogrenciBilgisi.adres')->label('Adres')->default('—')->columnSpanFull(),
                     ])
                     ->headerActions([
@@ -267,15 +267,7 @@ class ViewEkayitKayit extends ViewRecord
                         $this->kimlikBilgisiDuzenleAksiyonu(),
                     ]),
 
-                Section::make('Baba Bilgileri')
-                    ->columnSpan(1)
-                    ->schema([
-                        TextEntry::make('babaBilgisi.dogum_yeri')->label('Doğum Yeri')->default('—'),
-                        TextEntry::make('babaBilgisi.nufus_il_ilce')->label('Nüfus İl/İlçe')->default('—'),
-                    ])
-                    ->headerActions([
-                        $this->babaBilgisiDuzenleAksiyonu(),
-                    ]),
+
             ]),
         ]);
     }
@@ -326,7 +318,7 @@ class ViewEkayitKayit extends ViewRecord
                 TextInput::make('dogum_yeri')->label('Doğum Yeri')->maxLength(255),
                 TextInput::make('baba_adi')->label('Baba Adı')->maxLength(255),
                 TextInput::make('anne_adi')->label('Anne Adı')->maxLength(255),
-                TextInput::make('ikamet_il')->label('İkamet İl')->maxLength(100),
+                TextInput::make('ikamet_il')->label('İkamet İl / İlçe')->maxLength(100),
                 Textarea::make('adres')->label('Adres')->rows(3)->columnSpanFull(),
             ])
             ->fillForm(fn (): array => [

@@ -116,11 +116,6 @@
               <input type="text" name="ogrenci_anne_adi" lang="tr" class="form-input uppercase-input" pattern="[A-ZÇĞİÖŞÜa-zçğıöşü\s]+" placeholder="ANNE ADI" value="{{ old('ogrenci_anne_adi') }}">
             </div>
 
-            <div class="form-group">
-              <label class="form-label">İkamet İli</label>
-              <input type="text" name="ogrenci_ikamet_il" lang="tr" class="form-input uppercase-input" pattern="[A-ZÇĞİÖŞÜa-zçğıöşü\s]+" placeholder="İL" value="{{ old('ogrenci_ikamet_il') }}">
-            </div>
-
             @if(!$sinif)
               <div class="form-group">
                 <label class="form-label">Sınıf <span>*</span></label>
@@ -143,6 +138,26 @@
               <label class="form-label">Adres</label>
               <textarea name="ogrenci_adres" lang="tr" class="form-input uppercase-input min-h-[96px]" placeholder="AÇIK ADRES BİLGİSİ">{{ old('ogrenci_adres') }}</textarea>
             </div>
+
+            <div class="form-group">
+              <label class="form-label">İkamet İli</label>
+              <select name="ogrenci_ikamet_il" id="ogrenci_ikamet_il" lang="tr" class="form-select @error('ogrenci_ikamet_il') border-red-400 @enderror" data-il-select="ogrenci">
+                <option value="">Seçiniz</option>
+                @foreach($iller as $il => $etiket)
+                  <option value="{{ $il }}" @selected(old('ogrenci_ikamet_il') === $il)>{{ $etiket }}</option>
+                @endforeach
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">İkamet İlçesi</label>
+              <select name="ogrenci_ikamet_ilce" id="ogrenci_ikamet_ilce" lang="tr" class="form-select @error('ogrenci_ikamet_ilce') border-red-400 @enderror" data-ilce-select="ogrenci" data-selected="{{ old('ogrenci_ikamet_ilce') }}" @disabled(!old('ogrenci_ikamet_il'))>
+                <option value="">{{ old('ogrenci_ikamet_il') ? 'İlçe Seçiniz' : 'Önce il seçiniz' }}</option>
+                @foreach($ogrenciIlceleri as $ilce => $etiket)
+                  <option value="{{ $ilce }}" @selected(old('ogrenci_ikamet_ilce') === $ilce)>{{ $etiket }}</option>
+                @endforeach
+              </select>
+            </div>
           </div>
         </div>
 
@@ -155,7 +170,7 @@
       <div id="adim-panel-2" class="adim-panel hidden">
         <div class="mb-5 rounded-2xl border border-primary/10 bg-white p-7">
           <h2 class="mb-1 font-baskerville text-xl font-bold text-primary">Veli Bilgileri</h2>
-          <p class="mb-6 font-jakarta text-sm text-teal-muted">Başvuru sürecinde kullanılacak veli ve baba bilgileri.</p>
+          <p class="mb-6 font-jakarta text-sm text-teal-muted">Başvuru sürecinde kullanılacak veli iletişim ve adres bilgileri.</p>
 
           <h3 class="mb-4 border-b border-primary/10 pb-2 font-jakarta text-sm font-bold uppercase tracking-[0.16em] text-primary/60">Veli (Anne / Vasi)</h3>
           <div class="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -200,18 +215,6 @@
             </div>
           </div>
 
-          <h3 class="mb-4 border-b border-primary/10 pb-2 font-jakarta text-sm font-bold uppercase tracking-[0.16em] text-primary/60">Baba Bilgileri</h3>
-          <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <div class="form-group">
-              <label class="form-label">Doğum Yeri</label>
-              <input type="text" name="baba_dogum_yeri" lang="tr" class="form-input uppercase-input" pattern="[A-ZÇĞİÖŞÜa-zçğıöşü\s]+" placeholder="BABA DOĞUM YERİ" value="{{ old('baba_dogum_yeri') }}">
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Nüfusa Kayıtlı Olduğu İl / İlçe</label>
-              <input type="text" name="baba_nufus_il_ilce" lang="tr" class="form-input uppercase-input" pattern="[A-ZÇĞİÖŞÜa-zçğıöşü\s\/]+" placeholder="İL / İLÇE" value="{{ old('baba_nufus_il_ilce') }}">
-            </div>
-          </div>
         </div>
 
         <div class="flex gap-3">
