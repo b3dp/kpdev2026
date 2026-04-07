@@ -133,6 +133,7 @@ class EkayitController extends Controller
         $sinifSecenekleri = $this->getirDonemSiniflari((int) $aktifDonem->id);
         $iller = TurkiyeIller::secenekler();
         $ogrenciIlceleri = TurkiyeIlceler::ilceSecenekleri((string) old('ogrenci_ikamet_il'));
+        $kimlikIlceleri = TurkiyeIlceler::ilceSecenekleri((string) old('kimlik_kayitli_il'));
         $veliIlceleri = TurkiyeIlceler::ilceSecenekleri((string) old('veli_il'));
         $okulIlceleri = TurkiyeIlceler::ilceSecenekleri((string) old('okul_il'));
         $ilceler_haritasi = TurkiyeIlceler::tumu();
@@ -143,6 +144,7 @@ class EkayitController extends Controller
             'sinifSecenekleri',
             'iller',
             'ogrenciIlceleri',
+            'kimlikIlceleri',
             'veliIlceleri',
             'okulIlceleri',
             'ilceler_haritasi'
@@ -160,7 +162,7 @@ class EkayitController extends Controller
 
             $metinAlanlar = [
                 'ogrenci_ad', 'ogrenci_soyad', 'ogrenci_dogum_yeri', 'ogrenci_baba_adi', 'ogrenci_anne_adi',
-                'ogrenci_adres', 'veli_ad_soyad', 'veli_adres', 'okul_adi', 'otp_kodu',
+                'ogrenci_adres', 'kimlik_kayitli_mahalle_koy', 'veli_ad_soyad', 'veli_adres', 'okul_adi', 'otp_kodu',
             ];
 
             foreach ($metinAlanlar as $alan) {
@@ -175,6 +177,9 @@ class EkayitController extends Controller
                 'ogrenci_eposta' => filled($request->input('ogrenci_eposta'))
                     ? mb_strtolower(trim((string) $request->input('ogrenci_eposta')), 'UTF-8')
                     : null,
+                'kimlik_cilt_no' => preg_replace('/\D+/', '', (string) $request->input('kimlik_cilt_no')),
+                'kimlik_aile_sira_no' => preg_replace('/\D+/', '', (string) $request->input('kimlik_aile_sira_no')),
+                'kimlik_sira_no' => preg_replace('/\D+/', '', (string) $request->input('kimlik_sira_no')),
                 'veli_telefon' => $this->telefonuTemizle($request->input('veli_telefon')),
                 'veli_eposta' => filled($request->input('veli_eposta'))
                     ? mb_strtolower(trim((string) $request->input('veli_eposta')), 'UTF-8')
@@ -196,6 +201,12 @@ class EkayitController extends Controller
                 'ogrenci_adres' => ['nullable', 'string', 'max:1000'],
                 'ogrenci_ikamet_il' => ['nullable', 'string', 'max:100', 'required_with:ogrenci_ikamet_ilce'],
                 'ogrenci_ikamet_ilce' => ['nullable', 'string', 'max:100', 'required_with:ogrenci_ikamet_il'],
+                'kimlik_kayitli_il' => ['required', 'string', 'max:100'],
+                'kimlik_kayitli_ilce' => ['required', 'string', 'max:100'],
+                'kimlik_kayitli_mahalle_koy' => ['required', 'string', 'max:255'],
+                'kimlik_cilt_no' => ['required', 'string', 'max:50'],
+                'kimlik_aile_sira_no' => ['required', 'string', 'max:50'],
+                'kimlik_sira_no' => ['required', 'string', 'max:50'],
                 'ogrenci_cinsiyet' => ['required', 'in:E,K'],
                 'veli_ad_soyad' => ['required', 'string', 'max:255', 'regex:/^[A-ZÇĞİÖŞÜa-zçğıöşü\s]+$/u'],
                 'veli_telefon' => ['required', 'string', 'min:10', 'max:20'],
@@ -287,6 +298,12 @@ class EkayitController extends Controller
 
             EkayitKimlikBilgisi::create([
                 'kayit_id' => $kayit->id,
+                'kayitli_il' => $veri['kimlik_kayitli_il'],
+                'kayitli_ilce' => $veri['kimlik_kayitli_ilce'],
+                'kayitli_mahalle_koy' => $veri['kimlik_kayitli_mahalle_koy'],
+                'cilt_no' => $veri['kimlik_cilt_no'],
+                'aile_sira_no' => $veri['kimlik_aile_sira_no'],
+                'sira_no' => $veri['kimlik_sira_no'],
             ]);
 
             $okulNotu = collect([

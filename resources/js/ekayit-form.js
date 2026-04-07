@@ -131,6 +131,14 @@ document.addEventListener('DOMContentLoaded', () => {
           return [il, ilce].filter(Boolean).join(' / ');
         },
       },
+      {
+        label: 'Nüfusa Kayıtlı İl / İlçe',
+        deger: () => {
+          const il = form.querySelector('[name="kimlik_kayitli_il"]')?.value;
+          const ilce = form.querySelector('[name="kimlik_kayitli_ilce"]')?.value;
+          return [il, ilce].filter(Boolean).join(' / ');
+        },
+      },
       { label: 'Veli Ad Soyad', deger: () => form.querySelector('[name="veli_ad_soyad"]')?.value },
       { label: 'Veli Telefon', deger: () => form.querySelector('[name="veli_telefon"]')?.value },
       { label: 'Veli E-posta', deger: () => form.querySelector('[name="veli_eposta"]')?.value },
@@ -223,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  ['ogrenci', 'veli', 'okul'].forEach((grup) => {
+  ['ogrenci', 'kimlik', 'veli', 'okul'].forEach((grup) => {
     const ilSelect = form.querySelector(`[data-il-select="${grup}"]`);
 
     if (!ilSelect) {

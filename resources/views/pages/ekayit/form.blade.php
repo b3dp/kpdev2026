@@ -165,6 +165,50 @@
                 @endforeach
               </select>
             </div>
+
+            <div class="sm:col-span-2 mt-2 border-t border-primary/10 pt-5">
+              <p class="mb-4 font-jakarta text-[12px] font-bold uppercase tracking-[0.16em] text-primary/60">Nüfusa Kayıtlı Olduğu</p>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">İl <span>*</span></label>
+              <select name="kimlik_kayitli_il" id="kimlik_kayitli_il" lang="tr" class="form-select @error('kimlik_kayitli_il') border-red-400 @enderror" data-il-select="kimlik" required>
+                <option value="">Seçiniz</option>
+                @foreach($iller as $il => $etiket)
+                  <option value="{{ $il }}" @selected(old('kimlik_kayitli_il') === $il)>{{ $etiket }}</option>
+                @endforeach
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">İlçe <span>*</span></label>
+              <select name="kimlik_kayitli_ilce" id="kimlik_kayitli_ilce" lang="tr" class="form-select @error('kimlik_kayitli_ilce') border-red-400 @enderror" data-ilce-select="kimlik" data-selected="{{ old('kimlik_kayitli_ilce') }}" @disabled(!old('kimlik_kayitli_il')) required>
+                <option value="">{{ old('kimlik_kayitli_il') ? 'İlçe Seçiniz' : 'Önce il seçiniz' }}</option>
+                @foreach($kimlikIlceleri as $ilce => $etiket)
+                  <option value="{{ $ilce }}" @selected(old('kimlik_kayitli_ilce') === $ilce)>{{ $etiket }}</option>
+                @endforeach
+              </select>
+            </div>
+
+            <div class="form-group sm:col-span-2">
+              <label class="form-label">Mahalle / Köy <span>*</span></label>
+              <input type="text" name="kimlik_kayitli_mahalle_koy" lang="tr" class="form-input uppercase-input @error('kimlik_kayitli_mahalle_koy') border-red-400 @enderror" placeholder="MAHALLE VEYA KÖY ADI" required value="{{ old('kimlik_kayitli_mahalle_koy') }}">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Cilt No <span>*</span></label>
+              <input type="text" name="kimlik_cilt_no" lang="tr" class="form-input @error('kimlik_cilt_no') border-red-400 @enderror" inputmode="numeric" pattern="[0-9]+" placeholder="CİLT NO" required value="{{ old('kimlik_cilt_no') }}">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Aile Sıra No <span>*</span></label>
+              <input type="text" name="kimlik_aile_sira_no" lang="tr" class="form-input @error('kimlik_aile_sira_no') border-red-400 @enderror" inputmode="numeric" pattern="[0-9]+" placeholder="AİLE SIRA NO" required value="{{ old('kimlik_aile_sira_no') }}">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Sıra No <span>*</span></label>
+              <input type="text" name="kimlik_sira_no" lang="tr" class="form-input @error('kimlik_sira_no') border-red-400 @enderror" inputmode="numeric" pattern="[0-9]+" placeholder="SIRA NO" required value="{{ old('kimlik_sira_no') }}">
+            </div>
           </div>
         </div>
 
