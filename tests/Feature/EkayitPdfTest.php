@@ -14,6 +14,7 @@ use App\Services\EkayitPdfService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
+use ZipArchive;
 
 class EkayitPdfTest extends TestCase
 {
@@ -171,11 +172,35 @@ class EkayitPdfTest extends TestCase
         $sonuc = app(EkayitPdfService::class)->olustur($kayit->fresh());
 
         $this->assertNotNull($sonuc);
+        $this->assertSame('docx', $sonuc['sablon_tipi']);
         $this->assertSame('Ahmet Emin Günden - 0000'.$kayit->id.'.pdf', $sonuc['indirme_dosya_adi']);
         $this->assertStringEndsWith('.pdf', $sonuc['dosya_yol']);
         $this->assertStringContainsString('ahmet-emin-gunden', $sonuc['dosya_yol']);
+        $this->assertStringEndsWith('.docx', $sonuc['docx_dosya_yol']);
 
         Storage::disk('spaces')->assertExists($sonuc['dosya_yol']);
+        Storage::disk('spaces')->assertExists($sonuc['docx_dosya_yol']);
+
+        $geciciDocxYolu = storage_path('app/private/tmp/test-ekayit-template.docx');
+        file_put_contents($geciciDocxYolu, Storage::disk('spaces')->get($sonuc['docx_dosya_yol']));
+
+        $zip = new ZipArchive();
+        $this->assertTrue($zip->open($geciciDocxYolu) === true);
+
+        $xmlIcerik = (string) $zip->getFromName('word/document.xml');
+        $zip->close();
+        @unlink($geciciDocxYolu);
+
+        $this->assertStringContainsString('Ahmet Emin Günden', $xmlIcerik);
+        $this->assertStringContainsString('Fatma Günden', $xmlIcerik);
+        $this->assertStringContainsString('Şehitler Ortaokulu', $xmlIcerik);
+        $this->assertStringContainsString('Konak', $xmlIcerik);
+        $this->assertStringContainsString('Mithatpaşa', $xmlIcerik);
+        $this->assertStringContainsString('12', $xmlIcerik);
+        $this->assertStringNotContainsString('ogrenci_ad_soyad', $xmlIcerik);
+        $this->assertStringNotContainsString('veli_ad_soyad', $xmlIcerik);
+        $this->assertDoesNotMatchRegularExpression('/\[[^\]]+\]/u', $xmlIcerik);
+
         $this->assertDatabaseHas('ekayit_olusturulan_evraklar', [
             'kayit_id' => $kayit->id,
             'dosya_yol' => $sonuc['dosya_yol'],

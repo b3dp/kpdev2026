@@ -16,6 +16,7 @@
         "laravel/scout": "^10",
         "laravel/tinker": "^2.10.1",
         "league/flysystem-aws-s3-v3": "^3",
+        "phpoffice/phpword": "^1.2",
         "spatie/laravel-activitylog": "^4",
         "spatie/laravel-data": "^4",
         "spatie/laravel-honeypot": "^4",
