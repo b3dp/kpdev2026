@@ -2,7 +2,9 @@
 
 @php
     $bagisci = $bagis->odeyenKisi() ?? $bagis->kisiler->first();
-    $bagisTuru = $bagis->kalemler->first()?->bagisTuru;
+    $bagisTuruOzeti = $bagis->bagisTurleriOzeti();
+    $bagisKalemOzetleri = $bagis->bagisKalemOzetleri();
+    $bagisKalemSayisi = $bagis->kalemler->count();
     $makbuzUrl = filled($bagis->makbuz_yol)
         ? 'https://cdn.kestanepazari.org.tr/'.ltrim($bagis->makbuz_yol, '/')
         : null;
@@ -102,12 +104,28 @@
                         <span class="font-jakarta text-[13px] text-teal-muted">Bağışçı</span>
                         <span class="font-jakarta text-[13.5px] font-semibold text-primary">{{ $bagisci?->ad_soyad ?? '—' }}</span>
                     </div>
-                    <div class="makbuz-row">
-                        <span class="font-jakarta text-[13px] text-teal-muted">Bağış Türü</span>
-                        <span class="inline-flex items-center gap-2 font-jakarta text-[13.5px] font-semibold text-primary">
-                            <span class="inline-block h-2 w-2 rounded-full bg-accent"></span>
-                            {{ $bagisTuru?->ad ?? '—' }}
-                        </span>
+                    <div class="makbuz-row items-start">
+                        <span class="pt-1 font-jakarta text-[13px] text-teal-muted">Bağış Özeti</span>
+                        <div class="max-w-[70%] text-right">
+                            <span class="inline-flex items-center gap-2 font-jakarta text-[13.5px] font-semibold text-primary">
+                                <span class="inline-block h-2 w-2 rounded-full bg-accent"></span>
+                                {{ $bagisTuruOzeti }}
+                            </span>
+
+                            @if($bagisKalemSayisi > 1)
+                                <p class="mt-1 font-jakarta text-[11.5px] text-teal-muted">{{ $bagisKalemSayisi }} bağış kalemi tek ödeme içinde işlendi.</p>
+                            @endif
+
+                            @if(count($bagisKalemOzetleri) > 1)
+                                <div class="mt-2 flex flex-wrap justify-end gap-1.5">
+                                    @foreach($bagisKalemOzetleri as $kalemOzeti)
+                                        <span class="rounded-full bg-bg-soft px-2.5 py-1 font-jakarta text-[11px] font-medium text-primary">
+                                            {{ $kalemOzeti['ad'] }} · ₺{{ number_format((float) ($kalemOzeti['toplam'] ?? 0), 2, ',', '.') }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
                     </div>
                     <div class="makbuz-row">
                         <span class="font-jakarta text-[13px] text-teal-muted">Tutar</span>

@@ -137,6 +137,45 @@ class Bagis extends Model
         return $cdnUrl.'/'.ltrim($this->makbuz_yol, '/');
     }
 
+    public function bagisTurleriOzeti(): string
+    {
+        $turAdlari = $this->kalemler
+            ->map(fn (BagisKalemi $kalem) => trim((string) ($kalem->bagisTuru?->ad ?? '')))
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($turAdlari->isEmpty()) {
+            return '—';
+        }
+
+        if ($turAdlari->count() === 1) {
+            return (string) $turAdlari->first();
+        }
+
+        if ($turAdlari->count() === 2) {
+            return $turAdlari->implode(' + ');
+        }
+
+        $ilkIkiTur = $turAdlari->take(2)->implode(' + ');
+        $kalanTurSayisi = $turAdlari->count() - 2;
+
+        return $ilkIkiTur.' + '.$kalanTurSayisi.' diğer bağış türü';
+    }
+
+    public function bagisKalemOzetleri(): array
+    {
+        return $this->kalemler
+            ->groupBy(fn (BagisKalemi $kalem) => $kalem->bagisTuru?->ad ?? 'Bağış Kalemi')
+            ->map(fn ($kalemler, $ad) => [
+                'ad' => $ad,
+                'adet' => (int) $kalemler->sum(fn (BagisKalemi $kalem) => (int) ($kalem->adet ?? 1)),
+                'toplam' => (float) $kalemler->sum(fn (BagisKalemi $kalem) => (float) ($kalem->toplam ?? 0)),
+            ])
+            ->values()
+            ->all();
+    }
+
     public function odeyenKisi(): ?BagisKisi
     {
         return $this->kisiler->first(fn (BagisKisi $kisi) => in_array('odeyen', $kisi->tipListesi(), true));

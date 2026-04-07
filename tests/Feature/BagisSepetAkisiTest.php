@@ -103,6 +103,98 @@ class BagisSepetAkisiTest extends TestCase
         $this->assertCount(0, session('sepet', []));
     }
 
+    public function test_tesekkur_sayfasi_coklu_bagis_ozetini_gosterir(): void
+    {
+        $zekat = BagisTuru::query()->create([
+            'ad' => 'Zekat',
+            'slug' => 'zekat-tesekkur',
+            'ozellik' => 'normal',
+            'fiyat_tipi' => 'serbest',
+            'minimum_tutar' => 100,
+            'oneri_tutarlar' => [100, 250, 500],
+            'aciklama' => 'Teşekkür özeti testi',
+            'acilis_tipi' => 'manuel',
+            'kurban_modulu' => false,
+            'aktif' => true,
+        ]);
+
+        $fitre = BagisTuru::query()->create([
+            'ad' => 'Fitre',
+            'slug' => 'fitre-tesekkur',
+            'ozellik' => 'normal',
+            'fiyat_tipi' => 'serbest',
+            'minimum_tutar' => 50,
+            'oneri_tutarlar' => [50, 100, 150],
+            'aciklama' => 'Teşekkür özeti testi',
+            'acilis_tipi' => 'manuel',
+            'kurban_modulu' => false,
+            'aktif' => true,
+        ]);
+
+        $genelBagis = BagisTuru::query()->create([
+            'ad' => 'Genel Bağış',
+            'slug' => 'genel-bagis-tesekkur',
+            'ozellik' => 'normal',
+            'fiyat_tipi' => 'serbest',
+            'minimum_tutar' => 100,
+            'oneri_tutarlar' => [100, 250, 500],
+            'aciklama' => 'Teşekkür özeti testi',
+            'acilis_tipi' => 'manuel',
+            'kurban_modulu' => false,
+            'aktif' => true,
+        ]);
+
+        $sepet = BagisSepet::query()->create([
+            'session_id' => 'tesekkur-ozet-test',
+            'durum' => 'tamamlandi',
+            'toplam_tutar' => 900,
+        ]);
+
+        $bagis = Bagis::query()->create([
+            'bagis_no' => 'KP-TEST-OZET',
+            'sepet_id' => $sepet->id,
+            'durum' => 'odendi',
+            'toplam_tutar' => 900,
+            'odeme_saglayici' => 'albaraka',
+            'odeme_referans' => 'TEST-REF-001',
+            'odeme_tarihi' => now(),
+        ]);
+
+        $bagis->kalemler()->create([
+            'bagis_turu_id' => $zekat->id,
+            'adet' => 1,
+            'birim_fiyat' => 500,
+            'toplam' => 500,
+            'sahip_tipi' => 'kendi',
+            'vekalet_onay' => false,
+        ]);
+
+        $bagis->kalemler()->create([
+            'bagis_turu_id' => $fitre->id,
+            'adet' => 1,
+            'birim_fiyat' => 150,
+            'toplam' => 150,
+            'sahip_tipi' => 'kendi',
+            'vekalet_onay' => false,
+        ]);
+
+        $bagis->kalemler()->create([
+            'bagis_turu_id' => $genelBagis->id,
+            'adet' => 1,
+            'birim_fiyat' => 250,
+            'toplam' => 250,
+            'sahip_tipi' => 'baskasi',
+            'vekalet_onay' => false,
+        ]);
+
+        $this->withSession(['son_bagis_no' => $bagis->bagis_no])
+            ->get(route('bagis.tesekkur'))
+            ->assertOk()
+            ->assertSee('Bağış Özeti')
+            ->assertSee('Zekat + Fitre + 1 diğer bağış türü')
+            ->assertSee('3 bağış kalemi tek ödeme içinde işlendi.');
+    }
+
     public function test_makbuz_durum_endpointi_hazir_linki_doner(): void
     {
         $sepet = BagisSepet::query()->create([

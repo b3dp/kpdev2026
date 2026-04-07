@@ -2,6 +2,7 @@
     $telefon = config('site.telefon');
     $sepet = session('sepet', []);
     $sepet_adet = is_array($sepet) ? count($sepet) : 0;
+    $sepet_toplam = collect($sepet)->sum(fn (array $satir) => (float) ($satir['toplam'] ?? 0));
     $header_arama = trim((string) request('q', ''));
     $populer_aramalar = app(\App\Services\AramaService::class)->getirPopulerAramalar(6);
 @endphp
@@ -190,7 +191,7 @@
           @endif
         @endauth
 
-        <a href="{{ route('bagis.sepet') }}" aria-label="Sepet" id="cart-btn" class="relative flex items-center justify-center w-9 h-9 rounded-md text-primary hover:text-accent hover:bg-bg-soft transition-colors">
+        <a href="{{ route('bagis.sepet') }}" aria-label="Sepet" id="cart-btn" data-cart-trigger="true" aria-controls="cart-drawer" aria-expanded="false" class="relative flex items-center justify-center w-9 h-9 rounded-md text-primary hover:text-accent hover:bg-bg-soft transition-colors">
           <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
             <path stroke-linecap="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
           </svg>
@@ -352,3 +353,48 @@
     </nav>
   </div>
 </header>
+
+<div id="cart-drawer-overlay" class="hidden fixed inset-0 z-[70] bg-slate-950/35 opacity-0 transition-opacity duration-200"></div>
+<aside id="cart-drawer"
+       aria-hidden="true"
+       class="fixed right-0 top-0 z-[80] flex h-full w-full max-w-md translate-x-full flex-col border-l border-primary/10 bg-white shadow-2xl transition-transform duration-300 ease-out">
+  <div class="flex items-center justify-between border-b border-slate-100 px-4 py-4 sm:px-5">
+    <div>
+      <p class="font-baskerville text-[24px] font-bold text-primary">Sepetim</p>
+      <p id="cart-drawer-count" class="mt-1 font-jakarta text-xs text-teal-muted">{{ $sepet_adet > 0 ? $sepet_adet.' kalem' : 'Sepet boş' }}</p>
+    </div>
+    <button type="button" id="cart-drawer-close" class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-primary/10 text-primary transition-colors hover:bg-bg-soft" aria-label="Sepeti kapat">
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="border-b border-slate-100 bg-bg-soft px-4 py-3 sm:px-5">
+    <p class="font-jakarta text-[12px] leading-5 text-teal-muted">Bağış kalemlerinizi hızlıca gözden geçirin, isterseniz buradan silin ya da ödeme adımına geçin.</p>
+  </div>
+
+  <div id="cart-drawer-items"
+       data-cart-items='@json($sepet)'
+       data-remove-url="{{ url('/bagis/sepetten-cikar') }}"
+       data-cart-url="{{ route('bagis.sepet') }}"
+       data-bagis-url="{{ route('bagis.index') }}"
+       class="flex-1 space-y-3 overflow-y-auto px-4 py-4 sm:px-5">
+  </div>
+
+  <div class="border-t border-slate-100 px-4 py-4 sm:px-5">
+    <div class="mb-3 flex items-center justify-between font-jakarta text-sm text-teal-muted">
+      <span>Toplam</span>
+      <span id="cart-drawer-total" class="font-baskerville text-[22px] font-bold text-primary">₺{{ number_format((float) $sepet_toplam, 2, ',', '.') }}</span>
+    </div>
+
+    <div class="space-y-2.5">
+      <a href="{{ route('bagis.sepet') }}" class="flex w-full items-center justify-center rounded-[10px] bg-orange-cta px-4 py-3 font-jakarta text-sm font-bold text-white transition-colors hover:bg-[#c94620]">
+        Sepeti Gör ve Ödeme Adımına Geç
+      </a>
+      <a href="{{ route('bagis.index') }}" class="flex w-full items-center justify-center rounded-[10px] border border-primary/10 bg-white px-4 py-3 font-jakarta text-sm font-semibold text-primary transition-colors hover:bg-bg-soft">
+        Yeni Bağış Ekle
+      </a>
+    </div>
+  </div>
+</aside>

@@ -469,6 +469,15 @@ function sepetMesajiGoster(mesaj, tip = 'success') {
     }
 }
 
+function sepetGuncellemesiniYayinla() {
+    document.dispatchEvent(new CustomEvent('kp:sepet-guncellendi', {
+        detail: {
+            sepet: sepetKalemleri,
+            toplam: sepetToplaminiHesapla(),
+        },
+    }));
+}
+
 async function sepeteEkle() {
     const form = bagisFormunuAl();
 
@@ -532,6 +541,7 @@ async function sepeteEkle() {
         if (Array.isArray(data.sepet)) {
             sepetKalemleri = data.sepet;
             renderSepetOzeti();
+            sepetGuncellemesiniYayinla();
         }
 
         sepetMesajiGoster(data.message || 'Bağış sepetinize eklendi.');
@@ -572,6 +582,7 @@ async function sepettenCikar(satirId) {
 
         sepetKalemleri = Array.isArray(data.sepet) ? data.sepet : [];
         renderSepetOzeti();
+        sepetGuncellemesiniYayinla();
         sepetMesajiGoster(data.message || 'Bağış kalemi sepetten çıkarıldı.');
     } catch (error) {
         sepetMesajiGoster(error.message || 'Sepet kalemi silinirken bir hata oluştu.', 'error');
@@ -678,6 +689,15 @@ async function odemeyiTamamla() {
     }
 }
 
+document.addEventListener('kp:sepet-guncellendi', (event) => {
+    if (!Array.isArray(event.detail?.sepet)) {
+        return;
+    }
+
+    sepetKalemleri = event.detail.sepet;
+    renderSepetOzeti();
+});
+
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.tutar-btn[data-tutar]').forEach((buton) => {
         buton.addEventListener('click', () => {
@@ -736,6 +756,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setTur(initTur);
     renderSepetOzeti();
+    sepetGuncellemesiniYayinla();
     updateSepet();
 });
 
