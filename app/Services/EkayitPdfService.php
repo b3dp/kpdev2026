@@ -331,29 +331,47 @@ class EkayitPdfService
     private function docxDosyasiniPdfyeCevir(string $docxYolu, string $pdfYolu, EkayitKayit $kayit): void
     {
         if (app()->environment('testing')) {
-            $pdf = Pdf::loadView('pdf.ekayit.kayit-formu', [
-                'kayit' => $kayit,
-                'sinif' => $kayit->sinif,
-                'ogrenci' => $kayit->ogrenciBilgisi,
-                'kimlik' => $kayit->kimlikBilgisi,
-                'okul' => $kayit->okulBilgisi,
-                'veli' => $kayit->veliBilgisi,
-                'baba' => $kayit->babaBilgisi,
-            ])->setPaper('a4');
-
-            file_put_contents($pdfYolu, $pdf->output());
+            $this->bladeSablonundanPdfOlustur($pdfYolu, $kayit);
         } else {
-            Settings::setPdfRendererName(Settings::PDF_RENDERER_DOMPDF);
-            Settings::setPdfRendererPath(base_path('vendor/dompdf/dompdf'));
+            try {
+                app(GoogleDriveService::class)->docxDosyasiniPdfyeCevir(
+                    $docxYolu,
+                    $pdfYolu,
+                    pathinfo($docxYolu, PATHINFO_FILENAME)
+                );
+            } catch (Throwable $exception) {
+                Log::warning('Google Drive ile DOCX PDF cevirimi basarisiz, PhpWord fallback deneniyor.', [
+                    'kayit_id' => $kayit->id,
+                    'mesaj' => $exception->getMessage(),
+                ]);
 
-            $phpWord = IOFactory::load($docxYolu, 'Word2007');
-            $yazici = IOFactory::createWriter($phpWord, 'PDF');
-            $yazici->save($pdfYolu);
+                Settings::setPdfRendererName(Settings::PDF_RENDERER_DOMPDF);
+                Settings::setPdfRendererPath(base_path('vendor/dompdf/dompdf'));
+
+                $phpWord = IOFactory::load($docxYolu, 'Word2007');
+                $yazici = IOFactory::createWriter($phpWord, 'PDF');
+                $yazici->save($pdfYolu);
+            }
         }
 
         if (! is_file($pdfYolu) || filesize($pdfYolu) === 0) {
             throw new RuntimeException('DOCX şablonundan PDF üretilemedi.');
         }
+    }
+
+    private function bladeSablonundanPdfOlustur(string $pdfYolu, EkayitKayit $kayit): void
+    {
+        $pdf = Pdf::loadView('pdf.ekayit.kayit-formu', [
+            'kayit' => $kayit,
+            'sinif' => $kayit->sinif,
+            'ogrenci' => $kayit->ogrenciBilgisi,
+            'kimlik' => $kayit->kimlikBilgisi,
+            'okul' => $kayit->okulBilgisi,
+            'veli' => $kayit->veliBilgisi,
+            'baba' => $kayit->babaBilgisi,
+        ])->setPaper('a4');
+
+        file_put_contents($pdfYolu, $pdf->output());
     }
 
     private function depolamaDosyaAdi(EkayitKayit $kayit, string $kayitNo, string $uzanti): string

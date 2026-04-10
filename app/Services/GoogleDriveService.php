@@ -93,6 +93,62 @@ class GoogleDriveService
         }
     }
 
+    public function docxDosyasiniPdfyeCevir(string $localDosyaYolu, string $hedefPdfYolu, ?string $dosyaAdi = null): void
+    {
+        if (! is_file($localDosyaYolu)) {
+            throw new RuntimeException("Yuklenecek DOCX dosyasi bulunamadi: {$localDosyaYolu}");
+        }
+
+        $dosyaAdi = $dosyaAdi ?: pathinfo($localDosyaYolu, PATHINFO_FILENAME);
+        $geciciDosyaId = null;
+
+        try {
+            $olusturulanDosya = $this->drive->files->create(
+                new DriveFile([
+                    'name' => $dosyaAdi,
+                    'mimeType' => 'application/vnd.google-apps.document',
+                ]),
+                [
+                    'data' => file_get_contents($localDosyaYolu),
+                    'mimeType' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'uploadType' => 'multipart',
+                    'fields' => 'id, name',
+                    'supportsAllDrives' => true,
+                ]
+            );
+
+            $geciciDosyaId = (string) $olusturulanDosya->getId();
+            $yanit = $this->drive->files->export($geciciDosyaId, 'application/pdf', ['alt' => 'media']);
+            $pdfIcerik = $yanit->getBody()->getContents();
+
+            if ($pdfIcerik === '') {
+                throw new RuntimeException('Google Drive PDF export bos dondu.');
+            }
+
+            file_put_contents($hedefPdfYolu, $pdfIcerik);
+        } catch (Throwable $exception) {
+            Log::error('Google Drive DOCX PDF cevirme hatasi', [
+                'local_dosya_yolu' => $localDosyaYolu,
+                'hedef_pdf_yolu' => $hedefPdfYolu,
+                'dosya_adi' => $dosyaAdi,
+                'hata' => $exception->getMessage(),
+            ]);
+
+            throw $exception;
+        } finally {
+            if (filled($geciciDosyaId)) {
+                try {
+                    $this->drive->files->delete($geciciDosyaId, ['supportsAllDrives' => true]);
+                } catch (Throwable $exception) {
+                    Log::warning('Google Drive gecici dokuman silinemedi', [
+                        'dosya_id' => $geciciDosyaId,
+                        'hata' => $exception->getMessage(),
+                    ]);
+                }
+            }
+        }
+    }
+
     public static function dosyaAdiUret(string $prefix, string $baslangic, ?string $bitis = null): string
     {
         return collect([$prefix, $baslangic, $bitis])
