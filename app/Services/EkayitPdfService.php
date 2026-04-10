@@ -245,6 +245,7 @@ class EkayitPdfService
             }
 
             $guncelXml = $this->xmlIcindekiPlaceholderlariDoldur($xmlIcerik, $degerler);
+            $guncelXml = $this->xmlTablolariStabilizeEt($guncelXml);
             $zip->addFromString($dosyaAdi, $guncelXml);
         }
 
@@ -292,6 +293,38 @@ class EkayitPdfService
         }
 
         return null;
+    }
+
+    private function xmlTablolariStabilizeEt(string $xmlIcerik): string
+    {
+        return preg_replace_callback('/<w:tbl>.*?<\/w:tbl>/su', function (array $eslesme): string {
+            $tabloXml = $eslesme[0];
+
+            if (! str_contains($tabloXml, 'w:tblLayout')) {
+                $tabloXml = preg_replace(
+                    '/(<w:tblW\b[^>]*\/>)\s*/u',
+                    '$1<w:tblLayout w:type="fixed"/>',
+                    $tabloXml,
+                    1
+                ) ?? $tabloXml;
+            }
+
+            $tabloXml = preg_replace_callback(
+                '/<w:tblInd\b[^>]*w:w="(-?\d+)"[^>]*\/>/u',
+                function (array $girintiEslesme): string {
+                    $girinti = (int) ($girintiEslesme[1] ?? 0);
+
+                    if ($girinti >= 0) {
+                        return $girintiEslesme[0];
+                    }
+
+                    return preg_replace('/w:w="-?\d+"/u', 'w:w="0"', $girintiEslesme[0], 1) ?? $girintiEslesme[0];
+                },
+                $tabloXml
+            ) ?? $tabloXml;
+
+            return $tabloXml;
+        }, $xmlIcerik) ?? $xmlIcerik;
     }
 
     private function placeholderiNormalizeEt(string $metin): string

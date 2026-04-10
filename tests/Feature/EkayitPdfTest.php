@@ -197,6 +197,8 @@ class EkayitPdfTest extends TestCase
         $this->assertStringContainsString('Konak', $xmlIcerik);
         $this->assertStringContainsString('Mithatpaşa', $xmlIcerik);
         $this->assertStringContainsString('12', $xmlIcerik);
+        $this->assertStringContainsString('w:tblLayout w:type="fixed"', $xmlIcerik);
+        $this->assertStringNotContainsString('w:tblInd w:w="-', $xmlIcerik);
         $this->assertStringNotContainsString('ogrenci_ad_soyad', $xmlIcerik);
         $this->assertStringNotContainsString('veli_ad_soyad', $xmlIcerik);
         $this->assertDoesNotMatchRegularExpression('/\[[^\]]+\]/u', $xmlIcerik);
