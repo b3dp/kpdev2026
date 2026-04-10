@@ -39,8 +39,9 @@ class EkayitPdfService
             $sablonDosyasi = $this->sablonDosyasiniBul($sablon, $indirilenSablonYolu);
 
             $kayitNo = $this->kayitNo($kayit);
-            $pdfDosyaAdi = $this->depolamaDosyaAdi($kayit, $kayitNo, 'pdf');
-            $docxDosyaAdi = $this->depolamaDosyaAdi($kayit, $kayitNo, 'docx');
+            $dosyaSurumu = now()->format('YmdHis');
+            $pdfDosyaAdi = $this->depolamaDosyaAdi($kayit, $kayitNo, 'pdf', $dosyaSurumu);
+            $docxDosyaAdi = $this->depolamaDosyaAdi($kayit, $kayitNo, 'docx', $dosyaSurumu);
             $indirmeDosyaAdi = $this->indirmeDosyaAdi($kayit, $kayitNo);
             $ogretimYili = (string) ($kayit->sinif?->donem?->ogretim_yili ?? now()->format('Y'));
 
@@ -300,6 +301,24 @@ class EkayitPdfService
         return preg_replace_callback('/<w:tbl>.*?<\/w:tbl>/su', function (array $eslesme): string {
             $tabloXml = $eslesme[0];
 
+            if (! str_contains($tabloXml, 'w:tblpPr')) {
+                $tabloXml = preg_replace(
+                    '/(<w:tblStyle\b[^>]*\/>)\s*/u',
+                    '$1<w:tblpPr w:leftFromText="141" w:rightFromText="141" w:vertAnchor="text" w:horzAnchor="margin" w:tblpXSpec="center" w:tblpY="0"/>',
+                    $tabloXml,
+                    1
+                ) ?? $tabloXml;
+            }
+
+            if (! str_contains($tabloXml, 'w:jc ')) {
+                $tabloXml = preg_replace(
+                    '/(<w:tblW\b[^>]*\/>)\s*/u',
+                    '$1<w:jc w:val="center"/>',
+                    $tabloXml,
+                    1
+                ) ?? $tabloXml;
+            }
+
             if (! str_contains($tabloXml, 'w:tblLayout')) {
                 $tabloXml = preg_replace(
                     '/(<w:tblW\b[^>]*\/>)\s*/u',
@@ -315,7 +334,7 @@ class EkayitPdfService
                     $girinti = (int) ($girintiEslesme[1] ?? 0);
 
                     if ($girinti >= 0) {
-                        return $girintiEslesme[0];
+                        return preg_replace('/w:w="\d+"/u', 'w:w="0"', $girintiEslesme[0], 1) ?? $girintiEslesme[0];
                     }
 
                     return preg_replace('/w:w="-?\d+"/u', 'w:w="0"', $girintiEslesme[0], 1) ?? $girintiEslesme[0];
@@ -407,7 +426,7 @@ class EkayitPdfService
         file_put_contents($pdfYolu, $pdf->output());
     }
 
-    private function depolamaDosyaAdi(EkayitKayit $kayit, string $kayitNo, string $uzanti): string
+    private function depolamaDosyaAdi(EkayitKayit $kayit, string $kayitNo, string $uzanti, ?string $surum = null): string
     {
         $ogrenciAdSoyad = trim((string) ($kayit->ogrenciBilgisi?->ad_soyad ?? 'ogrenci'));
         $slug = Str::slug($ogrenciAdSoyad, '-');
@@ -416,7 +435,9 @@ class EkayitPdfService
             $slug = 'ogrenci';
         }
 
-        return sprintf('%s-%s.%s', $slug, $kayitNo, $uzanti);
+        $surum = $surum ?: now()->format('YmdHis');
+
+        return sprintf('%s-%s-%s.%s', $slug, $kayitNo, $surum, $uzanti);
     }
 
     private function indirmeDosyaAdi(EkayitKayit $kayit, string $kayitNo): string
