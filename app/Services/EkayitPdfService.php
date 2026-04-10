@@ -120,9 +120,7 @@ class EkayitPdfService
 
         $sablon->fill([
             'ad' => $sablon->ad ?: 'Kayıt Formu DOCX Şablonu',
-            'sablon_yol' => blank($sablon->sablon_yol) || $sablon->sablon_yol === 'pdf.ekayit.kayit-formu'
-                ? 'docs/ekayit_belgeler_taslak2.docx'
-                : $sablon->sablon_yol,
+            'sablon_yol' => $this->varsayilanSablonGoreliYoluBelirle($sablon),
             'degiskenler' => [
                 'ogrenci_ad_soyad', 'ogrenci_tc_kimlik', 'ogrenci_telefon', 'ogrenci_eposta',
                 'ogrenci_anne_ad', 'ogrenci_baba_ad', 'ogrenci_dogum_tarih', 'ogrenci_doğum_yeri',
@@ -161,13 +159,40 @@ class EkayitPdfService
             return $indirilenSablonYolu;
         }
 
-        $varsayilanYol = base_path('docs/ekayit_belgeler_taslak2.docx');
+        return $this->varsayilanSablonMutlakYolu();
+    }
 
-        if (! is_file($varsayilanYol)) {
-            throw new RuntimeException('E-Kayıt DOCX şablonu bulunamadı.');
+    private function varsayilanSablonGoreliYoluBelirle(EkayitEvrakSablonu $sablon): string
+    {
+        $mevcutYol = trim((string) $sablon->sablon_yol);
+        $varsayilanYollar = [
+            '',
+            'pdf.ekayit.kayit-formu',
+            'docs/ekayit_belgeler_taslak2.docx',
+            'docs/ekayit_belgeler_taslak3.docx',
+        ];
+
+        if (in_array($mevcutYol, $varsayilanYollar, true)) {
+            return $this->varsayilanSablonGoreliYolu();
         }
 
-        return $varsayilanYol;
+        return $mevcutYol;
+    }
+
+    private function varsayilanSablonGoreliYolu(): string
+    {
+        foreach (['docs/ekayit_belgeler_taslak3.docx', 'docs/ekayit_belgeler_taslak2.docx'] as $goreliYol) {
+            if (is_file(base_path($goreliYol))) {
+                return $goreliYol;
+            }
+        }
+
+        throw new RuntimeException('E-Kayıt DOCX şablonu bulunamadı.');
+    }
+
+    private function varsayilanSablonMutlakYolu(): string
+    {
+        return base_path($this->varsayilanSablonGoreliYolu());
     }
 
     private function dokumanVerileriniHazirla(EkayitKayit $kayit): array
