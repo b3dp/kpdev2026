@@ -442,11 +442,11 @@
                     </div>
                 @endif
 
-                @if($haber->kisiler->count() || $haber->kurumlar->count())
+                @if($haber->onaylanmisKisiler->count() || $haber->onaylanmisKurumlar->count())
                     <div class="mt-5 border-t border-primary/10 pt-5">
                         <p class="mb-2.5 font-jakarta text-[13px] font-semibold uppercase tracking-[0.04em] text-teal-muted">Bu Haberde</p>
                         <div class="flex flex-wrap gap-2">
-                            @foreach($haber->kisiler as $kisi)
+                            @foreach($haber->onaylanmisKisiler as $kisi)
                                 <a
                                     href="{{ route('haberler.index', ['kisi_id' => $kisi->id]) }}"
                                     class="inline-flex items-center gap-1.5 rounded-full border border-primary/15 bg-white px-3 py-[5px] font-jakarta text-[12.5px] font-semibold text-primary transition-colors hover:border-primary hover:bg-primary hover:text-cream"
@@ -455,7 +455,7 @@
                                     {{ $kisi->full_ad ?: trim(($kisi->ad ?? '') . ' ' . ($kisi->soyad ?? '')) ?: 'İsimsiz kişi' }}
                                 </a>
                             @endforeach
-                            @foreach($haber->kurumlar as $kurum)
+                            @foreach($haber->onaylanmisKurumlar as $kurum)
                                 <a
                                     href="{{ route('haberler.index', ['kurum' => $kurum->slug]) }}"
                                     class="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-[#FBF6ED] px-3 py-[5px] font-jakarta text-[12.5px] font-semibold text-accent transition-colors hover:border-accent hover:bg-accent hover:text-white"

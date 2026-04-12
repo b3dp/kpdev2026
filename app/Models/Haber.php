@@ -199,6 +199,22 @@ class Haber extends Model
             ->withTimestamps();
     }
 
+    public function onaylanmisKisiler(): BelongsToMany
+    {
+        return $this->belongsToMany(Kisi::class, 'haber_kisiler', 'haber_id', 'kisi_id')
+            ->withPivot(['rol', 'onay_durumu'])
+            ->wherePivot('onay_durumu', 'onaylandi')
+            ->withTimestamps();
+    }
+
+    public function onaylanmisKurumlar(): BelongsToMany
+    {
+        return $this->belongsToMany(Kurum::class, 'haber_kurumlar', 'haber_id', 'kurum_id')
+            ->withPivot(['onay_durumu'])
+            ->wherePivot('onay_durumu', 'onaylandi')
+            ->withTimestamps();
+    }
+
     public function onayTokenlar(): HasMany
     {
         return $this->hasMany(HaberOnayToken::class, 'haber_id');

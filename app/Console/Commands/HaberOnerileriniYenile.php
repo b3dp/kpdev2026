@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Haber;
 use App\Models\Kisi;
 use App\Models\Kurum;
+use App\Services\LevenshteinService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -16,7 +17,7 @@ class HaberOnerileriniYenile extends Command
 
     protected $description = 'Secili haberler icin kisi ve kurum onerilerini daha sik filtrelerle yeniden uretir';
 
-    public function handle(): int
+    public function handle(LevenshteinService $levenshteinService): int
     {
         $haberIdleri = collect(explode(',', (string) $this->option('haber-idleri')))
             ->map(static fn ($id) => (int) trim($id))
@@ -37,6 +38,13 @@ class HaberOnerileriniYenile extends Command
         $haberler = Haber::query()
             ->whereIn('id', $haberIdleri)
             ->get(['id', 'icerik']);
+
+        // Kurumlar için merge mapping
+        $kurumMappingRedirect = [
+            23 => 13,  // "7-10 yaş grubu" -> ID 13
+            24 => 13,  // "7 – 10 Yaş Grubu" -> ID 13
+            25 => 13,  // "Karabağlar Müftülüğü" -> ID 13
+        ];
 
         $kisiSozlugu = $this->kisiSozlugunuHazirla();
         $kurumSozlugu = $this->kurumSozlugunuHazirla();
@@ -67,12 +75,24 @@ class HaberOnerileriniYenile extends Command
             }
 
             foreach ($kurumSozlugu as $kurumVerisi) {
+                $kurumId = $kurumVerisi['id'];
+                
+                // Birleştirilmiş kurumlar için redirect kontrol et
+                if (isset($kurumMappingRedirect[$kurumId])) {
+                    $kurumId = $kurumMappingRedirect[$kurumId];
+                    // Ana kurumun verilerini kullan
+                    $kurumVerisi = collect($kurumSozlugu)->firstWhere('id', $kurumId);
+                    if (!$kurumVerisi) {
+                        continue;
+                    }
+                }
+                
                 if (! str_contains($metin, ' ' . $kurumVerisi['anahtar'] . ' ')) {
                     continue;
                 }
 
                 DB::table('haber_kurumlar')->updateOrInsert(
-                    ['haber_id' => $haber->id, 'kurum_id' => $kurumVerisi['id']],
+                    ['haber_id' => $haber->id, 'kurum_id' => $kurumId],
                     [
                         'onay_durumu' => $kurumVerisi['aktif'] ? 'onaylandi' : 'beklemede',
                         'updated_at' => now(),
@@ -82,6 +102,45 @@ class HaberOnerileriniYenile extends Command
                 );
 
                 $eklenenKurum++;
+            }
+
+            // Fuzzy matching: exact match olmayan ama benzer kurumları bul
+            $metin_normalized = $this->metniNormalizeEt($metin);
+            $metin_kelimeler = collect(preg_split('/\s+/u', trim($metin_normalized), -1, PREG_SPLIT_NO_EMPTY) ?: []);
+            
+            if ($metin_kelimeler->count() > 0) {
+                // Tüm kurumları metin üzerinde fuzzy check et
+                $kurumAramaListesi = collect($kurumSozlugu)
+                    ->map(fn($k) => ['id' => $k['id'], 'ad' => $k['anahtar'], 'kayit' => $k])
+                    ->values();
+                
+                $benzerKurumlar = $levenshteinService->benzerBul($metin_normalized, $kurumAramaListesi, 60);
+                
+                foreach ($benzerKurumlar as $benzerKurum) {
+                    $kurumData = $benzerKurum['kayit'];
+                    
+                    // Zaten eklenmişse skip
+                    if (DB::table('haber_kurumlar')
+                        ->where('haber_id', $haber->id)
+                        ->where('kurum_id', $kurumData['id'])
+                        ->exists()) {
+                        continue;
+                    }
+                    
+                    $onayDurumu = $benzerKurum['skor'] >= 80 ? 'onaylandi' : 'beklemede';
+                    
+                    DB::table('haber_kurumlar')->updateOrInsert(
+                        ['haber_id' => $haber->id, 'kurum_id' => $kurumData['id']],
+                        [
+                            'onay_durumu' => $onayDurumu,
+                            'updated_at' => now(),
+                            'created_at' => now(),
+                            'deleted_at' => null,
+                        ]
+                    );
+
+                    $eklenenKurum++;
+                }
             }
         }
 
@@ -145,6 +204,7 @@ class HaberOnerileriniYenile extends Command
                 return [
                     'id' => $kurum->id,
                     'anahtar' => $anahtar,
+                    'ad' => $kurum->ad,
                     'aktif' => (bool) $kurum->aktif,
                     'deleted_at' => $kurum->deleted_at,
                 ];
