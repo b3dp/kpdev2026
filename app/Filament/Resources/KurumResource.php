@@ -7,11 +7,13 @@ use App\Data\TurkiyeIller;
 use App\Enums\KurumTipi;
 use App\Filament\Resources\KurumResource\Pages;
 use App\Models\Kurum;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\BulkAction;
@@ -30,7 +32,9 @@ use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\DB;
 
 class KurumResource extends Resource
 {
@@ -196,6 +200,66 @@ class KurumResource extends Resource
             ])
             ->bulkActions([
                 BulkActionGroup::make([
+                    BulkAction::make('birlestir')
+                        ->label('Birleştir')
+                        ->icon('heroicon-o-arrow-path-rounded-square')
+                        ->color('info')
+                        ->requiresConfirmation(false)
+                        ->form(fn (Collection $records): array => [
+                            Radio::make('secilen_ad')
+                                ->label('Hangi adı kullanmak istiyorsunuz?')
+                                ->options($records->pluck('ad', 'ad')->toArray())
+                                ->required()
+                                ->helperText('Seçilen kurumlardan birinin adını seçin veya aşağıya farklı bir ad yazın.'),
+                            TextInput::make('ozel_ad')
+                                ->label('Ya da farklı bir ad yazın (bu alan doldurulursa seçimi geçersiz kılar)')
+                                ->maxLength(500)
+                                ->placeholder('Farklı bir kurum adı girin...'),
+                        ])
+                        ->action(function (Collection $records, array $data): void {
+                            $anaAd = filled($data['ozel_ad']) ? trim($data['ozel_ad']) : $data['secilen_ad'];
+
+                            // Ana kurum: seçilen ada sahip ilk aktif kayıt, yoksa herhangi biri
+                            $anaKurum = $records->first(fn (Kurum $k) => $k->ad === $data['secilen_ad'])
+                                ?? $records->first();
+
+                            // Ana kurumun adını güncelle
+                            $anaKurum->update(['ad' => $anaAd, 'aktif' => true]);
+
+                            $silinecekIds = $records
+                                ->where('id', '!=', $anaKurum->id)
+                                ->pluck('id')
+                                ->all();
+
+                            if (! empty($silinecekIds)) {
+                                // Çakışan pivot kayıtları (aynı haberde ana kurum zaten varsa eski olanı sil)
+                                DB::table('haber_kurumlar')
+                                    ->whereIn('kurum_id', $silinecekIds)
+                                    ->whereIn('haber_id', function ($q) use ($anaKurum) {
+                                        $q->select('haber_id')
+                                            ->from('haber_kurumlar')
+                                            ->where('kurum_id', $anaKurum->id);
+                                    })
+                                    ->delete();
+
+                                // Kalan referansları ana kuruma taşı
+                                DB::table('haber_kurumlar')
+                                    ->whereIn('kurum_id', $silinecekIds)
+                                    ->update(['kurum_id' => $anaKurum->id]);
+
+                                // Eski kurumları soft-delete et
+                                Kurum::withTrashed()
+                                    ->whereIn('id', $silinecekIds)
+                                    ->update(['deleted_at' => now(), 'aktif' => false]);
+                            }
+
+                            Notification::make()
+                                ->title('Kurumlar birleştirildi')
+                                ->body("\"{$anaAd}\" adıyla " . (count($silinecekIds) + 1) . ' kurum tek kayda dönüştürüldü.')
+                                ->success()
+                                ->send();
+                        })
+                        ->deselectRecordsAfterCompletion(),
                     BulkAction::make('toplu_onayla')
                         ->label('Onayla (Aktif)')
                         ->icon('heroicon-o-check-circle')
