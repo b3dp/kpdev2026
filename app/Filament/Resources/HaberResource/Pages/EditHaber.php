@@ -28,13 +28,8 @@ class EditHaber extends EditRecord
                 ->icon('heroicon-o-sparkles')
                 ->color('primary')
                 ->visible(function (): bool {
-                    $durum = $this->record->durum instanceof HaberDurumu
-                        ? $this->record->durum
-                        : HaberDurumu::tryFrom((string) $this->record->durum);
-
                     return auth()->check()
-                        && auth()->user()->hasAnyRole(['Admin', 'Editör', 'Yazar'])
-                        && in_array($durum, [HaberDurumu::Taslak, HaberDurumu::Incelemede], true);
+                        && auth()->user()->hasAnyRole(['Admin', 'Editör', 'Yazar']);
                 })
                 ->modalHeading('AI İşlemleri')
                 ->modalSubmitAction(false)
@@ -113,6 +108,19 @@ class EditHaber extends EditRecord
     protected function getFooterActions(): array
     {
         return [
+            Action::make('ai_islemleri_footer')
+                ->label(function (): string {
+                    return $this->record->ai_islendi
+                        ? 'AI İşlemlerini Tekrar Başlat'
+                        : 'AI İşlemlerini Başlat';
+                })
+                ->icon('heroicon-o-sparkles')
+                ->color('primary')
+                ->visible(fn (): bool => auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör', 'Yazar']))
+                ->modalHeading('AI İşlemleri')
+                ->modalSubmitAction(false)
+                ->modalCancelActionLabel('Kapat')
+                ->modalContent(fn () => view('filament.haber-ai-modal', ['haberId' => $this->record->id])),
             Action::make('incelemeye_gonder_footer')
                 ->label('İncelemeye Gönder')
                 ->icon('heroicon-o-paper-airplane')
