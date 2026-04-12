@@ -5,6 +5,8 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\HaberKategorisiResource\Pages;
 use App\Models\HaberKategorisi;
 use Filament\Forms\Components\ColorPicker;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
@@ -21,6 +23,7 @@ use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\HtmlString;
 
 class HaberKategorisiResource extends Resource
 {
@@ -69,7 +72,47 @@ class HaberKategorisiResource extends Resource
             TextInput::make('ad')
                 ->label('Ad')
                 ->required()
-                ->maxLength(150),
+                ->maxLength(150)
+                ->columnSpanFull(),
+
+            TextInput::make('seo_baslik')
+                ->label('SEO Başlığı')
+                ->nullable()
+                ->maxLength(100)
+                ->helperText(fn (?string $state) => mb_strlen((string) ($state ?? ''), 'UTF-8') . '/100 karakter'),
+
+            TextInput::make('slug')
+                ->label('Slug')
+                ->required()
+                ->maxLength(180)
+                ->unique(table: 'haber_kategorileri', column: 'slug', ignoreRecord: true),
+
+            Textarea::make('meta_description')
+                ->label('Meta Description')
+                ->nullable()
+                ->maxLength(200)
+                ->rows(2)
+                ->helperText(fn (?string $state) => mb_strlen((string) ($state ?? ''), 'UTF-8') . '/200 karakter')
+                ->columnSpanFull(),
+
+            RichEditor::make('aciklama')
+                ->label('Kategori Açıklaması')
+                ->toolbarButtons(['bold', 'italic', 'bulletList', 'orderedList', 'h2', 'h3', 'link', 'undo', 'redo'])
+                ->nullable()
+                ->columnSpanFull(),
+
+            TextInput::make('gorsel')
+                ->label('Görsel URL')
+                ->nullable()
+                ->maxLength(500)
+                ->url()
+                ->columnSpanFull(),
+
+            TextInput::make('ikon')
+                ->label('İkon')
+                ->nullable()
+                ->maxLength(100)
+                ->placeholder('heroicon-o-academic-cap'),
 
             ColorPicker::make('renk')
                 ->label('Renk')
@@ -99,6 +142,18 @@ class HaberKategorisiResource extends Resource
                 TextColumn::make('slug')
                     ->label('Slug')
                     ->sortable()
+                    ->searchable(),
+
+                TextColumn::make('ikon')
+                    ->label('İkon')
+                    ->html()
+                    ->formatStateUsing(function (?string $state): HtmlString {
+                        if (blank($state)) {
+                            return new HtmlString('<span class="text-gray-400">-</span>');
+                        }
+
+                        return new HtmlString('<span style="display:inline-flex;align-items:center;gap:8px;"><i class="' . e($state) . '" style="font-size:16px;"></i><span>' . e($state) . '</span></span>');
+                    })
                     ->searchable(),
 
                 ColorColumn::make('renk')

@@ -23,6 +23,11 @@ class HaberKategorisi extends Model
         'renk',
         'sira',
         'aktif',
+        'seo_baslik',
+        'meta_description',
+        'aciklama',
+        'gorsel',
+        'ikon',
     ];
 
     protected function casts(): array
@@ -42,7 +47,7 @@ class HaberKategorisi extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['ad', 'slug', 'renk', 'sira', 'aktif'])
+            ->logOnly(['ad', 'slug', 'renk', 'sira', 'aktif', 'seo_baslik', 'meta_description', 'aciklama', 'gorsel', 'ikon'])
             ->logOnlyDirty()
             ->useLogName('haber_kategorileri')
             ->dontSubmitEmptyLogs();
