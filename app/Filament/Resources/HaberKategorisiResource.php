@@ -23,7 +23,6 @@ use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\HtmlString;
 
 class HaberKategorisiResource extends Resource
 {
@@ -134,6 +133,29 @@ class HaberKategorisiResource extends Resource
     {
         return $table
             ->columns([
+                IconColumn::make('ikon')
+                    ->label('İkon')
+                    ->icon(fn (?string $state): string => match ($state) {
+                        'fa-solid fa-book-open' => 'heroicon-o-book-open',
+                        'fa-solid fa-calendar-days' => 'heroicon-o-calendar-days',
+                        'fa-solid fa-award' => 'heroicon-o-trophy',
+                        'fa-solid fa-microphone-lines' => 'heroicon-o-microphone',
+                        'fa-solid fa-volleyball' => 'heroicon-o-sparkles',
+                        'fa-solid fa-bus' => 'heroicon-o-truck',
+                        'fa-solid fa-quran' => 'heroicon-o-book-open',
+                        'fa-solid fa-handshake' => 'heroicon-o-hand-raised',
+                        'fa-solid fa-user-graduate' => 'heroicon-o-academic-cap',
+                        'fa-solid fa-hand-holding-heart' => 'heroicon-o-heart',
+                        'fa-solid fa-moon' => 'heroicon-o-moon',
+                        'fa-solid fa-crown' => 'heroicon-o-trophy',
+                        'fa-solid fa-building' => 'heroicon-o-building-office-2',
+                        'fa-solid fa-newspaper' => 'heroicon-o-newspaper',
+                        'fa-solid fa-bullhorn' => 'heroicon-o-megaphone',
+                        default => 'heroicon-o-squares-2x2',
+                    })
+                    ->color('gray')
+                    ->sortable(false),
+
                 TextColumn::make('ad')
                     ->label('Ad')
                     ->sortable()
@@ -142,18 +164,6 @@ class HaberKategorisiResource extends Resource
                 TextColumn::make('slug')
                     ->label('Slug')
                     ->sortable()
-                    ->searchable(),
-
-                TextColumn::make('ikon')
-                    ->label('İkon')
-                    ->html()
-                    ->formatStateUsing(function (?string $state): HtmlString {
-                        if (blank($state)) {
-                            return new HtmlString('<span class="text-gray-400">-</span>');
-                        }
-
-                        return new HtmlString('<span style="display:inline-flex;align-items:center;gap:8px;"><i class="' . e($state) . '" style="font-size:16px;"></i><span>' . e($state) . '</span></span>');
-                    })
                     ->searchable(),
 
                 ColorColumn::make('renk')
