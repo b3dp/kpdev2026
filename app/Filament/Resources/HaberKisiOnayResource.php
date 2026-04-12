@@ -67,7 +67,17 @@ class HaberKisiOnayResource extends Resource
                 TextColumn::make('kisi.ad')
                     ->label('Kişi')
                     ->formatStateUsing(fn (HaberKisi $record) => $record->kisi?->full_ad)
-                    ->searchable(['kisi.ad', 'kisi.soyad'])
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->whereHas('kisi', function (Builder $kisiSorgusu) use ($search): Builder {
+                            return $kisiSorgusu
+                                ->withTrashed()
+                                ->where(function (Builder $altSorgu) use ($search): Builder {
+                                    return $altSorgu
+                                        ->where('ad', 'like', "%{$search}%")
+                                        ->orWhere('soyad', 'like', "%{$search}%");
+                                });
+                        });
+                    })
                     ->sortable(),
                 TextColumn::make('rol')
                     ->label('Rol')

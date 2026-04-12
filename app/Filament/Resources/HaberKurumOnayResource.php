@@ -66,7 +66,13 @@ class HaberKurumOnayResource extends Resource
                     ->sortable(),
                 TextColumn::make('kurum.ad')
                     ->label('Kurum')
-                    ->searchable()
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->whereHas('kurum', function (Builder $kurumSorgusu) use ($search): Builder {
+                            return $kurumSorgusu
+                                ->withTrashed()
+                                ->where('ad', 'like', "%{$search}%");
+                        });
+                    })
                     ->sortable(),
                 TextColumn::make('onay_durumu')
                     ->label('Durum')
