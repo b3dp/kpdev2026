@@ -77,7 +77,7 @@ class HaberAiController extends Controller
                 $kisiSonuclar = $this->metindenKisiAdaylariAyikla($duzeltilmisMetin);
             }
 
-            $mevcutKisiler = Kisi::query()->select(['id', 'ad', 'soyad'])->get();
+            $mevcutKisiler = Kisi::query()->withTrashed()->select(['id', 'ad', 'soyad'])->get();
             $kisiAramaListesi = $mevcutKisiler
                 ->map(fn (Kisi $kisi) => ['id' => $kisi->id, 'ad' => trim($kisi->ad . ' ' . $kisi->soyad)])
                 ->values();
@@ -107,7 +107,17 @@ class HaberAiController extends Controller
                 $eslesme = $this->mevcutKisiyiEsle($adSoyad, $mevcutKisiler, $kisiAramaListesi, $levenshteinService);
 
                 if (! $eslesme) {
-                    continue;
+                    $eslesme = $this->eslesmeYoksaKisiOlustur($ad, $soyad, $importModu);
+
+                    if (! $eslesme) {
+                        continue;
+                    }
+
+                    $mevcutKisiler->push($eslesme['kisi']);
+                    $kisiAramaListesi->push([
+                        'id' => $eslesme['kisi']->id,
+                        'ad' => trim($eslesme['kisi']->ad . ' ' . $eslesme['kisi']->soyad),
+                    ]);
                 }
 
                 $kisi = $eslesme['kisi'];
@@ -151,7 +161,17 @@ class HaberAiController extends Controller
                     $eslesme = $this->mevcutKisiyiEsle($adSoyad, $mevcutKisiler, $kisiAramaListesi, $levenshteinService);
 
                     if (! $eslesme) {
-                        continue;
+                        $eslesme = $this->eslesmeYoksaKisiOlustur($ad, $soyad, $importModu);
+
+                        if (! $eslesme) {
+                            continue;
+                        }
+
+                        $mevcutKisiler->push($eslesme['kisi']);
+                        $kisiAramaListesi->push([
+                            'id' => $eslesme['kisi']->id,
+                            'ad' => trim($eslesme['kisi']->ad . ' ' . $eslesme['kisi']->soyad),
+                        ]);
                     }
 
                     $kisi = $eslesme['kisi'];
@@ -180,7 +200,7 @@ class HaberAiController extends Controller
                 $kurumSonuclar = $this->metindenKurumAdaylariAyikla($duzeltilmisMetin);
             }
 
-            $mevcutKurumlar = Kurum::query()->select(['id', 'ad'])->get();
+            $mevcutKurumlar = Kurum::query()->withTrashed()->select(['id', 'ad'])->get();
             $kurumAramaListesi = $mevcutKurumlar
                 ->map(fn (Kurum $kurum) => ['id' => $kurum->id, 'ad' => $kurum->ad])
                 ->values();
@@ -498,6 +518,31 @@ class HaberAiController extends Controller
         return [
             'kisi' => $kisi,
             'onay_durumu' => $enBenzer['skor'] >= 97 ? 'onaylandi' : 'beklemede',
+        ];
+    }
+
+    private function eslesmeYoksaKisiOlustur(string $ad, string $soyad, bool $importModu): ?array
+    {
+        if ($importModu) {
+            return null;
+        }
+
+        $ad = trim($ad);
+        $soyad = trim($soyad);
+
+        if (! filled($ad) || ! filled($soyad)) {
+            return null;
+        }
+
+        $kisi = Kisi::query()->create([
+            'ad' => $ad,
+            'soyad' => $soyad,
+            'ai_onaylandi' => false,
+        ]);
+
+        return [
+            'kisi' => $kisi,
+            'onay_durumu' => 'beklemede',
         ];
     }
 
