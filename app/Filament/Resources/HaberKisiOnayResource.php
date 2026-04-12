@@ -6,6 +6,8 @@ use App\Filament\Resources\HaberKisiOnayResource\Pages;
 use App\Models\HaberKisi;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\BulkAction;
+use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -108,6 +110,24 @@ class HaberKisiOnayResource extends Resource
                     ->color('danger')
                     ->visible(fn (HaberKisi $record) => $record->onay_durumu !== 'reddedildi')
                     ->action(fn (HaberKisi $record) => $record->update(['onay_durumu' => 'reddedildi'])),
+            ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    BulkAction::make('toplu_onayla')
+                        ->label('Secilenleri Onayla')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->action(fn ($records) => $records->each->update(['onay_durumu' => 'onaylandi']))
+                        ->deselectRecordsAfterCompletion(),
+                    BulkAction::make('toplu_reddet')
+                        ->label('Secilenleri Reddet')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->action(fn ($records) => $records->each->update(['onay_durumu' => 'reddedildi']))
+                        ->deselectRecordsAfterCompletion(),
+                ]),
             ]);
     }
 

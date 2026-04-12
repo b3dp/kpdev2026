@@ -6,6 +6,8 @@ use App\Filament\Resources\HaberKurumOnayResource\Pages;
 use App\Models\HaberKurum;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\BulkAction;
+use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -104,6 +106,24 @@ class HaberKurumOnayResource extends Resource
                     ->color('danger')
                     ->visible(fn (HaberKurum $record) => $record->onay_durumu !== 'reddedildi')
                     ->action(fn (HaberKurum $record) => $record->update(['onay_durumu' => 'reddedildi'])),
+            ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    BulkAction::make('toplu_onayla')
+                        ->label('Secilenleri Onayla')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->action(fn ($records) => $records->each->update(['onay_durumu' => 'onaylandi']))
+                        ->deselectRecordsAfterCompletion(),
+                    BulkAction::make('toplu_reddet')
+                        ->label('Secilenleri Reddet')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->action(fn ($records) => $records->each->update(['onay_durumu' => 'reddedildi']))
+                        ->deselectRecordsAfterCompletion(),
+                ]),
             ]);
     }
 
