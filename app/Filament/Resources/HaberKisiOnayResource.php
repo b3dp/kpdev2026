@@ -158,7 +158,7 @@ class HaberKisiOnayResource extends Resource
         Kisi::query()
             ->withTrashed()
             ->whereIn('id', $kisiIdleri)
-            ->update(['ai_onaylandi' => true]);
+            ->update(['ai_onaylandi' => true, 'deleted_at' => null]);
 
         HaberKisi::query()
             ->whereIn('kisi_id', $kisiIdleri)

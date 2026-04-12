@@ -150,7 +150,7 @@ class HaberKurumOnayResource extends Resource
         Kurum::query()
             ->withTrashed()
             ->whereIn('id', $kurumIdleri)
-            ->update(['aktif' => true]);
+            ->update(['aktif' => true, 'deleted_at' => null]);
 
         HaberKurum::query()
             ->whereIn('kurum_id', $kurumIdleri)
