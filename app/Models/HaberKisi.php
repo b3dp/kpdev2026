@@ -28,6 +28,6 @@ class HaberKisi extends Model
 
     public function kisi(): BelongsTo
     {
-        return $this->belongsTo(Kisi::class, 'kisi_id');
+        return $this->belongsTo(Kisi::class, 'kisi_id')->withTrashed();
     }
 }

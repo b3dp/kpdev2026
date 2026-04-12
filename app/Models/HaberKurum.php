@@ -27,6 +27,6 @@ class HaberKurum extends Model
 
     public function kurum(): BelongsTo
     {
-        return $this->belongsTo(Kurum::class, 'kurum_id');
+        return $this->belongsTo(Kurum::class, 'kurum_id')->withTrashed();
     }
 }
