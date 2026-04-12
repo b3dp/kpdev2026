@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use GuzzleHttp\Client;
+use Illuminate\Support\Str;
 use Throwable;
 
 class GeminiService
@@ -32,6 +33,12 @@ class GeminiService
         // Markdown code fence temizle
         $yanit = preg_replace('/^```(?:html)?\s*/i', '', trim($yanit));
         $yanit = preg_replace('/\s*```$/i', '', $yanit);
+
+        // AI çıktısı kaynak metinle alakasızsa güvenli fallback'e dön.
+        if (! $this->aiCevabiKaynaklaTutarlıMi((string) strip_tags($metin), (string) strip_tags($yanit))) {
+            return trim($metin);
+        }
+
         return trim($yanit);
     }
 
@@ -46,6 +53,10 @@ class GeminiService
             $varsayilan
         );
 
+        if (! $this->aiCevabiKaynaklaTutarlıMi($metin, $yanit)) {
+            return $varsayilan;
+        }
+
         return $this->metniAnlamliSinirla($yanit, 280);
     }
 
@@ -58,6 +69,10 @@ class GeminiService
             . "cümle yarım kalmasın. Anahtar kelime içermeli, okuyucuyu sayfaya çekici olmalı:\n\n" . $metin,
             $varsayilan
         );
+
+        if (! $this->aiCevabiKaynaklaTutarlıMi($metin, $yanit)) {
+            return $varsayilan;
+        }
 
         return $this->metniAnlamliSinirla($yanit, 155);
     }
@@ -401,6 +416,55 @@ PROMPT;
         }
 
         return $kirpilmis;
+    }
+
+    private function aiCevabiKaynaklaTutarlıMi(string $kaynakMetin, string $aiCevabi): bool
+    {
+        $kaynak = $this->kelimeKumesiUret($kaynakMetin);
+        $yanit = $this->kelimeKumesiUret($aiCevabi);
+
+        if ($kaynak === [] || $yanit === []) {
+            return false;
+        }
+
+        $yasakliKelimeler = [
+            'bonus', 'casino', 'bahis', 'yatirim', 'yatirma', 'cevrim', 'promosyon',
+            'kampanya', 'musteri', 'cekim', 'uyeler', 'hos', 'geldin',
+        ];
+
+        foreach ($yasakliKelimeler as $yasakli) {
+            if (in_array($yasakli, $yanit, true) && ! in_array($yasakli, $kaynak, true)) {
+                return false;
+            }
+        }
+
+        $ortak = array_values(array_intersect($kaynak, $yanit));
+        $ortakSayisi = count($ortak);
+        $oran = $ortakSayisi / max(1, min(count($kaynak), count($yanit)));
+
+        return $ortakSayisi >= 4 && $oran >= 0.10;
+    }
+
+    private function kelimeKumesiUret(string $metin): array
+    {
+        $normalize = (string) Str::of($metin)
+            ->replace(['ş', 'Ş', 'ğ', 'Ğ', 'ı', 'İ', 'ö', 'Ö', 'ü', 'Ü', 'ç', 'Ç'], ['s', 's', 'g', 'g', 'i', 'i', 'o', 'o', 'u', 'u', 'c', 'c'])
+            ->lower()
+            ->replaceMatches('/[^a-z0-9\s]+/u', ' ')
+            ->squish();
+
+        $durakKelimeler = [
+            've', 'ile', 'bir', 'bu', 'da', 'de', 'için', 'olarak', 'olan', 'gibi', 'daha', 'çok', 'az',
+            'ama', 'fakat', 'ancak', 'ya', 'ya da', 'veya', 'ki', 'mi', 'mu', 'mü', 'nun', 'nin',
+        ];
+
+        return collect(explode(' ', $normalize))
+            ->map(fn (string $kelime) => trim($kelime))
+            ->filter(fn (string $kelime) => mb_strlen($kelime) >= 3)
+            ->reject(fn (string $kelime) => in_array($kelime, $durakKelimeler, true))
+            ->unique()
+            ->values()
+            ->all();
     }
 
     private function satirlardanVarlikListesiUret(string $metin, string $tip): array
