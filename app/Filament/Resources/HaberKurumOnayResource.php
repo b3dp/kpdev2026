@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\HaberKurumOnayResource\Pages;
 use App\Models\HaberKurum;
+use App\Models\Kurum;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\BulkAction;
@@ -12,6 +13,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class HaberKurumOnayResource extends Resource
@@ -105,7 +107,7 @@ class HaberKurumOnayResource extends Resource
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->visible(fn (HaberKurum $record) => $record->onay_durumu !== 'onaylandi')
-                    ->action(fn (HaberKurum $record) => $record->update(['onay_durumu' => 'onaylandi'])),
+                    ->action(fn (HaberKurum $record) => static::kurumuTopluOnayMantigiylaOnayla(collect([$record]))),
                 Action::make('reddet')
                     ->label('Reddet')
                     ->icon('heroicon-o-x-circle')
@@ -120,17 +122,44 @@ class HaberKurumOnayResource extends Resource
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
                         ->requiresConfirmation()
-                        ->action(fn ($records) => $records->each->update(['onay_durumu' => 'onaylandi']))
+                        ->action(fn (Collection $records) => static::kurumuTopluOnayMantigiylaOnayla($records))
                         ->deselectRecordsAfterCompletion(),
                     BulkAction::make('toplu_reddet')
                         ->label('Secilenleri Reddet')
                         ->icon('heroicon-o-x-circle')
                         ->color('danger')
                         ->requiresConfirmation()
-                        ->action(fn ($records) => $records->each->update(['onay_durumu' => 'reddedildi']))
+                        ->action(fn (Collection $records) => $records->each->update(['onay_durumu' => 'reddedildi']))
                         ->deselectRecordsAfterCompletion(),
                 ]),
             ]);
+    }
+
+    private static function kurumuTopluOnayMantigiylaOnayla(Collection $records): void
+    {
+        $kurumIdleri = $records
+            ->pluck('kurum_id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($kurumIdleri->isEmpty()) {
+            return;
+        }
+
+        Kurum::query()
+            ->withTrashed()
+            ->whereIn('id', $kurumIdleri)
+            ->update(['aktif' => true]);
+
+        HaberKurum::query()
+            ->whereIn('kurum_id', $kurumIdleri)
+            ->where('onay_durumu', 'beklemede')
+            ->update(['onay_durumu' => 'onaylandi']);
+
+        HaberKurum::query()
+            ->whereIn('id', $records->pluck('id')->all())
+            ->update(['onay_durumu' => 'onaylandi']);
     }
 
     public static function getEloquentQuery(): Builder

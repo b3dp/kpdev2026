@@ -56,7 +56,7 @@ class HaberOnerileriniYenile extends Command
                     ['haber_id' => $haber->id, 'kisi_id' => $kisiVerisi['id']],
                     [
                         'rol' => null,
-                        'onay_durumu' => 'beklemede',
+                        'onay_durumu' => $kisiVerisi['ai_onaylandi'] ? 'onaylandi' : 'beklemede',
                         'updated_at' => now(),
                         'created_at' => now(),
                         'deleted_at' => null,
@@ -74,7 +74,7 @@ class HaberOnerileriniYenile extends Command
                 DB::table('haber_kurumlar')->updateOrInsert(
                     ['haber_id' => $haber->id, 'kurum_id' => $kurumVerisi['id']],
                     [
-                        'onay_durumu' => 'beklemede',
+                        'onay_durumu' => $kurumVerisi['aktif'] ? 'onaylandi' : 'beklemede',
                         'updated_at' => now(),
                         'created_at' => now(),
                         'deleted_at' => null,

@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\HaberKisiOnayResource\Pages;
 use App\Models\HaberKisi;
+use App\Models\Kisi;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\BulkAction;
@@ -12,6 +13,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class HaberKisiOnayResource extends Resource
@@ -113,7 +115,7 @@ class HaberKisiOnayResource extends Resource
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->visible(fn (HaberKisi $record) => $record->onay_durumu !== 'onaylandi')
-                    ->action(fn (HaberKisi $record) => $record->update(['onay_durumu' => 'onaylandi'])),
+                    ->action(fn (HaberKisi $record) => static::kisiyiTopluOnayMantigiylaOnayla(collect([$record]))),
                 Action::make('reddet')
                     ->label('Reddet')
                     ->icon('heroicon-o-x-circle')
@@ -128,17 +130,44 @@ class HaberKisiOnayResource extends Resource
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
                         ->requiresConfirmation()
-                        ->action(fn ($records) => $records->each->update(['onay_durumu' => 'onaylandi']))
+                        ->action(fn (Collection $records) => static::kisiyiTopluOnayMantigiylaOnayla($records))
                         ->deselectRecordsAfterCompletion(),
                     BulkAction::make('toplu_reddet')
                         ->label('Secilenleri Reddet')
                         ->icon('heroicon-o-x-circle')
                         ->color('danger')
                         ->requiresConfirmation()
-                        ->action(fn ($records) => $records->each->update(['onay_durumu' => 'reddedildi']))
+                        ->action(fn (Collection $records) => $records->each->update(['onay_durumu' => 'reddedildi']))
                         ->deselectRecordsAfterCompletion(),
                 ]),
             ]);
+    }
+
+    private static function kisiyiTopluOnayMantigiylaOnayla(Collection $records): void
+    {
+        $kisiIdleri = $records
+            ->pluck('kisi_id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($kisiIdleri->isEmpty()) {
+            return;
+        }
+
+        Kisi::query()
+            ->withTrashed()
+            ->whereIn('id', $kisiIdleri)
+            ->update(['ai_onaylandi' => true]);
+
+        HaberKisi::query()
+            ->whereIn('kisi_id', $kisiIdleri)
+            ->where('onay_durumu', 'beklemede')
+            ->update(['onay_durumu' => 'onaylandi']);
+
+        HaberKisi::query()
+            ->whereIn('id', $records->pluck('id')->all())
+            ->update(['onay_durumu' => 'onaylandi']);
     }
 
     public static function getEloquentQuery(): Builder
