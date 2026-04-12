@@ -270,6 +270,7 @@ class HaberAktarimService
     ): ?string
     {
         $hamYol = trim($hamYol);
+        $varsayilanEskiSiteBaseUrl = 'https://kestanepazari.org.tr';
 
         if ($hamYol === '') {
             return null;
@@ -279,6 +280,26 @@ class HaberAktarimService
 
         if (Str::startsWith($hamYol, ['http://', 'https://'])) {
             $adaylar[] = $hamYol;
+
+            $urlYolu = (string) (parse_url($hamYol, PHP_URL_PATH) ?: '');
+            $dosyaAdi = basename($urlYolu);
+
+            if ($dosyaAdi !== '' && $dosyaAdi !== '/') {
+                $eskiSiteBaseUrl = $kaynakBaseUrl !== '' ? $kaynakBaseUrl : $varsayilanEskiSiteBaseUrl;
+
+                $adaylar[] = $eskiSiteBaseUrl . '/images/news/' . $dosyaAdi;
+                $adaylar[] = $eskiSiteBaseUrl . '/images/' . $dosyaAdi;
+                $adaylar[] = $eskiSiteBaseUrl . '/news/' . $dosyaAdi;
+
+                if (str_contains($urlYolu, '/kpmedia/haber/images/news/')) {
+                    $adaylar[] = $eskiSiteBaseUrl . '/images/news/' . $dosyaAdi;
+                }
+
+                if (str_contains($urlYolu, '/kpmedia/haber/news/')) {
+                    $adaylar[] = $eskiSiteBaseUrl . '/images/news/' . $dosyaAdi;
+                    $adaylar[] = $eskiSiteBaseUrl . '/news/' . $dosyaAdi;
+                }
+            }
         } elseif (Str::startsWith($hamYol, '//')) {
             $adaylar[] = 'https:' . $hamYol;
         } else {
@@ -303,10 +324,14 @@ class HaberAktarimService
                 $adaylar[] = $kaynakBaseUrl . '/' . $temizYol;
                 $adaylar[] = $kaynakBaseUrl . '/images/' . $temizYol;
                 $adaylar[] = $kaynakBaseUrl . '/images/' . $dosyaAdi;
+                $adaylar[] = $kaynakBaseUrl . '/images/news/' . $dosyaAdi;
                 $adaylar[] = $kaynakBaseUrl . '/kpmedia/haber/' . $temizYol;
                 $adaylar[] = $kaynakBaseUrl . '/haber/' . $temizYol;
                 $adaylar[] = $kaynakBaseUrl . '/uploads/' . $temizYol;
             }
+
+            $adaylar[] = $varsayilanEskiSiteBaseUrl . '/images/news/' . $dosyaAdi;
+            $adaylar[] = $varsayilanEskiSiteBaseUrl . '/images/' . $dosyaAdi;
 
             if ($kaynakCdnHaberUrl !== '') {
                 $adaylar[] = $kaynakCdnHaberUrl . '/' . $temizYol;
