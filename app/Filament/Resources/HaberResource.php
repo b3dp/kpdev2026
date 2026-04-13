@@ -22,14 +22,11 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
-use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ForceDeleteAction;
 use Filament\Tables\Actions\RestoreAction;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
@@ -367,19 +364,6 @@ class HaberResource extends Resource
                     })
                     ->sortable(),
 
-                TextColumn::make('oncelik')
-                    ->label('Öncelik')
-                    ->badge()
-                    ->formatStateUsing(fn (HaberOncelik|string|null $state) => $state instanceof HaberOncelik
-                        ? $state->label()
-                        : HaberOncelik::tryFrom((string) $state)?->label() ?? $state)
-                    ->sortable(),
-
-                IconColumn::make('manset')
-                    ->label('Manşet')
-                    ->boolean()
-                    ->sortable(),
-
                 TextColumn::make('yayin_tarihi')
                     ->label('Yayın Tarihi')
                     ->dateTime('d.m.Y H:i')
@@ -413,51 +397,16 @@ class HaberResource extends Resource
                 TrashedFilter::make(),
             ])
             ->actions([
-                EditAction::make(),
-                Action::make('yayinla')
-                    ->label('Yayınla')
-                    ->color('success')
-                    ->icon('heroicon-o-check-badge')
-                    ->visible(function (Haber $record): bool {
-                        $durum = $record->durum instanceof HaberDurumu
-                            ? $record->durum
-                            : HaberDurumu::tryFrom((string) $record->durum);
-
-                        return auth()->check()
-                            && auth()->user()->hasRole('Editör')
-                            && $durum !== HaberDurumu::Yayinda;
-                    })
-                    ->action(function (Haber $record): void {
-                        $record->update(['durum' => HaberDurumu::Yayinda, 'yayin_tarihi' => $record->yayin_tarihi ?? now()]);
-                    }),
-                Action::make('arsivle')
-                    ->label('Arşivle')
-                    ->color('gray')
-                    ->icon('heroicon-o-archive-box')
-                    ->visible(fn (Haber $record) => $record->durum !== HaberDurumu::Arsivde)
-                    ->action(fn (Haber $record) => $record->update(['durum' => HaberDurumu::Arsivde])),
-                Action::make('mansete_al')
-                    ->label('Manşete Al')
-                    ->color('primary')
-                    ->icon('heroicon-o-star')
-                    ->visible(fn (Haber $record) => ! $record->manset)
-                    ->action(function (Haber $record): void {
-                        if (Haber::mansetSayisi() >= 10) {
-                            Notification::make()->title('Manşet limiti dolu.')->danger()->send();
-                            return;
-                        }
-
-                        $record->update(['manset' => true, 'oncelik' => HaberOncelik::Manset]);
-                    }),
-                Action::make('mansetten_cikar')
-                    ->label('Manşetten Çıkar')
-                    ->color('warning')
-                    ->icon('heroicon-o-star')
-                    ->visible(fn (Haber $record) => $record->manset)
-                    ->action(fn (Haber $record) => $record->update(['manset' => false, 'oncelik' => HaberOncelik::Normal])),
-                DeleteAction::make(),
-                RestoreAction::make(),
-                ForceDeleteAction::make(),
+                EditAction::make()
+                    ->iconButton()
+                    ->visible(fn (Haber $record) => auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör', 'Yazar'])),
+                DeleteAction::make()
+                    ->iconButton()
+                    ->visible(fn (Haber $record) => auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör', 'Yazar'])),
+                RestoreAction::make()
+                    ->iconButton(),
+                ForceDeleteAction::make()
+                    ->iconButton(),
             ]);
     }
 
