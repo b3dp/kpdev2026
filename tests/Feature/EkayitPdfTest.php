@@ -11,6 +11,7 @@ use App\Models\EkayitSinif;
 use App\Models\EkayitVeliBilgisi;
 use App\Models\Kurum;
 use App\Services\EkayitPdfService;
+use App\Services\ZeptomailService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -20,7 +21,63 @@ class EkayitPdfTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_public_ekayit_basvurusu_yeni_veli_ve_okul_alanlarini_kaydeder(): void
+    public function test_public_ekayit_basvurusu_ayni_veli_numaralarina_izin_vermez(): void
+    {
+        $kurum = Kurum::query()->create([
+            'ad' => 'Hatay Kursu',
+            'slug' => 'hatay-kursu-ayni-numara',
+            'tip' => 'kurs',
+            'aktif' => true,
+        ]);
+
+        $donem = EkayitDonem::query()->create([
+            'ad' => '2026-2027 Kayıt Dönemi',
+            'ogretim_yili' => '2026-2027',
+            'baslangic' => now()->subDay(),
+            'bitis' => now()->addMonth(),
+            'aktif' => true,
+        ]);
+
+        $sinif = EkayitSinif::query()->create([
+            'ad' => '7. Sınıf Hafızlık',
+            'ogretim_yili' => '2026-2027',
+            'kurum_id' => $kurum->id,
+            'donem_id' => $donem->id,
+            'renk' => 'blue',
+            'aktif' => true,
+        ]);
+
+        $response = $this->from(route('ekayit.form', ['sinif_id' => $sinif->id]))
+            ->post(route('ekayit.store'), [
+                'sinif_id' => $sinif->id,
+                'donem_id' => $donem->id,
+                'ogrenci_ad' => 'Ahmet',
+                'ogrenci_soyad' => 'Yılmaz',
+                'ogrenci_tc' => '12345678901',
+                'ogrenci_telefon' => '0555 111 22 33',
+                'ogrenci_eposta' => 'ogrenci@example.com',
+                'ogrenci_dogum_tarihi' => '2012-01-15',
+                'ogrenci_cinsiyet' => 'E',
+                'veli_ad_soyad' => 'Fatma Yılmaz',
+                'veli_telefon_sahibi_1' => 'anne',
+                'veli_telefon' => '0555 444 55 66',
+                'veli_telefon_sahibi_2' => 'baba',
+                'veli_telefon_2' => '0555 444 55 66',
+                'veli_eposta' => 'veli@example.com',
+                'okul_adi' => 'Şehitler Ortaokulu',
+                'okul_il' => 'İzmir',
+                'okul_ilce' => 'Konak',
+                'onay_bilgi' => '1',
+                'onay_kvkk' => '1',
+                'onay_iletisim' => '1',
+                'onay_tuzuk' => '1',
+            ]);
+
+        $response->assertRedirect(route('ekayit.form', ['sinif_id' => $sinif->id]));
+        $response->assertSessionHasErrors('veli_telefon_2');
+    }
+
+    public function test_public_ekayit_basvurusu_yeni_veli_ve_okul_alanlarini_kaydeder_ve_bildirim_epostasi_gonderir(): void
     {
         $kurum = Kurum::query()->create([
             'ad' => 'Hatay Kursu',
@@ -46,6 +103,10 @@ class EkayitPdfTest extends TestCase
             'aktif' => true,
         ]);
 
+        $zeptomailService = \Mockery::mock(ZeptomailService::class);
+        $zeptomailService->shouldReceive('ekayitDurumGonder')->once()->andReturnTrue();
+        $this->app->instance(ZeptomailService::class, $zeptomailService);
+
         $response = $this->post(route('ekayit.store'), [
             'sinif_id' => $sinif->id,
             'donem_id' => $donem->id,
@@ -63,7 +124,9 @@ class EkayitPdfTest extends TestCase
             'ogrenci_ikamet_ilce' => 'Karabağlar',
             'ogrenci_cinsiyet' => 'E',
             'veli_ad_soyad' => 'Fatma Yılmaz',
+            'veli_telefon_sahibi_1' => 'anne',
             'veli_telefon' => '0555 444 55 66',
+            'veli_telefon_sahibi_2' => 'baba',
             'veli_telefon_2' => '0555 777 88 99',
             'veli_eposta' => 'veli@example.com',
             'veli_il' => 'İzmir',
@@ -74,7 +137,6 @@ class EkayitPdfTest extends TestCase
             'okul_il' => 'İzmir',
             'okul_ilce' => 'Konak',
             'okul_turu' => 'devlet',
-            'not_ortalamasi' => '92.5',
             'onay_bilgi' => '1',
             'onay_kvkk' => '1',
             'onay_iletisim' => '1',
@@ -87,6 +149,8 @@ class EkayitPdfTest extends TestCase
 
         $this->assertSame('05554445566', preg_replace('/\D+/', '', (string) $kayit->veliBilgisi?->telefon_1));
         $this->assertSame('05557778899', preg_replace('/\D+/', '', (string) $kayit->veliBilgisi?->telefon_2));
+        $this->assertSame('anne', $kayit->veliBilgisi?->telefon_1_sahibi);
+        $this->assertSame('baba', $kayit->veliBilgisi?->telefon_2_sahibi);
         $this->assertSame('VELİ AÇIK ADRESİ', $kayit->veliBilgisi?->adres);
         $this->assertSame('İzmir', $kayit->veliBilgisi?->ikamet_il);
         $this->assertSame('Konak', $kayit->veliBilgisi?->ikamet_ilce);

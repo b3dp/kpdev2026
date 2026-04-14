@@ -255,7 +255,7 @@
           <h2 class="mb-1 font-baskerville text-xl font-bold text-primary">Veli Bilgileri</h2>
           <p class="mb-6 font-jakarta text-sm text-teal-muted">Başvuru sürecinde kullanılacak veli iletişim ve adres bilgileri.</p>
 
-          <h3 class="mb-4 border-b border-primary/10 pb-2 font-jakarta text-sm font-bold uppercase tracking-[0.16em] text-primary/60">Veli (Anne / Vasi)</h3>
+          <h3 class="mb-4 border-b border-primary/10 pb-2 font-jakarta text-sm font-bold uppercase tracking-[0.16em] text-primary/60">Veli (Anne / Baba / Yakını)</h3>
           <div class="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2">
             <div class="form-group">
               <label class="form-label">Ad Soyad <span>*</span></label>
@@ -263,11 +263,31 @@
             </div>
 
             <div class="form-group">
+              <label class="form-label">Veli Telefon Seçimi 1 <span>*</span></label>
+              <select name="veli_telefon_sahibi_1" id="veli_telefon_sahibi_1" lang="tr" class="form-select @error('veli_telefon_sahibi_1') border-red-400 @enderror" data-telefon-sahibi="1" required>
+                <option value="">Seçiniz</option>
+                <option value="anne" @selected(old('veli_telefon_sahibi_1') === 'anne')>Anne</option>
+                <option value="baba" @selected(old('veli_telefon_sahibi_1') === 'baba')>Baba</option>
+                <option value="yakini" @selected(old('veli_telefon_sahibi_1') === 'yakini')>Yakını</option>
+              </select>
+            </div>
+
+            <div class="form-group sm:col-span-2 {{ old('veli_telefon_sahibi_1') ? '' : 'hidden' }}" id="veli_telefon_1_alani" data-telefon-alani="1">
               <label class="form-label">Telefon <span>*</span></label>
-              <input type="tel" name="veli_telefon" lang="tr" class="form-input @error('veli_telefon') border-red-400 @enderror" autocomplete="tel" inputmode="numeric" pattern="[0-9\s]+" placeholder="05XX XXX XX XX" required value="{{ old('veli_telefon') }}">
+              <input type="tel" name="veli_telefon" lang="tr" class="form-input @error('veli_telefon') border-red-400 @enderror" autocomplete="tel" inputmode="numeric" pattern="[0-9\s]+" placeholder="05XX XXX XX XX" value="{{ old('veli_telefon') }}">
             </div>
 
             <div class="form-group">
+              <label class="form-label">Veli Telefon Seçimi 2</label>
+              <select name="veli_telefon_sahibi_2" id="veli_telefon_sahibi_2" lang="tr" class="form-select @error('veli_telefon_sahibi_2') border-red-400 @enderror" data-telefon-sahibi="2">
+                <option value="">Seçiniz</option>
+                <option value="anne" @selected(old('veli_telefon_sahibi_2') === 'anne')>Anne</option>
+                <option value="baba" @selected(old('veli_telefon_sahibi_2') === 'baba')>Baba</option>
+                <option value="yakini" @selected(old('veli_telefon_sahibi_2') === 'yakini')>Yakını</option>
+              </select>
+            </div>
+
+            <div class="form-group {{ old('veli_telefon_sahibi_2') ? '' : 'hidden' }}" id="veli_telefon_2_alani" data-telefon-alani="2">
               <label class="form-label">Telefon 2</label>
               <input type="tel" name="veli_telefon_2" lang="tr" class="form-input @error('veli_telefon_2') border-red-400 @enderror" autocomplete="tel" inputmode="numeric" pattern="[0-9\s]+" placeholder="05XX XXX XX XX" value="{{ old('veli_telefon_2') }}">
             </div>
@@ -363,10 +383,6 @@
               </select>
             </div>
 
-            <div class="form-group">
-              <label class="form-label">Not Ortalaması</label>
-              <input type="number" name="not_ortalamasi" lang="tr" class="form-input" min="0" max="100" step="0.01" placeholder="85.50" value="{{ old('not_ortalamasi') }}">
-            </div>
           </div>
         </div>
 

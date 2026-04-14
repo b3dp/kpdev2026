@@ -15,6 +15,7 @@ use App\Models\EkayitSinif;
 use App\Models\EkayitVeliBilgisi;
 use App\Models\Uye;
 use App\Services\EkayitPdfService;
+use App\Services\ZeptomailService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -184,7 +185,13 @@ class EkayitController extends Controller
                 'kimlik_kan_grubu' => filled($request->input('kimlik_kan_grubu'))
                     ? $this->metniBuyukHarfYap($request->input('kimlik_kan_grubu'))
                     : null,
+                'veli_telefon_sahibi_1' => filled($request->input('veli_telefon_sahibi_1'))
+                    ? Str::lower(trim((string) $request->input('veli_telefon_sahibi_1')))
+                    : null,
                 'veli_telefon' => $this->telefonuTemizle($request->input('veli_telefon')),
+                'veli_telefon_sahibi_2' => filled($request->input('veli_telefon_sahibi_2'))
+                    ? Str::lower(trim((string) $request->input('veli_telefon_sahibi_2')))
+                    : null,
                 'veli_telefon_2' => $this->telefonuTemizle($request->input('veli_telefon_2')),
                 'veli_eposta' => filled($request->input('veli_eposta'))
                     ? mb_strtolower(trim((string) $request->input('veli_eposta')), 'UTF-8')
@@ -221,8 +228,10 @@ class EkayitController extends Controller
                 'kimlik_kan_grubu' => ['nullable', 'in:A+,A-,B+,B-,AB+,AB-,0+,0-'],
                 'ogrenci_cinsiyet' => ['required', 'in:E,K'],
                 'veli_ad_soyad' => ['required', 'string', 'max:255', 'regex:/^[A-ZÇĞİÖŞÜa-zçğıöşü\s]+$/u'],
+                'veli_telefon_sahibi_1' => ['required', 'string', 'in:anne,baba,yakini'],
                 'veli_telefon' => ['required', 'string', 'min:10', 'max:20'],
-                'veli_telefon_2' => ['nullable', 'string', 'min:10', 'max:20'],
+                'veli_telefon_sahibi_2' => ['nullable', 'string', 'in:anne,baba,yakini', 'required_with:veli_telefon_2'],
+                'veli_telefon_2' => ['nullable', 'string', 'min:10', 'max:20', 'different:veli_telefon', 'required_with:veli_telefon_sahibi_2'],
                 'veli_eposta' => ['required', 'email', 'max:255'],
                 'veli_il' => ['nullable', 'string', 'max:100'],
                 'veli_ilce' => ['nullable', 'string', 'max:100', 'required_with:veli_il'],
@@ -232,13 +241,16 @@ class EkayitController extends Controller
                 'okul_il' => ['required', 'string', 'max:100'],
                 'okul_ilce' => ['required', 'string', 'max:100'],
                 'okul_turu' => ['nullable', 'in:devlet,ozel,imam-hatip'],
-                'not_ortalamasi' => ['nullable', 'numeric', 'between:0,100'],
                 'otp_kodu' => ['nullable', 'digits:6'],
                 'onay_bilgi' => ['accepted'],
                 'onay_kvkk' => ['accepted'],
                 'onay_iletisim' => ['accepted'],
                 'onay_tuzuk' => ['accepted'],
             ], [
+                'veli_telefon_sahibi_1.required' => 'Veli telefon seçimi 1 alanı zorunludur.',
+                'veli_telefon_sahibi_2.required_with' => 'Telefon 2 için kime ait olduğunu seçiniz.',
+                'veli_telefon_2.required_with' => 'Telefon 2 alanı zorunludur.',
+                'veli_telefon_2.different' => 'Veli telefon numaralarının ikisi aynı olamaz.',
                 'onay_bilgi.accepted' => 'Bilgi doğruluğu onayı gereklidir.',
                 'onay_kvkk.accepted' => 'KVKK onayı gereklidir.',
                 'onay_iletisim.accepted' => 'İletişim izni onayı gereklidir.',
@@ -246,6 +258,7 @@ class EkayitController extends Controller
             ]);
 
             $sinif = EkayitSinif::query()
+                ->with('kurum')
                 ->whereKey($veri['sinif_id'])
                 ->where('donem_id', $aktifDonem->id)
                 ->where('aktif', true)
@@ -279,12 +292,15 @@ class EkayitController extends Controller
 
             $ekNotlar = collect([
                 'Cinsiyet: '.($veri['ogrenci_cinsiyet'] === 'E' ? 'ERKEK' : 'KIZ'),
+                'Veli Telefon 1 Sahibi: '.$this->telefonSahibiEtiketi($veri['veli_telefon_sahibi_1'] ?? null),
+                filled($veri['veli_telefon_2'] ?? null)
+                    ? 'Veli Telefon 2 Sahibi: '.$this->telefonSahibiEtiketi($veri['veli_telefon_sahibi_2'] ?? null)
+                    : null,
                 filled($veri['veli_il'] ?? null) || filled($veri['veli_ilce'] ?? null)
                     ? 'Veli Konumu: '.collect([$veri['veli_il'] ?? null, $veri['veli_ilce'] ?? null])->filter()->implode(' / ')
                     : null,
                 filled($veri['veli_adres'] ?? null) ? 'Veli Adresi: '.$veri['veli_adres'] : null,
                 filled($veri['okul_turu'] ?? null) ? 'Okul Türü: '.mb_strtoupper((string) $veri['okul_turu'], 'UTF-8') : null,
-                filled($veri['not_ortalamasi'] ?? null) ? 'Not Ortalaması: '.$veri['not_ortalamasi'] : null,
                 filled($veri['otp_kodu'] ?? null) ? 'Ön Doğrulama Kodu: '.$veri['otp_kodu'] : null,
             ])->filter()->implode(PHP_EOL);
 
@@ -330,7 +346,6 @@ class EkayitController extends Controller
                 filled($veri['okul_il'] ?? null) || filled($veri['okul_ilce'] ?? null)
                     ? 'Okul Konumu: '.collect([$veri['okul_il'] ?? null, $veri['okul_ilce'] ?? null])->filter()->implode(' / ')
                     : null,
-                filled($veri['not_ortalamasi'] ?? null) ? 'Not Ortalaması: '.$veri['not_ortalamasi'] : null,
             ])->filter()->implode(' | ');
 
             EkayitOkulBilgisi::create([
@@ -344,7 +359,9 @@ class EkayitController extends Controller
                 'kayit_id' => $kayit->id,
                 'ad_soyad' => $veri['veli_ad_soyad'],
                 'eposta' => $veri['veli_eposta'],
+                'telefon_1_sahibi' => $veri['veli_telefon_sahibi_1'],
                 'telefon_1' => $veri['veli_telefon'],
+                'telefon_2_sahibi' => $veri['veli_telefon_sahibi_2'] ?? null,
                 'telefon_2' => $veri['veli_telefon_2'] ?? null,
                 'adres' => $veri['veli_adres'] ?? null,
                 'ikamet_il' => $veri['veli_il'] ?? null,
@@ -362,6 +379,25 @@ class EkayitController extends Controller
                     ));
                 } catch (Throwable $e) {
                     Log::warning('E-Kayıt başvuru SMS kuyruğa alınamadı', [
+                        'kayit_id' => $kayit->id,
+                        'mesaj' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            if (filled($veri['veli_eposta'])) {
+                try {
+                    app(ZeptomailService::class)->ekayitDurumGonder(
+                        eposta: (string) $veri['veli_eposta'],
+                        ad: (string) $veri['veli_ad_soyad'],
+                        ogrenciAdSoyad: trim($veri['ogrenci_ad'].' '.$veri['ogrenci_soyad']),
+                        sinif: (string) ($sinif->ad ?? 'Başvuru'),
+                        kurum: (string) ($sinif->kurum?->ad ?? 'Kestanepazarı Hatay Kur\'an Kursu'),
+                        durum: 'Başvurunuz Alındı',
+                        durumNotu: 'Onay/Red durumu hakkında size bilgilendirme yapılacaktır.'
+                    );
+                } catch (Throwable $e) {
+                    Log::warning('E-Kayıt başvuru e-postası gönderilemedi', [
                         'kayit_id' => $kayit->id,
                         'mesaj' => $e->getMessage(),
                     ]);
@@ -461,5 +497,15 @@ class EkayitController extends Controller
         }
 
         return str_starts_with($temizTelefon, '0') ? $temizTelefon : ('0'.$temizTelefon);
+    }
+
+    protected function telefonSahibiEtiketi(?string $sahip): string
+    {
+        return match ($sahip) {
+            'anne' => 'Anne',
+            'baba' => 'Baba',
+            'yakini' => 'Yakını',
+            default => 'Belirtilmedi',
+        };
     }
 }

@@ -26,6 +26,10 @@ class KursYoneticisiRolSeeder extends Seeder
                 'pazarlama_sms.goruntule',
                 'pazarlama_sms.kaydet',
                 'pazarlama_sms.gonder',
+                'ekayit.listele',
+                'ekayit.goruntule',
+                'ekayit.durum_guncelle',
+                'ekayit.pdf_indir',
             ])
             ->pluck('name')
             ->all();

@@ -55,7 +55,7 @@ class EkayitExport
     private function satirlariUret(): array
     {
         $satirlar = [[['Kayıt No', 'Öğrenci Adı', 'TC Kimlik', 'Sınıf', 'Dönem',
-                        'Veli Adı', 'Tel 1', 'Tel 2', 'Durum',
+                        'Veli Adı', 'Tel 1 Sahibi', 'Tel 1', 'Tel 2 Sahibi', 'Tel 2', 'Durum',
                         'Kayıt Tarihi', 'Durum Tarihi'], null]];
 
         foreach ($this->kayitlar as $kayit) {
@@ -70,7 +70,9 @@ class EkayitExport
                 $kayit->sinif?->ad,
                 $kayit->sinif?->donem?->ad,
                 $kayit->veliBilgisi?->ad_soyad,
+                $this->telefonSahibiEtiketi($kayit->veliBilgisi?->telefon_1_sahibi),
                 $kayit->veliBilgisi?->telefon_1,
+                $this->telefonSahibiEtiketi($kayit->veliBilgisi?->telefon_2_sahibi),
                 $kayit->veliBilgisi?->telefon_2,
                 $durum instanceof \App\Enums\EkayitDurumu ? $durum->label() : (string) $durum,
                 $kayit->created_at?->format('d.m.Y H:i'),
@@ -79,5 +81,15 @@ class EkayitExport
         }
 
         return $satirlar;
+    }
+
+    private function telefonSahibiEtiketi(?string $sahip): string
+    {
+        return match ($sahip) {
+            'anne' => 'Anne',
+            'baba' => 'Baba',
+            'yakini' => 'Yakını',
+            default => '—',
+        };
     }
 }

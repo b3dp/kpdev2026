@@ -372,7 +372,7 @@
                             <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <div>
                                     <h3 class="font-['Libre_Baskerville'] text-xl font-bold text-[#162E4B]">E-Kayıt Takibi</h3>
-                                    <p class="mt-1 text-sm text-slate-500">Velisi olduğunuz öğrencilerin başvuru durumunu ve son notlarını buradan izleyebilirsiniz.</p>
+                                    <p class="mt-1 text-sm text-slate-500">Velisi olduğunuz öğrencilerin başvuru durumunu buradan izleyebilirsiniz.</p>
                                 </div>
                                 @if (($ekayitOzeti['adet'] ?? 0) > 0)
                                     <span class="uye-profil__pill uye-profil__pill--gold">{{ $ekayitOzeti['adet'] }} Başvuru</span>

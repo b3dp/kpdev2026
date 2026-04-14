@@ -46,7 +46,7 @@ class EkayitSmsJob implements ShouldQueue
             }
 
             $mesajlar = [
-                'basvuru_alindi' => '{AD_SOYAD} öğrencinizin {SINIF} sınıfı başvurusu alındı. İnceleme sonucu tarafınıza bildirilecektir. Kestanepazarı',
+                'basvuru_alindi' => "Kestanepazarı Hatay Kur'an Kursu'na {AD_SOYAD} öğrencinizin başvurusu alınmıştır. Onay/Red durumu hakkında size bilgilendirme yapılacaktır.",
                 'onaylandi' => 'Sayın Veli, {AD_SOYAD} öğrencinizin kaydı onaylanmıştır. Kestanepazarı',
                 'reddedildi' => 'Sayın Veli, {AD_SOYAD} öğrencinizin başvurusu değerlendirme sonucunda kabul edilememiştir. Kestanepazarı',
                 'yedek' => 'Sayın Veli, {AD_SOYAD} öğrenciniz yedek listeye alınmıştır. Sıra geldiğinde bilgilendirileceksiniz. Kestanepazarı',

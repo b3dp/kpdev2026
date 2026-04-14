@@ -240,8 +240,14 @@ class ViewEkayitKayit extends ViewRecord
                     ->schema([
                         TextEntry::make('veliBilgisi.ad_soyad')->label('Ad Soyad')->default('—'),
                         TextEntry::make('veliBilgisi.eposta')->label('E-posta')->default('—'),
-                        TextEntry::make('veliBilgisi.telefon_1')->label('Telefon 1')->default('—'),
-                        TextEntry::make('veliBilgisi.telefon_2')->label('Telefon 2')->default('—'),
+                        TextEntry::make('veliBilgisi.telefon_1')
+                            ->label('Telefon 1')
+                            ->formatStateUsing(fn (?string $state): string => $this->telefonuSahibiyleGoster($state, $this->record->veliBilgisi?->telefon_1_sahibi))
+                            ->default('—'),
+                        TextEntry::make('veliBilgisi.telefon_2')
+                            ->label('Telefon 2')
+                            ->formatStateUsing(fn (?string $state): string => $this->telefonuSahibiyleGoster($state, $this->record->veliBilgisi?->telefon_2_sahibi))
+                            ->default('—'),
                         TextEntry::make('veliBilgisi.ikamet_il')->label('İl')->default('—'),
                         TextEntry::make('veliBilgisi.ikamet_ilce')->label('İlçe')->default('—'),
                         TextEntry::make('veliBilgisi.adres')->label('Adres')->default('—')->columnSpanFull(),
@@ -382,8 +388,23 @@ class ViewEkayitKayit extends ViewRecord
             ->form([
                 TextInput::make('ad_soyad')->label('Ad Soyad')->required()->maxLength(255),
                 TextInput::make('eposta')->label('E-posta')->email()->maxLength(255),
+                Select::make('telefon_1_sahibi')
+                    ->label('Telefon 1 Sahibi')
+                    ->options([
+                        'anne' => 'Anne',
+                        'baba' => 'Baba',
+                        'yakini' => 'Yakını',
+                    ])
+                    ->required(),
                 TextInput::make('telefon_1')->label('Telefon 1')->required()->maxLength(20),
-                TextInput::make('telefon_2')->label('Telefon 2')->maxLength(20),
+                Select::make('telefon_2_sahibi')
+                    ->label('Telefon 2 Sahibi')
+                    ->options([
+                        'anne' => 'Anne',
+                        'baba' => 'Baba',
+                        'yakini' => 'Yakını',
+                    ]),
+                TextInput::make('telefon_2')->label('Telefon 2')->maxLength(20)->rule('different:telefon_1'),
                 TextInput::make('ikamet_il')->label('İl')->maxLength(100),
                 TextInput::make('ikamet_ilce')->label('İlçe')->maxLength(100),
                 Textarea::make('adres')->label('Adres')->rows(3)->columnSpanFull(),
@@ -391,7 +412,9 @@ class ViewEkayitKayit extends ViewRecord
             ->fillForm(fn (): array => [
                 'ad_soyad' => $this->record->veliBilgisi?->ad_soyad,
                 'eposta' => $this->record->veliBilgisi?->eposta,
+                'telefon_1_sahibi' => $this->record->veliBilgisi?->telefon_1_sahibi,
                 'telefon_1' => $this->record->veliBilgisi?->telefon_1,
+                'telefon_2_sahibi' => $this->record->veliBilgisi?->telefon_2_sahibi,
                 'telefon_2' => $this->record->veliBilgisi?->telefon_2,
                 'ikamet_il' => $this->record->veliBilgisi?->ikamet_il,
                 'ikamet_ilce' => $this->record->veliBilgisi?->ikamet_ilce,
@@ -403,7 +426,9 @@ class ViewEkayitKayit extends ViewRecord
                     [
                         'ad_soyad' => $data['ad_soyad'],
                         'eposta' => $data['eposta'] ?? null,
+                        'telefon_1_sahibi' => $data['telefon_1_sahibi'] ?? null,
                         'telefon_1' => $data['telefon_1'],
+                        'telefon_2_sahibi' => $data['telefon_2_sahibi'] ?? null,
                         'telefon_2' => $data['telefon_2'] ?? null,
                         'ikamet_il' => $data['ikamet_il'] ?? null,
                         'ikamet_ilce' => $data['ikamet_ilce'] ?? null,
@@ -414,6 +439,22 @@ class ViewEkayitKayit extends ViewRecord
                 $this->kaydiYenile();
                 $this->basariliBildirimGonder('Veli bilgileri güncellendi');
             });
+    }
+
+    private function telefonuSahibiyleGoster(?string $telefon, ?string $sahip): string
+    {
+        if (blank($telefon)) {
+            return '—';
+        }
+
+        $etiket = match ($sahip) {
+            'anne' => 'Anne',
+            'baba' => 'Baba',
+            'yakini' => 'Yakını',
+            default => null,
+        };
+
+        return $etiket ? $etiket.' - '.$telefon : $telefon;
     }
 
     private function okulBilgisiDuzenleAksiyonu(): InfolistAction

@@ -12,7 +12,7 @@ class EkayitVeliBilgisi extends Model
     protected $table = 'ekayit_veli_bilgileri';
 
     protected $fillable = [
-        'kayit_id', 'ad_soyad', 'eposta', 'telefon_1', 'telefon_2',
+        'kayit_id', 'ad_soyad', 'eposta', 'telefon_1_sahibi', 'telefon_1', 'telefon_2_sahibi', 'telefon_2',
         'adres', 'ikamet_il', 'ikamet_ilce',
     ];
 

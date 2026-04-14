@@ -24,6 +24,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class EkayitKayitResource extends Resource
 {
+    use \App\Support\PanelYetkiKontrolu;
+
     protected static ?string $model = EkayitKayit::class;
     protected static ?string $navigationIcon    = 'heroicon-o-clipboard-document-list';
     protected static ?string $navigationLabel   = 'Kayıtlar';
@@ -34,22 +36,22 @@ class EkayitKayitResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör', 'E-Kayıt']);
+        return static::izinVarMi('ekayit.listele');
     }
 
     public static function canCreate(): bool
     {
-        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör', 'E-Kayıt']);
+        return static::izinVarMi('ekayit.listele');
     }
 
     public static function canEdit($record): bool
     {
-        return auth()->check() && auth()->user()->hasAnyPermission(['ekayit.durum_guncelle', 'ekayit.listele']);
+        return static::izinlerdenBiriVarMi(['ekayit.durum_guncelle', 'ekayit.listele']);
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->check() && auth()->user()->hasPermissionTo('ekayit.sil');
+        return static::izinVarMi('ekayit.sil');
     }
 
     public static function table(Table $table): Table
@@ -88,7 +90,17 @@ class EkayitKayitResource extends Resource
                             ->orWhere('telefon_1', 'like', "%{$s}%"));
                     })->sortable(false),
 
-                TextColumn::make('veliBilgisi.telefon_1')->label('Veli Tel'),
+                TextColumn::make('veliBilgisi.telefon_1')
+                    ->label('Veli Tel')
+                    ->formatStateUsing(fn (?string $state, EkayitKayit $record): string => collect([
+                        match ($record->veliBilgisi?->telefon_1_sahibi) {
+                            'anne' => 'Anne',
+                            'baba' => 'Baba',
+                            'yakini' => 'Yakını',
+                            default => null,
+                        },
+                        $state,
+                    ])->filter()->implode(': ')),
 
                 TextColumn::make('durum')->label('Durum')->badge()
                     ->formatStateUsing(function ($state): string {

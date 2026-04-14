@@ -60,6 +60,31 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  function veliTelefonAlaniniGuncelle(indeks) {
+    const sahipSelect = form.querySelector(`[data-telefon-sahibi="${indeks}"]`);
+    const alanSarmal = form.querySelector(`[data-telefon-alani="${indeks}"]`);
+    const telefonInput = alanSarmal?.querySelector('input');
+
+    if (!sahipSelect || !alanSarmal || !telefonInput) {
+      return;
+    }
+
+    const secimVarMi = sahipSelect.value !== '';
+
+    alanSarmal.classList.toggle('hidden', !secimVarMi);
+
+    if (secimVarMi) {
+      telefonInput.setAttribute('required', 'required');
+    } else {
+      telefonInput.removeAttribute('required');
+      telefonInput.classList.remove('border-red-400');
+
+      if (indeks === 2) {
+        telefonInput.value = '';
+      }
+    }
+  }
+
   function tumOnaylariKontrolEt() {
     const hepsiIsaretli = [...onayInputler].every((cb) => cb.checked);
 
@@ -164,8 +189,22 @@ document.addEventListener('DOMContentLoaded', () => {
       { label: 'Kimlik Seri No', deger: () => form.querySelector('[name="kimlik_seri_no"]')?.value },
       { label: 'Kan Grubu', deger: () => form.querySelector('[name="kimlik_kan_grubu"]')?.value },
       { label: 'Veli Ad Soyad', deger: () => form.querySelector('[name="veli_ad_soyad"]')?.value },
-      { label: 'Veli Telefon', deger: () => form.querySelector('[name="veli_telefon"]')?.value },
-      { label: 'Veli Telefon 2', deger: () => form.querySelector('[name="veli_telefon_2"]')?.value },
+      {
+        label: 'Veli Telefon',
+        deger: () => {
+          const sahip = form.querySelector('[name="veli_telefon_sahibi_1"]')?.selectedOptions?.[0]?.textContent;
+          const telefon = form.querySelector('[name="veli_telefon"]')?.value;
+          return [sahip && sahip !== 'Seçiniz' ? sahip : null, telefon].filter(Boolean).join(' - ');
+        },
+      },
+      {
+        label: 'Veli Telefon 2',
+        deger: () => {
+          const sahip = form.querySelector('[name="veli_telefon_sahibi_2"]')?.selectedOptions?.[0]?.textContent;
+          const telefon = form.querySelector('[name="veli_telefon_2"]')?.value;
+          return [sahip && sahip !== 'Seçiniz' ? sahip : null, telefon].filter(Boolean).join(' - ');
+        },
+      },
       { label: 'Veli E-posta', deger: () => form.querySelector('[name="veli_eposta"]')?.value },
       { label: 'Veli Adres', deger: () => form.querySelector('[name="veli_adres"]')?.value },
       {
@@ -273,6 +312,11 @@ document.addEventListener('DOMContentLoaded', () => {
     eskiKimlikAlanlariniGuncelle();
     eskiTipKimlikCb.addEventListener('change', eskiKimlikAlanlariniGuncelle);
   }
+
+  [1, 2].forEach((indeks) => {
+    veliTelefonAlaniniGuncelle(indeks);
+    form.querySelector(`[data-telefon-sahibi="${indeks}"]`)?.addEventListener('change', () => veliTelefonAlaniniGuncelle(indeks));
+  });
 
   onayInputler.forEach((cb) => cb.addEventListener('change', tumOnaylariKontrolEt));
 
