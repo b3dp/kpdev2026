@@ -10,6 +10,7 @@ use App\Models\EkayitOkulBilgisi;
 use App\Models\EkayitSinif;
 use App\Models\EkayitVeliBilgisi;
 use App\Models\Kurum;
+use App\Models\Uye;
 use App\Services\EkayitPdfService;
 use App\Services\ZeptomailService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -155,6 +156,23 @@ class EkayitPdfTest extends TestCase
         $this->assertSame('İzmir', $kayit->veliBilgisi?->ikamet_il);
         $this->assertSame('Konak', $kayit->veliBilgisi?->ikamet_ilce);
         $this->assertSame('456', $kayit->okulBilgisi?->okul_numarasi);
+
+        $this->assertDatabaseHas('uyeler', [
+            'telefon' => '05554445566',
+            'ad_soyad' => 'FATMA YILMAZ',
+        ]);
+
+        $this->assertDatabaseHas('uyeler', [
+            'telefon' => '05557778899',
+            'ad_soyad' => 'FATMA YILMAZ',
+        ]);
+
+        $tesekkurResponse = $this->withSession(['son_ekayit_id' => $kayit->id])
+            ->get(route('ekayit.tesekkur'));
+
+        $tesekkurResponse->assertOk();
+        $tesekkurResponse->assertSee('Hatay Kursu', false);
+        $tesekkurResponse->assertSee('baris@b3dp.com', false);
     }
 
     public function test_ekayit_pdf_servisi_ogrenci_adi_ve_kayit_no_ile_pdf_olusturur(): void

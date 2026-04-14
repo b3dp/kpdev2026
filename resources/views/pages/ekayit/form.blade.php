@@ -95,7 +95,7 @@
 
             <div class="form-group">
               <label class="form-label">Cep Telefonu <span>*</span></label>
-              <input type="tel" name="ogrenci_telefon" lang="tr" class="form-input @error('ogrenci_telefon') border-red-400 @enderror" autocomplete="tel" inputmode="numeric" pattern="[0-9\s]+" placeholder="05XX XXX XX XX" required value="{{ old('ogrenci_telefon') }}">
+              <input type="tel" name="ogrenci_telefon" lang="tr" class="form-input @error('ogrenci_telefon') border-red-400 @enderror" autocomplete="tel" inputmode="numeric" pattern="5[0-9]{9}" maxlength="10" placeholder="5326847101" required value="{{ old('ogrenci_telefon') }}">
             </div>
 
             <div class="form-group">
@@ -256,8 +256,8 @@
           <p class="mb-6 font-jakarta text-sm text-teal-muted">Başvuru sürecinde kullanılacak veli iletişim ve adres bilgileri.</p>
 
           <h3 class="mb-4 border-b border-primary/10 pb-2 font-jakarta text-sm font-bold uppercase tracking-[0.16em] text-primary/60">Veli (Anne / Baba / Yakını)</h3>
-          <div class="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <div class="form-group">
+          <div class="mb-8 grid grid-cols-1 gap-5 md:grid-cols-3">
+            <div class="form-group md:col-span-3">
               <label class="form-label">Ad Soyad <span>*</span></label>
               <input type="text" name="veli_ad_soyad" lang="tr" class="form-input uppercase-input @error('veli_ad_soyad') border-red-400 @enderror" autocomplete="name" pattern="[A-ZÇĞİÖŞÜa-zçğıöşü\s]+" placeholder="VELİ AD SOYAD" required value="{{ old('veli_ad_soyad') }}">
             </div>
@@ -272,9 +272,9 @@
               </select>
             </div>
 
-            <div class="form-group sm:col-span-2 {{ old('veli_telefon_sahibi_1') ? '' : 'hidden' }}" id="veli_telefon_1_alani" data-telefon-alani="1">
+            <div class="form-group md:col-span-2 {{ old('veli_telefon_sahibi_1') ? '' : 'hidden' }}" id="veli_telefon_1_alani" data-telefon-alani="1">
               <label class="form-label">Telefon <span>*</span></label>
-              <input type="tel" name="veli_telefon" lang="tr" class="form-input @error('veli_telefon') border-red-400 @enderror" autocomplete="tel" inputmode="numeric" pattern="[0-9\s]+" placeholder="05XX XXX XX XX" value="{{ old('veli_telefon') }}">
+              <input type="tel" name="veli_telefon" lang="tr" class="form-input @error('veli_telefon') border-red-400 @enderror" autocomplete="tel" inputmode="numeric" pattern="5[0-9]{9}" maxlength="10" placeholder="5326847101" value="{{ old('veli_telefon') }}">
             </div>
 
             <div class="form-group">
@@ -287,9 +287,9 @@
               </select>
             </div>
 
-            <div class="form-group {{ old('veli_telefon_sahibi_2') ? '' : 'hidden' }}" id="veli_telefon_2_alani" data-telefon-alani="2">
+            <div class="form-group md:col-span-2 {{ old('veli_telefon_sahibi_2') ? '' : 'hidden' }}" id="veli_telefon_2_alani" data-telefon-alani="2">
               <label class="form-label">Telefon 2</label>
-              <input type="tel" name="veli_telefon_2" lang="tr" class="form-input @error('veli_telefon_2') border-red-400 @enderror" autocomplete="tel" inputmode="numeric" pattern="[0-9\s]+" placeholder="05XX XXX XX XX" value="{{ old('veli_telefon_2') }}">
+              <input type="tel" name="veli_telefon_2" lang="tr" class="form-input @error('veli_telefon_2') border-red-400 @enderror" autocomplete="tel" inputmode="numeric" pattern="5[0-9]{9}" maxlength="10" placeholder="5326847101" value="{{ old('veli_telefon_2') }}">
             </div>
 
             <div class="form-group sm:col-span-2">
@@ -404,11 +404,6 @@
           <p class="mb-6 font-jakarta text-sm text-teal-muted">Bilgilerinizi son kez kontrol edin ve başvurunuzu tamamlayın.</p>
 
           <div id="ozet-tablo" class="mb-8 space-y-3 rounded-xl bg-bg-soft p-4 font-jakarta text-sm text-primary"></div>
-
-          <div class="form-group mb-6">
-            <label class="form-label">Doğrulama Kodu <span class="text-primary/40">(gerekirse)</span></label>
-            <input type="text" name="otp_kodu" lang="tr" class="form-input" autocomplete="one-time-code" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="6 HANELİ KOD" value="{{ old('otp_kodu') }}">
-          </div>
 
           <div class="space-y-3 mb-8" id="onay-kutulari">
             <label class="flex items-start gap-3 cursor-pointer">

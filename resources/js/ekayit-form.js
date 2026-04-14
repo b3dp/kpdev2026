@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const textInputs = document.querySelectorAll(".ekayit-form-wrap input[type='text'], .ekayit-form-wrap input[type='search'], .uppercase-input");
+  const telefonInputs = document.querySelectorAll(".ekayit-form-wrap input[type='tel']");
 
   textInputs.forEach((input) => {
     input.addEventListener('input', function () {
@@ -59,6 +60,28 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  function telefonuGorunumIcinNormalestir(input) {
+    let deger = input.value.replace(/\D/g, '');
+
+    if (deger.startsWith('0090')) {
+      deger = deger.slice(4);
+    } else if (deger.startsWith('90')) {
+      deger = deger.slice(2);
+    } else if (deger.startsWith('0')) {
+      deger = deger.slice(1);
+    }
+
+    input.value = deger.slice(0, 10);
+    input.setCustomValidity('');
+  }
+
+  telefonInputs.forEach((input) => {
+    telefonuGorunumIcinNormalestir(input);
+    input.addEventListener('input', function () {
+      telefonuGorunumIcinNormalestir(this);
+    });
+  });
 
   function veliTelefonAlaniniGuncelle(indeks) {
     const sahipSelect = form.querySelector(`[data-telefon-sahibi="${indeks}"]`);
@@ -236,6 +259,13 @@ document.addEventListener('DOMContentLoaded', () => {
       .join('');
   }
 
+  function telefonlarAyniMi() {
+    const telefon1 = (form.querySelector('[name="veli_telefon"]')?.value || '').replace(/\D/g, '');
+    const telefon2 = (form.querySelector('[name="veli_telefon_2"]')?.value || '').replace(/\D/g, '');
+
+    return telefon1 !== '' && telefon2 !== '' && telefon1 === telefon2;
+  }
+
   function paneliDogrula(mevcutAdim) {
     const panel = document.getElementById(`adim-panel-${mevcutAdim}`);
 
@@ -256,11 +286,24 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
+    if (!hataliAlan && mevcutAdim === 2 && telefonlarAyniMi()) {
+      hataliAlan = form.querySelector('[name="veli_telefon_2"]');
+
+      if (hataliAlan) {
+        hataliAlan.classList.add('border-red-400');
+        hataliAlan.setCustomValidity('Veli telefon numaralarının ikisi aynı olamaz.');
+        hataliAlan.reportValidity();
+      }
+    }
+
     if (hataliAlan) {
       hataliAlan.scrollIntoView({ behavior: 'smooth', block: 'center' });
       hataliAlan.focus();
       return false;
     }
+
+    const ikinciTelefon = form.querySelector('[name="veli_telefon_2"]');
+    ikinciTelefon?.setCustomValidity('');
 
     return true;
   }
@@ -291,10 +334,26 @@ document.addEventListener('DOMContentLoaded', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  form.addEventListener('submit', () => {
+  form.addEventListener('submit', (event) => {
     textInputs.forEach((input) => {
       input.value = input.value.toLocaleUpperCase('tr-TR');
     });
+
+    if (telefonlarAyniMi()) {
+      event.preventDefault();
+      aktifAdim = 2;
+      document.querySelectorAll('.adim-panel').forEach((panel) => panel.classList.add('hidden'));
+      document.getElementById('adim-panel-2')?.classList.remove('hidden');
+      adimGostergesiniGuncelle(2);
+
+      const hataAlani = form.querySelector('[name="veli_telefon_2"]');
+      if (hataAlani) {
+        hataAlani.classList.add('border-red-400');
+        hataAlani.setCustomValidity('Veli telefon numaralarının ikisi aynı olamaz.');
+        hataAlani.reportValidity();
+        hataAlani.focus();
+      }
+    }
   });
 
   ['ogrenci', 'kimlik', 'veli', 'okul'].forEach((grup) => {
@@ -320,8 +379,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
   onayInputler.forEach((cb) => cb.addEventListener('change', tumOnaylariKontrolEt));
 
+  const ilkHataAlani = form.querySelector('.border-red-400');
+  if (ilkHataAlani) {
+    const hataPaneli = ilkHataAlani.closest('.adim-panel');
+    const panelNumarasi = Number(hataPaneli?.id?.split('-').pop() || 1);
+
+    document.querySelectorAll('.adim-panel').forEach((panel) => panel.classList.add('hidden'));
+    document.getElementById(`adim-panel-${panelNumarasi}`)?.classList.remove('hidden');
+    aktifAdim = panelNumarasi;
+    adimGostergesiniGuncelle(panelNumarasi);
+
+    setTimeout(() => {
+      ilkHataAlani.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      ilkHataAlani.focus();
+    }, 100);
+  } else {
+    adimGostergesiniGuncelle(1);
+  }
+
   tumOnaylariKontrolEt();
-  adimGostergesiniGuncelle(1);
 });
 
 window.sonrakiAdim = window.sonrakiAdim || function () {};

@@ -8,7 +8,8 @@
 @php
   $sinifBaslik = $kayit?->sinif?->ad ?? 'E-Kayıt Başvurusu';
   $ogrenciAdSoyad = $kayit?->ogrenciBilgisi?->ad_soyad ?? '—';
-  $veliEposta = $kayit?->veliBilgisi?->eposta;
+  $kurumAdi = $kayit?->sinif?->kurum?->ad ?? 'Kestanepazarı Hatay Kur\'an Kursu';
+  $veliTelefon = $kayit?->veliBilgisi?->telefon_1 ?? '—';
 @endphp
 
 <main class="mx-auto max-w-[680px] px-6 pb-20 pt-12">
@@ -20,11 +21,10 @@
     </div>
 
     <h1 class="fade-up-1 mb-3 font-baskerville text-[clamp(22px,3vw,30px)] font-bold text-primary">Başvurunuz Alındı!</h1>
-    <p class="fade-up-2 mx-auto max-w-[440px] font-jakarta text-[15px] leading-[1.7] text-teal-muted">
-      Kayıt başvurunuz Kestanepazarı Öğrenci Yetiştirme Derneği'ne iletilmiştir.
-      @if($veliEposta)
-        <strong class="text-primary">{{ $veliEposta }}</strong> adresine bilgilendirme gönderildi.
-      @endif
+    <p class="fade-up-2 mx-auto max-w-[560px] font-jakarta text-[15px] leading-[1.7] text-teal-muted">
+      Kayıt başvurunuz <strong class="text-primary">{{ $kurumAdi }}</strong>'na iletilmiştir.
+      <strong class="text-primary">baris@b3dp.com</strong> adresine ve
+      <strong class="text-primary">{{ $veliTelefon }}</strong> numarasına SMS bilgilendirme gönderilmiştir.
     </p>
   </div>
 

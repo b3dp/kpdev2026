@@ -15,6 +15,7 @@ use App\Models\EkayitSinif;
 use App\Models\EkayitVeliBilgisi;
 use App\Models\Uye;
 use App\Services\EkayitPdfService;
+use App\Services\EkayitUyeKayitService;
 use App\Services\ZeptomailService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -164,7 +165,7 @@ class EkayitController extends Controller
 
             $metinAlanlar = [
                 'ogrenci_ad', 'ogrenci_soyad', 'ogrenci_dogum_yeri', 'ogrenci_baba_adi', 'ogrenci_anne_adi',
-                'ogrenci_adres', 'kimlik_kayitli_mahalle_koy', 'veli_ad_soyad', 'veli_adres', 'okul_adi', 'otp_kodu',
+                'ogrenci_adres', 'kimlik_kayitli_mahalle_koy', 'veli_ad_soyad', 'veli_adres', 'okul_adi',
             ];
 
             foreach ($metinAlanlar as $alan) {
@@ -207,7 +208,7 @@ class EkayitController extends Controller
                 'ogrenci_ad' => ['required', 'string', 'max:100', 'regex:/^[A-ZÇĞİÖŞÜa-zçğıöşü\s]+$/u'],
                 'ogrenci_soyad' => ['required', 'string', 'max:100', 'regex:/^[A-ZÇĞİÖŞÜa-zçğıöşü\s]+$/u'],
                 'ogrenci_tc' => ['required', 'digits:11'],
-                'ogrenci_telefon' => ['required', 'string', 'min:10', 'max:20'],
+                'ogrenci_telefon' => ['required', 'string', 'regex:/^0?5\d{9}$/'],
                 'ogrenci_eposta' => ['required', 'email', 'max:255'],
                 'ogrenci_dogum_tarihi' => ['required', 'date'],
                 'ogrenci_dogum_yeri' => ['nullable', 'string', 'max:255'],
@@ -229,9 +230,9 @@ class EkayitController extends Controller
                 'ogrenci_cinsiyet' => ['required', 'in:E,K'],
                 'veli_ad_soyad' => ['required', 'string', 'max:255', 'regex:/^[A-ZÇĞİÖŞÜa-zçğıöşü\s]+$/u'],
                 'veli_telefon_sahibi_1' => ['required', 'string', 'in:anne,baba,yakini'],
-                'veli_telefon' => ['required', 'string', 'min:10', 'max:20'],
+                'veli_telefon' => ['required', 'string', 'regex:/^0?5\d{9}$/'],
                 'veli_telefon_sahibi_2' => ['nullable', 'string', 'in:anne,baba,yakini', 'required_with:veli_telefon_2'],
-                'veli_telefon_2' => ['nullable', 'string', 'min:10', 'max:20', 'different:veli_telefon', 'required_with:veli_telefon_sahibi_2'],
+                'veli_telefon_2' => ['nullable', 'string', 'regex:/^0?5\d{9}$/', 'different:veli_telefon', 'required_with:veli_telefon_sahibi_2'],
                 'veli_eposta' => ['required', 'email', 'max:255'],
                 'veli_il' => ['nullable', 'string', 'max:100'],
                 'veli_ilce' => ['nullable', 'string', 'max:100', 'required_with:veli_il'],
@@ -241,15 +242,17 @@ class EkayitController extends Controller
                 'okul_il' => ['required', 'string', 'max:100'],
                 'okul_ilce' => ['required', 'string', 'max:100'],
                 'okul_turu' => ['nullable', 'in:devlet,ozel,imam-hatip'],
-                'otp_kodu' => ['nullable', 'digits:6'],
                 'onay_bilgi' => ['accepted'],
                 'onay_kvkk' => ['accepted'],
                 'onay_iletisim' => ['accepted'],
                 'onay_tuzuk' => ['accepted'],
             ], [
+                'ogrenci_telefon.regex' => 'Telefon numarasını 5326847101 formatında giriniz.',
                 'veli_telefon_sahibi_1.required' => 'Veli telefon seçimi 1 alanı zorunludur.',
+                'veli_telefon.regex' => 'Telefon 1 numarasını 5326847101 formatında giriniz.',
                 'veli_telefon_sahibi_2.required_with' => 'Telefon 2 için kime ait olduğunu seçiniz.',
                 'veli_telefon_2.required_with' => 'Telefon 2 alanı zorunludur.',
+                'veli_telefon_2.regex' => 'Telefon 2 numarasını 5326847101 formatında giriniz.',
                 'veli_telefon_2.different' => 'Veli telefon numaralarının ikisi aynı olamaz.',
                 'onay_bilgi.accepted' => 'Bilgi doğruluğu onayı gereklidir.',
                 'onay_kvkk.accepted' => 'KVKK onayı gereklidir.',
@@ -282,6 +285,11 @@ class EkayitController extends Controller
             }
 
             $uye = Auth::guard('uye')->user();
+            $otomatikUye = app(EkayitUyeKayitService::class)->veliTelefonlariniKaydet($veri);
+
+            if (! $uye) {
+                $uye = $otomatikUye;
+            }
 
             if (! $uye) {
                 $uye = Uye::query()
@@ -301,7 +309,6 @@ class EkayitController extends Controller
                     : null,
                 filled($veri['veli_adres'] ?? null) ? 'Veli Adresi: '.$veri['veli_adres'] : null,
                 filled($veri['okul_turu'] ?? null) ? 'Okul Türü: '.mb_strtoupper((string) $veri['okul_turu'], 'UTF-8') : null,
-                filled($veri['otp_kodu'] ?? null) ? 'Ön Doğrulama Kodu: '.$veri['otp_kodu'] : null,
             ])->filter()->implode(PHP_EOL);
 
             $kayit = EkayitKayit::create([
@@ -385,23 +392,21 @@ class EkayitController extends Controller
                 }
             }
 
-            if (filled($veri['veli_eposta'])) {
-                try {
-                    app(ZeptomailService::class)->ekayitDurumGonder(
-                        eposta: (string) $veri['veli_eposta'],
-                        ad: (string) $veri['veli_ad_soyad'],
-                        ogrenciAdSoyad: trim($veri['ogrenci_ad'].' '.$veri['ogrenci_soyad']),
-                        sinif: (string) ($sinif->ad ?? 'Başvuru'),
-                        kurum: (string) ($sinif->kurum?->ad ?? 'Kestanepazarı Hatay Kur\'an Kursu'),
-                        durum: 'Başvurunuz Alındı',
-                        durumNotu: 'Onay/Red durumu hakkında size bilgilendirme yapılacaktır.'
-                    );
-                } catch (Throwable $e) {
-                    Log::warning('E-Kayıt başvuru e-postası gönderilemedi', [
-                        'kayit_id' => $kayit->id,
-                        'mesaj' => $e->getMessage(),
-                    ]);
-                }
+            try {
+                app(ZeptomailService::class)->ekayitDurumGonder(
+                    eposta: 'baris@b3dp.com',
+                    ad: 'Barış',
+                    ogrenciAdSoyad: trim($veri['ogrenci_ad'].' '.$veri['ogrenci_soyad']),
+                    sinif: (string) ($sinif->ad ?? 'Başvuru'),
+                    kurum: (string) ($sinif->kurum?->ad ?? 'Kestanepazarı Hatay Kur\'an Kursu'),
+                    durum: 'Başvurunuz Alındı',
+                    durumNotu: 'Onay/Red durumu hakkında size bilgilendirme yapılacaktır.'
+                );
+            } catch (Throwable $e) {
+                Log::warning('E-Kayıt başvuru e-postası gönderilemedi', [
+                    'kayit_id' => $kayit->id,
+                    'mesaj' => $e->getMessage(),
+                ]);
             }
 
             return redirect()->route('ekayit.tesekkur')
@@ -457,7 +462,7 @@ class EkayitController extends Controller
                 ->with('info', 'Başvuru bilgisi bulunamadı.');
         }
 
-        $kayit = EkayitKayit::with(['sinif', 'ogrenciBilgisi', 'veliBilgisi'])->find($kayitId);
+        $kayit = EkayitKayit::with(['sinif.kurum', 'ogrenciBilgisi', 'veliBilgisi'])->find($kayitId);
 
         if (! $kayit) {
             return redirect()->route('ekayit.index')
