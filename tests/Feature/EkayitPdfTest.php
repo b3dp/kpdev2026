@@ -487,8 +487,17 @@ class EkayitPdfTest extends TestCase
 
         $this->assertInstanceOf(\Illuminate\Support\Collection::class, $sonuc);
         $this->assertNotEmpty($sonuc);
-        $this->assertSame('1sozlesme.docx', basename((string) $sonuc->first()));
-        $this->assertSame('9foto_izin.docx', basename((string) $sonuc->last()));
+        $this->assertSame([
+            '1kayit_dilekcesi.docx',
+            '2kayit_dilekce2.docx',
+            '3toplu_dilekceler.docx',
+            '4saglik.docx',
+            '5hafta_sonu_izin.docx',
+            '6piknik_gezi.docx',
+            '7foto_izin.docx',
+            '8sozlesme.docx',
+            '9taahhut_senedi.docx',
+        ], $sonuc->map(fn (string $yol): string => basename($yol))->all());
     }
 
     private function hazirlaSpacesTestDiski(): void
