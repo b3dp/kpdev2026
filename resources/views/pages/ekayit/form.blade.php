@@ -142,13 +142,13 @@
             @endif
 
             <div class="form-group sm:col-span-2">
-              <label class="form-label">Adres</label>
-              <textarea name="ogrenci_adres" lang="tr" class="form-input uppercase-input min-h-[96px]" placeholder="AÇIK ADRES BİLGİSİ">{{ old('ogrenci_adres') }}</textarea>
+              <label class="form-label">Adres <span>*</span></label>
+              <textarea name="ogrenci_adres" lang="tr" class="form-input uppercase-input min-h-[96px] @error('ogrenci_adres') border-red-400 @enderror" placeholder="AÇIK ADRES BİLGİSİ" required>{{ old('ogrenci_adres') }}</textarea>
             </div>
 
             <div class="form-group">
-              <label class="form-label">İkamet İli</label>
-              <select name="ogrenci_ikamet_il" id="ogrenci_ikamet_il" lang="tr" class="form-select @error('ogrenci_ikamet_il') border-red-400 @enderror" data-il-select="ogrenci">
+              <label class="form-label">İkamet İli <span>*</span></label>
+              <select name="ogrenci_ikamet_il" id="ogrenci_ikamet_il" lang="tr" class="form-select @error('ogrenci_ikamet_il') border-red-400 @enderror" data-il-select="ogrenci" required>
                 <option value="">Seçiniz</option>
                 @foreach($iller as $il => $etiket)
                   <option value="{{ $il }}" @selected(old('ogrenci_ikamet_il') === $il)>{{ $etiket }}</option>
@@ -157,8 +157,8 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label">İkamet İlçesi</label>
-              <select name="ogrenci_ikamet_ilce" id="ogrenci_ikamet_ilce" lang="tr" class="form-select @error('ogrenci_ikamet_ilce') border-red-400 @enderror" data-ilce-select="ogrenci" data-selected="{{ old('ogrenci_ikamet_ilce') }}" @disabled(!old('ogrenci_ikamet_il'))>
+              <label class="form-label">İkamet İlçesi <span>*</span></label>
+              <select name="ogrenci_ikamet_ilce" id="ogrenci_ikamet_ilce" lang="tr" class="form-select @error('ogrenci_ikamet_ilce') border-red-400 @enderror" data-ilce-select="ogrenci" data-selected="{{ old('ogrenci_ikamet_ilce') }}" @disabled(!old('ogrenci_ikamet_il')) required>
                 <option value="">{{ old('ogrenci_ikamet_il') ? 'İlçe Seçiniz' : 'Önce il seçiniz' }}</option>
                 @foreach($ogrenciIlceleri as $ilce => $etiket)
                   <option value="{{ $ilce }}" @selected(old('ogrenci_ikamet_ilce') === $ilce)>{{ $etiket }}</option>
@@ -292,14 +292,18 @@
               <input type="tel" name="veli_telefon_2" lang="tr" class="form-input @error('veli_telefon_2') border-red-400 @enderror" autocomplete="tel" inputmode="numeric" pattern="5[0-9]{9}" maxlength="10" placeholder="5326847101" value="{{ old('veli_telefon_2') }}">
             </div>
 
+            <div id="veli-telefon-ayni-hata" class="md:col-span-3 hidden rounded-xl border border-red-200 bg-red-50 px-4 py-3 font-jakarta text-sm font-semibold text-red-700" role="alert">
+              Veli telefon numaralarının ikisi aynı olamaz.
+            </div>
+
             <div class="form-group sm:col-span-2">
               <label class="form-label">E-posta <span>*</span></label>
               <input type="email" name="veli_eposta" lang="tr" class="form-input @error('veli_eposta') border-red-400 @enderror" autocomplete="email" placeholder="ornek@mail.com" required value="{{ old('veli_eposta') }}">
             </div>
 
             <div class="form-group">
-              <label class="form-label">İl</label>
-              <select name="veli_il" id="veli_il" lang="tr" class="form-select @error('veli_il') border-red-400 @enderror" data-il-select="veli">
+              <label class="form-label">İl <span>*</span></label>
+              <select name="veli_il" id="veli_il" lang="tr" class="form-select @error('veli_il') border-red-400 @enderror" data-il-select="veli" required>
                 <option value="">Seçiniz</option>
                 @foreach($iller as $il => $etiket)
                   <option value="{{ $il }}" @selected(old('veli_il') === $il)>{{ $etiket }}</option>
@@ -308,8 +312,8 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label">İlçe</label>
-              <select name="veli_ilce" id="veli_ilce" lang="tr" class="form-select @error('veli_ilce') border-red-400 @enderror" data-ilce-select="veli" data-selected="{{ old('veli_ilce') }}" @disabled(!old('veli_il'))>
+              <label class="form-label">İlçe <span>*</span></label>
+              <select name="veli_ilce" id="veli_ilce" lang="tr" class="form-select @error('veli_ilce') border-red-400 @enderror" data-ilce-select="veli" data-selected="{{ old('veli_ilce') }}" @disabled(!old('veli_il')) required>
                 <option value="">{{ old('veli_il') ? 'İlçe Seçiniz' : 'Önce il seçiniz' }}</option>
                 @foreach($veliIlceleri as $ilce => $etiket)
                   <option value="{{ $ilce }}" @selected(old('veli_ilce') === $ilce)>{{ $etiket }}</option>
@@ -318,8 +322,8 @@
             </div>
 
             <div class="form-group sm:col-span-2">
-              <label class="form-label">Açık Adres</label>
-              <input type="text" name="veli_adres" lang="tr" class="form-input uppercase-input" autocomplete="street-address" placeholder="MAHALLE / SOKAK / NO" value="{{ old('veli_adres') }}">
+              <label class="form-label">Açık Adres <span>*</span></label>
+              <input type="text" name="veli_adres" lang="tr" class="form-input uppercase-input @error('veli_adres') border-red-400 @enderror" autocomplete="street-address" placeholder="MAHALLE / SOKAK / NO" required value="{{ old('veli_adres') }}">
             </div>
           </div>
 

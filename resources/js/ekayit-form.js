@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const eskiTipKimlikCb = document.getElementById('eski_tip_kimlik_var');
   const eskiKimlikAlanlari = document.getElementById('eski-kimlik-alanlari');
   const ilcelerDataEl = document.getElementById('ekayit-ilceler-data');
+  const veliTelefonAyniHata = document.getElementById('veli-telefon-ayni-hata');
   let ilcelerHaritasi = {};
   let aktifAdim = 1;
 
@@ -266,6 +267,27 @@ document.addEventListener('DOMContentLoaded', () => {
     return telefon1 !== '' && telefon2 !== '' && telefon1 === telefon2;
   }
 
+  function veliTelefonHatasiniGuncelle(goster) {
+    if (veliTelefonAyniHata) {
+      veliTelefonAyniHata.classList.toggle('hidden', !goster);
+    }
+
+    const ikinciTelefon = form.querySelector('[name="veli_telefon_2"]');
+
+    if (ikinciTelefon) {
+      ikinciTelefon.classList.toggle('border-red-400', goster);
+      ikinciTelefon.setCustomValidity(goster ? 'Veli telefon numaralarının ikisi aynı olamaz.' : '');
+    }
+  }
+
+  function ayniTelefonKontrolunuCalistir(uyariGoster = false) {
+    const ayni = telefonlarAyniMi();
+
+    veliTelefonHatasiniGuncelle(ayni && uyariGoster);
+
+    return ayni;
+  }
+
   function paneliDogrula(mevcutAdim) {
     const panel = document.getElementById(`adim-panel-${mevcutAdim}`);
 
@@ -286,12 +308,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    if (!hataliAlan && mevcutAdim === 2 && telefonlarAyniMi()) {
+    if (!hataliAlan && mevcutAdim === 2 && ayniTelefonKontrolunuCalistir(true)) {
       hataliAlan = form.querySelector('[name="veli_telefon_2"]');
 
       if (hataliAlan) {
-        hataliAlan.classList.add('border-red-400');
-        hataliAlan.setCustomValidity('Veli telefon numaralarının ikisi aynı olamaz.');
         hataliAlan.reportValidity();
       }
     }
@@ -302,8 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return false;
     }
 
-    const ikinciTelefon = form.querySelector('[name="veli_telefon_2"]');
-    ikinciTelefon?.setCustomValidity('');
+    veliTelefonHatasiniGuncelle(false);
 
     return true;
   }
@@ -339,7 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
       input.value = input.value.toLocaleUpperCase('tr-TR');
     });
 
-    if (telefonlarAyniMi()) {
+    if (ayniTelefonKontrolunuCalistir(true)) {
       event.preventDefault();
       aktifAdim = 2;
       document.querySelectorAll('.adim-panel').forEach((panel) => panel.classList.add('hidden'));
@@ -348,8 +367,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const hataAlani = form.querySelector('[name="veli_telefon_2"]');
       if (hataAlani) {
-        hataAlani.classList.add('border-red-400');
-        hataAlani.setCustomValidity('Veli telefon numaralarının ikisi aynı olamaz.');
         hataAlani.reportValidity();
         hataAlani.focus();
       }
@@ -375,6 +392,13 @@ document.addEventListener('DOMContentLoaded', () => {
   [1, 2].forEach((indeks) => {
     veliTelefonAlaniniGuncelle(indeks);
     form.querySelector(`[data-telefon-sahibi="${indeks}"]`)?.addEventListener('change', () => veliTelefonAlaniniGuncelle(indeks));
+  });
+
+  ['veli_telefon', 'veli_telefon_2'].forEach((alanAdi) => {
+    form.querySelector(`[name="${alanAdi}"]`)?.addEventListener('input', () => {
+      const uyariAcik = veliTelefonAyniHata && !veliTelefonAyniHata.classList.contains('hidden');
+      ayniTelefonKontrolunuCalistir(uyariAcik);
+    });
   });
 
   onayInputler.forEach((cb) => cb.addEventListener('change', tumOnaylariKontrolEt));

@@ -28,8 +28,9 @@ class EkayitExport
     public function __construct(private readonly Collection $kayitlar)
     {
         $this->kayitlar->loadMissing([
-            'sinif.donem',
+            'sinif',
             'ogrenciBilgisi',
+            'kimlikBilgisi',
             'veliBilgisi',
         ]);
     }
@@ -54,33 +55,73 @@ class EkayitExport
     /** @return array{0: array, 1: string|null}[] */
     private function satirlariUret(): array
     {
-        $satirlar = [[['Kayıt No', 'Öğrenci Adı', 'TC Kimlik', 'Sınıf', 'Dönem',
-                        'Veli Adı', 'Tel 1 Sahibi', 'Tel 1', 'Tel 2 Sahibi', 'Tel 2', 'Durum',
-                        'Kayıt Tarihi', 'Durum Tarihi'], null]];
+        $satirlar = [[[
+            'SN',
+            'TC KİMLİK',
+            'ADI SOYADI',
+            'BABA ADI',
+            'ANA ADI',
+            'DOĞUM YERİ',
+            'DOĞUM TARİHİ',
+            'NUFUSA KAYITLI İL',
+            'NUFUSA KAYITLI İLÇE',
+            'NUFUSA KAYITLI MAHALLE KÖY',
+            'NUFUSA KAYITLI CİLT NO',
+            'NUFUSA KAYITLI AİLE SIRA NO',
+            'ADRES',
+            'TELEFON 1',
+            'TELEFON 2',
+            'SINIF',
+        ], null]];
 
-        foreach ($this->kayitlar as $kayit) {
+        foreach ($this->kayitlar->values() as $index => $kayit) {
             $twRenk = $kayit->sinif?->renk ?? 'blue';
             $hexRenk = self::RENK_MAP[$twRenk] ?? null;
+            $ogrenci = $kayit->ogrenciBilgisi;
+            $kimlik = $kayit->kimlikBilgisi;
+            $veli = $kayit->veliBilgisi;
 
-            $durum = $kayit->durum;
             $satirlar[] = [[
-                $kayit->id,
-                $kayit->ogrenciBilgisi?->ad_soyad,
-                $kayit->ogrenciBilgisi?->tc_kimlik,
+                $index + 1,
+                $ogrenci?->tc_kimlik,
+                $ogrenci?->ad_soyad,
+                $ogrenci?->baba_adi,
+                $ogrenci?->anne_adi,
+                $ogrenci?->dogum_yeri,
+                $ogrenci?->dogum_tarihi?->format('d.m.Y'),
+                $kimlik?->kayitli_il,
+                $kimlik?->kayitli_ilce,
+                $kimlik?->kayitli_mahalle_koy,
+                $kimlik?->cilt_no,
+                $kimlik?->aile_sira_no,
+                $this->adresiBirlestir($ogrenci?->adres, $ogrenci?->ikamet_il, $ogrenci?->ikamet_ilce),
+                $this->telefonuEtiketle($veli?->telefon_1_sahibi, $veli?->telefon_1),
+                $this->telefonuEtiketle($veli?->telefon_2_sahibi, $veli?->telefon_2),
                 $kayit->sinif?->ad,
-                $kayit->sinif?->donem?->ad,
-                $kayit->veliBilgisi?->ad_soyad,
-                $this->telefonSahibiEtiketi($kayit->veliBilgisi?->telefon_1_sahibi),
-                $kayit->veliBilgisi?->telefon_1,
-                $this->telefonSahibiEtiketi($kayit->veliBilgisi?->telefon_2_sahibi),
-                $kayit->veliBilgisi?->telefon_2,
-                $durum instanceof \App\Enums\EkayitDurumu ? $durum->label() : (string) $durum,
-                $kayit->created_at?->format('d.m.Y H:i'),
-                $kayit->durum_tarihi?->format('d.m.Y H:i'),
             ], $hexRenk];
         }
 
         return $satirlar;
+    }
+
+    private function adresiBirlestir(?string $adres, ?string $il, ?string $ilce): string
+    {
+        return collect([$adres, $ilce, $il])
+            ->filter(fn (?string $deger) => filled($deger))
+            ->implode(' / ');
+    }
+
+    private function telefonuEtiketle(?string $sahip, ?string $telefon): string
+    {
+        if (! filled($telefon)) {
+            return '—';
+        }
+
+        $etiket = $this->telefonSahibiEtiketi($sahip);
+
+        return $etiket === '—'
+            ? (string) $telefon
+            : $etiket.' - '.$telefon;
     }
 
     private function telefonSahibiEtiketi(?string $sahip): string
