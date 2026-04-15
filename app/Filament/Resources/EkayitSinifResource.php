@@ -21,6 +21,8 @@ use Filament\Tables\Table;
 
 class EkayitSinifResource extends Resource
 {
+    use \App\Support\PanelYetkiKontrolu;
+
     protected static ?string $model = EkayitSinif::class;
     protected static ?string $navigationIcon    = 'heroicon-o-building-library';
     protected static ?string $navigationLabel   = 'Sınıflar';
@@ -31,22 +33,22 @@ class EkayitSinifResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör']);
+        return static::izinVarMi('ekayit.sinif_yonet');
     }
 
     public static function canCreate(): bool
     {
-        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör']);
+        return static::izinVarMi('ekayit.sinif_yonet');
     }
 
     public static function canEdit($record): bool
     {
-        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör']);
+        return static::izinVarMi('ekayit.sinif_yonet');
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->check() && auth()->user()->hasAnyRole(['Admin']);
+        return static::izinVarMi('ekayit.sinif_yonet');
     }
 
     public static function form(Form $form): Form

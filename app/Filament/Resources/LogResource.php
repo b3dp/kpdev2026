@@ -6,6 +6,8 @@ use Z3d0X\FilamentLogger\Resources\ActivityResource;
 
 class LogResource extends ActivityResource
 {
+    use \App\Support\PanelYetkiKontrolu;
+
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
 
     public static function getNavigationGroup(): ?string
@@ -30,6 +32,6 @@ class LogResource extends ActivityResource
 
     public static function canViewAny(): bool
     {
-        return auth()->check() && auth()->user()->hasRole('Admin');
+        return static::izinVarMi('loglar.listele');
     }
 }

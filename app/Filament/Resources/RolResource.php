@@ -18,6 +18,8 @@ use Spatie\Permission\Models\Role;
 
 class RolResource extends Resource
 {
+    use \App\Support\PanelYetkiKontrolu;
+
     protected static ?string $model = Role::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-shield-check';
@@ -34,7 +36,7 @@ class RolResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasRole('Admin') ?? false;
+        return static::izinVarMi('roller.listele');
     }
 
     public static function form(Form $form): Form

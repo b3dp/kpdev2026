@@ -23,6 +23,8 @@ use Filament\Tables\Table;
 
 class BagisTuruResource extends Resource
 {
+    use \App\Support\PanelYetkiKontrolu;
+
     protected static ?string $model = BagisTuru::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-heart';
@@ -39,7 +41,7 @@ class BagisTuruResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör']);
+        return static::izinVarMi('bagis.turleri.listele');
     }
 
     public static function canDelete($record): bool

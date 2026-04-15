@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class EpostaGonderimResource extends Resource
 {
+    use \App\Support\PanelYetkiKontrolu;
+
     protected static ?string $model = EpostaGonderim::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-paper-airplane';
@@ -31,7 +33,7 @@ class EpostaGonderimResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör']);
+        return static::izinVarMi('eposta.gonderimleri.goruntule');
     }
 
     public static function canCreate(): bool

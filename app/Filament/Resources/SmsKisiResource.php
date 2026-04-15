@@ -23,6 +23,8 @@ use Illuminate\Support\Str;
 
 class SmsKisiResource extends Resource
 {
+    use \App\Support\PanelYetkiKontrolu;
+
     protected static ?string $model = SmsKisi::class;
 
     protected static ?string $navigationGroup = 'SMS Yönetimi';
@@ -39,22 +41,22 @@ class SmsKisiResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Kurs Yöneticisi']);
+        return static::izinlerdenBiriVarMi(['pazarlama_sms.listele', 'pazarlama_sms.goruntule']);
     }
 
     public static function canCreate(): bool
     {
-        return self::canViewAny();
+        return static::izinVarMi('pazarlama_sms.kaydet');
     }
 
     public static function canEdit($record): bool
     {
-        return self::canViewAny();
+        return static::izinVarMi('pazarlama_sms.kaydet');
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->check() && auth()->user()->hasRole('Admin');
+        return static::izinVarMi('pazarlama_sms.sil');
     }
 
     public static function table(Table $table): Table

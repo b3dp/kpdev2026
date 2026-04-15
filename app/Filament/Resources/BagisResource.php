@@ -28,6 +28,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class BagisResource extends Resource
 {
+    use \App\Support\PanelYetkiKontrolu;
+
     protected static ?string $model = Bagis::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
@@ -44,7 +46,7 @@ class BagisResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör', 'Muhasebe']);
+        return static::izinlerdenBiriVarMi(['bagis.listele', 'bagis.goruntule', 'bagis.raporla']);
     }
 
     public static function canCreate(): bool
@@ -54,7 +56,7 @@ class BagisResource extends Resource
 
     public static function canEdit($record): bool
     {
-        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör']);
+        return static::izinVarMi('bagis.duzenle');
     }
 
     public static function canDelete($record): bool

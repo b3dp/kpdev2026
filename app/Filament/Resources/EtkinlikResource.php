@@ -40,6 +40,8 @@ use Illuminate\Support\Str;
 
 class EtkinlikResource extends Resource
 {
+    use \App\Support\PanelYetkiKontrolu;
+
     protected static ?string $model = Etkinlik::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
@@ -56,27 +58,27 @@ class EtkinlikResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör']);
+        return static::izinVarMi('etkinlikler.listele');
     }
 
     public static function canCreate(): bool
     {
-        return self::canViewAny();
+        return static::izinVarMi('etkinlikler.kaydet');
     }
 
     public static function canEdit($record): bool
     {
-        return self::canViewAny();
+        return static::izinVarMi('etkinlikler.duzenle');
     }
 
     public static function canDelete($record): bool
     {
-        return self::canViewAny();
+        return static::izinVarMi('etkinlikler.sil');
     }
 
     public static function canDeleteAny(): bool
     {
-        return self::canViewAny();
+        return static::izinVarMi('etkinlikler.sil');
     }
 
     public static function form(Form $form): Form

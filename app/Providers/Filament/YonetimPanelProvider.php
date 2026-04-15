@@ -33,12 +33,15 @@ class YonetimPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Blue,
             ])
+            ->brandLogo(asset('images/logoadmin.svg'))
+            ->brandLogoHeight('2.5rem')
             ->darkMode(false)
+            ->sidebarCollapsibleOnDesktop()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->renderHook(
                 PanelsRenderHook::TOPBAR_START,
-                fn (): string => view('filament.topbar.global-arama-link')->render()
+                fn (): string => view('filament.topbar.arama-wrapper')->render()
             )
             ->pages([
                 Pages\Dashboard::class,

@@ -18,6 +18,7 @@ use Illuminate\Support\Str;
 
 class HizliSmsSayfasi extends Page implements \Filament\Forms\Contracts\HasForms
 {
+    use \App\Support\PanelYetkiKontrolu;
     use InteractsWithForms;
 
     protected static ?string $navigationGroup = 'SMS Yönetimi';
@@ -34,7 +35,7 @@ class HizliSmsSayfasi extends Page implements \Filament\Forms\Contracts\HasForms
 
     public static function canAccess(): bool
     {
-        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Kurs Yöneticisi']);
+        return static::izinVarMi('pazarlama_sms.gonder');
     }
 
     public function mount(): void

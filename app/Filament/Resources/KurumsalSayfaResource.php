@@ -39,6 +39,8 @@ use Illuminate\Support\Facades\Storage;
 
 class KurumsalSayfaResource extends Resource
 {
+    use \App\Support\PanelYetkiKontrolu;
+
     protected static ?string $model = KurumsalSayfa::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
@@ -55,27 +57,27 @@ class KurumsalSayfaResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör']);
+        return static::izinVarMi('kurumsal_sayfalar.listele');
     }
 
     public static function canCreate(): bool
     {
-        return self::canViewAny();
+        return static::izinVarMi('kurumsal_sayfalar.kaydet');
     }
 
     public static function canEdit($record): bool
     {
-        return self::canViewAny();
+        return static::izinVarMi('kurumsal_sayfalar.duzenle');
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->check() && auth()->user()->hasRole('Admin');
+        return static::izinVarMi('kurumsal_sayfalar.sil');
     }
 
     public static function canDeleteAny(): bool
     {
-        return auth()->check() && auth()->user()->hasRole('Admin');
+        return static::izinVarMi('kurumsal_sayfalar.sil');
     }
 
     public static function form(Form $form): Form

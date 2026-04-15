@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class HaberKisiOnayResource extends Resource
 {
+    use \App\Support\PanelYetkiKontrolu;
+
     protected static ?string $model = HaberKisi::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-user-plus';
@@ -34,7 +36,7 @@ class HaberKisiOnayResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör']);
+        return static::izinVarMi('kisiler.onayla');
     }
 
     public static function canCreate(): bool

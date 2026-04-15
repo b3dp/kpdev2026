@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class SmsGonderimResource extends Resource
 {
+    use \App\Support\PanelYetkiKontrolu;
+
     protected static ?string $model = SmsGonderim::class;
 
     protected static ?string $navigationGroup = 'SMS Yönetimi';
@@ -33,7 +35,7 @@ class SmsGonderimResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Kurs Yöneticisi']);
+        return static::izinlerdenBiriVarMi(['pazarlama_sms.listele', 'pazarlama_sms.goruntule']);
     }
 
     public static function canCreate(): bool

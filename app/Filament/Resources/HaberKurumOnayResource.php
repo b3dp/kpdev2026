@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class HaberKurumOnayResource extends Resource
 {
+    use \App\Support\PanelYetkiKontrolu;
+
     protected static ?string $model = HaberKurum::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office';
@@ -34,7 +36,7 @@ class HaberKurumOnayResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör']);
+        return static::izinVarMi('kurumlar.onayla');
     }
 
     public static function canCreate(): bool

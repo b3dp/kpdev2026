@@ -35,6 +35,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class KisiResource extends Resource
 {
+    use \App\Support\PanelYetkiKontrolu;
+
     protected static ?string $model = Kisi::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
@@ -51,27 +53,27 @@ class KisiResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör']);
+        return static::izinVarMi('kisiler.listele');
     }
 
     public static function canCreate(): bool
     {
-        return self::canViewAny();
+        return static::izinVarMi('kisiler.kaydet');
     }
 
     public static function canEdit($record): bool
     {
-        return self::canViewAny();
+        return static::izinVarMi('kisiler.duzenle');
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->check() && auth()->user()->hasRole('Admin');
+        return static::izinVarMi('kisiler.sil');
     }
 
     public static function canDeleteAny(): bool
     {
-        return auth()->check() && auth()->user()->hasRole('Admin');
+        return static::izinVarMi('kisiler.sil');
     }
 
     public static function form(Form $form): Form

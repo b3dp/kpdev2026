@@ -38,6 +38,8 @@ use Illuminate\Support\Facades\DB;
 
 class KurumResource extends Resource
 {
+    use \App\Support\PanelYetkiKontrolu;
+
     protected static ?string $model = Kurum::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
@@ -54,27 +56,27 @@ class KurumResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör']);
+        return static::izinVarMi('kurumlar.listele');
     }
 
     public static function canCreate(): bool
     {
-        return self::canViewAny();
+        return static::izinVarMi('kurumlar.kaydet');
     }
 
     public static function canEdit($record): bool
     {
-        return self::canViewAny();
+        return static::izinVarMi('kurumlar.duzenle');
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->check() && auth()->user()->hasRole('Admin');
+        return static::izinVarMi('kurumlar.sil');
     }
 
     public static function canDeleteAny(): bool
     {
-        return auth()->check() && auth()->user()->hasRole('Admin');
+        return static::izinVarMi('kurumlar.sil');
     }
 
     public static function form(Form $form): Form

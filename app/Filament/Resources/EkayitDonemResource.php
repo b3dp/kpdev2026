@@ -15,6 +15,8 @@ use Filament\Tables\Table;
 
 class EkayitDonemResource extends Resource
 {
+    use \App\Support\PanelYetkiKontrolu;
+
     protected static ?string $model = EkayitDonem::class;
     protected static ?string $navigationIcon    = 'heroicon-o-calendar-days';
     protected static ?string $navigationLabel   = 'Dönemler';
@@ -25,17 +27,17 @@ class EkayitDonemResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör']);
+        return static::izinlerdenBiriVarMi(['ekayit.listele', 'ekayit.durum_guncelle']);
     }
 
     public static function canCreate(): bool
     {
-        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör']);
+        return static::izinVarMi('ekayit.durum_guncelle');
     }
 
     public static function canEdit($record): bool
     {
-        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör']);
+        return static::izinVarMi('ekayit.durum_guncelle');
     }
 
     public static function form(Form $form): Form

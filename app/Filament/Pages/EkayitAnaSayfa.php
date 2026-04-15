@@ -8,6 +8,8 @@ use Filament\Pages\Page;
 
 class EkayitAnaSayfa extends Page
 {
+    use \App\Support\PanelYetkiKontrolu;
+
     protected static ?string $navigationIcon  = 'heroicon-o-academic-cap';
     protected static ?string $navigationLabel = 'Genel Bakış';
     protected static ?string $title           = 'E-Kayıt Genel Bakış';
@@ -20,7 +22,7 @@ class EkayitAnaSayfa extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör', 'E-Kayıt']);
+        return static::izinVarMi('ekayit.listele');
     }
 
     public function mount(): void

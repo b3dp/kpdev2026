@@ -21,6 +21,8 @@ use Spatie\Permission\Models\Role;
 
 class YoneticiResource extends Resource
 {
+    use \App\Support\PanelYetkiKontrolu;
+
     protected static ?string $model = Yonetici::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
@@ -37,7 +39,7 @@ class YoneticiResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasRole('Admin') ?? false;
+        return static::izinVarMi('yoneticiler.listele');
     }
 
     public static function form(Form $form): Form

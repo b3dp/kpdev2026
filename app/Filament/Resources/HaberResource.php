@@ -39,6 +39,8 @@ use Illuminate\Support\Str;
 
 class HaberResource extends Resource
 {
+    use \App\Support\PanelYetkiKontrolu;
+
     protected static ?string $model = Haber::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-newspaper';
@@ -55,27 +57,27 @@ class HaberResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör', 'Yazar']);
+        return static::izinVarMi('haberler.listele');
     }
 
     public static function canCreate(): bool
     {
-        return self::canViewAny();
+        return static::izinVarMi('haberler.kaydet');
     }
 
     public static function canEdit($record): bool
     {
-        return self::canViewAny();
+        return static::izinVarMi('haberler.duzenle');
     }
 
     public static function canDelete($record): bool
     {
-        return self::canViewAny();
+        return static::izinVarMi('haberler.sil');
     }
 
     public static function canDeleteAny(): bool
     {
-        return self::canViewAny();
+        return static::izinVarMi('haberler.sil');
     }
 
     public static function form(Form $form): Form
@@ -399,10 +401,10 @@ class HaberResource extends Resource
             ->actions([
                 EditAction::make()
                     ->iconButton()
-                    ->visible(fn (Haber $record) => auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör', 'Yazar'])),
+                    ->visible(fn (Haber $record) => static::izinVarMi('haberler.duzenle')),
                 DeleteAction::make()
                     ->iconButton()
-                    ->visible(fn (Haber $record) => auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör', 'Yazar'])),
+                    ->visible(fn (Haber $record) => static::izinVarMi('haberler.sil')),
                 RestoreAction::make()
                     ->iconButton(),
                 ForceDeleteAction::make()
