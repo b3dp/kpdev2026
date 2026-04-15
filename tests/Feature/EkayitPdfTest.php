@@ -15,13 +15,28 @@ use App\Models\Uye;
 use App\Services\EkayitPdfService;
 use App\Services\ZeptomailService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 use ZipArchive;
 
 class EkayitPdfTest extends TestCase
 {
     use RefreshDatabase;
+
+    private ?string $spaces_test_disk_koku = null;
+
+    protected function tearDown(): void
+    {
+        if (filled($this->spaces_test_disk_koku) && File::isDirectory($this->spaces_test_disk_koku)) {
+            File::deleteDirectory($this->spaces_test_disk_koku);
+        }
+
+        $this->spaces_test_disk_koku = null;
+
+        parent::tearDown();
+    }
 
     public function test_public_ekayit_basvurusu_ayni_veli_numaralarina_izin_vermez(): void
     {
@@ -245,8 +260,7 @@ class EkayitPdfTest extends TestCase
 
     public function test_ekayit_pdf_servisi_ogrenci_adi_ve_kayit_no_ile_pdf_olusturur(): void
     {
-        Storage::fake('spaces');
-        config()->set('filesystems.disks.spaces.url', 'https://cdn.test');
+        $this->hazirlaSpacesTestDiski();
 
         $kurum = Kurum::query()->create([
             'ad' => 'Hatay Kursu',
@@ -328,8 +342,8 @@ class EkayitPdfTest extends TestCase
         $this->assertStringContainsString('ahmet-emin-gunden', $sonuc['dosya_yol']);
         $this->assertStringEndsWith('.docx', $sonuc['docx_dosya_yol']);
 
-        Storage::disk('spaces')->assertExists($sonuc['dosya_yol']);
-        Storage::disk('spaces')->assertExists($sonuc['docx_dosya_yol']);
+        $this->assertTrue(Storage::disk('spaces')->exists($sonuc['dosya_yol']));
+        $this->assertTrue(Storage::disk('spaces')->exists($sonuc['docx_dosya_yol']));
 
         $geciciDocxYolu = storage_path('app/private/tmp/test-ekayit-template.docx');
         file_put_contents($geciciDocxYolu, Storage::disk('spaces')->get($sonuc['docx_dosya_yol']));
@@ -456,5 +470,35 @@ class EkayitPdfTest extends TestCase
         $this->assertStringContainsString('Anne - 05554445566', $sheetXml);
         $this->assertStringContainsString('Baba - 05557778899', $sheetXml);
         $this->assertStringContainsString('Ahmet Emin Günden', $sheetXml);
+    }
+
+    public function test_ekayit_pdf_servisi_numarali_docx_sablonlarini_siraya_gore_bulur(): void
+    {
+        $servis = app(EkayitPdfService::class);
+        $reflection = new \ReflectionClass($servis);
+        $method = $reflection->getMethod('varsayilanCokluSablonYollari');
+        $method->setAccessible(true);
+
+        $sonuc = $method->invoke($servis);
+
+        $this->assertInstanceOf(\Illuminate\Support\Collection::class, $sonuc);
+        $this->assertNotEmpty($sonuc);
+        $this->assertSame('1sozlesme.docx', basename((string) $sonuc->first()));
+        $this->assertSame('9foto_izin.docx', basename((string) $sonuc->last()));
+    }
+
+    private function hazirlaSpacesTestDiski(): void
+    {
+        $this->spaces_test_disk_koku = storage_path('framework/testing/disks/spaces-'.Str::uuid());
+
+        File::ensureDirectoryExists($this->spaces_test_disk_koku);
+
+        config()->set('filesystems.disks.spaces', [
+            'driver' => 'local',
+            'root' => $this->spaces_test_disk_koku,
+            'url' => 'https://cdn.test',
+            'visibility' => 'public',
+            'throw' => false,
+        ]);
     }
 }

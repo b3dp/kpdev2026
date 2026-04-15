@@ -6,6 +6,7 @@ use App\Models\EkayitEvrakSablonu;
 use App\Models\EkayitKayit;
 use App\Models\EkayitOlusturulanEvrak;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -23,6 +24,8 @@ class EkayitPdfService
         $geciciDocxYolu = null;
         $geciciPdfYolu = null;
         $indirilenSablonYolu = null;
+        $geciciParcaDocxYollari = [];
+        $indirilenSablonYollari = [];
 
         try {
             $kayit->loadMissing([
@@ -35,8 +38,8 @@ class EkayitPdfService
                 'babaBilgisi',
             ]);
 
-            $sablon = $this->sablonuHazirla();
-            $sablonDosyasi = $this->sablonDosyasiniBul($sablon, $indirilenSablonYolu);
+            $sablonKaynaklari = $this->sablonKaynaklariniGetir();
+            $kayitSablonu = $this->kayitSablonunuBelirle($sablonKaynaklari);
 
             $kayitNo = $this->kayitNo($kayit);
             $dosyaSurumu = now()->format('YmdHis');
@@ -54,7 +57,29 @@ class EkayitPdfService
             $geciciDocxYolu = $geciciDizin.'/'.$docxDosyaAdi;
             $geciciPdfYolu = $geciciDizin.'/'.$pdfDosyaAdi;
 
-            $this->docxSablonunuDoldur($sablonDosyasi, $geciciDocxYolu, $this->dokumanVerileriniHazirla($kayit));
+            $dokumanVerileri = $this->dokumanVerileriniHazirla($kayit);
+
+            foreach ($sablonKaynaklari as $index => $sablonKaynagi) {
+                $indirilenSablonYolu = null;
+                $sablonDosyasi = $this->sablonKaynaginiBul($sablonKaynagi, $indirilenSablonYolu);
+
+                if (filled($indirilenSablonYolu)) {
+                    $indirilenSablonYollari[] = $indirilenSablonYolu;
+                }
+
+                $parcaDocxAdi = sprintf(
+                    '%s-%02d-%s.docx',
+                    pathinfo($docxDosyaAdi, PATHINFO_FILENAME),
+                    $index + 1,
+                    Str::slug((string) pathinfo((string) ($sablonKaynagi['dosya_adi'] ?? 'sablon'), PATHINFO_FILENAME), '-') ?: 'sablon'
+                );
+
+                $parcaDocxYolu = $geciciDizin.'/'.$parcaDocxAdi;
+                $this->docxSablonunuDoldur($sablonDosyasi, $parcaDocxYolu, $dokumanVerileri);
+                $geciciParcaDocxYollari[] = $parcaDocxYolu;
+            }
+
+            $this->docxDosyalariniBirlestir($geciciParcaDocxYollari, $geciciDocxYolu);
             $this->docxDosyasiniPdfyeCevir($geciciDocxYolu, $geciciPdfYolu, $kayit);
 
             $pdfRelativeYol = sprintf('pdf26/ekayit/%s/%s/%s', $ogretimYili, $kayitNo, $pdfDosyaAdi);
@@ -74,7 +99,7 @@ class EkayitPdfService
             EkayitOlusturulanEvrak::query()->updateOrCreate(
                 [
                     'kayit_id' => $kayit->id,
-                    'sablon_id' => $sablon->id,
+                    'sablon_id' => $kayitSablonu->id,
                 ],
                 [
                     'dosya_yol' => $pdfRelativeYol,
@@ -101,7 +126,7 @@ class EkayitPdfService
 
             return null;
         } finally {
-            foreach ([$geciciDocxYolu, $geciciPdfYolu, $indirilenSablonYolu] as $dosyaYolu) {
+            foreach (array_merge([$geciciDocxYolu, $geciciPdfYolu, $indirilenSablonYolu], $geciciParcaDocxYollari, $indirilenSablonYollari) as $dosyaYolu) {
                 if (filled($dosyaYolu) && is_file($dosyaYolu)) {
                     @unlink($dosyaYolu);
                 }
@@ -137,6 +162,119 @@ class EkayitPdfService
         $sablon->save();
 
         return $sablon;
+    }
+
+    private function sablonKaynaklariniGetir(): Collection
+    {
+        $varsayilanSablonYollari = $this->varsayilanCokluSablonYollari();
+
+        if ($varsayilanSablonYollari->isNotEmpty()) {
+            return $varsayilanSablonYollari->map(fn (string $sablonYolu): array => [
+                'sablon' => null,
+                'sablon_yol' => $sablonYolu,
+                'dosya_adi' => basename($sablonYolu),
+            ]);
+        }
+
+        $kayitliSablonlar = EkayitEvrakSablonu::query()
+            ->where('aktif', true)
+            ->get()
+            ->sort(function (EkayitEvrakSablonu $ilk, EkayitEvrakSablonu $ikinci): int {
+                $ilkSira = $this->dosyaAdindanSiraBul($ilk->sablon_yol ?: $ilk->dosya_adi);
+                $ikinciSira = $this->dosyaAdindanSiraBul($ikinci->sablon_yol ?: $ikinci->dosya_adi);
+
+                if ($ilkSira !== $ikinciSira) {
+                    return $ilkSira <=> $ikinciSira;
+                }
+
+                if ((int) $ilk->sira !== (int) $ikinci->sira) {
+                    return (int) $ilk->sira <=> (int) $ikinci->sira;
+                }
+
+                return strcmp((string) $ilk->dosya_adi, (string) $ikinci->dosya_adi);
+            })
+            ->values();
+
+        if ($kayitliSablonlar->isNotEmpty()) {
+            return $kayitliSablonlar->map(fn (EkayitEvrakSablonu $sablon): array => [
+                'sablon' => $sablon,
+                'sablon_yol' => (string) $sablon->sablon_yol,
+                'dosya_adi' => (string) ($sablon->dosya_adi ?: basename((string) $sablon->sablon_yol)),
+            ]);
+        }
+
+        $varsayilanSablon = $this->sablonuHazirla();
+
+        return collect([[
+            'sablon' => $varsayilanSablon,
+            'sablon_yol' => (string) $varsayilanSablon->sablon_yol,
+            'dosya_adi' => (string) $varsayilanSablon->dosya_adi,
+        ]]);
+    }
+
+    private function kayitSablonunuBelirle(Collection $sablonKaynaklari): EkayitEvrakSablonu
+    {
+        $kayitliSablon = $sablonKaynaklari
+            ->pluck('sablon')
+            ->first(fn (mixed $sablon) => $sablon instanceof EkayitEvrakSablonu);
+
+        if ($kayitliSablon instanceof EkayitEvrakSablonu) {
+            return $kayitliSablon;
+        }
+
+        return $this->sablonuHazirla();
+    }
+
+    private function varsayilanCokluSablonYollari(): Collection
+    {
+        $yollar = glob(base_path('docs/[0-9]*.docx')) ?: [];
+
+        usort($yollar, function (string $ilk, string $ikinci): int {
+            $ilkSira = $this->dosyaAdindanSiraBul(basename($ilk));
+            $ikinciSira = $this->dosyaAdindanSiraBul(basename($ikinci));
+
+            if ($ilkSira !== $ikinciSira) {
+                return $ilkSira <=> $ikinciSira;
+            }
+
+            return strcmp(basename($ilk), basename($ikinci));
+        });
+
+        return collect($yollar)->filter(fn (string $yol): bool => is_file($yol))->values();
+    }
+
+    private function dosyaAdindanSiraBul(string $dosyaAdi): int
+    {
+        return preg_match('/^(\d+)/', basename($dosyaAdi), $eslesme)
+            ? (int) ($eslesme[1] ?? PHP_INT_MAX)
+            : PHP_INT_MAX;
+    }
+
+    private function sablonKaynaginiBul(array $sablonKaynagi, ?string &$indirilenSablonYolu = null): string
+    {
+        $sablonYolu = trim((string) ($sablonKaynagi['sablon_yol'] ?? ''));
+
+        if ($sablonYolu !== '' && is_file($sablonYolu)) {
+            return $sablonYolu;
+        }
+
+        if ($sablonYolu !== '' && is_file(base_path($sablonYolu))) {
+            return base_path($sablonYolu);
+        }
+
+        if ($sablonYolu !== '' && Storage::disk('spaces')->exists($sablonYolu)) {
+            $indirilenSablonYolu = storage_path('app/private/tmp/'.basename($sablonYolu));
+            $icerik = Storage::disk('spaces')->get($sablonYolu);
+            file_put_contents($indirilenSablonYolu, $icerik);
+
+            return $indirilenSablonYolu;
+        }
+
+        if (($sablonKaynagi['sablon'] ?? null) instanceof EkayitEvrakSablonu) {
+            return $this->sablonDosyasiniBul($sablonKaynagi['sablon'], $indirilenSablonYolu);
+        }
+
+        throw new RuntimeException('E-Kayıt DOCX şablonu bulunamadı: '.($sablonKaynagi['dosya_adi'] ?? 'Bilinmeyen şablon'));
     }
 
     private function sablonDosyasiniBul(EkayitEvrakSablonu $sablon, ?string &$indirilenSablonYolu = null): string
@@ -276,6 +414,80 @@ class EkayitPdfService
         }
 
         $zip->close();
+    }
+
+    private function docxDosyalariniBirlestir(array $docxDosyaYollari, string $hedefDocxYolu): void
+    {
+        $docxDosyaYollari = array_values(array_filter($docxDosyaYollari, fn (mixed $yol): bool => filled($yol) && is_file((string) $yol)));
+
+        if ($docxDosyaYollari === []) {
+            throw new RuntimeException('Birleştirilecek DOCX dosyası bulunamadı.');
+        }
+
+        if (count($docxDosyaYollari) === 1) {
+            copy($docxDosyaYollari[0], $hedefDocxYolu);
+
+            return;
+        }
+
+        copy($docxDosyaYollari[0], $hedefDocxYolu);
+
+        $hedefZip = new ZipArchive();
+
+        if ($hedefZip->open($hedefDocxYolu) !== true) {
+            throw new RuntimeException('Birleşik DOCX için temel dosya açılamadı.');
+        }
+
+        $hedefBelgeXml = $hedefZip->getFromName('word/document.xml');
+
+        if (! is_string($hedefBelgeXml) || $hedefBelgeXml === '') {
+            $hedefZip->close();
+
+            throw new RuntimeException('Temel DOCX içindeki belge XML verisi okunamadı.');
+        }
+
+        [$baslangic, $govde, $sectPr, $bitis] = $this->docxBelgeGovdesiniAyir($hedefBelgeXml);
+        $ekGovde = '';
+
+        foreach (array_slice($docxDosyaYollari, 1) as $docxDosyaYolu) {
+            $zip = new ZipArchive();
+
+            if ($zip->open($docxDosyaYolu) !== true) {
+                continue;
+            }
+
+            $belgeXml = $zip->getFromName('word/document.xml');
+            $zip->close();
+
+            if (! is_string($belgeXml) || $belgeXml === '') {
+                continue;
+            }
+
+            [, $parcaGovde] = $this->docxBelgeGovdesiniAyir($belgeXml);
+            $ekGovde .= $this->sayfaSonuXml().$parcaGovde;
+        }
+
+        $hedefZip->addFromString('word/document.xml', $baslangic.$govde.$ekGovde.$sectPr.$bitis);
+        $hedefZip->close();
+    }
+
+    private function docxBelgeGovdesiniAyir(string $xmlIcerik): array
+    {
+        if (! preg_match('/^(.*?<w:body[^>]*>)(.*?)(<w:sectPr\b.*?<\/w:sectPr>)?\s*(<\/w:body>.*)$/su', $xmlIcerik, $eslesme)) {
+            throw new RuntimeException('DOCX belge gövdesi ayrıştırılamadı.');
+        }
+
+        return [
+            $eslesme[1] ?? '',
+            $eslesme[2] ?? '',
+            $eslesme[3] ?? '',
+            $eslesme[4] ?? '',
+        ];
+    }
+
+    private function sayfaSonuXml(): string
+    {
+        return '<w:p><w:r><w:br w:type="page"/></w:r></w:p>';
     }
 
     private function xmlIcindekiPlaceholderlariDoldur(string $xmlIcerik, array $degerler): string
