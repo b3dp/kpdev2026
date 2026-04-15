@@ -19,6 +19,8 @@ use ZipArchive;
 
 class EkayitPdfService
 {
+    private const SAYFA_KENAR_BOSLUGU_TWIP = 850;
+
     public function olustur(EkayitKayit $kayit): ?array
     {
         $geciciDocxYolu = null;
@@ -410,6 +412,7 @@ class EkayitPdfService
 
             $guncelXml = $this->xmlIcindekiPlaceholderlariDoldur($xmlIcerik, $degerler);
             $guncelXml = $this->xmlTablolariStabilizeEt($guncelXml);
+            $guncelXml = $this->xmlSayfaKenarBosluklariniAyarla($guncelXml);
             $zip->addFromString($dosyaAdi, $guncelXml);
         }
 
@@ -467,7 +470,10 @@ class EkayitPdfService
             $ekGovde .= $this->sayfaSonuXml().$parcaGovde;
         }
 
-        $hedefZip->addFromString('word/document.xml', $baslangic.$govde.$ekGovde.$sectPr.$bitis);
+        $birlestirilmisBelgeXml = $baslangic.$govde.$ekGovde.$sectPr.$bitis;
+        $birlestirilmisBelgeXml = $this->xmlSayfaKenarBosluklariniAyarla($birlestirilmisBelgeXml);
+
+        $hedefZip->addFromString('word/document.xml', $birlestirilmisBelgeXml);
         $hedefZip->close();
     }
 
@@ -581,6 +587,52 @@ class EkayitPdfService
 
             return $tabloXml;
         }, $xmlIcerik) ?? $xmlIcerik;
+    }
+
+    private function xmlSayfaKenarBosluklariniAyarla(string $xmlIcerik): string
+    {
+        return preg_replace_callback('/<w:sectPr\b[^>]*>.*?<\/w:sectPr>/su', function (array $eslesme): string {
+            $sectPrXml = $eslesme[0];
+
+            if (preg_match('/<w:pgMar\b[^>]*\/>/u', $sectPrXml, $pgMarEslesme) !== 1) {
+                return preg_replace(
+                    '/(<w:sectPr\b[^>]*>)/u',
+                    '$1'.$this->sayfaKenarBosluklariXml(),
+                    $sectPrXml,
+                    1
+                ) ?? $sectPrXml;
+            }
+
+            $guncelPgMarXml = $pgMarEslesme[0];
+
+            foreach (['w:top', 'w:right', 'w:bottom', 'w:left'] as $nitelik) {
+                $guncelPgMarXml = $this->xmlNiteliginiAyarla($guncelPgMarXml, $nitelik, self::SAYFA_KENAR_BOSLUGU_TWIP);
+            }
+
+            return str_replace($pgMarEslesme[0], $guncelPgMarXml, $sectPrXml);
+        }, $xmlIcerik) ?? $xmlIcerik;
+    }
+
+    private function sayfaKenarBosluklariXml(): string
+    {
+        return sprintf(
+            '<w:pgMar w:top="%1$d" w:right="%1$d" w:bottom="%1$d" w:left="%1$d" w:header="708" w:footer="708" w:gutter="0"/>',
+            self::SAYFA_KENAR_BOSLUGU_TWIP
+        );
+    }
+
+    private function xmlNiteliginiAyarla(string $xml, string $nitelik, int $deger): string
+    {
+        if (preg_match('/'.preg_quote($nitelik, '/').'="[^"]*"/u', $xml) === 1) {
+            return preg_replace(
+                '/'.preg_quote($nitelik, '/').'="[^"]*"/u',
+                sprintf('%s="%d"', $nitelik, $deger),
+                $xml,
+                1
+            ) ?? $xml;
+        }
+
+        return preg_replace('/\/>$/u', sprintf(' %s="%d"/>', $nitelik, $deger), $xml, 1) ?? $xml;
     }
 
     private function placeholderiNormalizeEt(string $metin): string

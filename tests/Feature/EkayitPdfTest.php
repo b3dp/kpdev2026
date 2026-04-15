@@ -363,6 +363,10 @@ class EkayitPdfTest extends TestCase
         $this->assertStringContainsString('12', $xmlIcerik);
         $this->assertStringContainsString('w:tblLayout w:type="fixed"', $xmlIcerik);
         $this->assertStringContainsString('w:jc w:val="center"', $xmlIcerik);
+        $this->assertStringContainsString('w:pgMar w:top="850"', $xmlIcerik);
+        $this->assertStringContainsString('w:right="850"', $xmlIcerik);
+        $this->assertStringContainsString('w:bottom="850"', $xmlIcerik);
+        $this->assertStringContainsString('w:left="850"', $xmlIcerik);
         $this->assertStringNotContainsString('w:tblInd w:w="-', $xmlIcerik);
         $this->assertStringNotContainsString('ogrenci_ad_soyad', $xmlIcerik);
         $this->assertStringNotContainsString('veli_ad_soyad', $xmlIcerik);

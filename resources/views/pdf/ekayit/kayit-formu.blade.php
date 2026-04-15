@@ -5,6 +5,10 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Kayıt Formu</title>
     <style>
+        @page {
+            margin: 1.5cm;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: DejaVu Sans, sans-serif;
@@ -13,9 +17,9 @@
             background: #fff;
         }
         .page {
-            width: 210mm;
-            min-height: 297mm;
-            padding: 12mm 14mm;
+            width: 100%;
+            min-height: auto;
+            padding: 0;
         }
         /* Başlık */
         .header {
