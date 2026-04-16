@@ -25,7 +25,7 @@
             ->all();
     }
 
-    $onerilenAdetler = [1, 2, 5, 10];
+    $onerilenAdetler = [1, 5, 10];
 
     $ilkTutar = (float) ($oneriTutarlar[0] ?? $varsayilanTutar);
 
@@ -140,15 +140,23 @@
 
         <div style="padding:20px 24px 28px;display:flex;flex-direction:column;gap:20px;">
           <div>
-            <p id="bagis-miktar-etiketi" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;color:#162E4B;margin-bottom:10px;">{{ $adetModuAktif ? 'Adet' : 'Tutar' }} <span style="color:#E95925;">*</span></p>
+            <p id="bagis-miktar-etiketi" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;color:#162E4B;margin-bottom:10px;">{{ $aktifTurKey === 'buyukbas' ? 'Hisse Tutarı' : ($adetModuAktif ? 'Adet' : 'Tutar') }} <span style="color:#E95925;">*</span></p>
             <div id="tutar-butonlar" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;">
-              @if($adetModuAktif)
+              @if($aktifTurKey === 'buyukbas')
+                <button type="button" class="tutar-btn selected" data-tutar="{{ (int) $varsayilanTutar }}" style="grid-column:span 4;cursor:default;">
+                  ₺{{ number_format($varsayilanTutar, 0, ',', '.') }}
+                </button>
+              @elseif($adetModuAktif)
                 @foreach($onerilenAdetler as $i => $adet)
                   <button type="button" class="tutar-btn {{ $i === 0 ? 'selected' : '' }}" data-adet="{{ $adet }}">
                     <span style="display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:700;color:inherit;">{{ $adet }} adet</span>
                     <span style="display:block;margin-top:4px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:500;color:inherit;opacity:.72;">₺{{ number_format($varsayilanTutar * $adet, 0, ',', '.') }}</span>
                   </button>
                 @endforeach
+                <div style="position:relative;">
+                  <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;color:rgba(22,46,75,.4);font-weight:600;">#</span>
+                  <input id="tutar-manuel" type="number" class="form-input" placeholder="Diğer adet" min="1" max="30" style="padding-left:30px;height:100%;" />
+                </div>
               @else
                 @foreach($oneriTutarlar as $i => $tutar)
                   <button type="button" class="tutar-btn {{ $i === 0 ? 'selected' : '' }}" data-tutar="{{ (int) $tutar }}">
@@ -157,15 +165,12 @@
                 @endforeach
               @endif
             </div>
+            @if($aktifTurKey !== 'buyukbas' && ! $adetModuAktif)
             <div style="position:relative;">
-              @if($adetModuAktif)
-                <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;color:rgba(22,46,75,.4);font-weight:600;">#</span>
-                <input id="tutar-manuel" type="number" class="form-input" placeholder="Diğer adet girin" min="1" max="30" style="padding-left:30px;" />
-              @else
-                <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;color:rgba(22,46,75,.4);font-weight:600;">₺</span>
-                <input id="tutar-manuel" type="number" class="form-input" placeholder="Diğer tutar girin" @if($bagisTuru->minimum_tutar) min="{{ (float) $bagisTuru->minimum_tutar }}" @endif style="padding-left:30px;" />
-              @endif
+              <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;color:rgba(22,46,75,.4);font-weight:600;">₺</span>
+              <input id="tutar-manuel" type="number" class="form-input" placeholder="Diğer tutar girin" @if($bagisTuru->minimum_tutar) min="{{ (float) $bagisTuru->minimum_tutar }}" @endif style="padding-left:30px;" />
             </div>
+            @endif
           </div>
 
           <div class="section-divider"></div>
