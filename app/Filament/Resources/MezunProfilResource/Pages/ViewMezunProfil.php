@@ -78,6 +78,16 @@ class ViewMezunProfil extends ViewRecord
                                 TextEntry::make('ikamet_ilce')
                                     ->label('İkamet İlçesi')
                                     ->default('—'),
+
+                                TextEntry::make('acik_adres')
+                                    ->label('Açık Adres')
+                                    ->default('—')
+                                    ->columnSpanFull(),
+
+                                TextEntry::make('aciklama')
+                                    ->label('Açıklama')
+                                    ->default('—')
+                                    ->columnSpanFull(),
                             ]),
 
                         // Card 3 — İletişim ve Sosyal Medya

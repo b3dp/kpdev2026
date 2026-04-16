@@ -42,6 +42,8 @@
 | gorev_ilce | string(100) | ❌ | null | Görev yeri ilçesi |
 | ikamet_il | string(100) | ❌ | null | İkamet ili — segment/bildirim için kritik |
 | ikamet_ilce | string(100) | ❌ | null | İkamet ilçesi |
+| acik_adres | text | ❌ | null | Serbest açık adres veya görev yeri detayı |
+| aciklama | text | ❌ | null | Üyeden veya içe aktarımdan gelen serbest not |
 | linkedin | string(255) | ❌ | null | LinkedIn profil URL |
 | instagram | string(255) | ❌ | null | Instagram kullanıcı adı veya URL |
 | twitter | string(255) | ❌ | null | Twitter/X kullanıcı adı veya URL |
@@ -154,7 +156,7 @@ Soft delete. Silindiğinde üyedeki mezun rozeti de kaldırılır.
 
 **Excel İndirme:**
 Filtrelenmiş mezun listesi Excel olarak indirilebilir.
-Kolonlar: Ad Soyad, Telefon, E-posta, Kurum, Mezuniyet Yılı, Hafız, Meslek, Görev İl/İlçe, İkamet İl/İlçe, LinkedIn, Instagram, Twitter, Kayıt Tarihi, Durum
+Kolonlar: Ad Soyad, Telefon, E-posta, Kurum, Mezuniyet Yılı, Hafız, Meslek, Görev İl/İlçe, İkamet İl/İlçe, Açık Adres, Açıklama, LinkedIn, Instagram, Twitter, Kayıt Tarihi, Durum
 
 ---
 
@@ -213,6 +215,8 @@ Kolonlar: Ad Soyad, Telefon, E-posta, Kurum, Mezuniyet Yılı, Hafız, Meslek, G
 - Meslek / Görev (opsiyonel)
 - Görev İli / İlçesi (opsiyonel)
 - İkamet İli / İlçesi (opsiyonel)
+- Açık adres (opsiyonel)
+- Açıklama / not (opsiyonel)
 
 **Sosyal Medya** (opsiyonel):
 - LinkedIn

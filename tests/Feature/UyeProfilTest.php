@@ -57,6 +57,8 @@ class UyeProfilTest extends TestCase
             'meslek' => 'Yazilim Muhendisi',
             'ikamet_il' => 'Istanbul',
             'ikamet_ilce' => 'Uskudar',
+            'acik_adres' => 'Cumhuriyet Mahallesi Test Sokak No: 10',
+            'aciklama' => 'Dernek mezun listesi icin not',
             'eposta_abonelik' => 1,
             'sms_abonelik' => 1,
         ]);
@@ -79,6 +81,33 @@ class UyeProfilTest extends TestCase
         $this->assertSame('Yazilim Muhendisi', $mezunProfil->meslek);
         $this->assertSame('Istanbul', $mezunProfil->ikamet_il);
         $this->assertSame('Uskudar', $mezunProfil->ikamet_ilce);
+        $this->assertSame('Cumhuriyet Mahallesi Test Sokak No: 10', $mezunProfil->acik_adres);
+        $this->assertSame('Dernek mezun listesi icin not', $mezunProfil->aciklama);
+    }
+
+    public function test_mezun_basvurusu_acik_adres_ve_aciklama_ile_kaydedilir(): void
+    {
+        $response = $this->post(route('mezunlar.store'), [
+            'ad_soyad' => 'Ali Veli',
+            'telefon' => '05349838042',
+            'mezuniyet_yili' => 2010,
+            'meslek' => 'Ogretmen',
+            'acik_adres' => 'Konak / Izmir',
+            'aciklama' => 'Excel listesinden gelen aciklama',
+            'kvkk' => 1,
+        ]);
+
+        $response->assertRedirect(route('mezunlar.index'));
+
+        $uye = Uye::query()->where('telefon', '05349838042')->first();
+
+        $this->assertNotNull($uye);
+
+        $mezunProfil = MezunProfil::query()->where('uye_id', $uye->id)->first();
+
+        $this->assertNotNull($mezunProfil);
+        $this->assertSame('Konak / Izmir', $mezunProfil->acik_adres);
+        $this->assertSame('Excel listesinden gelen aciklama', $mezunProfil->aciklama);
     }
 
     public function test_uye_profili_otp_tabanli_bilgilendirme_gosterir(): void

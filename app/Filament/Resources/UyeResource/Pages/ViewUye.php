@@ -59,6 +59,14 @@ class ViewUye extends ViewRecord
                     TextEntry::make('hafiz')
                         ->label('Hafız')
                         ->getStateUsing(fn () => $mezunProfili->hafiz ? 'Evet' : 'Hayır'),
+                    TextEntry::make('acik_adres')
+                        ->label('Açık Adres')
+                        ->getStateUsing(fn () => $mezunProfili->acik_adres ?: '—')
+                        ->columnSpanFull(),
+                    TextEntry::make('aciklama')
+                        ->label('Açıklama')
+                        ->getStateUsing(fn () => $mezunProfili->aciklama ?: '—')
+                        ->columnSpanFull(),
                     TextEntry::make('durum')
                         ->label('Mezun Profili Durumu')
                         ->badge()

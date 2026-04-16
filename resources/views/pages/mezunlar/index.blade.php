@@ -193,6 +193,18 @@
                             @error('meslek') <p class="text-[12px] text-rose-600">{{ $message }}</p> @enderror
                         </div>
 
+                        <div class="form-group">
+                            <label class="form-label">Açık Adres</label>
+                            <textarea name="acik_adres" class="form-input min-h-[92px] resize-y" placeholder="İlçe, mahalle, kurum veya görev yeri detayı yazabilirsiniz">{{ old('acik_adres') }}</textarea>
+                            @error('acik_adres') <p class="text-[12px] text-rose-600">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Açıklama</label>
+                            <textarea name="aciklama" class="form-input min-h-[92px] resize-y" placeholder="Eklemek istediğiniz not, görev bilgisi veya açıklama">{{ old('aciklama') }}</textarea>
+                            @error('aciklama') <p class="text-[12px] text-rose-600">{{ $message }}</p> @enderror
+                        </div>
+
                         <label class="flex items-start gap-2.5 rounded-[9px] bg-bg-soft px-3 py-2.5 text-[12.5px] leading-6 text-teal-muted">
                             <input type="checkbox" name="kvkk" value="1" @checked(old('kvkk')) class="mt-1 h-[15px] w-[15px] accent-primary">
                             <span><a href="{{ route('kurumsal.show', 'kvkk') }}" class="font-semibold text-primary">KVKK Aydınlatma Metni</a>'ni okudum, kişisel verilerimin işlenmesine onay veriyorum. <strong class="text-orange-cta">*</strong></span>

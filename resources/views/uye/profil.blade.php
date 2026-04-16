@@ -249,6 +249,16 @@
                                         <input type="text" id="meslek" name="meslek" value="{{ $mezunProfil?->meslek }}" class="uye-profil__input" placeholder="Örn. Yazılım Mühendisi">
                                         <p class="mt-1 hidden text-sm text-red-600" data-error-for="meslek"></p>
                                     </div>
+                                    <div class="md:col-span-2">
+                                        <label for="acik_adres" class="mb-1.5 block text-sm font-semibold text-[#162E4B]">Açık Adres</label>
+                                        <textarea id="acik_adres" name="acik_adres" class="uye-profil__input min-h-[96px] resize-y" placeholder="İlçe, mahalle, kurum veya görev yeri detayı">{{ $mezunProfil?->acik_adres }}</textarea>
+                                        <p class="mt-1 hidden text-sm text-red-600" data-error-for="acik_adres"></p>
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label for="aciklama" class="mb-1.5 block text-sm font-semibold text-[#162E4B]">Açıklama</label>
+                                        <textarea id="aciklama" name="aciklama" class="uye-profil__input min-h-[96px] resize-y" placeholder="Eklemek istediğiniz not veya açıklama">{{ $mezunProfil?->aciklama }}</textarea>
+                                        <p class="mt-1 hidden text-sm text-red-600" data-error-for="aciklama"></p>
+                                    </div>
                                     <div>
                                         <label for="linkedin" class="mb-1.5 block text-sm font-semibold text-[#162E4B]">LinkedIn</label>
                                         <input type="text" id="linkedin" name="linkedin" value="{{ $mezunProfil?->linkedin }}" class="uye-profil__input" placeholder="linkedin.com/in/...">

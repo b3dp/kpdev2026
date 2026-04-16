@@ -152,6 +152,20 @@ class MezunProfilResource extends Resource
                         ->searchable()
                         ->native(false)
                         ->nullable(),
+
+                    Textarea::make('acik_adres')
+                        ->label('Açık Adres')
+                        ->rows(3)
+                        ->maxLength(2000)
+                        ->nullable()
+                        ->columnSpanFull(),
+
+                    Textarea::make('aciklama')
+                        ->label('Açıklama')
+                        ->rows(3)
+                        ->maxLength(2000)
+                        ->nullable()
+                        ->columnSpanFull(),
                 ])
                 ->columns(2),
 

@@ -41,6 +41,8 @@ class MezunController extends Controller
             'telefon' => ['nullable', 'string', 'min:10', 'max:20', 'required_without:eposta'],
             'mezuniyet_yili' => ['required', 'integer', 'min:1960', 'max:' . now()->year],
             'meslek' => ['nullable', 'string', 'max:255'],
+            'acik_adres' => ['nullable', 'string', 'max:2000'],
+            'aciklama' => ['nullable', 'string', 'max:2000'],
             'kvkk' => ['accepted'],
         ], [
             'ad_soyad.required' => 'Ad soyad alanı zorunludur.',
@@ -99,6 +101,8 @@ class MezunController extends Controller
             $profil = MezunProfil::query()->firstOrNew(['uye_id' => $uye->id]);
             $profil->mezuniyet_yili = (int) $veri['mezuniyet_yili'];
             $profil->meslek = $veri['meslek'] ?: $profil->meslek;
+            $profil->acik_adres = filled($veri['acik_adres'] ?? null) ? trim((string) $veri['acik_adres']) : $profil->acik_adres;
+            $profil->aciklama = filled($veri['aciklama'] ?? null) ? trim((string) $veri['aciklama']) : $profil->aciklama;
             $profil->durum = $profil->exists && $profil->durum === 'aktif' ? 'aktif' : 'beklemede';
             $profil->save();
 
@@ -107,6 +111,8 @@ class MezunController extends Controller
                 'eposta' => $uye->eposta,
                 'telefon' => $uye->telefon,
                 'mezuniyet_yili' => $profil->mezuniyet_yili,
+                'acik_adres' => $profil->acik_adres,
+                'aciklama' => $profil->aciklama,
             ]);
 
             $aliciEposta = config('iletisim.merkez_eposta') ?: config('site.eposta');
@@ -117,7 +123,7 @@ class MezunController extends Controller
                         'eposta' => $aliciEposta,
                         'ad' => config('site.ad') . ' Mezun Başvurusu',
                     ],
-                ], 'Yeni Mezun Başvurusu', "Ad Soyad: {$veri['ad_soyad']}\nE-posta: {$eposta}\nTelefon: {$telefon}\nMezuniyet Yılı: {$veri['mezuniyet_yili']}\nMeslek: " . ($veri['meslek'] ?: 'Belirtilmedi'));
+                ], 'Yeni Mezun Başvurusu', "Ad Soyad: {$veri['ad_soyad']}\nE-posta: {$eposta}\nTelefon: {$telefon}\nMezuniyet Yılı: {$veri['mezuniyet_yili']}\nMeslek: " . ($veri['meslek'] ?: 'Belirtilmedi') . "\nAçık Adres: " . (($veri['acik_adres'] ?? '') !== '' ? $veri['acik_adres'] : 'Belirtilmedi') . "\nAçıklama: " . (($veri['aciklama'] ?? '') !== '' ? $veri['aciklama'] : 'Belirtilmedi'));
             }
 
             return redirect()

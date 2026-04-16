@@ -26,6 +26,8 @@ class MezunProfilExporter extends Exporter
             Columns\TextColumn::make('gorev_ilce')->label('Görev İlçesi'),
             Columns\TextColumn::make('ikamet_il')->label('İkamet İli'),
             Columns\TextColumn::make('ikamet_ilce')->label('İkamet İlçesi'),
+            Columns\TextColumn::make('acik_adres')->label('Açık Adres'),
+            Columns\TextColumn::make('aciklama')->label('Açıklama'),
             Columns\TextColumn::make('linkedin')->label('LinkedIn'),
             Columns\TextColumn::make('instagram')->label('Instagram'),
             Columns\TextColumn::make('twitter')->label('Twitter'),
