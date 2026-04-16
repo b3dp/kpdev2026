@@ -29,7 +29,7 @@ class EditHaber extends EditRecord
                 ->color('primary')
                 ->visible(function (): bool {
                     return auth()->check()
-                        && auth()->user()->hasAnyRole(['Admin', 'Editör', 'Yazar']);
+                        && auth()->user()->hasAnyRole(['Admin', 'Editör', 'Yazar', 'Halkla İlişkiler']);
                 })
                 ->modalHeading('AI İşlemleri')
                 ->modalSubmitAction(false)
@@ -45,7 +45,7 @@ class EditHaber extends EditRecord
                         : HaberDurumu::tryFrom((string) $this->record->durum);
 
                     return auth()->check()
-                        && auth()->user()->hasRole('Yazar')
+                        && auth()->user()->hasAnyRole(['Yazar', 'Halkla İlişkiler'])
                         && in_array($durum, [HaberDurumu::Taslak, HaberDurumu::Incelemede], true);
                 })
                 ->requiresConfirmation()
@@ -116,7 +116,7 @@ class EditHaber extends EditRecord
                 })
                 ->icon('heroicon-o-sparkles')
                 ->color('primary')
-                ->visible(fn (): bool => auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör', 'Yazar']))
+                ->visible(fn (): bool => auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör', 'Yazar', 'Halkla İlişkiler']))
                 ->modalHeading('AI İşlemleri')
                 ->modalSubmitAction(false)
                 ->modalCancelActionLabel('Kapat')
@@ -131,7 +131,7 @@ class EditHaber extends EditRecord
                         : HaberDurumu::tryFrom((string) $this->record->durum);
 
                     return auth()->check()
-                        && auth()->user()->hasRole('Yazar')
+                        && auth()->user()->hasAnyRole(['Yazar', 'Halkla İlişkiler'])
                         && in_array($durum, [
                             HaberDurumu::Taslak,
                             HaberDurumu::Incelemede,

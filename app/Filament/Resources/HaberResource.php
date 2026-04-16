@@ -316,7 +316,7 @@ class HaberResource extends Resource
                         ->default(HaberDurumu::Taslak->value)
                         ->required()
                         ->disabled(function (?Haber $record): bool {
-                            if (! auth()->check() || ! auth()->user()->hasRole('Yazar')) {
+                            if (! auth()->check() || ! auth()->user()->hasAnyRole(['Yazar', 'Halkla İlişkiler'])) {
                                 return false;
                             }
 
@@ -421,6 +421,10 @@ class HaberResource extends Resource
             ]);
 
         if (auth()->check() && auth()->user()->hasRole('Yazar')) {
+            return $query->where('yonetici_id', auth()->id());
+        }
+
+        if (auth()->check() && auth()->user()->hasRole('Halkla İlişkiler')) {
             return $query->where('yonetici_id', auth()->id());
         }
 

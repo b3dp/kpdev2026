@@ -194,7 +194,7 @@ class HizliSmsSayfasi extends Page implements \Filament\Forms\Contracts\HasForms
     {
         $query = SmsKisi::query()->orderBy('ad_soyad');
 
-        if (! auth()->user()->hasRole('Admin')) {
+        if (! auth()->user()->hasAnyRole(['Admin', 'Halkla İlişkiler'])) {
             $query->whereHas('listeler', function (Builder $builder): void {
                 $builder->where('sahip_yonetici_id', auth()->id());
             });

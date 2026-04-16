@@ -11,7 +11,7 @@ class HaberIstatistikWidget extends StatsOverviewWidget
 {
     public static function canView(): bool
     {
-        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör', 'Yazar']);
+        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör', 'Yazar', 'Halkla İlişkiler']);
     }
 
     protected function getStats(): array

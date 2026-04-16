@@ -201,7 +201,7 @@ class TopluSmsSayfasi extends Page implements \Filament\Forms\Contracts\HasForms
     {
         $query = SmsListe::query()->orderBy('ad');
 
-        if (! auth()->user()->hasRole('Admin')) {
+        if (! auth()->user()->hasAnyRole(['Admin', 'Halkla İlişkiler'])) {
             $query->where(function (Builder $builder): void {
                 $builder
                     ->where('sahip_yonetici_id', auth()->id())

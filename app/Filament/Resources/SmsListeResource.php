@@ -66,7 +66,7 @@ class SmsListeResource extends Resource
                 ->options(fn (): array => Yonetici::query()->orderBy('ad_soyad')->pluck('ad_soyad', 'id')->toArray())
                 ->searchable()
                 ->nullable()
-                ->visible(fn (): bool => auth()->check() && auth()->user()->hasRole('Admin')),
+                ->visible(fn (): bool => auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Halkla İlişkiler'])),
         ]);
     }
 
@@ -98,7 +98,7 @@ class SmsListeResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()
-                    ->visible(fn (): bool => auth()->check() && auth()->user()->hasRole('Admin')),
+                    ->visible(fn (): bool => auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Halkla İlişkiler'])),
             ])
             ->bulkActions([]);
     }
@@ -107,7 +107,7 @@ class SmsListeResource extends Resource
     {
         $query = parent::getEloquentQuery();
 
-        if (! auth()->check() || auth()->user()->hasRole('Admin')) {
+        if (! auth()->check() || auth()->user()->hasAnyRole(['Admin', 'Halkla İlişkiler'])) {
             return $query;
         }
 

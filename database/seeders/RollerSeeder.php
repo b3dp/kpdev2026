@@ -70,6 +70,13 @@ class RollerSeeder extends Seeder
             'kurumsal_sayfalar.listele', 'kurumsal_sayfalar.goruntule',
         ]);
 
+        // Halkla İlişkiler
+        $halklaIliskilerRol = Role::updateOrCreate(['name' => 'Halkla İlişkiler', 'guard_name' => $guard], []);
+        $halklaIliskilerRol->syncPermissions([
+            'haberler.listele', 'haberler.goruntule', 'haberler.duzenle', 'haberler.kaydet',
+            'pazarlama_sms.listele', 'pazarlama_sms.goruntule', 'pazarlama_sms.kaydet', 'pazarlama_sms.sil', 'pazarlama_sms.gonder',
+        ]);
+
         // Muhasebe
         $muhasebeRol = Role::updateOrCreate(['name' => 'Muhasebe', 'guard_name' => $guard], []);
         $muhasebeRol->syncPermissions([

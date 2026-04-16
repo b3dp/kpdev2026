@@ -52,7 +52,7 @@ class MezunProfilResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör']);
+        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editör', 'Halkla İlişkiler']);
     }
 
     public static function canView($record): bool
@@ -72,12 +72,12 @@ class MezunProfilResource extends Resource
 
     public static function canDelete($record): bool
     {
-        return auth()->check() && auth()->user()->hasRole('Admin');
+        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Halkla İlişkiler']);
     }
 
     public static function canDeleteAny(): bool
     {
-        return auth()->check() && auth()->user()->hasRole('Admin');
+        return auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Halkla İlişkiler']);
     }
 
     public static function form(Form $form): Form
@@ -295,7 +295,7 @@ class MezunProfilResource extends Resource
                     ->label('Onayla')
                     ->icon('heroicon-o-check')
                     ->color('success')
-                    ->visible(fn ($record) => $record->durum === 'beklemede' && auth()->user()->hasAnyRole(['Admin', 'Editör']))
+                    ->visible(fn ($record) => $record->durum === 'beklemede' && auth()->user()->hasAnyRole(['Admin', 'Editör', 'Halkla İlişkiler']))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -332,7 +332,7 @@ class MezunProfilResource extends Resource
                     ->label('Reddet')
                     ->icon('heroicon-o-x-mark')
                     ->color('danger')
-                    ->visible(fn ($record) => in_array($record->durum, ['beklemede', 'aktif']) && auth()->user()->hasAnyRole(['Admin', 'Editör']))
+                    ->visible(fn ($record) => in_array($record->durum, ['beklemede', 'aktif']) && auth()->user()->hasAnyRole(['Admin', 'Editör', 'Halkla İlişkiler']))
                     ->form([
                         Textarea::make('red_notu')
                             ->label('Red Notu')

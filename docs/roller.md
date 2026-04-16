@@ -87,6 +87,13 @@ Tüm modüllerde tüm izinler. Kısıtlanamaz.
 | Haberler | ✅ (kendi) | ✅ (kendi) | ✅ (kendi) | ✅ | ❌ | ❌ |
 | Etkinlikler | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
 
+### Halkla İlişkiler
+| Modül | listele | goruntule | duzenle | kaydet | sil | yayinla |
+|---|---|---|---|---|---|---|
+| Mezunlar | ✅ | ✅ | ✅ | — | ✅ | — |
+| Haberler | ✅ (kendi) | ✅ (kendi) | ✅ (kendi) | ✅ | ❌ | ❌ |
+| Pazarlama SMS | ✅ | ✅ | ✅ | ✅ | ✅ | — |
+
 ### Muhasebe
 | Modül | listele | goruntule | duzenle | kaydet | sil |
 |---|---|---|---|---|---|

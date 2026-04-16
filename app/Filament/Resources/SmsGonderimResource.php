@@ -233,7 +233,7 @@ class SmsGonderimResource extends Resource
     {
         $query = parent::getEloquentQuery()->with(['yonetici', 'alicilar']);
 
-        if (! auth()->check() || auth()->user()->hasRole('Admin')) {
+        if (! auth()->check() || auth()->user()->hasAnyRole(['Admin', 'Halkla İlişkiler'])) {
             return $query;
         }
 

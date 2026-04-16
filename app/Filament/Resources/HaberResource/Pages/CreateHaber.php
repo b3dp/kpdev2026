@@ -16,7 +16,7 @@ class CreateHaber extends CreateRecord
     {
         $data['yonetici_id'] = auth()->id();
 
-        if (auth()->user()?->hasRole('Yazar')) {
+        if (auth()->user()?->hasAnyRole(['Yazar', 'Halkla İlişkiler'])) {
             $data['durum'] = HaberDurumu::Taslak->value;
         }
 

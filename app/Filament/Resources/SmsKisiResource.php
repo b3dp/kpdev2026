@@ -112,7 +112,7 @@ class SmsKisiResource extends Resource
                             ->success()
                             ->send();
                     })
-                    ->visible(fn (): bool => auth()->check() && auth()->user()->hasRole('Admin')),
+                        ->visible(fn (): bool => auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Halkla İlişkiler'])),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -153,7 +153,7 @@ class SmsKisiResource extends Resource
     {
         $query = parent::getEloquentQuery()->with('listeler');
 
-        if (! auth()->check() || auth()->user()->hasRole('Admin')) {
+        if (! auth()->check() || auth()->user()->hasAnyRole(['Admin', 'Halkla İlişkiler'])) {
             return $query;
         }
 
@@ -183,7 +183,7 @@ class SmsKisiResource extends Resource
     {
         $query = SmsListe::query()->orderBy('ad');
 
-        if (auth()->check() && ! auth()->user()->hasRole('Admin')) {
+        if (auth()->check() && ! auth()->user()->hasAnyRole(['Admin', 'Halkla İlişkiler'])) {
             $query->where('sahip_yonetici_id', auth()->id());
         }
 
