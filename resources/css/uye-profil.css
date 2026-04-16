@@ -118,6 +118,11 @@
     color: #15803d;
 }
 
+.uye-profil__pill--gray {
+    background: #e5e7eb;
+    color: #475569;
+}
+
 .uye-profil__pill--red {
     background: #fee2e2;
     color: #b91c1c;

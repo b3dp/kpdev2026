@@ -59,6 +59,9 @@ class UyeProfilTest extends TestCase
             'ikamet_ilce' => 'Uskudar',
             'acik_adres' => 'Cumhuriyet Mahallesi Test Sokak No: 10',
             'aciklama' => 'Dernek mezun listesi icin not',
+            'nsosyal' => 'nsosyal.com/mehmetdemir',
+            'facebook' => 'facebook.com/mehmetdemir',
+            'youtube' => 'youtube.com/@mehmetdemir',
             'eposta_abonelik' => 1,
             'sms_abonelik' => 1,
         ]);
@@ -83,6 +86,9 @@ class UyeProfilTest extends TestCase
         $this->assertSame('Uskudar', $mezunProfil->ikamet_ilce);
         $this->assertSame('Cumhuriyet Mahallesi Test Sokak No: 10', $mezunProfil->acik_adres);
         $this->assertSame('Dernek mezun listesi icin not', $mezunProfil->aciklama);
+        $this->assertSame('nsosyal.com/mehmetdemir', $mezunProfil->nsosyal);
+        $this->assertSame('facebook.com/mehmetdemir', $mezunProfil->facebook);
+        $this->assertSame('youtube.com/@mehmetdemir', $mezunProfil->youtube);
     }
 
     public function test_mezun_basvurusu_acik_adres_ve_aciklama_ile_kaydedilir(): void

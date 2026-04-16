@@ -67,16 +67,27 @@ class ViewUye extends ViewRecord
                         ->label('Açıklama')
                         ->getStateUsing(fn () => $mezunProfili->aciklama ?: '—')
                         ->columnSpanFull(),
+                    TextEntry::make('nsosyal')
+                        ->label('NSosyal')
+                        ->getStateUsing(fn () => $mezunProfili->nsosyal ?: '—'),
+                    TextEntry::make('facebook')
+                        ->label('Facebook')
+                        ->getStateUsing(fn () => $mezunProfili->facebook ?: '—'),
+                    TextEntry::make('youtube')
+                        ->label('YouTube')
+                        ->getStateUsing(fn () => $mezunProfili->youtube ?: '—'),
                     TextEntry::make('durum')
                         ->label('Mezun Profili Durumu')
                         ->badge()
                         ->colors([
                             'success' => 'aktif',
                             'warning' => 'beklemede',
+                            'gray' => 'pasif',
                             'danger' => 'reddedildi',
                         ])
                         ->formatStateUsing(fn () => [
                             'beklemede' => 'Beklemede',
+                            'pasif' => 'Pasif',
                             'aktif' => 'Aktif',
                             'reddedildi' => 'Reddedildi',
                         ][$mezunProfili->durum] ?? $mezunProfili->durum)

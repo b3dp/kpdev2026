@@ -34,7 +34,7 @@
 | uye_id | foreignId | ✅ | — | → `uyeler` |
 | kurum_id | foreignId | ❌ | null | Mezun olunan kurum → `kurumlar` |
 | kurum_manuel | string(255) | ❌ | null | Kurum listede yoksa serbest metin |
-| mezuniyet_yili | smallInteger | ✅ | — | Örn: 2019 |
+| mezuniyet_yili | smallInteger | ❌ | null | Örn: 2019. Frontend başvuruda zorunlu, pasif importta boş kalabilir |
 | sinif_id | foreignId | ❌ | null | E-Kayıt sınıf kaydıyla eşleşme → `ekayit_siniflar` (opsiyonel) |
 | hafiz | boolean | ✅ | false | Hafızlık durumu |
 | meslek | string(255) | ❌ | null | Mevcut görevi/mesleği |
@@ -44,10 +44,13 @@
 | ikamet_ilce | string(100) | ❌ | null | İkamet ilçesi |
 | acik_adres | text | ❌ | null | Serbest açık adres veya görev yeri detayı |
 | aciklama | text | ❌ | null | Üyeden veya içe aktarımdan gelen serbest not |
+| nsosyal | string(255) | ❌ | null | NSosyal profil bağlantısı veya kullanıcı adı |
+| facebook | string(255) | ❌ | null | Facebook profil bağlantısı |
+| youtube | string(255) | ❌ | null | YouTube kanal bağlantısı |
 | linkedin | string(255) | ❌ | null | LinkedIn profil URL |
 | instagram | string(255) | ❌ | null | Instagram kullanıcı adı veya URL |
 | twitter | string(255) | ❌ | null | Twitter/X kullanıcı adı veya URL |
-| durum | enum | ✅ | beklemede | `beklemede` / `aktif` / `reddedildi` |
+| durum | enum | ✅ | beklemede | `beklemede` / `pasif` / `aktif` / `reddedildi` |
 | onaylayan_id | foreignId | ❌ | null | Onaylayan yönetici → `yoneticiler` |
 | onay_tarihi | timestamp | ❌ | null | — |
 | red_notu | text | ❌ | null | Reddedilme sebebi — üyeye gösterilir |
@@ -156,7 +159,7 @@ Soft delete. Silindiğinde üyedeki mezun rozeti de kaldırılır.
 
 **Excel İndirme:**
 Filtrelenmiş mezun listesi Excel olarak indirilebilir.
-Kolonlar: Ad Soyad, Telefon, E-posta, Kurum, Mezuniyet Yılı, Hafız, Meslek, Görev İl/İlçe, İkamet İl/İlçe, Açık Adres, Açıklama, LinkedIn, Instagram, Twitter, Kayıt Tarihi, Durum
+Kolonlar: Ad Soyad, Telefon, E-posta, Kurum, Mezuniyet Yılı, Hafız, Meslek, Görev İl/İlçe, İkamet İl/İlçe, Açık Adres, Açıklama, NSosyal, Facebook, YouTube, LinkedIn, Instagram, Twitter, Kayıt Tarihi, Durum
 
 ---
 
@@ -219,6 +222,9 @@ Kolonlar: Ad Soyad, Telefon, E-posta, Kurum, Mezuniyet Yılı, Hafız, Meslek, G
 - Açıklama / not (opsiyonel)
 
 **Sosyal Medya** (opsiyonel):
+- NSosyal
+- Facebook
+- YouTube
 - LinkedIn
 - Instagram
 - Twitter/X

@@ -100,6 +100,18 @@ class ViewMezunProfil extends ViewRecord
                                 TextEntry::make('uye.eposta')
                                     ->label('E-posta'),
 
+                                TextEntry::make('nsosyal')
+                                    ->label('NSosyal')
+                                    ->default('—'),
+
+                                TextEntry::make('facebook')
+                                    ->label('Facebook')
+                                    ->default('—'),
+
+                                TextEntry::make('youtube')
+                                    ->label('YouTube')
+                                    ->default('—'),
+
                                 TextEntry::make('linkedin')
                                     ->label('LinkedIn')
                                     ->url(fn ($state) => filled($state) ? $state : null)
@@ -124,11 +136,13 @@ class ViewMezunProfil extends ViewRecord
                                     ->badge()
                                     ->colors([
                                         'warning' => 'beklemede',
+                                        'gray' => 'pasif',
                                         'success' => 'aktif',
                                         'danger' => 'reddedildi',
                                     ])
                                     ->formatStateUsing(fn ($state) => [
                                         'beklemede' => 'Beklemede',
+                                        'pasif' => 'Pasif',
                                         'aktif' => 'Aktif',
                                         'reddedildi' => 'Reddedildi',
                                     ][$state] ?? $state),

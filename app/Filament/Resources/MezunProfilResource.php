@@ -100,7 +100,7 @@ class MezunProfilResource extends Resource
                     TextInput::make('mezuniyet_yili')
                         ->label('Mezuniyet Yılı')
                         ->numeric()
-                        ->required()
+                        ->nullable()
                         ->minValue(1900)
                         ->maxValue(2099),
 
@@ -171,6 +171,21 @@ class MezunProfilResource extends Resource
 
             Section::make('Sosyal Medya')
                 ->schema([
+                    TextInput::make('nsosyal')
+                        ->label('NSosyal')
+                        ->maxLength(255)
+                        ->nullable(),
+
+                    TextInput::make('facebook')
+                        ->label('Facebook')
+                        ->maxLength(255)
+                        ->nullable(),
+
+                    TextInput::make('youtube')
+                        ->label('YouTube')
+                        ->maxLength(255)
+                        ->nullable(),
+
                     TextInput::make('linkedin')
                         ->label('LinkedIn')
                         ->url()
@@ -196,11 +211,13 @@ class MezunProfilResource extends Resource
                         ->inline()
                         ->options([
                             'beklemede' => 'Beklemede',
+                            'pasif' => 'Pasif',
                             'aktif' => 'Aktif',
                             'reddedildi' => 'Reddedildi',
                         ])
                         ->colors([
                             'beklemede' => 'warning',
+                            'pasif' => 'gray',
                             'aktif' => 'success',
                             'reddedildi' => 'danger',
                         ])
@@ -258,11 +275,13 @@ class MezunProfilResource extends Resource
                     ->badge()
                     ->colors([
                         'warning' => 'beklemede',
+                        'gray' => 'pasif',
                         'success' => 'aktif',
                         'danger' => 'reddedildi',
                     ])
                     ->formatStateUsing(fn ($state) => [
                         'beklemede' => 'Beklemede',
+                        'pasif' => 'Pasif',
                         'aktif' => 'Aktif',
                         'reddedildi' => 'Reddedildi',
                     ][$state] ?? $state)
@@ -278,6 +297,7 @@ class MezunProfilResource extends Resource
                     ->label('Durum')
                     ->options([
                         'beklemede' => 'Beklemede',
+                        'pasif' => 'Pasif',
                         'aktif' => 'Aktif',
                         'reddedildi' => 'Reddedildi',
                     ])
@@ -346,7 +366,7 @@ class MezunProfilResource extends Resource
                     ->label('Reddet')
                     ->icon('heroicon-o-x-mark')
                     ->color('danger')
-                    ->visible(fn ($record) => in_array($record->durum, ['beklemede', 'aktif']) && auth()->user()->hasAnyRole(['Admin', 'Editör', 'Halkla İlişkiler']))
+                    ->visible(fn ($record) => in_array($record->durum, ['beklemede', 'aktif', 'pasif']) && auth()->user()->hasAnyRole(['Admin', 'Editör', 'Halkla İlişkiler']))
                     ->form([
                         Textarea::make('red_notu')
                             ->label('Red Notu')

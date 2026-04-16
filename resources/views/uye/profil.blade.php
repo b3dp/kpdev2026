@@ -41,6 +41,7 @@
     if ($mezunProfil) {
         $durumBilgisi = match ($mezunProfil?->durum) {
             'aktif' => ['etiket' => 'Aktif Mezun', 'sinif' => 'uye-profil__pill uye-profil__pill--green'],
+            'pasif' => ['etiket' => 'Pasif Mezun Kaydı', 'sinif' => 'uye-profil__pill uye-profil__pill--gray'],
             'reddedildi' => ['etiket' => 'Tekrar Düzenleme Gerekli', 'sinif' => 'uye-profil__pill uye-profil__pill--red'],
             default => ['etiket' => 'Onay Bekliyor', 'sinif' => 'uye-profil__pill uye-profil__pill--gold'],
         };
@@ -258,6 +259,21 @@
                                         <label for="aciklama" class="mb-1.5 block text-sm font-semibold text-[#162E4B]">Açıklama</label>
                                         <textarea id="aciklama" name="aciklama" class="uye-profil__input min-h-[96px] resize-y" placeholder="Eklemek istediğiniz not veya açıklama">{{ $mezunProfil?->aciklama }}</textarea>
                                         <p class="mt-1 hidden text-sm text-red-600" data-error-for="aciklama"></p>
+                                    </div>
+                                    <div>
+                                        <label for="nsosyal" class="mb-1.5 block text-sm font-semibold text-[#162E4B]">NSosyal</label>
+                                        <input type="text" id="nsosyal" name="nsosyal" value="{{ $mezunProfil?->nsosyal }}" class="uye-profil__input" placeholder="nsosyal.com/... veya kullanıcı adı">
+                                        <p class="mt-1 hidden text-sm text-red-600" data-error-for="nsosyal"></p>
+                                    </div>
+                                    <div>
+                                        <label for="facebook" class="mb-1.5 block text-sm font-semibold text-[#162E4B]">Facebook</label>
+                                        <input type="text" id="facebook" name="facebook" value="{{ $mezunProfil?->facebook }}" class="uye-profil__input" placeholder="facebook.com/...">
+                                        <p class="mt-1 hidden text-sm text-red-600" data-error-for="facebook"></p>
+                                    </div>
+                                    <div>
+                                        <label for="youtube" class="mb-1.5 block text-sm font-semibold text-[#162E4B]">YouTube</label>
+                                        <input type="text" id="youtube" name="youtube" value="{{ $mezunProfil?->youtube }}" class="uye-profil__input" placeholder="youtube.com/...">
+                                        <p class="mt-1 hidden text-sm text-red-600" data-error-for="youtube"></p>
                                     </div>
                                     <div>
                                         <label for="linkedin" class="mb-1.5 block text-sm font-semibold text-[#162E4B]">LinkedIn</label>
