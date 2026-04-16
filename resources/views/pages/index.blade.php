@@ -36,48 +36,48 @@
     $aktifKategori = request('kategori');
 @endphp
 
-<section class="bg-bg-soft pb-[72px] pt-[124px] lg:pt-[138px]">
+<section class="bg-bg-soft pb-[72px] pt-[62px] lg:pt-[69px]">
   <div class="mx-auto max-w-7xl px-6">
     <div class="grid items-center gap-12 lg:grid-cols-2">
       <div>
         <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-accent/25 bg-white px-4 py-1.5">
           <span class="inline-block h-[7px] w-[7px] shrink-0 rounded-full bg-accent"></span>
-          <span class="font-jakarta text-xs font-semibold tracking-[0.04em] text-accent">Seferihisar, İzmir - 1966'dan beri</span>
+          <span class="font-jakarta text-xs font-semibold tracking-[0.04em] text-accent">{{ $anaSayfaAyarlari->ust_bant_metni }}</span>
         </div>
 
         <h1 class="mb-5 font-baskerville text-[clamp(34px,4.5vw,56px)] font-bold leading-[1.18] text-primary">
-          Geleceği<br>
-          <span class="italic text-accent">Birlikte</span><br>
-          İnşa Ediyoruz
+          {{ $anaSayfaAyarlari->baslik_ust }}<br>
+          <span class="italic text-accent">{{ $anaSayfaAyarlari->baslik_vurgulu }}</span><br>
+          {{ $anaSayfaAyarlari->baslik_alt }}
         </h1>
 
         <p class="mb-8 max-w-[440px] font-jakarta text-base leading-[1.75] text-teal-muted">
-          58 yıldır Seferihisar gençlerinin eğitim hayatında yanlarındayız. Her bağışınız bir öğrencinin geleceğini şekillendiriyor.
+          {{ $anaSayfaAyarlari->alt_metin }}
         </p>
 
         <div class="flex flex-wrap gap-3">
-          <a href="{{ route('bagis.index') }}" class="flex items-center gap-2 rounded-[10px] bg-orange-cta px-[26px] py-[13px] font-jakarta text-sm font-bold text-white shadow-[0_4px_16px_rgba(233,89,37,.25)] transition-colors hover:bg-[#c94620]">
+          <a href="{{ $anaSayfaAyarlari->birinci_buton_url }}" class="flex items-center gap-2 rounded-[10px] bg-orange-cta px-[26px] py-[13px] font-jakarta text-sm font-bold text-white shadow-[0_4px_16px_rgba(233,89,37,.25)] transition-colors hover:bg-[#c94620]">
             <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-            Bağış Yap
+            {{ $anaSayfaAyarlari->birinci_buton_metin }}
           </a>
-          <a href="{{ route('ekayit.index') }}" class="flex items-center gap-2 rounded-[10px] border border-primary/20 bg-white px-[26px] py-[13px] font-jakarta text-sm font-semibold text-primary transition-colors hover:bg-bg-soft">
+          <a href="{{ $anaSayfaAyarlari->ikinci_buton_url }}" class="flex items-center gap-2 rounded-[10px] border border-primary/20 bg-white px-[26px] py-[13px] font-jakarta text-sm font-semibold text-primary transition-colors hover:bg-bg-soft">
             <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-            Öğrenci Kayıt
+            {{ $anaSayfaAyarlari->ikinci_buton_metin }}
           </a>
         </div>
 
         <div class="mt-10 flex gap-8 border-t border-primary/10 pt-8">
           <div>
-            <p class="mb-1 font-baskerville text-[28px] font-bold text-primary">1.250</p>
-            <p class="font-jakarta text-[12.5px] font-medium text-teal-muted">Aktif Öğrenci</p>
+            <p class="mb-1 font-baskerville text-[28px] font-bold text-primary">{{ $anaSayfaAyarlari->istatistik_1_sayi }}</p>
+            <p class="font-jakarta text-[12.5px] font-medium text-teal-muted">{{ $anaSayfaAyarlari->istatistik_1_etiket }}</p>
           </div>
           <div>
-            <p class="mb-1 font-baskerville text-[28px] font-bold text-primary">4.500+</p>
-            <p class="font-jakarta text-[12.5px] font-medium text-teal-muted">Mezun</p>
+            <p class="mb-1 font-baskerville text-[28px] font-bold text-primary">{{ $anaSayfaAyarlari->istatistik_2_sayi }}</p>
+            <p class="font-jakarta text-[12.5px] font-medium text-teal-muted">{{ $anaSayfaAyarlari->istatistik_2_etiket }}</p>
           </div>
           <div>
-            <p class="mb-1 font-baskerville text-[28px] font-bold text-primary">58</p>
-            <p class="font-jakarta text-[12.5px] font-medium text-teal-muted">Yıllık Tecrübe</p>
+            <p class="mb-1 font-baskerville text-[28px] font-bold text-primary">{{ $anaSayfaAyarlari->istatistik_3_sayi }}</p>
+            <p class="font-jakarta text-[12.5px] font-medium text-teal-muted">{{ $anaSayfaAyarlari->istatistik_3_etiket }}</p>
           </div>
         </div>
       </div>

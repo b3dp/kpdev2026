@@ -6,11 +6,14 @@ use App\Models\BagisTuru;
 use App\Models\Etkinlik;
 use App\Models\Haber;
 use App\Models\HaberKategorisi;
+use App\Settings\AnaSayfaAyarlari;
 
 class HomeController extends Controller
 {
     public function index()
     {
+        $anaSayfaAyarlari = app(AnaSayfaAyarlari::class);
+
         $mansetHaberler = Haber::with('kategori')
             ->where('durum', 'yayinda')
             ->where('manset', 1)
@@ -37,6 +40,7 @@ class HomeController extends Controller
         $bagisturleri = BagisTuru::orderBy('sira')->get();
 
         return view('pages.index', compact(
+            'anaSayfaAyarlari',
             'mansetHaberler',
             'sonHaberler',
             'kategoriler',
