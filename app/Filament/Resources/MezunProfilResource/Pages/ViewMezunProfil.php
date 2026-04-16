@@ -153,8 +153,8 @@ class ViewMezunProfil extends ViewRecord
 
                                 TextEntry::make('onay_tarihi')
                                     ->label('Onay Tarihi')
-                                    ->dateTime('d.m.Y H:i')
-                                    ->default('—'),
+                                    ->formatStateUsing(fn ($state) => $state
+                                        ? \Carbon\Carbon::parse($state)->format('d.m.Y H:i') : '—'),
 
                                 TextEntry::make('red_notu')
                                     ->label('Red Notu')
