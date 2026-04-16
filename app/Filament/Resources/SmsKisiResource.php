@@ -51,12 +51,14 @@ class SmsKisiResource extends Resource
 
     public static function canEdit($record): bool
     {
-        return static::izinVarMi('pazarlama_sms.kaydet');
+        return static::izinVarMi('pazarlama_sms.kaydet')
+            && static::kaydaErisimVarMi($record);
     }
 
     public static function canDelete($record): bool
     {
-        return static::izinVarMi('pazarlama_sms.sil');
+        return static::izinVarMi('pazarlama_sms.sil')
+            && static::kaydaErisimVarMi($record);
     }
 
     public static function table(Table $table): Table
@@ -153,15 +155,11 @@ class SmsKisiResource extends Resource
     {
         $query = parent::getEloquentQuery()->with('listeler');
 
-        if (! auth()->check() || auth()->user()->hasAnyRole(['Admin', 'Halkla İlişkiler'])) {
+        if (static::tumKayitlariGorebilirMi()) {
             return $query;
         }
 
-        return $query
-            ->whereHas('listeler', function (Builder $builder): void {
-                $builder->where('sahip_yonetici_id', auth()->id());
-            })
-            ->distinct('sms_kisiler.id');
+        return $query->where('created_by', auth()->id());
     }
 
     public static function telefonNormalize(?string $telefon): string
@@ -183,11 +181,29 @@ class SmsKisiResource extends Resource
     {
         $query = SmsListe::query()->orderBy('ad');
 
-        if (auth()->check() && ! auth()->user()->hasAnyRole(['Admin', 'Halkla İlişkiler'])) {
+        if (! static::tumKayitlariGorebilirMi()) {
             $query->where('sahip_yonetici_id', auth()->id());
         }
 
         return $query->pluck('ad', 'id')->toArray();
+    }
+
+    protected static function tumKayitlariGorebilirMi(): bool
+    {
+        return auth()->check() && auth()->user()->hasRole('Admin');
+    }
+
+    protected static function kaydaErisimVarMi($record): bool
+    {
+        if (! auth()->check()) {
+            return false;
+        }
+
+        if (static::tumKayitlariGorebilirMi()) {
+            return true;
+        }
+
+        return (int) $record->created_by === (int) auth()->id();
     }
 
     public static function getPages(): array

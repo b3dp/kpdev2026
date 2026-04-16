@@ -23,7 +23,7 @@
 | Rol | Rehber | Hızlı SMS | Toplu SMS | Geçmiş | Aktarım |
 |---|---|---|---|---|---|
 | Admin | ✅ Tümü | ✅ | ✅ | ✅ Tümü | ✅ |
-| Kurs Yöneticisi | ✅ Kendi + 2026NisanOncesi | ✅ | ✅ | ✅ Kendi | ❌ |
+| SMS Yetkili Personel | ✅ Sadece kendi | ✅ | ✅ | ✅ Kendi | Role göre |
 | Diğerleri | ❌ | ❌ | ❌ | ❌ | ❌ |
 
 ---
@@ -119,7 +119,7 @@ Token cache'lenir (60 dakika), süresi dolunca yenilenir.
 |---|---|---|---|
 | id | bigIncrements | ✅ | — |
 | ad | string(255) | ✅ | Liste adı |
-| sahip_yonetici_id | foreignId | ❌ | null = admin listesi |
+| sahip_yonetici_id | foreignId | ❌ | Liste sahibi yönetici |
 | created_at | timestamp | ✅ | — |
 | updated_at | timestamp | ✅ | — |
 
@@ -221,7 +221,7 @@ getActiveCreditTransfers(int $serviceId = 1): string — ham XML döner
 
 ### Faz 10A-3 — Numara Aktarımı
 - Excel import
-- 2026NisanOncesi listesi otomatik oluştur
+- Her kullanıcı için kendi `2026NisanOncesi` listesi otomatik oluştur
 - Mükerrer kontrolü
 
 ### Faz 10A-4 — Bildirim SMS'leri

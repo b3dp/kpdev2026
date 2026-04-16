@@ -45,12 +45,20 @@ class SmsListeResource extends Resource
 
     public static function canEdit($record): bool
     {
-        return static::izinVarMi('pazarlama_sms.kaydet');
+        return static::izinVarMi('pazarlama_sms.kaydet')
+            && static::kaydaErisimVarMi($record);
     }
 
     public static function canDelete($record): bool
     {
-        return static::izinVarMi('pazarlama_sms.sil');
+        return static::izinVarMi('pazarlama_sms.sil')
+            && static::kaydaErisimVarMi($record);
+    }
+
+    public static function canView($record): bool
+    {
+        return static::izinlerdenBiriVarMi(['pazarlama_sms.listele', 'pazarlama_sms.goruntule'])
+            && static::kaydaErisimVarMi($record);
     }
 
     public static function form(Form $form): Form
@@ -66,7 +74,7 @@ class SmsListeResource extends Resource
                 ->options(fn (): array => Yonetici::query()->orderBy('ad_soyad')->pluck('ad_soyad', 'id')->toArray())
                 ->searchable()
                 ->nullable()
-                ->visible(fn (): bool => auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Halkla İlişkiler'])),
+                ->visible(fn (): bool => static::tumKayitlariGorebilirMi()),
         ]);
     }
 
@@ -98,7 +106,7 @@ class SmsListeResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()
-                    ->visible(fn (): bool => auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Halkla İlişkiler'])),
+                    ->visible(fn (SmsListe $record): bool => static::canEdit($record)),
             ])
             ->bulkActions([]);
     }
@@ -107,16 +115,29 @@ class SmsListeResource extends Resource
     {
         $query = parent::getEloquentQuery();
 
-        if (! auth()->check() || auth()->user()->hasAnyRole(['Admin', 'Halkla İlişkiler'])) {
+        if (static::tumKayitlariGorebilirMi()) {
             return $query;
         }
 
-        return $query->where(function (Builder $builder): void {
-            $builder
-                ->where('sahip_yonetici_id', auth()->id())
-                ->orWhereNull('sahip_yonetici_id')
-                ->orWhere('ad', '2026NisanOncesi');
-        });
+        return $query->where('sahip_yonetici_id', auth()->id());
+    }
+
+    protected static function tumKayitlariGorebilirMi(): bool
+    {
+        return auth()->check() && auth()->user()->hasRole('Admin');
+    }
+
+    protected static function kaydaErisimVarMi($record): bool
+    {
+        if (! auth()->check()) {
+            return false;
+        }
+
+        if (static::tumKayitlariGorebilirMi()) {
+            return true;
+        }
+
+        return (int) $record->sahip_yonetici_id === (int) auth()->id();
     }
 
     public static function getPages(): array

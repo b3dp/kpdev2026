@@ -42,8 +42,10 @@ class HermesAktarimJob implements ShouldQueue
 
             // 2026NisanOncesi listesi oluştur veya bul
             $liste = SmsListe::firstOrCreate(
-                ['ad' => '2026NisanOncesi'],
-                ['sahip_yonetici_id' => null]
+                [
+                    'ad' => '2026NisanOncesi',
+                    'sahip_yonetici_id' => $this->yoneticiId,
+                ]
             );
 
             // Excel oku — Filament FileUpload disk-relative yolunu çöz
@@ -116,10 +118,13 @@ class HermesAktarimJob implements ShouldQueue
                     $mevcutKisi = SmsKisi::where('telefon', $telefon)->first();
 
                     if ($mevcutKisi) {
-                        // Kişi var ama listede değilse listeye ekle
-                        if (! $mevcutKisi->listeler()->where('sms_listeler.id', $liste->id)->exists()) {
-                            $mevcutKisi->listeler()->attach($liste->id);
+                        // Farklı kullanıcıya ait rehber kaydı paylaşılmaz.
+                        if ((int) $mevcutKisi->created_by === $this->yoneticiId) {
+                            if (! $mevcutKisi->listeler()->where('sms_listeler.id', $liste->id)->exists()) {
+                                $mevcutKisi->listeler()->attach($liste->id);
+                            }
                         }
+
                         $sayaclar['mukerrer_db']++;
                         continue;
                     }
