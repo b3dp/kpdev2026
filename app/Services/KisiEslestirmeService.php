@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\UyeDurumu;
 use App\Models\Bagis;
 use App\Models\EkayitKayit;
 use App\Models\Kisi;
@@ -218,6 +219,7 @@ class KisiEslestirmeService
             }
 
             $this->uyeEslestir($mezun->uye);
+            $this->uyeyiAktiflestir($mezun->uye);
             $this->rozetEkle($mezun->uye, 'mezun', 'mezun_profil', (int) $mezun->id);
         } catch (Throwable $e) {
             Log::error('KisiEslestirmeService@mezunEslestir hatasi', [
@@ -227,6 +229,25 @@ class KisiEslestirmeService
                 'satir' => $e->getLine(),
             ]);
         }
+    }
+
+    private function uyeyiAktiflestir(Uye $uye): void
+    {
+        $guncellenecekAlanlar = [];
+
+        if ($uye->durum !== UyeDurumu::Aktif) {
+            $guncellenecekAlanlar['durum'] = UyeDurumu::Aktif->value;
+        }
+
+        if (! $uye->aktif) {
+            $guncellenecekAlanlar['aktif'] = true;
+        }
+
+        if ($guncellenecekAlanlar === []) {
+            return;
+        }
+
+        $uye->update($guncellenecekAlanlar);
     }
 
     private function telefonTemizle(?string $telefon): ?string

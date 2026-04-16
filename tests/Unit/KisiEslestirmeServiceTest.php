@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Models\Kisi;
+use App\Models\MezunProfil;
 use App\Models\Uye;
 use App\Services\KisiEslestirmeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -72,6 +73,42 @@ class KisiEslestirmeServiceTest extends TestCase
             'tip' => 'bagisci',
             'kaynak_tip' => 'bagis',
             'kaynak_id' => 10,
+        ]);
+    }
+
+    public function test_mezun_eslestir_uyeyi_aktiflestirir_ve_mezun_rozeti_ekler(): void
+    {
+        $uye = Uye::query()->create([
+            'ad_soyad' => 'Mezun Adayi',
+            'telefon' => '5557778899',
+            'eposta' => 'mezun@example.com',
+            'durum' => 'beklemede',
+            'aktif' => false,
+            'sms_abonelik' => true,
+            'eposta_abonelik' => true,
+        ]);
+
+        $mezunProfil = MezunProfil::query()->create([
+            'uye_id' => $uye->id,
+            'kurum_manuel' => 'Test Kurumu',
+            'mezuniyet_yili' => 2012,
+            'durum' => 'aktif',
+        ]);
+
+        $servis = app(KisiEslestirmeService::class);
+        $servis->mezunEslestir($mezunProfil);
+
+        $uye->refresh();
+
+        $this->assertSame('aktif', $uye->durum->value);
+        $this->assertTrue($uye->aktif);
+        $this->assertNotNull($uye->kisi_id);
+
+        $this->assertDatabaseHas('uye_rozetler', [
+            'uye_id' => $uye->id,
+            'tip' => 'mezun',
+            'kaynak_tip' => 'mezun_profil',
+            'kaynak_id' => $mezunProfil->id,
         ]);
     }
 }
