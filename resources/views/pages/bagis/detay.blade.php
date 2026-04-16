@@ -37,6 +37,14 @@
         default => 'normal',
     };
 
+    $turLinkleri = [
+      'zekat' => route('bagis.show', 'zekat'),
+      'normal' => route('bagis.show', 'genel-bagis'),
+      'kucukbas' => route('bagis.show', 'kucukbas-kurban'),
+      'buyukbas' => route('bagis.show', 'buyukbas-kurban-hissesi'),
+      'fitre' => route('bagis.show', 'fitre'),
+    ];
+
     $sepetAdet = count($sepet ?? []);
     $sepetToplam = (float) collect($sepet ?? [])->sum(fn ($satir) => (float) ($satir['toplam'] ?? 0));
     $testOdemeAktif = $testOdemeAktif ?? false;
@@ -99,11 +107,11 @@
   <div class="grid gap-8 lg:grid-cols-3">
     <div style="grid-column:span 2;">
       <div id="tur-tablar" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px;">
-        <button type="button" class="tur-tab {{ $aktifTurKey === 'zekat' ? 'active' : '' }}" data-tur="zekat">Zekat</button>
-        <button type="button" class="tur-tab {{ $aktifTurKey === 'normal' ? 'active' : '' }}" data-tur="normal">Normal Bağış</button>
-        <button type="button" class="tur-tab {{ $aktifTurKey === 'kucukbas' ? 'active' : '' }}" data-tur="kucukbas">Küçükbaş Kurban</button>
-        <button type="button" class="tur-tab {{ $aktifTurKey === 'buyukbas' ? 'active' : '' }}" data-tur="buyukbas">Büyükbaş Kurban</button>
-        <button type="button" class="tur-tab {{ $aktifTurKey === 'fitre' ? 'active' : '' }}" data-tur="fitre">Fitre</button>
+        <a href="{{ $turLinkleri['zekat'] }}" class="tur-tab {{ $aktifTurKey === 'zekat' ? 'active' : '' }}">Zekat</a>
+        <a href="{{ $turLinkleri['normal'] }}" class="tur-tab {{ $aktifTurKey === 'normal' ? 'active' : '' }}">Normal Bağış</a>
+        <a href="{{ $turLinkleri['kucukbas'] }}" class="tur-tab {{ $aktifTurKey === 'kucukbas' ? 'active' : '' }}">Küçükbaş Kurban</a>
+        <a href="{{ $turLinkleri['buyukbas'] }}" class="tur-tab {{ $aktifTurKey === 'buyukbas' ? 'active' : '' }}">Büyükbaş Kurban</a>
+        <a href="{{ $turLinkleri['fitre'] }}" class="tur-tab {{ $aktifTurKey === 'fitre' ? 'active' : '' }}">Fitre</a>
       </div>
 
       <div id="bagis-form"
@@ -137,8 +145,8 @@
               @if($adetModuAktif)
                 @foreach($onerilenAdetler as $i => $adet)
                   <button type="button" class="tutar-btn {{ $i === 0 ? 'selected' : '' }}" data-adet="{{ $adet }}">
-                    <span style="display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:700;color:#162E4B;">{{ $adet }} adet</span>
-                    <span style="display:block;margin-top:4px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:500;color:#62868D;">₺{{ number_format($varsayilanTutar * $adet, 0, ',', '.') }}</span>
+                    <span style="display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:700;color:inherit;">{{ $adet }} adet</span>
+                    <span style="display:block;margin-top:4px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:500;color:inherit;opacity:.72;">₺{{ number_format($varsayilanTutar * $adet, 0, ',', '.') }}</span>
                   </button>
                 @endforeach
               @else

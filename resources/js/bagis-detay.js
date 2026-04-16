@@ -132,10 +132,6 @@ function setTur(tur) {
         elBreadcrumb.textContent = t.baslik;
     }
 
-    document.querySelectorAll('.tur-tab').forEach((tab) => {
-        tab.classList.toggle('active', tab.dataset.tur === tur);
-    });
-
     const panelZekat = document.getElementById('panel-zekat-normal');
     const panelKucuk = document.getElementById('panel-kucukbas');
     const panelBuyuk = document.getElementById('panel-buyukbas');
@@ -757,6 +753,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.querySelectorAll('.tutar-btn[data-tutar], .tutar-btn[data-adet]').forEach((buton) => buton.classList.remove('selected'));
                 if (adetModuAktifMi()) {
                     aktifAdet = gecerliAdetAl(this.value);
+                    this.value = String(aktifAdet);
                     aktifTutar = sabitBirimFiyatAl();
                 } else {
                     aktifTutar = parseInt(this.value, 10) || 0;
@@ -765,10 +762,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-
-    document.querySelectorAll('.tur-tab').forEach((tab) => {
-        tab.addEventListener('click', () => setTur(tab.dataset.tur));
-    });
 
     document.addEventListener('input', (event) => {
         const isim = event.target?.name || '';
