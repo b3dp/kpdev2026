@@ -36,7 +36,7 @@
     $aktifKategori = request('kategori');
 @endphp
 
-<section class="bg-bg-soft pb-[72px] pt-0">
+<section class="bg-bg-soft pb-[72px] pt-[124px] lg:pt-[138px]">
   <div class="mx-auto max-w-7xl px-6">
     <div class="grid items-center gap-12 lg:grid-cols-2">
       <div>

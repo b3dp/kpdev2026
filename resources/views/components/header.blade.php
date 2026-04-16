@@ -1,5 +1,10 @@
 @php
     $telefon = config('site.telefon');
+  $haber_kategorileri = \App\Models\HaberKategorisi::query()
+    ->where('aktif', true)
+    ->orderBy('sira')
+    ->orderBy('ad')
+    ->get(['ad', 'slug']);
     $sepet = session('sepet', []);
     $sepet_adet = is_array($sepet) ? count($sepet) : 0;
     $sepet_toplam = collect($sepet)->sum(fn (array $satir) => (float) ($satir['toplam'] ?? 0));
@@ -69,9 +74,8 @@
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex items-center justify-between h-16 lg:h-[68px]">
-      <a href="{{ route('home') }}" class="flex items-center gap-3 flex-shrink-0">
-        <span class="logo-k w-9 h-9 rounded-lg flex items-center justify-center text-lg select-none shadow-sm">K</span>
-        <span class="font-baskerville text-primary font-bold text-[17px] leading-tight hidden sm:block">Kestanepazarı</span>
+      <a href="{{ route('home') }}" class="flex items-center flex-shrink-0">
+        <img src="{{ asset('images/logo.svg') }}" alt="Kestanepazarı" class="h-10 w-auto lg:h-11">
       </a>
 
       <nav class="hidden lg:flex items-center gap-0.5">
@@ -99,10 +103,9 @@
           </button>
           <div class="dropdown-panel bg-white rounded-xl shadow-xl shadow-primary/10 border border-gray-100 p-2">
             <a href="{{ route('haberler.index') }}" class="dropdown-item"><span class="dot"></span>Tüm Haberler</a>
-            <a href="{{ route('haberler.index', ['kategori' => 'egitim']) }}" class="dropdown-item"><span class="dot"></span>Eğitim</a>
-            <a href="{{ route('haberler.index', ['kategori' => 'ziyaret']) }}" class="dropdown-item"><span class="dot"></span>Ziyaret</a>
-            <a href="{{ route('haberler.index', ['kategori' => 'etkinlikler']) }}" class="dropdown-item"><span class="dot"></span>Etkinlikler</a>
-            <a href="{{ route('haberler.index', ['kategori' => 'kurban-bagis']) }}" class="dropdown-item"><span class="dot"></span>Kurban &amp; Bağış</a>
+            @foreach($haber_kategorileri as $haber_kategori)
+              <a href="{{ route('haberler.index', ['kategori' => $haber_kategori->slug]) }}" class="dropdown-item"><span class="dot"></span>{{ $haber_kategori->ad }}</a>
+            @endforeach
           </div>
         </div>
 
@@ -122,7 +125,6 @@
 
         <a href="{{ route('ekayit.index') }}" class="nav-link {{ request()->routeIs('ekayit*') ? 'active text-accent font-semibold' : 'text-primary font-medium' }} font-jakarta text-[13.5px] px-3 py-2 rounded">E-Kayıt</a>
         <a href="{{ route('mezunlar.index') }}" class="nav-link {{ request()->routeIs('mezunlar*') ? 'active text-accent font-semibold' : 'text-primary font-medium' }} font-jakarta text-[13.5px] px-3 py-2 rounded">Mezunlar</a>
-        <a href="{{ route('iletisim.index') }}" class="nav-link {{ request()->routeIs('iletisim*') ? 'active text-accent font-semibold' : 'text-primary font-medium' }} font-jakarta text-[13.5px] px-3 py-2 rounded">İletişim</a>
       </nav>
 
       <div class="flex items-center gap-1 lg:gap-2">
@@ -310,10 +312,9 @@
         </button>
         <div id="mob-haberler" class="mob-sub pl-5 space-y-0.5 mt-0.5 {{ request()->routeIs('haberler*') ? 'open' : '' }}">
           <a href="{{ route('haberler.index') }}" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">Tüm Haberler</a>
-          <a href="{{ route('haberler.index', ['kategori' => 'egitim']) }}" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">Eğitim</a>
-          <a href="{{ route('haberler.index', ['kategori' => 'ziyaret']) }}" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">Ziyaret</a>
-          <a href="{{ route('haberler.index', ['kategori' => 'etkinlikler']) }}" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">Etkinlikler</a>
-          <a href="{{ route('haberler.index', ['kategori' => 'kurban-bagis']) }}" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">Kurban &amp; Bağış</a>
+          @foreach($haber_kategorileri as $haber_kategori)
+            <a href="{{ route('haberler.index', ['kategori' => $haber_kategori->slug]) }}" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">{{ $haber_kategori->ad }}</a>
+          @endforeach
         </div>
       </div>
 
@@ -333,7 +334,6 @@
 
       <a href="{{ route('ekayit.index') }}" class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('ekayit*') ? 'text-accent font-semibold bg-bg-soft' : 'text-primary font-medium hover:bg-bg-soft hover:text-accent' }} font-jakarta text-[14px] transition-colors">E-Kayıt</a>
       <a href="{{ route('mezunlar.index') }}" class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('mezunlar*') ? 'text-accent font-semibold bg-bg-soft' : 'text-primary font-medium hover:bg-bg-soft hover:text-accent' }} font-jakarta text-[14px] transition-colors">Mezunlar</a>
-      <a href="{{ route('iletisim.index') }}" class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('iletisim*') ? 'text-accent font-semibold bg-bg-soft' : 'text-primary font-medium hover:bg-bg-soft hover:text-accent' }} font-jakarta text-[14px] transition-colors">İletişim</a>
 
       <div class="pt-3 flex items-center gap-2 border-t border-gray-100 mt-1">
         @if($uye_oturumu_acik && $aktif_uye)
