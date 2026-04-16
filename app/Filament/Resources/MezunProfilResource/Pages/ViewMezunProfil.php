@@ -37,6 +37,10 @@ class ViewMezunProfil extends ViewRecord
                         Section::make('Mezuniyet Bilgileri')
                             ->columnSpan(1)
                             ->schema([
+                                TextEntry::make('uye.ad_soyad')
+                                    ->label('Mezun Ad Soyad')
+                                    ->default('—'),
+
                                 TextEntry::make('kurum.ad')
                                     ->label('Mezun Olunan Kurum')
                                     ->formatStateUsing(fn ($state, $record) => $state ?? $record->kurum_manuel ?? '—'),
