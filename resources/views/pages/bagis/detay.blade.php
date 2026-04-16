@@ -3,6 +3,7 @@
 @php
     $fiyatTipi = $bagisTuru->fiyat_tipi?->value ?? $bagisTuru->fiyat_tipi;
     $ozellik = $bagisTuru->ozellik?->value ?? $bagisTuru->ozellik;
+  $adetModuAktif = $fiyatTipi === 'sabit' && $ozellik !== 'buyukbas_kurban';
 
     $oneriTutarlarHam = is_array($bagisTuru->oneri_tutarlar)
         ? $bagisTuru->oneri_tutarlar
@@ -17,12 +18,14 @@
     $varsayilanTutar = (float) ($bagisTuru->fiyat ?? $bagisTuru->minimum_tutar ?? 100);
 
     if (empty($oneriTutarlar)) {
-        $oneriTutarlar = collect([$varsayilanTutar, 250, 500, 1000])
+      $oneriTutarlar = collect([$varsayilanTutar, 250, 500, 1000])
             ->filter(fn ($tutar) => (float) $tutar > 0)
             ->unique()
             ->values()
             ->all();
     }
+
+    $onerilenAdetler = [1, 2, 5, 10];
 
     $ilkTutar = (float) ($oneriTutarlar[0] ?? $varsayilanTutar);
 
@@ -107,6 +110,9 @@
            data-slug="{{ $bagisTuru->slug }}"
            data-baslik="{{ $bagisTuru->ad }}"
            data-aciklama="{{ $bagisTuru->aciklama }}"
+         data-fiyat-tipi="{{ $fiyatTipi }}"
+         data-adet-modu="{{ $adetModuAktif ? '1' : '0' }}"
+         data-birim-fiyat="{{ (float) $varsayilanTutar }}"
            data-init-tur="{{ $aktifTurKey }}"
            data-sepet='@json($sepet)'
            data-sepet-url="{{ route('bagis.sepete-ekle') }}"
@@ -126,17 +132,31 @@
 
         <div style="padding:20px 24px 28px;display:flex;flex-direction:column;gap:20px;">
           <div>
-            <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;color:#162E4B;margin-bottom:10px;">Tutar <span style="color:#E95925;">*</span></p>
+            <p id="bagis-miktar-etiketi" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;color:#162E4B;margin-bottom:10px;">{{ $adetModuAktif ? 'Adet' : 'Tutar' }} <span style="color:#E95925;">*</span></p>
             <div id="tutar-butonlar" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;">
-              @foreach($oneriTutarlar as $i => $tutar)
-                <button type="button" class="tutar-btn {{ $i === 0 ? 'selected' : '' }}" data-tutar="{{ (int) $tutar }}">
-                  ₺{{ number_format((float) $tutar, 0, ',', '.') }}
-                </button>
-              @endforeach
+              @if($adetModuAktif)
+                @foreach($onerilenAdetler as $i => $adet)
+                  <button type="button" class="tutar-btn {{ $i === 0 ? 'selected' : '' }}" data-adet="{{ $adet }}">
+                    <span style="display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:700;color:#162E4B;">{{ $adet }} adet</span>
+                    <span style="display:block;margin-top:4px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:500;color:#62868D;">₺{{ number_format($varsayilanTutar * $adet, 0, ',', '.') }}</span>
+                  </button>
+                @endforeach
+              @else
+                @foreach($oneriTutarlar as $i => $tutar)
+                  <button type="button" class="tutar-btn {{ $i === 0 ? 'selected' : '' }}" data-tutar="{{ (int) $tutar }}">
+                    ₺{{ number_format((float) $tutar, 0, ',', '.') }}
+                  </button>
+                @endforeach
+              @endif
             </div>
             <div style="position:relative;">
-              <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;color:rgba(22,46,75,.4);font-weight:600;">₺</span>
-              <input id="tutar-manuel" type="number" class="form-input" placeholder="Diğer tutar girin" @if($bagisTuru->minimum_tutar) min="{{ (float) $bagisTuru->minimum_tutar }}" @endif style="padding-left:30px;" />
+              @if($adetModuAktif)
+                <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;color:rgba(22,46,75,.4);font-weight:600;">#</span>
+                <input id="tutar-manuel" type="number" class="form-input" placeholder="Diğer adet girin" min="1" max="30" style="padding-left:30px;" />
+              @else
+                <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;color:rgba(22,46,75,.4);font-weight:600;">₺</span>
+                <input id="tutar-manuel" type="number" class="form-input" placeholder="Diğer tutar girin" @if($bagisTuru->minimum_tutar) min="{{ (float) $bagisTuru->minimum_tutar }}" @endif style="padding-left:30px;" />
+              @endif
             </div>
           </div>
 

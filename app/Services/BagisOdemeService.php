@@ -79,7 +79,11 @@ class BagisOdemeService
 
             $bagisTuru = BagisTuru::query()->where('slug', $veri['slug'])->firstOrFail();
             $tutar = max((float) ($veri['tutar'] ?? 0), 0);
-            $adet = min(max((int) ($veri['adet'] ?? 1), 1), 7);
+            $maksimumAdet = ($bagisTuru->fiyat_tipi?->value ?? $bagisTuru->fiyat_tipi) === 'sabit'
+                && ($bagisTuru->ozellik?->value ?? $bagisTuru->ozellik) !== 'buyukbas_kurban'
+                ? 30
+                : 7;
+            $adet = min(max((int) ($veri['adet'] ?? 1), 1), $maksimumAdet);
             $sahipTipi = (string) ($veri['sahip_tipi'] ?? 'kendi');
             $formVerisi = is_array($veri['form_verisi'] ?? null) ? $veri['form_verisi'] : [];
 
@@ -152,7 +156,11 @@ class BagisOdemeService
                     continue;
                 }
 
-                $kalemAdet = min(max((int) ($sepetSatiri['adet'] ?? 1), 1), 7);
+                $kalemMaksimumAdet = ($kalemBagisTuru->fiyat_tipi?->value ?? $kalemBagisTuru->fiyat_tipi) === 'sabit'
+                    && ($kalemBagisTuru->ozellik?->value ?? $kalemBagisTuru->ozellik) !== 'buyukbas_kurban'
+                    ? 30
+                    : 7;
+                $kalemAdet = min(max((int) ($sepetSatiri['adet'] ?? 1), 1), $kalemMaksimumAdet);
                 $kalemBirimFiyat = max((float) ($sepetSatiri['birim_fiyat'] ?? 0), 0);
                 $kalemToplam = max((float) ($sepetSatiri['toplam'] ?? ($kalemBirimFiyat * $kalemAdet)), 0);
                 $kalemSahipTipi = in_array(($sepetSatiri['sahip_tipi'] ?? 'kendi'), ['kendi', 'baskasi'], true)

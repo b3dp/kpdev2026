@@ -30,6 +30,7 @@ const turToSlug = {
 
 let aktifTur = 'zekat';
 let aktifTutar = 100;
+let aktifAdet = 1;
 let hisseSayisi = 1;
 let kopyalaOn = false;
 let sepetKalemleri = [];
@@ -52,6 +53,30 @@ function formatPara(deger = 0) {
 
 function bagisFormunuAl() {
     return document.getElementById('bagis-form');
+}
+
+function adetModuAktifMi() {
+    return bagisFormunuAl()?.dataset.adetModu === '1';
+}
+
+function sabitBirimFiyatAl() {
+    return parseFloat(bagisFormunuAl()?.dataset.birimFiyat || '0') || 0;
+}
+
+function gecerliAdetAl(deger) {
+    return Math.min(Math.max(parseInt(deger, 10) || 1, 1), 30);
+}
+
+function gecerliTutarAl() {
+    return adetModuAktifMi() ? sabitBirimFiyatAl() : (aktifTutar || 0);
+}
+
+function gecerliCarpanAl() {
+    if (aktifTur === 'buyukbas') {
+        return hisseSayisi;
+    }
+
+    return adetModuAktifMi() ? aktifAdet : 1;
 }
 
 function aktifSlugAl() {
@@ -352,7 +377,7 @@ function renderSepetOzeti() {
     const elToplam = document.getElementById('sepet-toplam');
     const elAdet = document.getElementById('sepet-adet');
     const badge = document.getElementById('sepet-badge');
-    const seciliToplam = (aktifTur === 'buyukbas' ? hisseSayisi : 1) * (aktifTutar || 0);
+    const seciliToplam = gecerliCarpanAl() * gecerliTutarAl();
     const sepetToplam = sepetToplaminiHesapla();
 
     if (elIcerik) {
@@ -403,13 +428,17 @@ function renderSepetOzeti() {
 
 function updateSepet() {
     const t = mevcutTurBilgisiniAl(aktifTur);
-    const tutar = aktifTutar || 0;
-    const carpan = aktifTur === 'buyukbas' ? hisseSayisi : 1;
+    const tutar = gecerliTutarAl();
+    const carpan = gecerliCarpanAl();
     const toplam = tutar * carpan;
 
     const elTutar = document.getElementById('sepet-tutar-goster');
     const elSecili = document.getElementById('sepet-secili-onizleme');
-    const hisseText = aktifTur === 'buyukbas' ? ` · ${hisseSayisi} hisse` : '';
+    const hisseText = aktifTur === 'buyukbas'
+        ? ` · ${hisseSayisi} hisse`
+        : adetModuAktifMi()
+            ? ` · ${aktifAdet} adet`
+            : '';
 
     if (elTutar) {
         elTutar.textContent = formatPara(toplam);
@@ -419,7 +448,7 @@ function updateSepet() {
         elSecili.innerHTML = `
             <div>
                 <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;font-weight:600;color:#162E4B;">${escapeHtml(t.baslik)}${hisseText}</p>
-                <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:#62868D;margin-top:2px;">${aktifTur === 'buyukbas' ? `Hisse başı: ${formatPara(tutar)}` : seciliSahipMetni()}</p>
+                <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:#62868D;margin-top:2px;">${aktifTur === 'buyukbas' ? `Hisse başı: ${formatPara(tutar)}` : adetModuAktifMi() ? `Birim fiyat: ${formatPara(tutar)}` : seciliSahipMetni()}</p>
             </div>
             <p id="sepet-tutar-goster" style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:16px;color:#162E4B;white-space:nowrap;">${formatPara(toplam)}</p>`;
     }
@@ -509,8 +538,8 @@ async function sepeteEkle() {
             },
             body: JSON.stringify({
                 slug: aktifSlugAl(),
-                tutar: aktifTutar || 0,
-                adet: aktifTur === 'buyukbas' ? hisseSayisi : 1,
+                tutar: gecerliTutarAl(),
+                adet: gecerliCarpanAl(),
                 sahip_tipi: document.getElementById('radio-baskasi')?.classList.contains('selected') ? 'baskasi' : 'kendi',
                 form_verisi: formVerisiniTopla(),
             }),
@@ -652,8 +681,8 @@ async function odemeyiTamamla() {
             },
             body: JSON.stringify({
                 slug: aktifSlugAl(),
-                tutar: aktifTutar || 0,
-                adet: aktifTur === 'buyukbas' ? hisseSayisi : 1,
+                tutar: gecerliTutarAl(),
+                adet: gecerliCarpanAl(),
                 sahip_tipi: document.getElementById('radio-baskasi')?.classList.contains('selected') ? 'baskasi' : 'kendi',
                 odeme_yontemi: document.getElementById('odeme-paytr')?.classList.contains('selected') ? 'paytr' : 'albaraka',
                 kart_no: kartAlaniDegeriniAl('kart-no'),
@@ -699,11 +728,16 @@ document.addEventListener('kp:sepet-guncellendi', (event) => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.tutar-btn[data-tutar]').forEach((buton) => {
+    document.querySelectorAll('.tutar-btn[data-tutar], .tutar-btn[data-adet]').forEach((buton) => {
         buton.addEventListener('click', () => {
-            document.querySelectorAll('.tutar-btn[data-tutar]').forEach((digerButon) => digerButon.classList.remove('selected'));
+            document.querySelectorAll('.tutar-btn[data-tutar], .tutar-btn[data-adet]').forEach((digerButon) => digerButon.classList.remove('selected'));
             buton.classList.add('selected');
-            aktifTutar = parseInt(buton.dataset.tutar, 10) || 0;
+            if (adetModuAktifMi()) {
+                aktifAdet = gecerliAdetAl(buton.dataset.adet);
+                aktifTutar = sabitBirimFiyatAl();
+            } else {
+                aktifTutar = parseInt(buton.dataset.tutar, 10) || 0;
+            }
 
             const manuelInput = document.getElementById('tutar-manuel');
 
@@ -720,8 +754,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (manuelInput) {
         manuelInput.addEventListener('input', function () {
             if (this.value) {
-                document.querySelectorAll('.tutar-btn[data-tutar]').forEach((buton) => buton.classList.remove('selected'));
-                aktifTutar = parseInt(this.value, 10) || 0;
+                document.querySelectorAll('.tutar-btn[data-tutar], .tutar-btn[data-adet]').forEach((buton) => buton.classList.remove('selected'));
+                if (adetModuAktifMi()) {
+                    aktifAdet = gecerliAdetAl(this.value);
+                    aktifTutar = sabitBirimFiyatAl();
+                } else {
+                    aktifTutar = parseInt(this.value, 10) || 0;
+                }
                 updateSepet();
             }
         });
@@ -743,6 +782,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const initSlug = form?.dataset.slug || 'zekat';
     const initTur = slugToTur[initSlug] || form?.dataset.initTur || 'zekat';
     const ilkTutar = document.querySelector('.tutar-btn[data-tutar].selected');
+    const ilkAdet = document.querySelector('.tutar-btn[data-adet].selected');
 
     try {
         sepetKalemleri = JSON.parse(form?.dataset.sepet || '[]');
@@ -752,6 +792,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (ilkTutar) {
         aktifTutar = parseInt(ilkTutar.dataset.tutar, 10) || 100;
+    }
+
+    if (ilkAdet) {
+        aktifAdet = gecerliAdetAl(ilkAdet.dataset.adet);
+        aktifTutar = sabitBirimFiyatAl();
     }
 
     setTur(initTur);

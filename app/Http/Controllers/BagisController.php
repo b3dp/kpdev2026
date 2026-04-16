@@ -44,7 +44,7 @@ class BagisController extends Controller
         $veri = $request->validate([
             'slug' => ['required', 'string', 'exists:bagis_turleri,slug'],
             'tutar' => ['required', 'numeric', 'min:1'],
-            'adet' => ['nullable', 'integer', 'min:1', 'max:7'],
+            'adet' => ['nullable', 'integer', 'min:1', 'max:30'],
             'sahip_tipi' => ['nullable', 'in:kendi,baskasi'],
             'form_verisi' => ['nullable', 'array'],
         ]);
@@ -119,7 +119,7 @@ class BagisController extends Controller
         $veri = $request->validate([
             'slug' => ['required', 'string', 'exists:bagis_turleri,slug'],
             'tutar' => ['required', 'numeric', 'min:1'],
-            'adet' => ['nullable', 'integer', 'min:1', 'max:7'],
+            'adet' => ['nullable', 'integer', 'min:1', 'max:30'],
             'sahip_tipi' => ['nullable', 'in:kendi,baskasi'],
             'odeme_yontemi' => ['nullable', 'in:albaraka,paytr'],
             'kart_no' => ['required', 'string', 'min:12'],
