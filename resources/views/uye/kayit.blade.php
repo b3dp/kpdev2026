@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<section class="mx-auto min-h-[calc(100vh-102px)] max-w-7xl px-4 pb-14 pt-[118px] lg:px-6">
+<section class="mx-auto min-h-[calc(100vh-102px)] max-w-7xl px-4 pb-14 pt-[59px] lg:px-6">
     <div class="mx-auto max-w-5xl">
         <div class="mb-9 text-center">
             <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-[14px] bg-[linear-gradient(135deg,#162E4B,#28484C)]">
@@ -104,6 +104,7 @@
                 <a href="{{ route('uye.giris.form') }}" class="font-bold text-accent transition hover:text-orange-cta">Giriş yapın</a>
             </p>
         </form>
+            </div>
             </div>
 
             <div class="space-y-4">
