@@ -73,13 +73,9 @@
   </div>
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-between h-16 lg:h-[68px] gap-3">
-      <a href="{{ route('home') }}" class="header-logo-card flex items-center flex-shrink-0 rounded-[18px] border border-primary/10 bg-white px-3 py-2 shadow-[0_14px_32px_rgba(22,46,75,0.12)] transition-transform duration-200 hover:-translate-y-[1px] lg:px-4">
-        <img src="{{ asset('images/logo.svg') }}" alt="Kestanepazarı" class="h-10 w-auto sm:h-11 lg:h-[52px]">
-        <span class="ml-3 hidden xl:block">
-          <span class="block font-baskerville text-[20px] font-bold leading-none text-primary">Kestanepazarı</span>
-          <span class="mt-1 block font-jakarta text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">Öğrenci Yetiştirme Derneği</span>
-        </span>
+    <div class="flex items-center justify-between h-16 lg:h-[68px]">
+      <a href="{{ route('home') }}" class="flex items-center flex-shrink-0">
+        <img src="{{ asset('images/logo.svg') }}" alt="Kestanepazarı" class="h-10 w-auto lg:h-11">
       </a>
 
       <nav class="hidden lg:flex items-center gap-0.5">
