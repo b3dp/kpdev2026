@@ -311,3 +311,15 @@ body.checkout-layout main {
   font-family: 'Libre Baskerville', serif;
   font-weight: 700;
 }
+
+.header-logo-card {
+  min-height: 56px;
+}
+
+@media (max-width: 767px) {
+  .header-logo-card {
+    padding-inline: 0.7rem;
+    border-radius: 14px;
+    box-shadow: 0 10px 22px rgba(22, 46, 75, 0.1);
+  }
+}

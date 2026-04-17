@@ -1,12 +1,53 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full bg-white rounded-lg shadow-md p-8">
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">Giriş Yap</h1>
-            <p class="text-gray-600 mt-2">E-posta veya telefon numaranız ile OTP kodu alarak giriş yapın</p>
+<section class="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(178,120,41,0.18),_transparent_34%),linear-gradient(180deg,#f7f5f0_0%,#fff_72%)] px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
+    <div class="mx-auto grid min-h-[calc(100vh-210px)] max-w-6xl items-stretch gap-6 lg:grid-cols-[1.05fr_.95fr]">
+        <div class="hidden overflow-hidden rounded-[30px] bg-primary text-white shadow-[0_24px_60px_rgba(22,46,75,0.22)] lg:flex lg:flex-col lg:justify-between">
+            <div class="p-10">
+                <div class="inline-flex items-center gap-3 rounded-full border border-white/14 bg-white/8 px-4 py-2 font-jakarta text-xs font-semibold uppercase tracking-[0.16em] text-white/78">
+                    Guvenli Uye Girisi
+                </div>
+                <h1 class="mt-8 max-w-[440px] font-baskerville text-[clamp(36px,4vw,56px)] font-bold leading-[1.04] text-cream">
+                    Kestanepazari topluluguna temiz ve hizli giris.
+                </h1>
+                <p class="mt-6 max-w-[440px] font-jakarta text-[15px] leading-7 text-white/78">
+                    Telefon veya e-posta bilginizle tek kullanımlık kod alın. Şifre hatırlama derdi olmadan hesabınıza güvenli biçimde ulaşın.
+                </p>
+
+                <div class="mt-10 grid gap-3 sm:grid-cols-2">
+                    <div class="rounded-[22px] border border-white/10 bg-white/8 p-5 backdrop-blur-sm">
+                        <p class="font-baskerville text-3xl font-bold text-cream">OTP</p>
+                        <p class="mt-2 font-jakarta text-sm leading-6 text-white/72">Tek seferlik doğrulama ile daha sade ve güvenli oturum akışı.</p>
+                    </div>
+                    <div class="rounded-[22px] border border-white/10 bg-white/8 p-5 backdrop-blur-sm">
+                        <p class="font-baskerville text-3xl font-bold text-cream">2 Alan</p>
+                        <p class="mt-2 font-jakarta text-sm leading-6 text-white/72">E-posta ya da telefon bilginizden biriyle işlemi başlatabilirsiniz.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-white/10 bg-white/6 px-10 py-6">
+                <p class="font-jakarta text-sm font-medium text-white/70">Yeni misiniz?</p>
+                <p class="mt-2 font-jakarta text-[15px] leading-7 text-white/84">Hesabınız yoksa birkaç adımda kayıt olup mezun, bağış ve profil alanlarına erişebilirsiniz.</p>
+            </div>
         </div>
+
+        <div class="flex items-center justify-center">
+            <div class="w-full max-w-xl rounded-[30px] border border-primary/10 bg-white p-6 shadow-[0_18px_45px_rgba(22,46,75,0.12)] sm:p-8 lg:p-10">
+                <div class="mb-8 flex items-center justify-between gap-4">
+                    <div>
+                        <p class="font-jakarta text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">Uye Hesabi</p>
+                        <h1 class="mt-2 font-baskerville text-[34px] font-bold leading-none text-primary">Giriş Yap</h1>
+                        <p class="mt-3 font-jakarta text-sm leading-6 text-teal-muted">E-posta veya telefon numaranız ile OTP kodu alarak giriş yapın.</p>
+                    </div>
+                    <img src="{{ asset('images/logo.svg') }}" alt="Kestanepazarı" class="hidden h-16 w-auto sm:block">
+                </div>
+
+                <div class="mb-8 grid grid-cols-2 rounded-[18px] bg-bg-soft p-1.5">
+                    <a href="{{ route('uye.giris.form') }}" class="rounded-[14px] bg-white px-4 py-3 text-center font-jakarta text-sm font-semibold text-primary shadow-sm">Giriş</a>
+                    <a href="{{ route('uye.kayit.form') }}" class="rounded-[14px] px-4 py-3 text-center font-jakarta text-sm font-semibold text-teal-muted transition-colors hover:text-primary">Kayıt Ol</a>
+                </div>
 
         <form id="giriş-formu" class="space-y-6">
             @csrf
@@ -16,14 +57,14 @@
 
             {{-- E-posta --}}
             <div>
-                <label for="eposta" class="block text-sm font-medium text-gray-700">
+                <label for="eposta" class="block font-jakarta text-[12px] font-semibold uppercase tracking-[0.14em] text-primary/70">
                     E-Posta
                 </label>
                 <input
                     type="email"
                     name="eposta"
                     id="eposta"
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    class="mt-2 block w-full rounded-[16px] border border-primary/12 bg-bg-soft px-4 py-3.5 font-jakarta text-[15px] text-primary shadow-none transition focus:border-accent focus:bg-white focus:ring-0"
                     placeholder="ornek@eposta.com"
                 />
                 @error('eposta')
@@ -33,17 +74,17 @@
 
             {{-- Telefon --}}
             <div>
-                <label for="telefon" class="block text-sm font-medium text-gray-700">
+                <label for="telefon" class="block font-jakarta text-[12px] font-semibold uppercase tracking-[0.14em] text-primary/70">
                     Cep Telefonu
                 </label>
                 <input
                     type="text"
                     name="telefon"
                     id="telefon"
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    class="mt-2 block w-full rounded-[16px] border border-primary/12 bg-bg-soft px-4 py-3.5 font-jakarta text-[15px] text-primary shadow-none transition focus:border-accent focus:bg-white focus:ring-0"
                     placeholder="5xx xxx xx xx"
                 />
-                <p class="mt-1 text-xs text-gray-500">E-posta veya telefon alanlarından en az birini doldurun.</p>
+                <p class="mt-2 font-jakarta text-xs text-teal-muted">E-posta veya telefon alanlarından en az birini doldurun.</p>
                 @error('telefon')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
@@ -57,7 +98,7 @@
             />
 
             {{-- Hata Mesajı --}}
-            <div id="hata-alani" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            <div id="hata-alani" class="hidden rounded-[16px] border border-red-200 bg-red-50 px-4 py-3 font-jakarta text-sm text-red-700">
                 <p id="hata-mesaji"></p>
             </div>
 
@@ -65,25 +106,27 @@
             <button
                 type="submit"
                 id="giris-submit"
-                class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition font-medium"
+                class="w-full rounded-[16px] bg-orange-cta px-4 py-3.5 font-jakarta text-[15px] font-bold text-white shadow-[0_14px_30px_rgba(233,89,37,0.24)] transition hover:bg-[#c94620]"
             >
                 OTP Gönder
             </button>
 
-            {{-- Kayıt Linki --}}
-            <p class="text-center text-gray-600 text-sm">
+            <div class="rounded-[18px] border border-primary/8 bg-bg-soft px-4 py-4 text-center font-jakarta text-sm text-teal-muted">
                 Hesabınız yok mu?
-                <a href="{{ route('uye.kayit.form') }}" class="text-blue-600 hover:text-blue-700 font-medium">
+                <a href="{{ route('uye.kayit.form') }}" class="font-semibold text-primary transition hover:text-accent">
                     Kayıt Ol
                 </a>
-            </p>
+            </div>
         </form>
+            </div>
+        </div>
 
         {{-- OTP Modal --}}
-        <div id="otp-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
-            <div class="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
-                <h2 class="text-xl font-bold text-gray-900 mb-4">OTP Doğrulaması</h2>
-                <p class="text-gray-600 mb-4">Telefonunuza/e-postanıza gönderilen 6 haneli kodu giriniz.</p>
+        <div id="otp-modal" class="hidden fixed inset-0 z-[90] flex items-center justify-center bg-primary/45 px-4 backdrop-blur-sm">
+            <div class="w-full max-w-md rounded-[28px] border border-white/30 bg-white p-6 shadow-[0_22px_60px_rgba(22,46,75,0.22)] sm:p-7">
+                <p class="font-jakarta text-[11px] font-semibold uppercase tracking-[0.16em] text-accent">OTP Doğrulamasi</p>
+                <h2 class="mt-3 font-baskerville text-[30px] font-bold text-primary">Kodu Girin</h2>
+                <p class="mt-3 font-jakarta text-sm leading-6 text-teal-muted">Telefonunuza veya e-postanıza gönderilen 6 haneli kodu giriniz.</p>
 
                 <form id="otp-formu" class="space-y-4">
                     @csrf
@@ -92,25 +135,24 @@
                         name="kod"
                         placeholder="000000"
                         maxlength="6"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md text-center text-2xl tracking-widest focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        class="w-full rounded-[16px] border border-primary/12 bg-bg-soft px-4 py-3.5 text-center font-jakarta text-2xl tracking-[0.35em] text-primary focus:border-accent focus:bg-white focus:ring-0"
                         required
                     />
                     <button
                         type="submit"
                         id="giris-otp-submit"
-                        class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition font-medium"
+                        class="w-full rounded-[16px] bg-primary px-4 py-3.5 font-jakarta text-[15px] font-bold text-cream transition hover:bg-[#10243e]"
                     >
                         Doğrula
                     </button>
                 </form>
 
-                <div id="otp-hata" class="hidden mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                <div id="otp-hata" class="hidden mt-4 rounded-[16px] border border-red-200 bg-red-50 px-4 py-3 font-jakarta text-sm text-red-700">
                     <p id="otp-hata-mesaji"></p>
                 </div>
             </div>
         </div>
-    </div>
-</div>
+</section>
 
 <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site_key') }}"></script>
 <script>
