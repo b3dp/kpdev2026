@@ -1,5 +1,5 @@
 :root {
-  --app-header-offset: 106px;
+  --app-header-offset: 120px;
   --checkout-header-offset: 64px;
 }
 
@@ -17,7 +17,7 @@ body.checkout-layout main {
 
 @media (max-width: 1023px) {
   :root {
-    --app-header-offset: 104px;
+    --app-header-offset: 112px;
   }
 }
 
@@ -176,9 +176,18 @@ body.checkout-layout main {
   position: relative;
 }
 
+.has-dropdown::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 100%;
+  width: 100%;
+  height: 14px;
+}
+
 .dropdown-panel {
   position: absolute;
-  top: calc(100% + 10px);
+  top: calc(100% + 4px);
   left: 50%;
   transform: translateX(-50%) translateY(6px);
   opacity: 0;

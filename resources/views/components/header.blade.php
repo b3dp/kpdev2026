@@ -73,9 +73,9 @@
   </div>
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-between h-16 lg:h-[68px]">
+    <div class="flex items-center justify-between h-[72px] lg:h-[82px]">
       <a href="{{ route('home') }}" class="flex items-center flex-shrink-0">
-        <img src="{{ asset('images/logo.svg') }}" alt="Kestanepazarı" class="h-10 w-auto lg:h-11">
+        <img src="{{ asset('images/logo.svg') }}" alt="Kestanepazarı" class="h-[60px] w-auto lg:h-[66px]">
       </a>
 
       <nav class="hidden lg:flex items-center gap-0.5">
@@ -124,7 +124,6 @@
         </div>
 
         <a href="{{ route('ekayit.index') }}" class="nav-link {{ request()->routeIs('ekayit*') ? 'active text-accent font-semibold' : 'text-primary font-medium' }} font-jakarta text-[13.5px] px-3 py-2 rounded">E-Kayıt</a>
-        <a href="{{ route('mezunlar.index') }}" class="nav-link {{ request()->routeIs('mezunlar*') ? 'active text-accent font-semibold' : 'text-primary font-medium' }} font-jakarta text-[13.5px] px-3 py-2 rounded">Mezunlar</a>
       </nav>
 
       <div class="flex items-center gap-1 lg:gap-2">
@@ -333,7 +332,6 @@
       </div>
 
       <a href="{{ route('ekayit.index') }}" class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('ekayit*') ? 'text-accent font-semibold bg-bg-soft' : 'text-primary font-medium hover:bg-bg-soft hover:text-accent' }} font-jakarta text-[14px] transition-colors">E-Kayıt</a>
-      <a href="{{ route('mezunlar.index') }}" class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('mezunlar*') ? 'text-accent font-semibold bg-bg-soft' : 'text-primary font-medium hover:bg-bg-soft hover:text-accent' }} font-jakarta text-[14px] transition-colors">Mezunlar</a>
 
       <div class="pt-3 flex items-center gap-2 border-t border-gray-100 mt-1">
         @if($uye_oturumu_acik && $aktif_uye)
