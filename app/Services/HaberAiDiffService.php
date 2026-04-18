@@ -20,6 +20,9 @@ class HaberAiDiffService
             'degisen_cumle_sayisi' => $degisenCumleler,
             'degisen_kelime_sayisi' => $kelimeFarki,
             'noktalama_duzeltme_sayisi' => $noktalamaFarki,
+            'ozet_degisti' => trim((string) ($orijinal['ozet'] ?? '')) !== trim((string) ($duzeltilmis['ozet'] ?? '')),
+            'seo_baslik_degisti' => trim((string) ($orijinal['seo_baslik'] ?? '')) !== trim((string) ($duzeltilmis['seo_baslik'] ?? '')),
+            'meta_description_degisti' => trim((string) ($orijinal['meta_description'] ?? '')) !== trim((string) ($duzeltilmis['meta_description'] ?? '')),
         ];
     }
 

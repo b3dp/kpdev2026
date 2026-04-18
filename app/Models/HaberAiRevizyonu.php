@@ -23,6 +23,8 @@ class HaberAiRevizyonu extends Model
         'duzeltilmis_icerik',
         'orijinal_ozet',
         'duzeltilmis_ozet',
+        'orijinal_seo_baslik',
+        'duzeltilmis_seo_baslik',
         'orijinal_meta_description',
         'duzeltilmis_meta_description',
         'diff_ozeti_json',

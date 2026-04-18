@@ -58,9 +58,13 @@ class HaberAiController extends Controller
             $haber->update(['ai_islem_yuzde' => 60, 'ai_islem_adim' => 'Meta description üretiliyor']);
             $metaDescription = $geminiService->metaDescriptionUret($duzeltilmisMetin);
 
+            $haber->update(['ai_islem_yuzde' => 70, 'ai_islem_adim' => 'SEO başlığı üretiliyor']);
+            $seoBaslik = $geminiService->seoBaslikUret((string) $haber->baslik);
+
             $duzeltilmisVeri = [
                 'icerik' => $duzeltilmisMetin,
                 'ozet' => $ozet,
+                'seo_baslik' => $seoBaslik,
                 'meta_description' => $metaDescription,
             ];
 

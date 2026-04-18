@@ -60,6 +60,9 @@
                 <p class="mt-2 text-sm text-amber-900">{{ $diff['degisen_cumle_sayisi'] ?? 0 }} cümlede değişiklik var</p>
                 <p class="mt-1 text-sm text-amber-900">{{ $diff['degisen_kelime_sayisi'] ?? 0 }} kelime farkı var</p>
                 <p class="mt-1 text-sm text-amber-900">{{ $diff['noktalama_duzeltme_sayisi'] ?? 0 }} noktalama düzeltmesi var</p>
+                <p class="mt-1 text-sm text-amber-900">Özet: {{ !empty($diff['ozet_degisti']) ? 'değişti' : 'aynı' }}</p>
+                <p class="mt-1 text-sm text-amber-900">SEO başlığı: {{ !empty($diff['seo_baslik_degisti']) ? 'değişti' : 'aynı' }}</p>
+                <p class="mt-1 text-sm text-amber-900">Meta description: {{ !empty($diff['meta_description_degisti']) ? 'değişti' : 'aynı' }}</p>
             </div>
 
             <div class="rounded-xl border border-slate-200 bg-white p-4">
@@ -133,6 +136,16 @@
                 </div>
             </div>
 
+            <div class="rounded-2xl border border-slate-200 bg-white p-4">
+                <h3 class="mb-2 text-sm font-semibold text-slate-700">SEO Başlığı Karşılaştırma</h3>
+                <div class="grid gap-3 md:grid-cols-2">
+                    <div class="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-slate-800">{{ $revizyon->orijinal_seo_baslik ?: '—' }}</div>
+                    <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-slate-800">{{ $revizyon->duzeltilmis_seo_baslik ?: '—' }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid gap-5 lg:grid-cols-1">
             <div class="rounded-2xl border border-slate-200 bg-white p-4">
                 <h3 class="mb-2 text-sm font-semibold text-slate-700">Meta Description Karşılaştırma</h3>
                 <div class="grid gap-3 md:grid-cols-2">

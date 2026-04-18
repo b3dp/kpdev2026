@@ -22,7 +22,11 @@ class AiHaberIsleJob implements ShouldQueue
 
     public int $tries = 3;
 
-    public function __construct(public int $haberId)
+    public function __construct(
+        public int $haberId,
+        public string $islemModu = 'tam',
+        public bool $forceSeoAlanlari = false,
+    )
     {
         $this->onQueue('default');
     }
@@ -45,10 +49,26 @@ class AiHaberIsleJob implements ShouldQueue
             return;
         }
 
+        if ($this->islemModu === 'sadece_eslestirme') {
+            $this->eslestirmeleriCalistir($haber, $geminiService, $levenshteinService, $haberKategoriEslestirmeService);
+
+            return;
+        }
+
+        if ($this->islemModu === 'sadece_seo_ozet') {
+            $this->seoOzetRevizyonuOlustur($haber, $geminiService, $haberAiRevizyonService);
+
+            return;
+        }
+
         $duzeltilmisMetin = $geminiService->imlaDuzelt((string) $haber->icerik);
-        $ozet = filled($haber->ozet) ? $haber->ozet : $geminiService->ozetUret($duzeltilmisMetin);
-        $metaDescription = filled($haber->meta_description) ? $haber->meta_description : $geminiService->metaDescriptionUret($duzeltilmisMetin);
-        $seoBaslik = filled($haber->getRawOriginal('seo_baslik'))
+        $ozet = (! $this->forceSeoAlanlari && filled($haber->ozet))
+            ? $haber->ozet
+            : $geminiService->ozetUret($duzeltilmisMetin);
+        $metaDescription = (! $this->forceSeoAlanlari && filled($haber->meta_description))
+            ? $haber->meta_description
+            : $geminiService->metaDescriptionUret($duzeltilmisMetin);
+        $seoBaslik = (! $this->forceSeoAlanlari && filled($haber->getRawOriginal('seo_baslik')))
             ? (string) $haber->getRawOriginal('seo_baslik')
             : $geminiService->seoBaslikUret((string) $haber->baslik);
 
@@ -67,11 +87,68 @@ class AiHaberIsleJob implements ShouldQueue
             'ai_onay' => false,
         ]);
 
+        $this->eslestirmeleriCalistir(
+            $haber,
+            $geminiService,
+            $levenshteinService,
+            $haberKategoriEslestirmeService,
+            $duzeltilmisMetin,
+        );
+    }
+
+    public function failed(Throwable $exception): void
+    {
+        $haber = Haber::query()->find($this->haberId);
+        if ($haber && $this->islemModu !== 'sadece_eslestirme') {
+            $haber->update(['ai_islendi' => false]);
+        }
+
+        activity('ai_haber_isleme_hata')
+            ->withProperties([
+                'haber_id' => $this->haberId,
+                'islem_modu' => $this->islemModu,
+                'hata' => $exception->getMessage(),
+            ])
+            ->log('AI haber işleme job başarısız oldu');
+    }
+
+    private function seoOzetRevizyonuOlustur(
+        Haber $haber,
+        GeminiService $geminiService,
+        HaberAiRevizyonService $haberAiRevizyonService,
+    ): void
+    {
+        $kaynakMetin = (string) $haber->icerik;
+
+        $haberAiRevizyonService->revizyonOlustur($haber, [
+            'icerik' => $kaynakMetin,
+            'ozet' => $geminiService->ozetUret($kaynakMetin),
+            'meta_description' => $geminiService->metaDescriptionUret($kaynakMetin),
+            'seo_baslik' => $geminiService->seoBaslikUret((string) $haber->baslik),
+        ], 'ai_seo_ozet', false);
+
+        $haber->update([
+            'ai_islendi' => true,
+            'ai_onay' => false,
+        ]);
+    }
+
+    private function eslestirmeleriCalistir(
+        Haber $haber,
+        GeminiService $geminiService,
+        LevenshteinService $levenshteinService,
+        HaberKategoriEslestirmeService $haberKategoriEslestirmeService,
+        ?string $kaynakMetin = null,
+    ): void
+    {
+        $kaynakMetin ??= (string) $haber->icerik;
+        $duzMetin = $this->duzMetneCevir($kaynakMetin);
+
         \Log::debug('AI_KISI_TESPIT_METIN', [
             'haber_id' => $haber->id,
-            'metin_ilk_500' => mb_substr($duzeltilmisMetin, 0, 500),
+            'metin_ilk_500' => mb_substr($duzMetin, 0, 500),
         ]);
-        $kisiSonuclar = $geminiService->kisiTespitEt($duzeltilmisMetin);
+        $kisiSonuclar = $geminiService->kisiTespitEt($duzMetin);
         $mevcutKisiler = Kisi::query()->select(['id', 'ad', 'soyad'])->get();
         $kisiAramaListesi = $mevcutKisiler
             ->map(fn (Kisi $kisi) => ['id' => $kisi->id, 'ad' => trim($kisi->ad . ' ' . $kisi->soyad)])
@@ -111,7 +188,7 @@ class AiHaberIsleJob implements ShouldQueue
             );
         }
 
-        $kurumSonuclar = $geminiService->kurumTespitEt($duzeltilmisMetin);
+        $kurumSonuclar = $geminiService->kurumTespitEt($duzMetin);
         $mevcutKurumlar = Kurum::query()->select(['id', 'ad'])->get();
         foreach ($kurumSonuclar as $kurumVerisi) {
             $ad = trim((string) ($kurumVerisi['ad'] ?? ''));
@@ -143,19 +220,12 @@ class AiHaberIsleJob implements ShouldQueue
         $haberKategoriEslestirmeService->haberIcinKategorileriKaydet($haber, $kategoriSonuclari);
     }
 
-    public function failed(Throwable $exception): void
+    private function duzMetneCevir(string $metin): string
     {
-        $haber = Haber::query()->find($this->haberId);
-        if ($haber) {
-            $haber->update(['ai_islendi' => false]);
-        }
+        $metin = strip_tags($metin);
+        $metin = html_entity_decode($metin, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
-        activity('ai_haber_isleme_hata')
-            ->withProperties([
-                'haber_id' => $this->haberId,
-                'hata' => $exception->getMessage(),
-            ])
-            ->log('AI haber işleme job başarısız oldu');
+        return trim((string) preg_replace('/\s+/u', ' ', $metin));
     }
 
     private function kisiAdayiGecerliMi(string $adSoyad): bool

@@ -6,6 +6,7 @@ use App\Jobs\AiHaberIsleJob;
 use App\Models\Haber;
 use App\Services\HaberKategoriEslestirmeService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -15,11 +16,15 @@ class HaberAiTopluIsle extends Command
                             {--haber-idleri= : Virgulle ayrilmis haber id listesi}
                             {--limit=0 : Islenecek maksimum kayit sayisi}
                             {--offset=0 : Baslangic offset}
+                            {--yil= : Yayin veya olusturma tarihine gore yil filtresi}
                             {--force-ozet : Mevcut ozet, meta description ve seo basligini yeniden uret}
                             {--sadece-kategori : Sadece kategori eslestirmesi calistir}
+                            {--sadece-eslestirme : Sadece kisi, kurum ve kategori eslestirmesi calistir}
+                            {--sadece-seo-ozet : Icerige dokunmadan AI revizyonunda ozet, seo basligi ve meta description uret}
+                            {--kuyruga-ekle : Isleri queue uzerinden arka plana birakir}
                             {--yayinda : Sadece yayindaki haberleri isle}';
 
-    protected $description = 'Haberler icin AI ozet, kisi, kurum ve kategori eslestirmelerini toplu olarak calistirir.';
+    protected $description = 'Haberler icin AI revizyonu, kisi, kurum ve kategori eslestirmelerini toplu olarak calistirir.';
 
     public function handle(HaberKategoriEslestirmeService $haberKategoriEslestirmeService): int
     {
@@ -30,13 +35,26 @@ class HaberAiTopluIsle extends Command
 
         $limit = (int) $this->option('limit');
         $offset = (int) $this->option('offset');
+        $yil = (int) $this->option('yil');
         $forceOzet = (bool) $this->option('force-ozet');
         $sadeceKategori = (bool) $this->option('sadece-kategori');
+        $sadeceEslestirme = (bool) $this->option('sadece-eslestirme');
+        $sadeceSeoOzet = (bool) $this->option('sadece-seo-ozet');
+        $kuyrugaEkle = (bool) $this->option('kuyruga-ekle');
         $sadeceYayinda = (bool) $this->option('yayinda');
+
+        $seciliModSayisi = collect([$sadeceKategori, $sadeceEslestirme, $sadeceSeoOzet])->filter()->count();
+
+        if ($seciliModSayisi > 1) {
+            $this->error('Ayni anda sadece bir ozel mod secilebilir: sadece-kategori, sadece-eslestirme veya sadece-seo-ozet.');
+
+            return self::FAILURE;
+        }
 
         $sorgu = Haber::query()
             ->when($haberIdleri->isNotEmpty(), fn ($query) => $query->whereIn('id', $haberIdleri->all()))
             ->when($sadeceYayinda, fn ($query) => $query->where('durum', 'yayinda'))
+            ->when($yil > 0, fn ($query) => $query->whereYear(DB::raw('COALESCE(yayin_tarihi, created_at)'), $yil))
             ->orderBy('id');
 
         if ($offset > 0) {
@@ -60,34 +78,36 @@ class HaberAiTopluIsle extends Command
             'basarili' => 0,
             'hata' => 0,
             'kategori' => 0,
+            'kuyruga_eklendi' => 0,
         ];
 
         $this->info('Toplam haber: ' . $istatistik['toplam']);
 
         foreach ($haberler as $haber) {
             try {
-                if (! $sadeceKategori) {
-                    if ($forceOzet) {
-                        $haber->update([
-                            'ozet' => null,
-                            'meta_description' => null,
-                            'seo_baslik' => null,
-                            'ai_islendi' => false,
-                        ]);
-                    }
-
-                    dispatch_sync(new AiHaberIsleJob($haber->id));
-                }
-
                 if ($sadeceKategori) {
                     $haber = $haber->fresh();
                     $kategoriSonuclari = $haberKategoriEslestirmeService->haberIcinKategorileriBelirle($haber);
                     $kaydedilenler = $haberKategoriEslestirmeService->haberIcinKategorileriKaydet($haber, $kategoriSonuclari, 'ai');
                     $istatistik['kategori'] += count($kaydedilenler);
+                } else {
+                    $islemModu = $sadeceEslestirme
+                        ? 'sadece_eslestirme'
+                        : ($sadeceSeoOzet ? 'sadece_seo_ozet' : 'tam');
+
+                    $job = new AiHaberIsleJob($haber->id, $islemModu, $forceOzet);
+
+                    if ($kuyrugaEkle) {
+                        dispatch($job);
+                        $istatistik['kuyruga_eklendi']++;
+                    } else {
+                        dispatch_sync($job);
+                    }
                 }
 
                 $istatistik['basarili']++;
-                $this->line('#' . $haber->id . ' işlendi: ' . $haber->baslik);
+                $durumMetni = $kuyrugaEkle && ! $sadeceKategori ? 'kuyruga eklendi' : 'islendi';
+                $this->line('#' . $haber->id . ' ' . $durumMetni . ': ' . $haber->baslik);
             } catch (Throwable $exception) {
                 $istatistik['hata']++;
 
@@ -106,6 +126,7 @@ class HaberAiTopluIsle extends Command
         $this->line('Basarili: ' . $istatistik['basarili']);
         $this->line('Hata: ' . $istatistik['hata']);
         $this->line('Kategori kaydi: ' . $istatistik['kategori']);
+        $this->line('Kuyruga eklenen: ' . $istatistik['kuyruga_eklendi']);
 
         return self::SUCCESS;
     }

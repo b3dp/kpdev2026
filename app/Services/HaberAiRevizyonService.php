@@ -28,15 +28,19 @@ class HaberAiRevizyonService
                 'duzeltilmis_icerik' => $duzeltilmisVeri['icerik'] ?? $haber->icerik,
                 'orijinal_ozet' => $haber->ozet,
                 'duzeltilmis_ozet' => $duzeltilmisVeri['ozet'] ?? $haber->ozet,
+                'orijinal_seo_baslik' => $haber->getRawOriginal('seo_baslik'),
+                'duzeltilmis_seo_baslik' => $duzeltilmisVeri['seo_baslik'] ?? $haber->getRawOriginal('seo_baslik'),
                 'orijinal_meta_description' => $haber->meta_description,
                 'duzeltilmis_meta_description' => $duzeltilmisVeri['meta_description'] ?? $haber->meta_description,
                 'diff_ozeti_json' => $this->haberAiDiffService->diffOzetiHazirla([
                     'icerik' => $haber->icerik,
                     'ozet' => $haber->ozet,
+                    'seo_baslik' => $haber->getRawOriginal('seo_baslik'),
                     'meta_description' => $haber->meta_description,
                 ], [
                     'icerik' => $duzeltilmisVeri['icerik'] ?? $haber->icerik,
                     'ozet' => $duzeltilmisVeri['ozet'] ?? $haber->ozet,
+                    'seo_baslik' => $duzeltilmisVeri['seo_baslik'] ?? $haber->getRawOriginal('seo_baslik'),
                     'meta_description' => $duzeltilmisVeri['meta_description'] ?? $haber->meta_description,
                 ]),
                 'uygulandi_mi' => $uygulandiMi,
@@ -66,6 +70,7 @@ class HaberAiRevizyonService
                 'baslik' => $revizyon->duzeltilmis_baslik ?: $haber->baslik,
                 'icerik' => $revizyon->duzeltilmis_icerik,
                 'ozet' => $revizyon->duzeltilmis_ozet,
+                'seo_baslik' => $revizyon->duzeltilmis_seo_baslik,
                 'meta_description' => $revizyon->duzeltilmis_meta_description,
                 'ai_onay' => true,
             ]);
@@ -100,6 +105,7 @@ class HaberAiRevizyonService
                 'baslik' => $revizyon->orijinal_baslik ?: $haber->baslik,
                 'icerik' => $revizyon->orijinal_icerik,
                 'ozet' => $revizyon->orijinal_ozet,
+                'seo_baslik' => $revizyon->orijinal_seo_baslik,
                 'meta_description' => $revizyon->orijinal_meta_description,
                 'ai_onay' => false,
             ]);
