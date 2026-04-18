@@ -30,7 +30,7 @@ class AramaController extends Controller
                 ->where(fn ($query) => $query
                     ->where('baslik', 'like', "%{$q}%")
                     ->orWhere('ozet', 'like', "%{$q}%"))
-                ->latest('yayin_tarihi')
+                ->orderByRaw('COALESCE(yayin_tarihi, created_at) DESC')
                 ->take(10)
                 ->get();
 

@@ -60,7 +60,7 @@
                         </p>
                         <span style="font-family:'Plus Jakarta Sans',sans-serif; font-size:11.5px; color:rgba(22,46,75,0.4); display:flex; align-items:center; gap:4px;">
                             <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                            {{ $haber->yayin_tarihi?->format('d M Y') }}
+                            {{ $haber->gosterim_tarihi?->translatedFormat('d F Y') }}
                         </span>
                     </div>
                 </a>

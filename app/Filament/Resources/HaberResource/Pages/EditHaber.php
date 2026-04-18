@@ -6,6 +6,10 @@ use App\Enums\HaberDurumu;
 use App\Filament\Resources\HaberResource;
 use App\Jobs\GorselOptimizeJob;
 use App\Jobs\OnayEpostasiGonderJob;
+use App\Models\HaberAiRevizyonu;
+use App\Models\HaberKategorisi;
+use App\Services\HaberAiRevizyonService;
+use App\Services\HaberKategoriEslestirmeService;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
@@ -65,6 +69,72 @@ class EditHaber extends EditRecord
                         ->send();
 
                     $this->redirect($this->getResource()::getUrl('index'));
+                }),
+            Action::make('ai_karsilastirma')
+                ->label('AI Karşılaştırma')
+                ->icon('heroicon-o-arrows-right-left')
+                ->color('gray')
+                ->visible(fn (): bool => $this->record->aiRevizyonlari()->exists())
+                ->modalHeading('AI Karşılaştırma')
+                ->modalSubmitAction(false)
+                ->modalCancelActionLabel('Kapat')
+                ->modalWidth('7xl')
+                ->modalContent(fn () => view('filament.haber-ai-karsilastirma', [
+                    'haber' => $this->record->fresh(['aiRevizyonlari.olusturanYonetici']),
+                ])),
+            Action::make('ai_surumu_uygula')
+                ->label('AI Sürümünü Uygula')
+                ->icon('heroicon-o-check')
+                ->color('success')
+                ->visible(fn (): bool => (bool) $this->record->aiRevizyonlari()->exists())
+                ->requiresConfirmation()
+                ->modalHeading('AI sürümü uygulansın mı?')
+                ->modalDescription('Son AI revizyonundaki içerik, özet ve meta description mevcut haberin üzerine uygulanacak.')
+                ->action(function (): void {
+                    $revizyon = $this->record->aiRevizyonlari()->latest('created_at')->first();
+
+                    if (! $revizyon || ! app(HaberAiRevizyonService::class)->revizyonuUygula($revizyon)) {
+                        Notification::make()
+                            ->title('AI sürümü uygulanamadı')
+                            ->danger()
+                            ->send();
+
+                        return;
+                    }
+
+                    $this->record = $this->record->fresh();
+
+                    Notification::make()
+                        ->title('AI sürümü uygulandı')
+                        ->success()
+                        ->send();
+                }),
+            Action::make('orijinale_geri_don')
+                ->label('Orijinale Geri Dön')
+                ->icon('heroicon-o-arrow-uturn-left')
+                ->color('danger')
+                ->visible(fn (): bool => (bool) $this->record->aiRevizyonlari()->exists())
+                ->requiresConfirmation()
+                ->modalHeading('Orijinal sürüme dönülsün mü?')
+                ->modalDescription('Son AI revizyonundan önceki başlık, içerik, özet ve meta description geri yüklenecek.')
+                ->action(function (): void {
+                    $revizyon = $this->record->aiRevizyonlari()->latest('created_at')->first();
+
+                    if (! $revizyon || ! app(HaberAiRevizyonService::class)->revizyonuGeriAl($revizyon)) {
+                        Notification::make()
+                            ->title('Orijinal sürüme dönülemedi')
+                            ->danger()
+                            ->send();
+
+                        return;
+                    }
+
+                    $this->record = $this->record->fresh();
+
+                    Notification::make()
+                        ->title('Orijinal sürüm geri yüklendi')
+                        ->success()
+                        ->send();
                 }),
             Action::make('yayinla')
                 ->label('Yayına Al')
@@ -155,12 +225,27 @@ class EditHaber extends EditRecord
 
                     $this->redirect($this->getResource()::getUrl('index'));
                 }),
+            Action::make('ai_karsilastirma_footer')
+                ->label('AI Karşılaştırma')
+                ->icon('heroicon-o-arrows-right-left')
+                ->color('gray')
+                ->visible(fn (): bool => $this->record->aiRevizyonlari()->exists())
+                ->modalHeading('AI Karşılaştırma')
+                ->modalSubmitAction(false)
+                ->modalCancelActionLabel('Kapat')
+                ->modalWidth('7xl')
+                ->modalContent(fn () => view('filament.haber-ai-karsilastirma', [
+                    'haber' => $this->record->fresh(['aiRevizyonlari.olusturanYonetici']),
+                ])),
         ];
     }
 
     protected function afterSave(): void
     {
         $haber = $this->record;
+
+        $this->kategorileriKaydet();
+        $haber = $this->record->fresh();
 
         if (auth()->user()?->hasRole('Editör') && $this->record->wasChanged()) {
             $degisiklikler = $this->record->getChanges();
@@ -192,5 +277,44 @@ class EditHaber extends EditRecord
         if ($haber->durum === HaberDurumu::Incelemede) {
             OnayEpostasiGonderJob::dispatch($haber->id);
         }
+    }
+
+    private function kategorileriKaydet(): void
+    {
+        $kategoriIdleri = collect([(int) ($this->data['kategori_id'] ?? 0)])
+            ->merge((array) ($this->data['ek_kategori_idleri'] ?? []))
+            ->map(static fn ($id) => (int) $id)
+            ->filter(static fn ($id) => $id > 0)
+            ->unique()
+            ->values();
+
+        if ($kategoriIdleri->isEmpty()) {
+            return;
+        }
+
+        $kategoriler = HaberKategorisi::query()
+            ->whereIn('id', $kategoriIdleri->all())
+            ->get(['id', 'ad', 'slug']);
+
+        $sonuclar = $kategoriIdleri
+            ->map(function (int $kategoriId, int $index) use ($kategoriler): ?array {
+                $kategori = $kategoriler->firstWhere('id', $kategoriId);
+
+                if (! $kategori) {
+                    return null;
+                }
+
+                return [
+                    'id' => $kategori->id,
+                    'ad' => $kategori->ad,
+                    'slug' => $kategori->slug,
+                    'skor' => $index === 0 ? 100 : 95,
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
+
+        app(HaberKategoriEslestirmeService::class)->haberIcinKategorileriKaydet($this->record, $sonuclar, 'manuel');
     }
 }

@@ -17,13 +17,13 @@ class HomeController extends Controller
         $mansetHaberler = Haber::with('kategori')
             ->where('durum', 'yayinda')
             ->where('manset', 1)
-            ->latest('yayin_tarihi')
+            ->orderByRaw('COALESCE(yayin_tarihi, created_at) DESC')
             ->take(3)
             ->get();
 
         $sonHaberler = Haber::with('kategori')
             ->where('durum', 'yayinda')
-            ->latest('yayin_tarihi')
+            ->orderByRaw('COALESCE(yayin_tarihi, created_at) DESC')
             ->take(6)
             ->get();
 

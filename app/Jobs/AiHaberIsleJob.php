@@ -6,6 +6,8 @@ use App\Models\Haber;
 use App\Models\Kisi;
 use App\Models\Kurum;
 use App\Services\GeminiService;
+use App\Services\HaberAiRevizyonService;
+use App\Services\HaberKategoriEslestirmeService;
 use App\Services\LevenshteinService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -30,7 +32,12 @@ class AiHaberIsleJob implements ShouldQueue
         return [60, 120, 300];
     }
 
-    public function handle(GeminiService $geminiService, LevenshteinService $levenshteinService): void
+    public function handle(
+        GeminiService $geminiService,
+        HaberAiRevizyonService $haberAiRevizyonService,
+        LevenshteinService $levenshteinService,
+        HaberKategoriEslestirmeService $haberKategoriEslestirmeService,
+    ): void
     {
         $haber = Haber::query()->find($this->haberId);
 
@@ -45,12 +52,19 @@ class AiHaberIsleJob implements ShouldQueue
             ? (string) $haber->getRawOriginal('seo_baslik')
             : $geminiService->seoBaslikUret((string) $haber->baslik);
 
-        $haber->update([
+        $duzeltilmisVeri = [
             'icerik' => $duzeltilmisMetin,
             'ozet' => $ozet,
             'meta_description' => $metaDescription,
             'seo_baslik' => $seoBaslik,
             'ai_islendi' => true,
+        ];
+
+        $haberAiRevizyonService->revizyonOlustur($haber, $duzeltilmisVeri, 'ai_imla_duzeltme', false);
+
+        $haber->update([
+            'ai_islendi' => true,
+            'ai_onay' => false,
         ]);
 
         \Log::debug('AI_KISI_TESPIT_METIN', [
@@ -124,6 +138,9 @@ class AiHaberIsleJob implements ShouldQueue
                 ]
             );
         }
+
+        $kategoriSonuclari = $haberKategoriEslestirmeService->haberIcinKategorileriBelirle($haber);
+        $haberKategoriEslestirmeService->haberIcinKategorileriKaydet($haber, $kategoriSonuclari);
     }
 
     public function failed(Throwable $exception): void

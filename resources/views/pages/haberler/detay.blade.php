@@ -10,6 +10,7 @@
     $yayinTarihi = $haber->yayin_tarihi ?? $haber->created_at;
     $metaAciklama = html_entity_decode($haber->meta_description ?? $haber->ozet ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8');
     $robotsDeger = $haber->robots ?? 'index, follow';
+    $kategoriAdlari = $haber->kategoriler->pluck('ad')->filter()->unique()->values();
     if ($robotsDeger && !str_contains($robotsDeger, 'follow') && !str_contains($robotsDeger, 'nofollow')) {
         $robotsDeger .= ', follow';
     }
@@ -32,6 +33,8 @@
   "datePublished": "{{ $yayinTarihi?->toIso8601String() }}",
   "dateModified": "{{ $haber->updated_at?->toIso8601String() }}",
   "description": "{{ $metaAciklama }}",
+    "articleSection": @json($kategoriAdlari->first() ?: $haber->kategori?->ad),
+    "keywords": @json($kategoriAdlari->all()),
   "wordCount": {{ $kelimeSayisi }},
   "timeRequired": "PT{{ $okumaSuresi }}M",
   "speakable": {
@@ -268,7 +271,13 @@
         <div class="flex flex-col gap-8 lg:flex-row lg:items-start xl:gap-10">
             <div class="min-w-0 flex-1">
                 <div class="mb-6">
-                    @if($haber->kategori)
+                    @if($haber->kategoriler->isNotEmpty())
+                        <div class="mb-3 flex flex-wrap gap-2">
+                            @foreach($haber->kategoriler as $kategori)
+                                <span class="inline-block rounded-full px-3 py-1 font-jakarta text-xs font-bold text-white" style="background:{{ $kategori->renk ?? '#3B82F6' }};">{{ $kategori->ad }}</span>
+                            @endforeach
+                        </div>
+                    @elseif($haber->kategori)
                         <span class="mb-3 inline-block rounded-full px-3 py-1 font-jakarta text-xs font-bold text-white" style="background:{{ $haber->kategori->renk ?? '#3B82F6' }};">{{ $haber->kategori->ad }}</span>
                     @endif
 

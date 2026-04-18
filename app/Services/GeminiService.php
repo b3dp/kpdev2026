@@ -116,6 +116,74 @@ class GeminiService
         return $this->kisiVeKurumTespitEt($metin)['kurumlar'] ?? [];
     }
 
+    public function haberKategorileriniEslestir(string $baslik, ?string $ozet, string $icerik, array $kategoriler): array
+    {
+        if ($kategoriler === []) {
+            return [];
+        }
+
+        $kategoriMetni = collect($kategoriler)
+            ->map(function (array $kategori): string {
+                $aciklama = trim((string) ($kategori['aciklama'] ?? ''));
+
+                return '- slug: ' . ($kategori['slug'] ?? '')
+                    . ', ad: ' . ($kategori['ad'] ?? '')
+                    . ($aciklama !== '' ? ', aciklama: ' . $aciklama : '');
+            })
+            ->implode("\n");
+
+        $json = $this->jsonCevabiAl(
+            "Aşağıdaki haber için SADECE verilen kategori listesinden uygun olanları seç.\n"
+            . "Bir haber birden çok kategori alabilir ama yalnızca gerçekten güçlü eşleşme varsa ekle.\n"
+            . "En fazla 3 kategori döndür. İlk sıradaki kategori ana kategori olacak.\n"
+            . "Her kategori için 0-100 arası skor ver.\n\n"
+            . "KATEGORİLER:\n{$kategoriMetni}\n\n"
+            . "HABER BAŞLIĞI:\n{$baslik}\n\n"
+            . "HABER ÖZETİ:\n" . ($ozet ?? '') . "\n\n"
+            . "HABER İÇERİĞİ:\n{$icerik}",
+            <<<'PROMPT'
+Sen haber sınıflandırma uzmanısın.
+
+Kurallar:
+- Sadece verilen kategori slug'larını kullan.
+- Uydurma kategori üretme.
+- Haberle zayıf ilişkili kategoriyi ekleme.
+- Başlık, özet ve içerikte açık sinyal varsa çoklu kategori verebilirsin.
+- İlk sıraya en güçlü kategoriyi koy.
+- Çıktı sadece geçerli JSON olsun.
+
+Çıktı formatı:
+{"kategoriler":[{"slug":"egitim","skor":94,"neden":"..."},{"slug":"duyuru","skor":76,"neden":"..."}]}
+PROMPT
+        );
+
+        $sonuclar = $this->listeyiNormalizeEt($json, ['kategoriler', 'categories'])
+            ?: [];
+
+        return collect($sonuclar)
+            ->map(function ($kategori): ?array {
+                if (! is_array($kategori)) {
+                    return null;
+                }
+
+                $slug = Str::slug((string) ($kategori['slug'] ?? ''));
+
+                if ($slug === '') {
+                    return null;
+                }
+
+                return [
+                    'slug' => $slug,
+                    'skor' => max(0, min(100, (int) ($kategori['skor'] ?? 0))),
+                    'neden' => trim((string) ($kategori['neden'] ?? '')),
+                ];
+            })
+            ->filter()
+            ->unique('slug')
+            ->values()
+            ->all();
+    }
+
     private function kisiVeKurumTespitEt(string $metin): array
     {
         $anahtar = md5($metin);

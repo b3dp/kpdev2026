@@ -99,7 +99,7 @@
                 @endif
                 <span class="flex items-center gap-1.5 font-jakarta text-[13px] text-white/55">
                     <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                    {{ $oneCikanHaber->yayin_tarihi?->translatedFormat('d F Y') }}
+                    {{ $oneCikanHaber->gosterim_tarihi?->translatedFormat('d F Y') }}
                 </span>
             </div>
         </a>
@@ -144,7 +144,7 @@
                         <div class="flex items-center justify-between">
                             <span class="flex items-center gap-1.5 font-jakarta text-[12px] text-teal-muted">
                                 <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                                {{ $haber->yayin_tarihi?->translatedFormat('d F Y') }}
+                                {{ $haber->gosterim_tarihi?->translatedFormat('d F Y') }}
                             </span>
                             <span class="font-jakarta text-[12px] font-semibold text-accent">2 dk →</span>
                         </div>

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -180,6 +181,16 @@ class Haber extends Model
         return $this->belongsTo(HaberKategorisi::class, 'kategori_id');
     }
 
+    public function kategoriler(): BelongsToMany
+    {
+        return $this->belongsToMany(HaberKategorisi::class, 'haber_kategori_eslestirmeleri', 'haber_id', 'haber_kategorisi_id')
+            ->withPivot(['skor', 'ana_kategori_mi', 'kaynak'])
+            ->withTimestamps()
+            ->orderByPivot('ana_kategori_mi', 'desc')
+            ->orderBy('haber_kategorileri.sira')
+            ->orderBy('haber_kategorileri.ad');
+    }
+
     public function etiketler(): BelongsToMany
     {
         return $this->belongsToMany(Etiket::class, 'haber_etiketler', 'haber_id', 'etiket_id')->withTimestamps();
@@ -222,9 +233,19 @@ class Haber extends Model
         return $this->hasMany(HaberOnayToken::class, 'haber_id');
     }
 
+    public function aiRevizyonlari(): HasMany
+    {
+        return $this->hasMany(HaberAiRevizyonu::class, 'haber_id')->latest('created_at');
+    }
+
     public function gorseller(): HasMany
     {
         return $this->hasMany(HaberGorseli::class, 'haber_id')->orderBy('sira');
+    }
+
+    public function getGosterimTarihiAttribute(): ?Carbon
+    {
+        return $this->yayin_tarihi ?? $this->created_at;
     }
 
     public function gorselLgUrl(): string

@@ -103,6 +103,10 @@
 >
     <div class="text-sm text-gray-600" x-text="adim"></div>
 
+    <div class="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+        AI artık içeriği doğrudan ezmez. Önce revizyon önerisi üretir; karşılaştırma ekranından inceleyip uygularsınız.
+    </div>
+
     <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
         <div class="bg-blue-600 h-3 transition-all duration-500" :style="`width: ${yuzde}%`"></div>
     </div>
@@ -132,6 +136,6 @@
     </div>
 
     <div class="text-sm text-green-600" x-show="tamamlandi">
-        AI tamamlandı, içerik kaydedildi ve onaya gönderildi.
+        AI önerisi hazırlandı. İçerik otomatik uygulanmadı.
     </div>
 </div>

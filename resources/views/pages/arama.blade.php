@@ -149,7 +149,7 @@
                         </span>
                       @endif
                       <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:#62868D;">
-                        {{ $haber->yayin_tarihi?->format('d M Y') }}
+                        {{ $haber->gosterim_tarihi?->translatedFormat('d F Y') }}
                       </span>
                     </div>
 

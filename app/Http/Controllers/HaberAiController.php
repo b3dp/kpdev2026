@@ -7,6 +7,8 @@ use App\Models\Haber;
 use App\Models\Kisi;
 use App\Models\Kurum;
 use App\Services\GeminiService;
+use App\Services\HaberAiRevizyonService;
+use App\Services\HaberKategoriEslestirmeService;
 use App\Services\LevenshteinService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -56,11 +58,13 @@ class HaberAiController extends Controller
             $haber->update(['ai_islem_yuzde' => 60, 'ai_islem_adim' => 'Meta description üretiliyor']);
             $metaDescription = $geminiService->metaDescriptionUret($duzeltilmisMetin);
 
-            $haber->update([
+            $duzeltilmisVeri = [
                 'icerik' => $duzeltilmisMetin,
                 'ozet' => $ozet,
                 'meta_description' => $metaDescription,
-            ]);
+            ];
+
+            app(HaberAiRevizyonService::class)->revizyonOlustur($haber, $duzeltilmisVeri, 'ai_imla_duzeltme', false);
 
             // Tekrar başlatmada ilişkileri sıfırdan kurmak için mevcut eşleşmeleri tamamen temizle.
             DB::table('haber_kisiler')
@@ -277,14 +281,23 @@ class HaberAiController extends Controller
             }
 
             $haber->update([
+                'ai_islem_yuzde' => 95,
+                'ai_islem_adim' => "Kategori eşleştirmesi yapılıyor (kişi: {$eklenenKisiSayisi}, kurum: {$eklenenKurumSayisi})",
+            ]);
+
+            $kategoriSonuclari = app(HaberKategoriEslestirmeService::class)->haberIcinKategorileriBelirle($haber);
+            app(HaberKategoriEslestirmeService::class)->haberIcinKategorileriKaydet($haber, $kategoriSonuclari);
+
+            $haber->update([
                 'ai_islendi' => true,
+                'ai_onay' => false,
                 'ai_islem_yuzde' => 100,
-                'ai_islem_adim' => "AI işlemleri tamamlandı (kişi: {$eklenenKisiSayisi}, kurum: {$eklenenKurumSayisi})",
+                'ai_islem_adim' => "AI önerisi hazır (kişi: {$eklenenKisiSayisi}, kurum: {$eklenenKurumSayisi})",
             ]);
 
             dispatch_sync(new OnayEpostasiGonderJob($haber->id));
 
-            return response()->json(['message' => 'AI işlemleri tamamlandı.']);
+            return response()->json(['message' => 'AI önerisi hazırlandı. Revizyon ekranından uygulayabilirsiniz.']);
         } catch (Throwable $exception) {
             $haber->update([
                 'ai_islendi' => false,

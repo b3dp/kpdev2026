@@ -19,11 +19,17 @@ class HaberController extends Controller
             ->orderBy('sira')
             ->get();
 
-        $listeQuery = Haber::with('kategori')
+        $listeQuery = Haber::with(['kategori', 'kategoriler'])
             ->where('durum', 'yayinda')
             ->when($kategoriSlug, function ($query) use ($kategoriSlug) {
-                $query->whereHas('kategori', function ($kategoriQuery) use ($kategoriSlug) {
-                    $kategoriQuery->where('slug', $kategoriSlug);
+                $query->where(function ($altQuery) use ($kategoriSlug) {
+                    $altQuery
+                        ->whereHas('kategori', function ($kategoriQuery) use ($kategoriSlug) {
+                            $kategoriQuery->where('slug', $kategoriSlug);
+                        })
+                        ->orWhereHas('kategoriler', function ($kategoriQuery) use ($kategoriSlug) {
+                            $kategoriQuery->where('slug', $kategoriSlug);
+                        });
                 });
             })
             ->when($arama !== '', function ($query) use ($arama) {
@@ -37,18 +43,18 @@ class HaberController extends Controller
 
         $oneCikanHaber = (clone $listeQuery)
             ->where('manset', true)
-            ->latest('yayin_tarihi')
+            ->orderByRaw('COALESCE(yayin_tarihi, created_at) DESC')
             ->first();
 
         if (! $oneCikanHaber) {
             $oneCikanHaber = (clone $listeQuery)
-                ->latest('yayin_tarihi')
+                ->orderByRaw('COALESCE(yayin_tarihi, created_at) DESC')
                 ->first();
         }
 
         $haberler = (clone $listeQuery)
             ->when($oneCikanHaber, fn ($query) => $query->where('id', '!=', $oneCikanHaber->id))
-            ->latest('yayin_tarihi')
+            ->orderByRaw('COALESCE(yayin_tarihi, created_at) DESC')
             ->paginate(9)
             ->withQueryString();
 
@@ -63,7 +69,7 @@ class HaberController extends Controller
 
     public function show(string $slug)
     {
-        $haber = Haber::with(['kategori', 'etiketler', 'gorseller', 'kisiler', 'kurumlar'])
+        $haber = Haber::with(['kategori', 'kategoriler', 'etiketler', 'gorseller', 'kisiler', 'kurumlar'])
             ->where('slug', $slug)
             ->where('durum', 'yayinda')
             ->firstOrFail();
@@ -71,15 +77,24 @@ class HaberController extends Controller
         $haber->increment('goruntuleme');
         $haber->refresh();
 
-        $ilgiliHaberler = Haber::with('kategori')
+        $kategoriIdleri = $haber->kategoriler->pluck('id')->push($haber->kategori_id)->filter()->unique()->values();
+
+        $ilgiliHaberler = Haber::with(['kategori', 'kategoriler'])
             ->where('durum', 'yayinda')
             ->where('id', '!=', $haber->id)
-            ->latest('yayin_tarihi')
+            ->when($kategoriIdleri->isNotEmpty(), function ($query) use ($kategoriIdleri) {
+                $query->where(function ($altQuery) use ($kategoriIdleri) {
+                    $altQuery
+                        ->whereIn('kategori_id', $kategoriIdleri->all())
+                        ->orWhereHas('kategoriler', fn ($kategoriQuery) => $kategoriQuery->whereIn('haber_kategorileri.id', $kategoriIdleri->all()));
+                });
+            })
+            ->orderByRaw('COALESCE(yayin_tarihi, created_at) DESC')
             ->take(3)
             ->get();
 
         $sonHaberler = Haber::where('durum', 'yayinda')
-            ->latest('yayin_tarihi')
+            ->orderByRaw('COALESCE(yayin_tarihi, created_at) DESC')
             ->take(3)
             ->get();
 

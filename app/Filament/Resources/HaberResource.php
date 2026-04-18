@@ -125,6 +125,29 @@ class HaberResource extends Resource
                         ->searchable()
                         ->preload(),
 
+                    Select::make('ek_kategori_idleri')
+                        ->label('Ek Kategoriler')
+                        ->options(fn () => HaberKategorisi::query()->where('aktif', true)->orderBy('sira')->orderBy('ad')->pluck('ad', 'id')->all())
+                        ->multiple()
+                        ->searchable()
+                        ->preload()
+                        ->dehydrated(false)
+                        ->afterStateHydrated(function (Select $component, ?Haber $record): void {
+                            if (! $record) {
+                                $component->state([]);
+
+                                return;
+                            }
+
+                            $component->state(
+                                $record->kategoriler()
+                                    ->where('haber_kategorileri.id', '!=', $record->kategori_id)
+                                    ->pluck('haber_kategorileri.id')
+                                    ->all()
+                            );
+                        })
+                        ->helperText('Bir haber birden çok kategoriye atanabilir. İlk kategori ana kategori olarak ayrı seçilir.'),
+
                     Textarea::make('ozet')
                         ->label('Özet')
                         ->rows(4)

@@ -111,7 +111,7 @@
                 <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:{{ $index === 0 ? '15px' : '14px' }};color:#fff;margin:0 0 8px;line-height:1.35;">{{ $manset->baslik }}</h3>
                 <span class="meta-date">
                   <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                  {{ $manset->yayin_tarihi?->format('d M Y') }}
+                  {{ $manset->gosterim_tarihi?->translatedFormat('d F Y') }}
                 </span>
               </div>
             </div>
@@ -129,9 +129,10 @@
 <section class="relative overflow-hidden bg-[linear-gradient(135deg,#162E4B_0%,#091420_100%)] py-16">
   <div class="absolute -right-[60px] -top-[60px] h-[250px] w-[250px] rounded-full bg-accent/10"></div>
   <div class="relative z-[1] mx-auto max-w-7xl px-6 text-center">
-    <p class="mb-3.5 font-jakarta text-[12.5px] font-semibold uppercase tracking-[0.1em] text-cream/60">Harekete Geç</p>
-    <h2 class="mb-4 font-baskerville text-[clamp(24px,3.5vw,38px)] font-bold leading-[1.25] text-cream">Geleceği Birlikte <span class="italic text-accent">İnşa Edelim</span></h2>
-    <p class="mx-auto mb-7 max-w-[560px] font-jakarta text-[15px] leading-[1.7] text-cream/60">Her yıl yüzlerce öğrenci burs desteğimizle hayallerine ulaşıyor.</p>
+    <h2 class="mb-4 font-baskerville text-[clamp(24px,3.5vw,38px)] font-bold leading-[1.25] text-cream">Tertemiz yavrularımıza <span class="italic text-accent">Kitabullah'ı</span> nakşediyoruz.</h2>
+    <p class="mx-auto mb-7 max-w-[560px] font-jakarta text-[15px] leading-[1.7] text-cream/60">Hz. Osman ibni Affan (R.A)’dan rivayet olunur ki; Rasûlullah (S.A.V) şöyle buyurdu:<br/>
+<b>“Sizin en hayırlınız Kur’anı öğrenen ve öğretendir.”</b><br/>
+Tirmizî, Fedâilü'l-Kur'ân, 15.</p>
     <div class="flex flex-wrap justify-center gap-3">
       <a href="{{ route('bagis.index') }}" class="flex items-center gap-2 rounded-[10px] bg-orange-cta px-7 py-[13px] font-jakarta text-sm font-bold text-white transition-colors hover:bg-[#c94620]">Bağış Yap</a>
       <a href="{{ route('ekayit.index') }}" class="flex items-center gap-2 rounded-[10px] border border-cream/30 px-7 py-[13px] font-jakarta text-sm font-semibold text-cream transition-colors hover:bg-white/10">Öğrenci Kayıt</a>
@@ -143,8 +144,7 @@
   <div class="mx-auto max-w-7xl px-6">
     <div class="mb-8 flex flex-wrap items-end justify-between gap-3">
       <div>
-        <p class="mb-2 font-jakarta text-[12.5px] font-semibold uppercase tracking-[0.1em] text-accent">İyiliğin Farklı Yüzleri</p>
-        <h2 class="font-baskerville text-[clamp(22px,3vw,32px)] font-bold text-primary">Bağış Türleri</h2>
+        <h2 class="font-baskerville text-[clamp(22px,3vw,32px)] font-bold text-primary">Bağış Yap</h2>
       </div>
       <a href="{{ route('bagis.index') }}" class="flex items-center gap-1.5 font-jakarta text-[13px] font-semibold text-primary opacity-70 transition-opacity hover:opacity-100">
         Tümünü Gör
@@ -238,7 +238,7 @@
               <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:rgba(255,255,255,.65);margin-bottom:10px;line-height:1.5;">{{ $buyukHaber->ozet }}</p>
               <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:rgba(255,255,255,.5);font-family:'Plus Jakarta Sans',sans-serif;">
                 <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                {{ $buyukHaber->yayin_tarihi?->format('d M Y') }}
+                {{ $buyukHaber->gosterim_tarihi?->translatedFormat('d F Y') }}
               </span>
             </div>
           </div>
@@ -272,7 +272,7 @@
                 <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;color:#fff;margin-bottom:5px;line-height:1.3;">{{ $ortaHaber->baslik }}</h3>
                 <span style="display:flex;align-items:center;gap:5px;font-size:11.5px;color:rgba(255,255,255,.5);font-family:'Plus Jakarta Sans',sans-serif;">
                   <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                  {{ $ortaHaber->yayin_tarihi?->format('d M Y') }}
+                  {{ $ortaHaber->gosterim_tarihi?->translatedFormat('d F Y') }}
                 </span>
               </div>
             </div>
@@ -304,7 +304,7 @@
                     <span style="display:inline-block;background:{{ $kucuk->kategori->renk ?? 'rgba(255,255,255,.2)' }};color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;margin-bottom:5px;font-family:'Plus Jakarta Sans',sans-serif;backdrop-filter:blur(4px);">{{ $kucuk->kategori->ad }}</span>
                   @endif
                   <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:12.5px;color:#fff;margin-bottom:4px;line-height:1.3;">{{ $kucuk->baslik }}</h3>
-                  <span style="font-size:11px;color:rgba(255,255,255,.45);font-family:'Plus Jakarta Sans',sans-serif;">{{ $kucuk->yayin_tarihi?->format('d M Y') }}</span>
+                  <span style="font-size:11px;color:rgba(255,255,255,.45);font-family:'Plus Jakarta Sans',sans-serif;">{{ $kucuk->gosterim_tarihi?->translatedFormat('d F Y') }}</span>
                 </div>
               </div>
             </a>
