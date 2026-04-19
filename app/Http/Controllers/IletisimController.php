@@ -100,6 +100,7 @@ class IletisimController extends Controller
 
             $aliciEposta = config('iletisim.merkez_eposta') ?: config('site.eposta');
 
+            // Yöneticilere ilet
             if (filled($aliciEposta)) {
                 app(ZeptomailService::class)->yoneticiAlertGonder([
                     [
@@ -107,6 +108,29 @@ class IletisimController extends Controller
                         'ad' => config('site.ad') . ' İletişim',
                     ],
                 ], $konu, $mesaj);
+            }
+
+            // Formu dolduran kişiye teşekkür maili gönder
+            try {
+                $tesekkurIcerik = view('emails.iletisim_tesekkur', [
+                    'ad' => $veri['ad'],
+                    'soyad' => $veri['soyad'],
+                    'konu' => $veri['konu'],
+                    'mesaj' => $veri['mesaj'],
+                ])->render();
+                app(ZeptomailService::class)->gonderTemel(
+                    $veri['eposta'],
+                    $veri['ad'] . ' ' . $veri['soyad'],
+                    'Kestanepazarı İletişim Formu',
+                    $tesekkurIcerik,
+                    'default',
+                    'iletisim_tesekkur',
+                );
+            } catch (\Throwable $e) {
+                Log::error('İletişim formu teşekkür maili gönderilemedi.', [
+                    'hata' => $e->getMessage(),
+                    'eposta' => $veri['eposta'],
+                ]);
             }
 
             return redirect()
@@ -130,33 +154,63 @@ class IletisimController extends Controller
         return collect([
             [
                 'kod' => '01',
-                'ad' => 'Genel Merkez',
-                'kisa_ad' => 'Kestanepazarı',
-                'baslik' => config('site.ad') . ' Öğrenci Yetiştirme Derneği',
-                'adres' => config('site.adres'),
+                'ad' => 'Kestanepazarı Öğrenci Yetiştirme Derneği Merkez',
+                'kisa_ad' => 'Merkez',
+                'baslik' => 'Kestanepazarı Öğrenci Yetiştirme Derneği Merkez',
+                'adres' => '872. Sk. No:52, 35250 Konak/İzmir',
                 'eposta' => config('iletisim.merkez_eposta'),
-                'yon_tarifi_url' => 'https://maps.google.com/?q=' . urlencode(config('site.adres')),
-                'harita_url' => 'https://www.google.com/maps?q=' . urlencode(config('site.adres')) . '&z=15&output=embed',
+                'yon_tarifi_url' => 'https://share.google/J7Zdte2AcmbN1BHpZ',
+                'harita_url' => 'https://www.google.com/maps?q=' . urlencode('872. Sk. No:52, 35250 Konak/İzmir') . '&z=16&output=embed',
             ],
             [
                 'kod' => '02',
-                'ad' => 'Seferihisar Şubesi',
-                'kisa_ad' => 'İlçe Merkezi',
-                'baslik' => 'Seferihisar İrtibat Ofisi',
-                'adres' => 'Seferihisar merkezinde öğrenci ve veli görüşmeleri için kullanılan irtibat noktası.',
+                'ad' => 'Kestanepazarı Hatay Kampüs',
+                'kisa_ad' => 'Hatay Kampüs',
+                'baslik' => 'Kestanepazarı Hatay Kampüs',
+                'adres' => 'Adnan Süvari, 175/1. Sk. No:8, 35140 Karabağlar/İzmir',
                 'eposta' => config('iletisim.merkez_eposta'),
-                'yon_tarifi_url' => 'https://maps.google.com/?q=' . urlencode('Seferihisar İzmir'),
-                'harita_url' => 'https://www.google.com/maps?q=' . urlencode('Seferihisar İzmir') . '&z=14&output=embed',
+                'yon_tarifi_url' => 'https://share.google/u06q4MFs0venDIhfj',
+                'harita_url' => 'https://www.google.com/maps?q=' . urlencode('Adnan Süvari, 175/1. Sk. No:8, 35140 Karabağlar/İzmir') . '&z=16&output=embed',
             ],
             [
                 'kod' => '03',
-                'ad' => 'Öğrenci Yurdu',
-                'kisa_ad' => 'Konaklama',
-                'baslik' => 'Öğrenci Destek ve Barınma Birimi',
-                'adres' => 'Öğrenci yurdu, barınma ve rehberlik süreçleri için bilgilendirme noktası.',
+                'ad' => 'Kestanepazarı Hatay Kur\'an Kursu',
+                'kisa_ad' => 'Hatay Kur\'an Kursu',
+                'baslik' => 'Kestanepazarı Hatay Kur\'an Kursu',
+                'adres' => 'Adnan Süvari, 175/1. Sk. No:8, 35140 Karabağlar/İzmir',
                 'eposta' => config('iletisim.merkez_eposta'),
-                'yon_tarifi_url' => 'https://maps.google.com/?q=' . urlencode('Kestanepazarı Seferihisar öğrenci yurdu'),
-                'harita_url' => 'https://www.google.com/maps?q=' . urlencode('Kestanepazarı Seferihisar öğrenci yurdu') . '&z=14&output=embed',
+                'yon_tarifi_url' => 'https://share.google/u06q4MFs0venDIhfj',
+                'harita_url' => 'https://www.google.com/maps?q=' . urlencode('Adnan Süvari, 175/1. Sk. No:8, 35140 Karabağlar/İzmir') . '&z=16&output=embed',
+            ],
+            [
+                'kod' => '04',
+                'ad' => 'Kestanepazarı Hatay Ortaöğretim Erkek Öğrenci Yurdu',
+                'kisa_ad' => 'Hatay Yurt',
+                'baslik' => 'Kestanepazarı Hatay Ortaöğretim Erkek Öğrenci Yurdu',
+                'adres' => 'Adnan Süvari, 175/3. Sk. No:26E, 35140 Karabağlar/İzmir',
+                'eposta' => config('iletisim.merkez_eposta'),
+                'yon_tarifi_url' => 'https://share.google/Nir82V0jmN4gVaXAc',
+                'harita_url' => 'https://www.google.com/maps?q=' . urlencode('Adnan Süvari, 175/3. Sk. No:26E, 35140 Karabağlar/İzmir') . '&z=16&output=embed',
+            ],
+            [
+                'kod' => '05',
+                'ad' => 'Kestanepazarı Merkez Kur\'an Kursu',
+                'kisa_ad' => 'Merkez Kur\'an Kursu',
+                'baslik' => 'Kestanepazarı Merkez Kur\'an Kursu',
+                'adres' => '872. Sk. No:52, 35250 Konak/İzmir',
+                'eposta' => config('iletisim.merkez_eposta'),
+                'yon_tarifi_url' => 'https://share.google/J7Zdte2AcmbN1BHpZ',
+                'harita_url' => 'https://www.google.com/maps?q=' . urlencode('872. Sk. No:52, 35250 Konak/İzmir') . '&z=16&output=embed',
+            ],
+            [
+                'kod' => '06',
+                'ad' => 'Kestanepazarı Hacı Tülay Çolakoğlu Kur\'an Kursu',
+                'kisa_ad' => 'Hacı Tülay Çolakoğlu',
+                'baslik' => 'Kestanepazarı Hacı Tülay Çolakoğlu Kur\'an Kursu',
+                'adres' => 'Yenişakran Hasbi Efendi Mah, Mimar Sinan Cd. No: 37, 35810 Aliağa/İzmir',
+                'eposta' => config('iletisim.merkez_eposta'),
+                'yon_tarifi_url' => 'https://share.google/lmrzfemzvenYpNQF4',
+                'harita_url' => 'https://www.google.com/maps?q=' . urlencode('Yenişakran Hasbi Efendi Mah, Mimar Sinan Cd. No: 37, 35810 Aliağa/İzmir') . '&z=16&output=embed',
             ],
         ]);
     }
