@@ -353,13 +353,13 @@ class EtkinlikResource extends Resource
                         ->label('Ana Görsel')
                         ->disk('spaces')
                         ->directory('etkinlikler')
-                        ->visibility('public')
                         ->image()
                         ->maxFiles(1)
                         ->preserveFilenames(false)
                         ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                         ->maxSize(65536)
                         ->imagePreviewHeight('180')
+                        ->previewable(true)
                         ->helperText('4:5 oranında, önerilen boyut: 1080x1350 piksel. JPG, PNG veya WEBP, maks 64MB.'),
 
                     FileUpload::make('galeri_gorseller')

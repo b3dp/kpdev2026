@@ -39,7 +39,7 @@ class EditEtkinlik extends EditRecord
     {
         $etkinlik = $this->record;
 
-        $anaGorsel = $this->tekDosyaYolu(data_get($this->data, 'ana_gorsel_gecici'));
+        $anaGorsel = $this->tekDosyaYolu(data_get($this->data, 'gorsel_lg'));
         if (filled($anaGorsel)) {
             dispatch_sync(new GorselOptimizeJob($etkinlik->id, 'etkinlik', 'ana_gorsel', $anaGorsel, 1));
         }
