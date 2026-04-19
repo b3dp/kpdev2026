@@ -131,7 +131,7 @@
          height="100"
          style="display:inline-block; vertical-align:middle; width:100px; height:100px; object-fit:contain; margin-bottom:10px;"><br/>
     <strong>Kestanepazarı Öğrenci Yetiştirme Derneği</strong><br>
-    Uğur Mumcu Mah. 1234 Sok. No:5 Karabağlar / İZMİR
+    Adnan Süvari, 175/1. Sk. No:8, 35140 Karabağlar/İzmir
 </p>
                             <p style="color:#9aa3ae;font-size:11px;font-family:Arial,sans-serif;margin:0;text-align:center;">
                                 <a href="{{ config('app.url') }}"
