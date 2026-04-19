@@ -45,9 +45,9 @@ return [
     ],
 
     'custom' => [
-        // [
-        //     'log_name' => 'Özel',
-        //     'color' => 'primary',
-        // ]
+        [
+            'log_name' => 'kurban',
+            'color' => 'success',
+        ],
     ],
 ];

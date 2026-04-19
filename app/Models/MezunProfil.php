@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Jobs\ModulRolBildirimJob;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,6 +13,13 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class MezunProfil extends Model
 {
     use HasFactory, LogsActivity, SoftDeletes;
+
+    protected static function booted(): void
+    {
+        static::created(function (MezunProfil $mezunProfil): void {
+            ModulRolBildirimJob::dispatch('mezun', $mezunProfil->id)->onQueue('default');
+        });
+    }
 
     protected $table = 'mezun_profiller';
 

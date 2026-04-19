@@ -12,11 +12,15 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('bagis:hicri-kontrol')->hourly();
+Schedule::command('queue:work --stop-when-empty --max-time=55')->everyMinute()->withoutOverlapping();
 Schedule::command('bagis:terk-sepet')->everyTwoHours();
 Schedule::command('bagis:rapor-gonder gunluk')->dailyAt('08:00');
 Schedule::command('bagis:rapor-gonder haftalik')->weeklyOn(1, '08:00');
 Schedule::command('bagis:rapor-gonder aylik')->monthlyOn(1, '08:00');
 Schedule::command('ekayit:donem-kontrol')->dailyAt('00:05');
+Schedule::command('yedek:log-aylik')->monthlyOn(1, '03:00')->withoutOverlapping();
+Schedule::command('yedek:db-gunluk')->dailyAt('04:00')->withoutOverlapping();
+Schedule::command('yedek:db-aylik')->monthlyOn(1, '05:00')->withoutOverlapping();
 Schedule::command('sms:durum-guncelle')->everyTenMinutes();
 Schedule::call(function () {
     \App\Models\Haber::query()

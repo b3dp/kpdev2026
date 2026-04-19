@@ -3,8 +3,8 @@
 set -euo pipefail
 
 PROJE_DIZINI="/var/www/vhosts/2026.kestanepazari.org.tr/httpdocs"
-LOG_DOSYASI="$PROJE_DIZINI/storage/logs/haber_ai_arka_plan.log"
-DURUM_DOSYASI="$PROJE_DIZINI/storage/logs/haber_ai_arka_plan.status"
+LOG_DOSYASI="$PROJE_DIZINI/storage/logs/haber_ai_son_6_ay.log"
+DURUM_DOSYASI="$PROJE_DIZINI/storage/logs/haber_ai_son_6_ay.status"
 
 hata_yaz() {
     local cikis_kodu=$?
@@ -27,16 +27,12 @@ mkdir -p "$PROJE_DIZINI/storage/logs"
 echo "calisiyor" > "$DURUM_DOSYASI"
 printf '[%s] BASLADI\n' "$(date -Is)" > "$LOG_DOSYASI"
 
-printf '[%s] ASAMA 1 basladi: tum haberlerde kisi/kurum/kategori eslestirmesi\n' "$(date -Is)" >> "$LOG_DOSYASI"
-calistir "haber:ai-toplu-isle --sadece-eslestirme"
+printf '[%s] ASAMA 1 basladi: son 6 ayda eklenmis bos yayin tarihleri tamamlanacak\n' "$(date -Is)" >> "$LOG_DOSYASI"
+calistir "haber:yayin-tarihi-duzelt --son-ay=6"
 printf '[%s] ASAMA 1 tamamlandi\n' "$(date -Is)" >> "$LOG_DOSYASI"
 
-printf '[%s] ARA ASAMA basladi: bos yayin tarihleri eski siteden tamamlanacak\n' "$(date -Is)" >> "$LOG_DOSYASI"
-calistir "haber:yayin-tarihi-duzelt"
-printf '[%s] ARA ASAMA tamamlandi\n' "$(date -Is)" >> "$LOG_DOSYASI"
-
-printf '[%s] ASAMA 2 basladi: yayin_tarihi 2026 olan haberlerde sadece AI revizyon ozet/seo/meta\n' "$(date -Is)" >> "$LOG_DOSYASI"
-calistir "haber:ai-toplu-isle --yil=2026 --sadece-seo-ozet"
+printf '[%s] ASAMA 2 basladi: yayin_tarihi son 6 ay icinde olan haberlerde AI revizyon uretilecek\n' "$(date -Is)" >> "$LOG_DOSYASI"
+calistir "haber:ai-toplu-isle --son-ay=6 --sadece-seo-ozet"
 printf '[%s] ASAMA 2 tamamlandi\n' "$(date -Is)" >> "$LOG_DOSYASI"
 
 printf '[%s] TAMAMLANDI\n' "$(date -Is)" >> "$LOG_DOSYASI"

@@ -44,6 +44,16 @@ class BagisTuruResource extends Resource
         return static::izinVarMi('bagis.turleri.listele');
     }
 
+    public static function canCreate(): bool
+    {
+        return static::izinVarMi('bagis.turleri.kaydet');
+    }
+
+    public static function canEdit($record): bool
+    {
+        return static::izinVarMi('bagis.turleri.duzenle');
+    }
+
     public static function canDelete($record): bool
     {
         return false;

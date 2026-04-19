@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\BagisDurumu;
 use App\Enums\OdemeSaglayici;
 use App\Enums\SepetDurumu;
+use App\Jobs\KurbanAktarimJob;
 use App\Jobs\MakbuzOlusturJob;
 use App\Models\Bagis;
 use App\Models\BagisKalemi;
@@ -197,6 +198,7 @@ class BagisOdemeService
             });
 
             MakbuzOlusturJob::dispatch($bagis)->onQueue('default');
+            KurbanAktarimJob::dispatch($bagis->id)->onQueue('default');
             app(KisiEslestirmeService::class)->bagisEslestir($bagis->fresh(['kisiler', 'uye']));
 
             $sepetService->sepetiBosalt($sepet);

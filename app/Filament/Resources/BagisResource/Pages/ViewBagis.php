@@ -301,7 +301,12 @@ class ViewBagis extends ViewRecord
 
     private function kurbanModuluVarMi(): bool
     {
-        return $this->record->kalemler->contains(fn ($kalem) => (bool) ($kalem->bagisTuru?->kurban_modulu));
+        return $this->record->kalemler->contains(function ($kalem) {
+            return $kalem->bagisTuru?->ozellik?->value === 'kucukbas_kurban'
+                || $kalem->bagisTuru?->ozellik === 'kucukbas_kurban'
+                || $kalem->bagisTuru?->ozellik?->value === 'buyukbas_kurban'
+                || $kalem->bagisTuru?->ozellik === 'buyukbas_kurban';
+        });
     }
 
     private function hissedarSatirlari(): array

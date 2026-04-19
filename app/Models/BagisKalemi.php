@@ -52,6 +52,6 @@ class BagisKalemi extends Model
 
     public function kurban(): BelongsTo
     {
-        return $this->belongsTo('App\\Models\\KurbanKayit', 'kurban_id');
+        return $this->belongsTo(KurbanKayit::class, 'kurban_id');
     }
 }

@@ -98,6 +98,12 @@ class RollerSeeder extends Seeder
             'bagis.listele', 'bagis.goruntule',
         ]);
 
+        // Kurban Görüntüleme
+        $kurbanGoruntulemeRol = Role::updateOrCreate(['name' => 'Kurban Görüntüleme', 'guard_name' => $guard], []);
+        $kurbanGoruntulemeRol->syncPermissions([
+            'kurban.listele', 'kurban.goruntule',
+        ]);
+
         // Pazarlama
         $pazarlamaRol = Role::updateOrCreate(['name' => 'Pazarlama', 'guard_name' => $guard], []);
         $pazarlamaRol->syncPermissions([

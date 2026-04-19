@@ -6,7 +6,6 @@ use App\Jobs\AiHaberIsleJob;
 use App\Models\Haber;
 use App\Services\HaberKategoriEslestirmeService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -16,7 +15,8 @@ class HaberAiTopluIsle extends Command
                             {--haber-idleri= : Virgulle ayrilmis haber id listesi}
                             {--limit=0 : Islenecek maksimum kayit sayisi}
                             {--offset=0 : Baslangic offset}
-                            {--yil= : Yayin veya olusturma tarihine gore yil filtresi}
+                            {--yil= : Sadece yayin_tarihi alanina gore yil filtresi}
+                            {--son-ay=0 : Sadece yayin_tarihi son N ay icinde olan haberleri isle}
                             {--force-ozet : Mevcut ozet, meta description ve seo basligini yeniden uret}
                             {--sadece-kategori : Sadece kategori eslestirmesi calistir}
                             {--sadece-eslestirme : Sadece kisi, kurum ve kategori eslestirmesi calistir}
@@ -36,6 +36,7 @@ class HaberAiTopluIsle extends Command
         $limit = (int) $this->option('limit');
         $offset = (int) $this->option('offset');
         $yil = (int) $this->option('yil');
+        $sonAy = max(0, (int) $this->option('son-ay'));
         $forceOzet = (bool) $this->option('force-ozet');
         $sadeceKategori = (bool) $this->option('sadece-kategori');
         $sadeceEslestirme = (bool) $this->option('sadece-eslestirme');
@@ -54,7 +55,8 @@ class HaberAiTopluIsle extends Command
         $sorgu = Haber::query()
             ->when($haberIdleri->isNotEmpty(), fn ($query) => $query->whereIn('id', $haberIdleri->all()))
             ->when($sadeceYayinda, fn ($query) => $query->where('durum', 'yayinda'))
-            ->when($yil > 0, fn ($query) => $query->whereYear(DB::raw('COALESCE(yayin_tarihi, created_at)'), $yil))
+            ->when($yil > 0, fn ($query) => $query->whereNotNull('yayin_tarihi')->whereYear('yayin_tarihi', $yil))
+            ->when($sonAy > 0, fn ($query) => $query->whereNotNull('yayin_tarihi')->where('yayin_tarihi', '>=', now()->subMonths($sonAy)))
             ->orderBy('id');
 
         if ($offset > 0) {

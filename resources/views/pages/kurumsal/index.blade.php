@@ -78,18 +78,11 @@
         ];
     }
 
-    $yatayMenu = $sayfaSlug === 'hakkimizda'
-        ? collect([
-            ['href' => '#tarihce', 'label' => 'Tarihçe', 'aktif' => true],
-            ['href' => '#amac', 'label' => 'Amaç', 'aktif' => false],
-            ['href' => '#hakkimizda', 'label' => 'Hakkımızda', 'aktif' => false],
-            ['href' => '#yonetim', 'label' => 'Yönetim Kurulu', 'aktif' => false],
-        ])
-        : $menuSayfalari->map(fn ($menuSayfa) => [
-            'href' => route('kurumsal.show', ['slug' => $menuSayfa->slug]),
-            'label' => $menuSayfa->ad,
-            'aktif' => $menuSayfa->slug === $sayfaSlug,
-        ]);
+    $yatayMenu = $menuSayfalari->map(fn ($menuSayfa) => [
+        'href' => route('kurumsal.show', ['slug' => $menuSayfa->slug]),
+        'label' => $menuSayfa->ad,
+        'aktif' => $menuSayfa->slug === $sayfaSlug,
+    ]);
 @endphp
 
 @section('title', $sayfaBaslik)
@@ -126,24 +119,10 @@
                 @endif
             </div>
 
-            <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_260px] lg:items-end">
-                <div>
-                    <span class="kurumsal-chip">Köklü miras • Eğitim odaklı yapı</span>
-                    <h1 class="mt-4 font-baskerville text-3xl font-bold leading-tight text-[#ebdfb5] md:text-5xl">
+            <div>
+                <h1 class="font-baskerville text-3xl font-bold leading-tight text-[#ebdfb5] md:text-5xl">
                         {{ $sayfaBaslik }}
-                    </h1>
-                    <p class="mt-4 max-w-2xl text-sm leading-7 text-[#ebdfb5]/75 md:text-base">
-                        {{ $sayfaOzet ?: 'Kestanepazarı’nın kurumsal yaklaşımını, değerlerini ve güncel içeriklerini bu sayfada inceleyebilirsiniz.' }}
-                    </p>
-                </div>
-
-                <div class="kurumsal-hero-badge-box">
-                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[#b27829]">Öne çıkan</p>
-                    <p class="mt-2 font-baskerville text-2xl font-bold text-white">1966</p>
-                    <p class="mt-2 text-sm leading-6 text-white/70">
-                        Seferihisar’da öğrencilerin eğitim yolculuğunu destekleyen güven temelli dayanışma geleneği.
-                    </p>
-                </div>
+                </h1>
             </div>
         </div>
     </section>
@@ -166,98 +145,16 @@
     </div>
 
     <section class="mx-auto max-w-7xl px-4 py-10 lg:px-6 lg:py-12">
-        <div class="grid gap-6 xl:grid-cols-[240px_minmax(0,1fr)_320px]">
-            <aside class="order-2 space-y-4 xl:order-1">
-                <div class="kurumsal-menu-card">
-                    <p class="kurumsal-menu-title">Kurumsal Menü</p>
-
-                    <div class="mt-3 space-y-2">
-                        @foreach($menuSayfalari as $menuSayfa)
-                            <a
-                                href="{{ route('kurumsal.show', ['slug' => $menuSayfa->slug]) }}"
-                                class="kurumsal-menu-link {{ $menuSayfa->slug === $sayfaSlug ? 'is-active' : '' }}"
-                            >
-                                <span>{{ $menuSayfa->ad }}</span>
-                                <span aria-hidden="true">›</span>
-                            </a>
-                        @endforeach
-                    </div>
-
-                    @if($ustSayfa)
-                        <div class="mt-5 rounded-2xl border border-[#162e4b]/10 bg-[#f7f5f0] p-3">
-                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#62868d]">Bağlı olduğu sayfa</p>
-                            <a href="{{ route('kurumsal.show', ['slug' => $ustSayfa->slug]) }}" class="mt-2 inline-flex text-sm font-semibold text-[#162e4b] transition hover:text-[#b27829]">
-                                {{ $ustSayfa->ad }}
-                            </a>
-                        </div>
-                    @endif
-
-                    @if($altSayfalar->isNotEmpty())
-                        <div class="mt-5 rounded-2xl border border-[#162e4b]/10 bg-[#f7f5f0] p-3">
-                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#62868d]">Alt sayfalar</p>
-                            <div class="mt-2 space-y-2">
-                                @foreach($altSayfalar as $altSayfa)
-                                    <a href="{{ route('kurumsal.show', ['slug' => $altSayfa->slug]) }}" class="block text-sm text-[#162e4b]/75 transition hover:text-[#b27829]">
-                                        {{ $altSayfa->ad }}
-                                    </a>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endif
-                </div>
-
-                <div class="kurumsal-cta-card">
-                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[#ebdfb5]/60">Destek</p>
-                    <h3 class="mt-2 font-baskerville text-xl font-bold text-[#ebdfb5]">Bir öğrencinin yolculuğuna katkı sunun</h3>
-                    <p class="mt-3 text-sm leading-6 text-[#ebdfb5]/70">
-                        Burs, barınma ve gelişim programlarına destek olmak için bağış sayfamızı ziyaret edebilirsiniz.
-                    </p>
-                    <a href="{{ route('bagis.index') }}" class="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#e95925] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#c94620]">
-                        Bağış Yap
-                    </a>
-                </div>
-            </aside>
-
-            <div class="order-1 space-y-6 xl:order-2">
+        <div class="grid gap-6 lg:grid-cols-3 lg:items-start">
+            <div class="order-1 space-y-6 lg:order-1 lg:col-span-2">
                 @include('pages.kurumsal.partials.' . match ($sablon) {
                     'iletisim' => 'iletisim',
                     'kurum' => 'kurum',
                     default => 'standart',
                 })
-
-                @if($sayfa->gorseller->isNotEmpty())
-                    <section class="kurumsal-section-card">
-                        <div class="mb-5 flex items-center justify-between gap-4">
-                            <div>
-                                <p class="kurumsal-eyebrow">Galeri</p>
-                                <h2 class="kurumsal-section-title">Sayfadan kareler</h2>
-                            </div>
-                            <span class="rounded-full bg-[#f7f5f0] px-3 py-1 text-xs font-semibold text-[#62868d]">
-                                {{ $sayfa->gorseller->count() }} görsel
-                            </span>
-                        </div>
-
-                        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                            @foreach($sayfa->gorseller as $gorsel)
-                                <figure class="kurumsal-gallery-item">
-                                    <img
-                                        src="{{ $gorsel->lgUrl() }}"
-                                        alt="{{ $gorsel->alt_text ?: $sayfaBaslik }}"
-                                        class="h-52 w-full object-cover"
-                                        loading="lazy"
-                                        decoding="async"
-                                    >
-                                    @if($gorsel->alt_text)
-                                        <figcaption>{{ $gorsel->alt_text }}</figcaption>
-                                    @endif
-                                </figure>
-                            @endforeach
-                        </div>
-                    </section>
-                @endif
             </div>
 
-            <aside class="order-3 xl:order-3">
+            <aside class="order-2 space-y-6 lg:order-2 lg:col-span-1 lg:w-80 lg:sticky lg:top-6">
                 @include('components.sidebar')
             </aside>
         </div>

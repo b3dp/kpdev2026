@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\BagisDurumu;
 use App\Enums\OdemeSaglayici;
+use App\Jobs\KurbanAktarimJob;
 use App\Jobs\MakbuzOlusturJob;
 use App\Services\BagisNoService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -35,6 +36,7 @@ class Bagis extends Model
 
             if ($oncekiDurum !== BagisDurumu::Odendi->value && $yeniDurum === BagisDurumu::Odendi->value) {
                 MakbuzOlusturJob::dispatch($bagis)->onQueue('default');
+                KurbanAktarimJob::dispatch($bagis->id)->onQueue('default');
                 app(\App\Services\KisiEslestirmeService::class)->bagisEslestir($bagis);
             }
         });
@@ -115,6 +117,11 @@ class Bagis extends Model
     public function odemeHatalari(): HasMany
     {
         return $this->hasMany(OdemeHatasi::class, 'bagis_id');
+    }
+
+    public function kurbanKayitlari(): HasMany
+    {
+        return $this->hasMany(KurbanKayit::class, 'bagis_id');
     }
 
     public static function bagisNoUret(): string
