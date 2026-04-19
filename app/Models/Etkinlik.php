@@ -19,6 +19,15 @@ class Etkinlik extends Model
 {
     use HasFactory, HasSlug, LogsActivity, Searchable, SoftDeletes;
 
+    public function getGorselLgCdnUrlAttribute(): ?string
+    {
+        if (!filled($this->gorsel_lg)) {
+            return null;
+        }
+        $path = ltrim(str_replace('storage/', '', $this->gorsel_lg), '/');
+        return 'https://cdn.kestanepazari.org.tr/' . $path;
+    }
+
     protected $table = 'etkinlikler';
 
     protected $fillable = [

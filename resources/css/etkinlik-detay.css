@@ -29,9 +29,12 @@
     position: relative;
     overflow: hidden;
     border-radius: 16px;
-    aspect-ratio: 3 / 4;
+    aspect-ratio: 4 / 5;
     box-shadow: 0 8px 32px rgba(22, 46, 75, 0.18);
     background: linear-gradient(160deg, #1e3a58, #0a1d30);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .cal-btn {
@@ -82,7 +85,6 @@
 }
 
 .galeri-item {
-    aspect-ratio: 4 / 3;
     border-radius: 12px;
     overflow: hidden;
     background: linear-gradient(160deg, #1e3a58, #0a1d30);
@@ -104,7 +106,7 @@
 }
 
 .galeri-item.big {
-    aspect-ratio: 16 / 9;
+    /* aspect-ratio: 16 / 9; */
     grid-column: span 2;
 }
 

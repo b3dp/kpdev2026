@@ -91,19 +91,21 @@
                 $gorselUrl = filled($etkinlik->gorsel_lg)
                     ? (str_starts_with((string) $etkinlik->gorsel_lg, 'http')
                         ? $etkinlik->gorsel_lg
-                        : 'https://cdn.kestanepazari.org.tr/'.ltrim($etkinlik->gorsel_lg, '/'))
+                        : $etkinlik->gorsel_lg_cdn_url)
                     : null;
             @endphp
             <a href="{{ route('etkinlikler.show', $etkinlik->slug) }}"
                class="etk-grid-kart {{ $gecmis ? 'opacity-75' : '' }}">
-                <div class="etk-grid-foto aspect-[3/4]">
+
+                <div class="etk-grid-foto aspect-[3/5]">
                     @if($gorselUrl)
                         <img src="{{ $gorselUrl }}"
                              alt="{{ $etkinlik->baslik }}"
                              class="absolute inset-0 h-full w-full object-cover"
+                             style="aspect-ratio:3/5;"
                              loading="lazy"
-                             width="400"
-                             height="533">
+                             width="1080"
+                             height="1350">
                     @else
                         <div class="absolute inset-0 bg-[linear-gradient(160deg,#162E4B,#091420)]"></div>
                     @endif

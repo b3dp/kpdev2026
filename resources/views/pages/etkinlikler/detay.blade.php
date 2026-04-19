@@ -5,7 +5,7 @@
     $posterUrl = filled($etkinlik->gorsel_lg)
         ? (str_starts_with((string) $etkinlik->gorsel_lg, 'http')
             ? $etkinlik->gorsel_lg
-            : 'https://cdn.kestanepazari.org.tr/'.ltrim($etkinlik->gorsel_lg, '/'))
+            : $etkinlik->gorsel_lg_cdn_url)
         : null;
     $ogImage = filled($etkinlik->gorsel_og)
         ? (str_starts_with((string) $etkinlik->gorsel_og, 'http')
@@ -104,10 +104,11 @@
                         <img src="{{ $posterUrl }}"
                              alt="{{ $etkinlik->baslik }}"
                              class="absolute inset-0 h-full w-full object-cover"
+                             style="aspect-ratio:4/5;"
                              loading="eager"
                              fetchpriority="high"
-                             width="800"
-                             height="1067">
+                             width="1080"
+                             height="1350">
                     @else
                         <div class="absolute inset-0 bg-[linear-gradient(160deg,#162E4B,#091420)]"></div>
                     @endif
@@ -160,7 +161,7 @@
                                 <div>
                                     <p class="font-jakarta text-[11px] font-medium text-teal-muted">Konum</p>
                                     <p class="font-jakarta text-sm font-semibold text-primary">
-                                        {{ $etkinlik->konum_ad }}@if($etkinlik->konum_adres), {{ $etkinlik->konum_adres }} @endif
+                                        <a href="#etkinlik-harita" class="underline hover:text-accent transition-colors" onclick="event.preventDefault(); document.getElementById('etkinlik-harita').scrollIntoView({behavior: 'smooth'});">{{ $etkinlik->konum_ad }}@if($etkinlik->konum_adres), {{ $etkinlik->konum_adres }} @endif</a>
                                     </p>
                                 </div>
                             </div>
@@ -205,7 +206,7 @@
             </section>
 
             @if($etkinlik->konum_lat && $etkinlik->konum_lng)
-                <section class="rounded-2xl border border-primary/8 bg-white p-6 sm:p-7">
+                <section id="etkinlik-harita" class="rounded-2xl border border-primary/8 bg-white p-6 sm:p-7">
                     <h2 class="mb-4 border-b border-primary/8 pb-3 font-baskerville text-[19px] font-bold text-primary">Konum</h2>
                     <div class="map-frame">
                         <iframe
@@ -214,6 +215,15 @@
                             allowfullscreen
                             referrerpolicy="no-referrer-when-downgrade">
                         </iframe>
+                    </div>
+                    <div class="flex flex-wrap gap-3 mt-4">
+                        @php
+                            $yolTarifiUrl = 'https://www.google.com/maps/dir/?api=1&destination=' . $etkinlik->konum_lat . ',' . $etkinlik->konum_lng;
+                        @endphp
+                        <a href="{{ $yolTarifiUrl }}" target="_blank" rel="noopener" class="cal-btn">
+                            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#B27829" stroke-width="2"><path stroke-linecap="round" d="M12 2v20m10-10H2"/></svg>
+                            Yol Tarifi
+                        </a>
                     </div>
                     @if($etkinlik->konum_adres)
                         <p class="mt-3 font-jakarta text-sm leading-[1.7] text-teal-muted">{{ $etkinlik->konum_adres }}</p>
@@ -250,10 +260,11 @@
                                 <div class="galeri-item {{ $i === 0 ? 'big' : '' }}" onclick="openLightbox(@js($gorselLgUrl))">
                                     <img src="{{ $gorselSmUrl }}"
                                          alt="{{ $gorsel->alt_text ?? $etkinlik->baslik }}"
-                                         class="h-full w-full object-cover"
+                                         class="w-full h-auto object-contain mx-auto"
                                          loading="lazy"
-                                         width="400"
-                                         height="300">
+                                         style="max-height:340px;"
+                                         width="auto"
+                                         height="auto">
                                     <div class="galeri-overlay">
                                         <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#fff" stroke-width="2"><path stroke-linecap="round" d="M15 3h6m0 0v6m0-6L10 14"/><path stroke-linecap="round" d="M5 5v14h14"/></svg>
                                     </div>

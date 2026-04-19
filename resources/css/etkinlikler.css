@@ -86,9 +86,10 @@
 .etk-grid-foto {
     position: relative;
     display: flex;
-    align-items: flex-end;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
-    min-height: 420px;
+    aspect-ratio: 4 / 5;
     background: linear-gradient(160deg, #1e3a58 0%, #0a1d30 100%);
 }
 
