@@ -126,29 +126,6 @@
   </div>
 </section>
 
-<section class="hisar-tanitim py-[72px]">
-  <div class="mx-auto max-w-7xl px-6">
-    <div class="hisar-tanitim-kart">
-      <div class="hisar-tanitim-icerik">
-        <p class="hisar-tanitim-etiket">Kurum Hafızası</p>
-        <h2 class="hisar-tanitim-baslik">Bir çocuğa eğitim vermek, ona sonsuz bir kapı açmaktır.</h2>
-        <p class="hisar-tanitim-metin">Kestanepazarı; Kurra Hafız Salih Tanrıbuyruğu Hocamız tarafından yüz yılı aşkın süre önce temeli atılmış, o günün şartlarında hedefi Allah’ın dinini öğretmek ve öğrenmek olan bir kuruluştur. Derneğimiz bugün de, bu çizgiden ayrılmadan, gelişen ve değişen şartlarda, aynı gayeyle yoluna devam etmekte, aynı heyecan ve coşkuyu yüreklerinde hissetmektedir.</p>
-      </div>
-
-      <div class="hisar-tanitim-gorsel-wrap">
-        <img
-          src="{{ asset('images/hisar.png') }}"
-          alt="Kestanepazarı Hisar görseli"
-          class="hisar-tanitim-gorsel"
-          loading="lazy"
-          width="1054"
-          height="216"
-        >
-      </div>
-    </div>
-  </div>
-</section>
-
 <section class="bg-bg-soft py-[72px]">
   <div class="mx-auto max-w-7xl px-6">
     <div class="mb-8 flex flex-wrap items-end justify-between gap-3">
@@ -383,16 +360,26 @@
   </div>
 </section>
 
-<section class="quote-band py-20">
-  <div class="relative z-[1] mx-auto max-w-[680px] px-6 text-center">
-    <p class="mb-6 font-baskerville text-[clamp(20px,3vw,28px)] font-bold italic leading-[1.55] text-primary">
-      "Bir çocuğa eğitim vermek,<br>ona sonsuz bir kapı açmaktır."
-    </p>
-    <p class="mb-7 font-jakarta text-[13px] font-semibold uppercase tracking-[0.06em] text-primary/40">- Kestanepazari Dernegi</p>
-    <a href="{{ route('iletisim.index') }}" class="inline-flex items-center gap-2 rounded-[10px] bg-primary px-7 py-[13px] font-jakarta text-sm font-bold text-cream transition-colors hover:bg-primary-dark">
-      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-      Gönüllü Olun
-    </a>
+<section class="hisar-tanitim py-[72px]">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="hisar-tanitim-kart">
+      <div class="hisar-tanitim-icerik">
+        <p class="hisar-tanitim-etiket">Kurum Hafızası</p>
+        <h2 class="hisar-tanitim-baslik">Kestanepazarı Öğrenci Yetiştirme Derneği</h2>
+        <p class="hisar-tanitim-metin">Kestanepazarı; Kurra Hafız Salih Tanrıbuyruğu Hocamız tarafından yüz yılı aşkın süre önce temeli atılmış, o günün şartlarında hedefi Allah'ın dinini öğretmek ve öğrenmek olan bir kuruluştur. Derneğimiz bugün de, bu çizgiden ayrılmadan, gelişen ve değişen şartlarda, aynı gayeyle yoluna devam etmekte, aynı heyecan ve coşkuyu yüreklerinde hissetmektedir.</p>
+      </div>
+
+      <div class="hisar-tanitim-gorsel-wrap">
+        <img
+          src="{{ asset('images/hisar.png') }}"
+          alt="Kestanepazarı Hisar görseli"
+          class="hisar-tanitim-gorsel"
+          loading="lazy"
+          width="1054"
+          height="216"
+        >
+      </div>
+    </div>
   </div>
 </section>
 @endsection
