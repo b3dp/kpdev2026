@@ -247,7 +247,7 @@ Tirmizî, Fedâilü'l-Kur'ân, 15.</p>
 
       <div class="flex flex-col gap-3">
         @if($ortaHaber)
-          <a href="{{ route('haberler.show', $ortaHaber->slug) }}" class="haber-kucuk flex-1">
+          <a href="{{ route('haberler.show', $ortaHaber->slug) }}" class="haber-kucuk">
             <div class="haber-foto" style="height:160px;">
               @if($ortaHaber->gorsel_lg)
                 <img
@@ -279,7 +279,7 @@ Tirmizî, Fedâilü'l-Kur'ân, 15.</p>
           </a>
         @endif
 
-        <div class="grid flex-1 grid-cols-2 gap-3">
+        <div class="grid grid-cols-2 gap-3">
           @foreach($kucukHaberler as $kucuk)
             <a href="{{ route('haberler.show', $kucuk->slug) }}" class="haber-kucuk">
               <div class="haber-foto" style="height:130px;">
