@@ -155,6 +155,23 @@
     overflow: hidden;
 }
 
+.haber-vitrini-grid {
+    display: grid;
+    gap: 20px;
+}
+
+@media (min-width: 1024px) {
+    .haber-vitrini-grid {
+        grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+    }
+}
+
+.haber-foto--buyuk,
+.haber-foto--orta,
+.haber-foto--kucuk {
+    aspect-ratio: 16 / 9;
+}
+
 .haber-foto-bg {
     width: 100%;
     height: 100%;

@@ -210,10 +210,10 @@ Tirmizî, Fedâilü'l-Kur'ân, 15.</p>
       @endforeach
     </div>
 
-    <div class="grid gap-5 lg:grid-cols-2">
+    <div class="haber-vitrini-grid">
       @if($buyukHaber)
         <a href="{{ route('haberler.show', $buyukHaber->slug) }}" class="haber-buyuk">
-          <div class="haber-foto" style="height:320px;flex:1;">
+          <div class="haber-foto haber-foto--buyuk">
             @if($buyukHaber->gorsel_lg)
               <img
                 src="{{ $buyukHaber->gorselLgUrl() }}"
@@ -248,7 +248,7 @@ Tirmizî, Fedâilü'l-Kur'ân, 15.</p>
       <div class="flex flex-col gap-3">
         @if($ortaHaber)
           <a href="{{ route('haberler.show', $ortaHaber->slug) }}" class="haber-kucuk">
-            <div class="haber-foto" style="height:160px;">
+            <div class="haber-foto haber-foto--orta">
               @if($ortaHaber->gorsel_lg)
                 <img
                   src="{{ $ortaHaber->gorselLgUrl() }}"
@@ -282,18 +282,12 @@ Tirmizî, Fedâilü'l-Kur'ân, 15.</p>
         <div class="grid grid-cols-2 gap-3">
           @foreach($kucukHaberler as $kucuk)
             <a href="{{ route('haberler.show', $kucuk->slug) }}" class="haber-kucuk">
-              <div class="haber-foto" style="height:130px;">
+              <div class="haber-foto haber-foto--kucuk">
                 @if($kucuk->gorsel_sm)
-                  <div
-                    style="position:absolute;inset:0;background-image:url('{{ $kucuk->gorselSmUrl() }}');background-position:center;background-repeat:no-repeat;background-size:cover;transform:scale(1.08);filter:blur(14px);"
-                    aria-hidden="true"
-                  ></div>
-                  <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(8,16,28,.18) 0%, rgba(8,16,28,.06) 100%);" aria-hidden="true"></div>
                   <img
                     src="{{ $kucuk->gorselSmUrl() }}"
                     alt="{{ $kucuk->baslik }}"
-                    class="relative z-10 h-full w-full"
-                    style="object-fit:contain;object-position:center;"
+                    class="h-full w-full object-cover"
                     loading="lazy"
                     width="280"
                     height="130"
