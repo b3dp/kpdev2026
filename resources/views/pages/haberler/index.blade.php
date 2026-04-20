@@ -111,10 +111,17 @@
             <a href="{{ route('haberler.show', $haber->slug) }}" class="flex flex-col overflow-hidden rounded-2xl border border-primary/10 bg-white no-underline shadow-[0_1px_0_rgba(22,46,75,.05)] transition-all hover:-translate-y-[3px] hover:shadow-[0_8px_28px_rgba(22,46,75,.12)]">
                     <div class="relative h-[190px] overflow-hidden">
                         @if($haber->gorsel_sm)
+                            <div
+                                class="absolute inset-0"
+                                style="background-image:url('{{ $haber->gorselSmUrl() }}'); background-position:center; background-repeat:no-repeat; background-size:cover; transform:scale(1.08); filter:blur(16px);"
+                                aria-hidden="true"
+                            ></div>
+                            <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(8,16,28,.2) 0%, rgba(8,16,28,.08) 100%);" aria-hidden="true"></div>
                             <img
                                 src="{{ $haber->gorselSmUrl() }}"
                                 alt="{{ $haber->baslik }}"
-                                class="h-full w-full object-contain bg-gray-100"
+                                class="relative z-10 h-full w-full"
+                                style="object-fit:contain; object-position:center;"
                                 loading="lazy"
                                 width="420"
                                 height="190"
