@@ -32,7 +32,7 @@
   }
     $buyukHaber = $sonHaberler->first();
     $ortaHaber = $sonHaberler->skip(1)->take(1)->first();
-    $kucukHaberler = $sonHaberler->skip(2)->take(4);
+    $kucukHaberler = $sonHaberler->skip(2)->take(2);
     $aktifKategori = request('kategori');
 @endphp
 
@@ -212,37 +212,31 @@ Tirmizî, Fedâilü'l-Kur'ân, 15.</p>
 
     <div class="grid gap-5 lg:grid-cols-2">
       @if($buyukHaber)
-        @php
-          $buyukGorselUrl = filled($buyukHaber->gorsel_lg)
-              ? $buyukHaber->gorselLgUrl()
-              : $buyukHaber->gorselSmUrl();
-        @endphp
         <a href="{{ route('haberler.show', $buyukHaber->slug) }}" class="haber-buyuk">
-          <div class="haber-foto" style="aspect-ratio:16 / 9; background:linear-gradient(160deg,#2a4060 0%,#0d1e32 100%);">
-            @if($buyukGorselUrl)
+          <div class="haber-foto" style="height:320px;flex:1;">
+            @if($buyukHaber->gorsel_lg)
               <img
-                src="{{ $buyukGorselUrl }}"
+                src="{{ $buyukHaber->gorselLgUrl() }}"
                 alt="{{ $buyukHaber->baslik }}"
                 class="h-full w-full object-cover"
                 loading="lazy"
-                width="1280"
-                height="720"
+                width="640"
+                height="320"
               >
             @else
-              <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
+              <div style="width:100%;height:100%;background:linear-gradient(160deg,#2a4060 0%,#0d1e32 100%);display:flex;align-items:center;justify-content:center;">
                 <svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,.12)" stroke-width=".8"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
               </div>
             @endif
+
             <div class="haber-overlay"></div>
             <div class="haber-bottom">
               @if($buyukHaber->kategori)
                 <span style="display:inline-block;background:{{ $buyukHaber->kategori->renk ?? '#3B82F6' }};color:#fff;font-size:11px;font-weight:700;padding:3px 12px;border-radius:999px;margin-bottom:10px;font-family:'Plus Jakarta Sans',sans-serif;">{{ $buyukHaber->kategori->ad }}</span>
               @endif
-              <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:clamp(24px,2.2vw,38px);color:#fff;margin-bottom:10px;line-height:1.16;max-width:90%;">{{ $buyukHaber->baslik }}</h3>
-              @if($buyukHaber->ozet)
-                <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;color:rgba(255,255,255,.72);margin-bottom:12px;line-height:1.6;max-width:85%;">{{ $buyukHaber->ozet }}</p>
-              @endif
-              <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:rgba(255,255,255,.58);font-family:'Plus Jakarta Sans',sans-serif;">
+              <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:20px;color:#fff;margin-bottom:8px;line-height:1.3;">{{ $buyukHaber->baslik }}</h3>
+              <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:rgba(255,255,255,.65);margin-bottom:10px;line-height:1.5;">{{ $buyukHaber->ozet }}</p>
+              <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:rgba(255,255,255,.5);font-family:'Plus Jakarta Sans',sans-serif;">
                 <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
                 {{ $buyukHaber->gosterim_tarihi?->translatedFormat('d F Y') }}
               </span>
@@ -251,36 +245,32 @@ Tirmizî, Fedâilü'l-Kur'ân, 15.</p>
         </a>
       @endif
 
-      <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-3">
         @if($ortaHaber)
-          @php
-            $ortaGorselUrl = filled($ortaHaber->gorsel_lg)
-                ? $ortaHaber->gorselLgUrl()
-                : $ortaHaber->gorselSmUrl();
-          @endphp
           <a href="{{ route('haberler.show', $ortaHaber->slug) }}" class="haber-kucuk">
-            <div class="haber-foto" style="aspect-ratio:16 / 9; background:linear-gradient(160deg,#1a3d30 0%,#0c2018 100%);">
-              @if($ortaGorselUrl)
+            <div class="haber-foto" style="height:160px;">
+              @if($ortaHaber->gorsel_lg)
                 <img
-                  src="{{ $ortaGorselUrl }}"
+                  src="{{ $ortaHaber->gorselLgUrl() }}"
                   alt="{{ $ortaHaber->baslik }}"
                   class="h-full w-full object-cover"
                   loading="lazy"
-                  width="1280"
-                  height="720"
+                  width="560"
+                  height="160"
                 >
               @else
-                <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
+                <div style="width:100%;height:100%;background:linear-gradient(160deg,#1a3d30 0%,#0c2018 100%);display:flex;align-items:center;justify-content:center;">
                   <svg width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,.12)" stroke-width=".8"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
                 </div>
               @endif
+
               <div class="haber-overlay"></div>
               <div class="haber-bottom">
                 @if($ortaHaber->kategori)
                   <span style="display:inline-block;background:{{ $ortaHaber->kategori->renk ?? '#FF9300' }};color:#fff;font-size:10.5px;font-weight:700;padding:2px 10px;border-radius:999px;margin-bottom:7px;font-family:'Plus Jakarta Sans',sans-serif;">{{ $ortaHaber->kategori->ad }}</span>
                 @endif
-                <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:clamp(18px,1.7vw,28px);color:#fff;margin-bottom:6px;line-height:1.2;max-width:88%;">{{ $ortaHaber->baslik }}</h3>
-                <span style="display:flex;align-items:center;gap:5px;font-size:11.5px;color:rgba(255,255,255,.56);font-family:'Plus Jakarta Sans',sans-serif;">
+                <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;color:#fff;margin-bottom:5px;line-height:1.3;">{{ $ortaHaber->baslik }}</h3>
+                <span style="display:flex;align-items:center;gap:5px;font-size:11.5px;color:rgba(255,255,255,.5);font-family:'Plus Jakarta Sans',sans-serif;">
                   <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
                   {{ $ortaHaber->gosterim_tarihi?->translatedFormat('d F Y') }}
                 </span>
@@ -291,40 +281,37 @@ Tirmizî, Fedâilü'l-Kur'ân, 15.</p>
 
         <div class="grid grid-cols-2 gap-3">
           @foreach($kucukHaberler as $kucuk)
-            @php
-              $kucukGorselUrl = filled($kucuk->gorsel_lg)
-                  ? $kucuk->gorselLgUrl()
-                  : $kucuk->gorselSmUrl();
-            @endphp
             <a href="{{ route('haberler.show', $kucuk->slug) }}" class="haber-kucuk">
-              <div class="haber-foto" style="aspect-ratio:16 / 9; background:linear-gradient(160deg,#2d3748 0%,#1a202c 100%);">
-                @if($kucukGorselUrl)
+              <div class="haber-foto" style="height:130px;">
+                @if($kucuk->gorsel_sm)
+                  <div
+                    style="position:absolute;inset:0;background-image:url('{{ $kucuk->gorselSmUrl() }}');background-position:center;background-repeat:no-repeat;background-size:cover;transform:scale(1.08);filter:blur(14px);"
+                    aria-hidden="true"
+                  ></div>
+                  <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(8,16,28,.18) 0%, rgba(8,16,28,.06) 100%);" aria-hidden="true"></div>
                   <img
-                    src="{{ $kucukGorselUrl }}"
+                    src="{{ $kucuk->gorselSmUrl() }}"
                     alt="{{ $kucuk->baslik }}"
-                    class="h-full w-full object-cover"
+                    class="relative z-10 h-full w-full"
+                    style="object-fit:contain;object-position:center;"
                     loading="lazy"
-                    width="640"
-                    height="360"
+                    width="280"
+                    height="130"
                   >
                 @else
-                  <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
+                  <div style="width:100%;height:100%;background:linear-gradient(160deg,#2d3748 0%,#1a202c 100%);display:flex;align-items:center;justify-content:center;">
                     <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,.12)" stroke-width=".8"><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
                   </div>
                 @endif
-                <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(10,20,35,.24) 0%, rgba(10,20,35,.04) 45%, transparent 100%);"></div>
-              </div>
-              <div style="padding:13px 14px 15px; background:#fff; min-height:116px; display:flex; flex-direction:column; justify-content:space-between;">
-                <div>
+
+                <div class="haber-overlay"></div>
+                <div class="haber-bottom" style="padding:10px;">
                   @if($kucuk->kategori)
-                    <span style="display:inline-block;background:{{ $kucuk->kategori->renk ?? '#E2E8F0' }};color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;margin-bottom:8px;font-family:'Plus Jakarta Sans',sans-serif;">{{ $kucuk->kategori->ad }}</span>
+                    <span style="display:inline-block;background:{{ $kucuk->kategori->renk ?? 'rgba(255,255,255,.2)' }};color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;margin-bottom:5px;font-family:'Plus Jakarta Sans',sans-serif;backdrop-filter:blur(4px);">{{ $kucuk->kategori->ad }}</span>
                   @endif
-                  <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:13.5px;color:#162E4B;margin:0 0 8px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ $kucuk->baslik }}</h3>
+                  <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:12.5px;color:#fff;margin-bottom:4px;line-height:1.3;">{{ $kucuk->baslik }}</h3>
+                  <span style="font-size:11px;color:rgba(255,255,255,.45);font-family:'Plus Jakarta Sans',sans-serif;">{{ $kucuk->gosterim_tarihi?->translatedFormat('d F Y') }}</span>
                 </div>
-                <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#62868D;font-family:'Plus Jakarta Sans',sans-serif;">
-                  <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                  {{ $kucuk->gosterim_tarihi?->translatedFormat('d F Y') }}
-                </span>
               </div>
             </a>
           @endforeach
