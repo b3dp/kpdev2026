@@ -13,6 +13,16 @@
     transform: translateY(-2px);
 }
 
+.ana-hero-grid {
+    display: grid;
+}
+
+@media (min-width: 1024px) {
+    .ana-hero-grid {
+        grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    }
+}
+
 .hero-img-wrap {
     height: 160px;
     background: linear-gradient(160deg, #1e3a5f 0%, #0d2035 100%);
@@ -118,6 +128,81 @@
 .bagis-scroll::-webkit-scrollbar-thumb {
     background: #b27829;
     border-radius: 2px;
+}
+
+.hisar-tanitim {
+    background:
+        radial-gradient(circle at top right, rgba(255, 147, 0, 0.12), transparent 30%),
+        linear-gradient(135deg, #162e4b 0%, #0c1828 100%);
+    overflow: hidden;
+}
+
+.hisar-tanitim-kart {
+    position: relative;
+    display: grid;
+    gap: 28px;
+    align-items: center;
+    border: 1px solid rgba(235, 223, 181, 0.12);
+    border-radius: 28px;
+    padding: 34px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+    backdrop-filter: blur(10px);
+}
+
+@media (min-width: 1024px) {
+    .hisar-tanitim-kart {
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr);
+        padding: 42px;
+    }
+}
+
+.hisar-tanitim-icerik {
+    position: relative;
+    z-index: 1;
+}
+
+.hisar-tanitim-etiket {
+    margin: 0 0 14px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #ebdfb5;
+}
+
+.hisar-tanitim-baslik {
+    margin: 0 0 16px;
+    max-width: 12ch;
+    font-family: 'Libre Baskerville', serif;
+    font-size: clamp(28px, 4vw, 44px);
+    line-height: 1.15;
+    color: #fff8ea;
+}
+
+.hisar-tanitim-metin {
+    margin: 0;
+    max-width: 66ch;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.8;
+    color: rgba(255, 248, 234, 0.78);
+}
+
+.hisar-tanitim-gorsel-wrap {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hisar-tanitim-gorsel {
+    width: 100%;
+    max-width: 520px;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 16px 36px rgba(0, 0, 0, 0.28));
 }
 
 .haber-buyuk {

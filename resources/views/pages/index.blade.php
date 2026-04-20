@@ -38,7 +38,7 @@
 
 <section class="bg-bg-soft pb-[72px] pt-[62px] lg:pt-[69px]">
   <div class="mx-auto max-w-7xl px-6">
-    <div class="grid items-center gap-12 lg:grid-cols-2">
+    <div class="ana-hero-grid items-center gap-12">
       <div>
         <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-accent/25 bg-white px-4 py-1.5">
           <span class="inline-block h-[7px] w-[7px] shrink-0 rounded-full bg-accent"></span>
@@ -126,16 +126,25 @@
   </div>
 </section>
 
-<section class="relative overflow-hidden bg-[linear-gradient(135deg,#162E4B_0%,#091420_100%)] py-16">
-  <div class="absolute -right-[60px] -top-[60px] h-[250px] w-[250px] rounded-full bg-accent/10"></div>
-  <div class="relative z-[1] mx-auto max-w-7xl px-6 text-center">
-    <h2 class="mb-4 font-baskerville text-[clamp(24px,3.5vw,38px)] font-bold leading-[1.25] text-cream">Tertemiz yavrularımıza <span class="italic text-accent">Kitabullah'ı</span> nakşediyoruz.</h2>
-    <p class="mx-auto mb-7 max-w-[560px] font-jakarta text-[15px] leading-[1.7] text-cream/60">Hz. Osman ibni Affan (R.A)’dan rivayet olunur ki; Rasûlullah (S.A.V) şöyle buyurdu:<br/>
-<b>“Sizin en hayırlınız Kur’anı öğrenen ve öğretendir.”</b><br/>
-Tirmizî, Fedâilü'l-Kur'ân, 15.</p>
-    <div class="flex flex-wrap justify-center gap-3">
-      <a href="{{ route('bagis.index') }}" class="flex items-center gap-2 rounded-[10px] bg-orange-cta px-7 py-[13px] font-jakarta text-sm font-bold text-white transition-colors hover:bg-[#c94620]">Bağış Yap</a>
-      <a href="{{ route('ekayit.index') }}" class="flex items-center gap-2 rounded-[10px] border border-cream/30 px-7 py-[13px] font-jakarta text-sm font-semibold text-cream transition-colors hover:bg-white/10">Öğrenci Kayıt</a>
+<section class="hisar-tanitim py-[72px]">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="hisar-tanitim-kart">
+      <div class="hisar-tanitim-icerik">
+        <p class="hisar-tanitim-etiket">Kurum Hafızası</p>
+        <h2 class="hisar-tanitim-baslik">Bir çocuğa eğitim vermek, ona sonsuz bir kapı açmaktır.</h2>
+        <p class="hisar-tanitim-metin">Kestanepazarı; Kurra Hafız Salih Tanrıbuyruğu Hocamız tarafından yüz yılı aşkın süre önce temeli atılmış, o günün şartlarında hedefi Allah’ın dinini öğretmek ve öğrenmek olan bir kuruluştur. Derneğimiz bugün de, bu çizgiden ayrılmadan, gelişen ve değişen şartlarda, aynı gayeyle yoluna devam etmekte, aynı heyecan ve coşkuyu yüreklerinde hissetmektedir.</p>
+      </div>
+
+      <div class="hisar-tanitim-gorsel-wrap">
+        <img
+          src="{{ asset('images/hisar.png') }}"
+          alt="Kestanepazarı Hisar görseli"
+          class="hisar-tanitim-gorsel"
+          loading="lazy"
+          width="1054"
+          height="216"
+        >
+      </div>
     </div>
   </div>
 </section>
@@ -281,13 +290,25 @@ Tirmizî, Fedâilü'l-Kur'ân, 15.</p>
 
         <div class="grid grid-cols-2 gap-3">
           @foreach($kucukHaberler as $kucuk)
+            @php
+              $kucukContainModu = filled($kucuk->gorsel_sm)
+                  && (! str_contains($kucuk->gorsel_sm, 'img26/opt/') || ! str_contains($kucuk->gorsel_sm, '-sm.webp'));
+            @endphp
             <a href="{{ route('haberler.show', $kucuk->slug) }}" class="haber-kucuk">
               <div class="haber-foto haber-foto--kucuk">
                 @if($kucuk->gorsel_sm)
+                  @if($kucukContainModu)
+                    <div
+                      style="position:absolute;inset:0;background-image:url('{{ $kucuk->gorselSmUrl() }}');background-position:center;background-repeat:no-repeat;background-size:cover;transform:scale(1.08);filter:blur(14px);"
+                      aria-hidden="true"
+                    ></div>
+                    <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(8,16,28,.18) 0%, rgba(8,16,28,.06) 100%);" aria-hidden="true"></div>
+                  @endif
                   <img
                     src="{{ $kucuk->gorselSmUrl() }}"
                     alt="{{ $kucuk->baslik }}"
-                    class="h-full w-full object-cover"
+                    class="{{ $kucukContainModu ? 'relative z-10 h-full w-full' : 'h-full w-full object-cover' }}"
+                    @if($kucukContainModu) style="object-fit:contain;object-position:center;" @endif
                     loading="lazy"
                     width="280"
                     height="130"
