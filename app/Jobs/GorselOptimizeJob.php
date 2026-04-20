@@ -70,8 +70,16 @@ class GorselOptimizeJob implements ShouldQueue
         $uzanti = pathinfo($this->geciciYol, PATHINFO_EXTENSION) ?: 'jpeg';
         $geciciTamYol = Storage::disk('local')->path($this->geciciYol);
 
-        $manager = ImageManager::imagick();
-        $resim = $manager->read($geciciTamYol);
+        \Log::debug('[GorselOptimizeJob] Dosya yolu: ' . $geciciTamYol . ' - Var mı? ' . (file_exists($geciciTamYol) ? 'evet' : 'hayır'));
+        try {
+            $manager = ImageManager::imagick();
+            \Log::debug('[GorselOptimizeJob] ImageManager oluşturuldu');
+            $resim = $manager->read($geciciTamYol);
+            \Log::debug('[GorselOptimizeJob] Görsel okundu: ' . $geciciTamYol);
+        } catch (\Throwable $e) {
+            \Log::error('[GorselOptimizeJob] Görsel okuma hatası: ' . $geciciTamYol . ' - ' . $e->getMessage());
+            throw $e;
+        }
 
         $oriDizin = "img26/ori/haberler/{$haber->id}";
         $optDizin = "img26/opt/haberler/{$haber->id}";
@@ -86,7 +94,12 @@ class GorselOptimizeJob implements ShouldQueue
             Storage::disk('spaces')->put($orijinalYol, Storage::disk('local')->get($this->geciciYol), 'public');
             Storage::disk('spaces')->put($lgYol, (string) $resim->cover(1280, 720)->toWebp(quality: 85), 'public');
             Storage::disk('spaces')->put($ogYol, (string) $resim->cover(1200, 675)->toWebp(quality: 85), 'public');
-            Storage::disk('spaces')->put($smYol, (string) $resim->cover(320, 180)->toWebp(quality: 80), 'public');
+            // SM crop işlemi iptal: Orijinalden orantılı küçültme (crop yok)
+            $smResim = $resim->resize(320, 180, function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            });
+            Storage::disk('spaces')->put($smYol, (string) $smResim->toWebp(quality: 80), 'public');
             Storage::disk('spaces')->put($mobilLgYol, (string) $resim->cover(768, 432)->toWebp(quality: 85), 'public');
 
             $haber->update([

@@ -62,11 +62,11 @@
 <main class="mx-auto max-w-7xl px-6 pb-20 pt-10">
     @if($oneCikanHaber)
         <a href="{{ route('haberler.show', $oneCikanHaber->slug) }}" class="mb-12 block overflow-hidden rounded-[18px] no-underline shadow-[0_1px_0_rgba(22,46,75,.06)] transition-shadow hover:shadow-[0_12px_40px_rgba(22,46,75,.18)]" style="height:420px; position:relative;">
-            @if($oneCikanHaber->gorsel_lg)
+            @if($oneCikanHaber->gorsel_sm)
                 <img
-                    src="{{ $oneCikanHaber->gorselLgUrl() }}"
+                    src="{{ $oneCikanHaber->gorselSmUrl() }}"
                     alt="{{ $oneCikanHaber->baslik }}"
-                    class="h-full w-full object-cover"
+                    class="h-full w-full object-cover object-center"
                     loading="eager"
                     fetchpriority="high"
                     width="1280"
@@ -110,11 +110,11 @@
             @foreach($haberler as $haber)
             <a href="{{ route('haberler.show', $haber->slug) }}" class="flex flex-col overflow-hidden rounded-2xl border border-primary/10 bg-white no-underline shadow-[0_1px_0_rgba(22,46,75,.05)] transition-all hover:-translate-y-[3px] hover:shadow-[0_8px_28px_rgba(22,46,75,.12)]">
                     <div class="relative h-[190px] overflow-hidden">
-                        @if($haber->gorsel_lg)
+                        @if($haber->gorsel_sm)
                             <img
-                                src="{{ $haber->gorselLgUrl() }}"
+                                src="{{ $haber->gorselSmUrl() }}"
                                 alt="{{ $haber->baslik }}"
-                                class="h-full w-full object-cover"
+                                class="h-full w-full object-contain bg-gray-100"
                                 loading="lazy"
                                 width="420"
                                 height="190"

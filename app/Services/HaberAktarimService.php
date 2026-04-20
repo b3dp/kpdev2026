@@ -30,7 +30,8 @@ class HaberAktarimService
             $limit = (int) ($secenekler['limit'] ?? 0);
             $offset = (int) ($secenekler['offset'] ?? 0);
             $dryRun = (bool) ($secenekler['dry_run'] ?? false);
-            $gorselOptimizasyon = (bool) ($secenekler['gorsel_optimizasyon'] ?? true);
+            // Eski siteden toplu aktarımda optimize/crop işlemi tamamen kapalı
+            $gorselOptimizasyon = false;
             $siralama = (string) ($secenekler['siralama'] ?? 'id_asc');
             $sadeceIdler = (array) ($secenekler['sadece_idler'] ?? []);
 

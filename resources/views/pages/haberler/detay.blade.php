@@ -313,16 +313,14 @@
                     </div>
                 @endif
 
-                <div class="relative mb-8 flex h-[400px] items-center justify-center overflow-hidden rounded-2xl bg-[linear-gradient(160deg,#1e3a58_0%,#0a1d30_100%)]">
+                <div class="relative mb-8 flex items-center justify-center overflow-hidden rounded-2xl bg-[linear-gradient(160deg,#1e3a58_0%,#0a1d30_100%)]" style="min-height:200px;">
                     @if($haber->gorsel_lg)
                         <img
                             src="{{ $haber->gorselLgUrl() }}"
                             alt="{{ $haber->baslik }}"
-                            class="h-full w-full object-cover"
+                            class="w-full block"
                             loading="eager"
                             fetchpriority="high"
-                            width="920"
-                            height="400"
                         >
                     @else
                         <svg width="64" height="64" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,.1)" stroke-width=".6"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
@@ -389,6 +387,8 @@
                                             loading="lazy"
                                             width="{{ $index === 0 ? '820' : '360' }}"
                                             height="{{ $index === 0 ? '375' : '220' }}"
+                                            class="w-full"
+                                            style="object-fit: {{ $index === 0 ? 'contain' : 'cover' }}; height: {{ $index === 0 ? 'auto' : '100%' }}; max-height: {{ $index === 0 ? '375px' : '220px' }}; background: #fff;"
                                         >
 
                                         @if($index === 3 && $kalanGorselSayisi > 0)
