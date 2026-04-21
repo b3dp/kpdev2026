@@ -69,7 +69,7 @@ class HaberController extends Controller
 
     public function show(string $slug)
     {
-        $haber = Haber::with(['kategori', 'kategoriler', 'etiketler', 'gorseller', 'kisiler', 'kurumlar'])
+        $haber = Haber::with(['yonetici', 'kategori', 'kategoriler', 'etiketler', 'gorseller', 'kisiler', 'kurumlar'])
             ->where('slug', $slug)
             ->where('durum', 'yayinda')
             ->firstOrFail();

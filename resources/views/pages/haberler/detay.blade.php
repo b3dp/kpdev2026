@@ -11,6 +11,19 @@
     $metaAciklama = html_entity_decode($haber->meta_description ?? $haber->ozet ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8');
     $robotsDeger = $haber->robots ?? 'index, follow';
     $kategoriAdlari = $haber->kategoriler->pluck('ad')->filter()->unique()->values();
+    $editor = $haber->yonetici;
+    $editorAdSoyad = trim((string) ($editor?->ad_soyad ?: 'Kestanepazarı Derneği'));
+    $editorRol = $editor && method_exists($editor, 'getRoleNames')
+        ? $editor->getRoleNames()->filter()->first()
+        : null;
+    $gecerliYoneticiRolleri = \App\Enums\YoneticiRolu::varsayilanlar();
+    $editorUnvan = filled($editorRol) && in_array($editorRol, $gecerliYoneticiRolleri, true)
+        ? $editorRol
+        : 'Editör';
+    $editorBasHarfler = collect(preg_split('/\s+/', $editorAdSoyad, -1, PREG_SPLIT_NO_EMPTY))
+        ->take(2)
+        ->map(fn ($parca) => mb_strtoupper(mb_substr($parca, 0, 1, 'UTF-8'), 'UTF-8'))
+        ->implode('');
     if ($robotsDeger && !str_contains($robotsDeger, 'follow') && !str_contains($robotsDeger, 'nofollow')) {
         $robotsDeger .= ', follow';
     }
@@ -41,7 +54,7 @@
     "@@type": "SpeakableSpecification",
     "cssSelector": ["h1", ".haber-ozet"]
   },
-  "author": {"@@type": "Organization", "name": "Kestanepazarı Derneği"},
+    "author": {"@@type": "{{ $editor ? 'Person' : 'Organization' }}", "name": "{{ $editorAdSoyad }}"},
   "publisher": {
     "@@type": "Organization",
     "name": "Kestanepazarı Derneği",
@@ -285,10 +298,10 @@
 
                     <div class="flex flex-wrap items-center gap-4 border-b border-t border-primary/10 py-3.5">
                         <div class="flex items-center gap-2.5">
-                            <div class="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-[linear-gradient(135deg,#162E4B,#28484C)] font-baskerville text-sm font-bold text-cream">K</div>
+                            <div class="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-[linear-gradient(135deg,#162E4B,#28484C)] font-baskerville text-sm font-bold text-cream">{{ $editorBasHarfler !== '' ? $editorBasHarfler : 'KP' }}</div>
                             <div>
-                                <p class="m-0 font-jakarta text-[13px] font-semibold text-primary">Kestanepazarı Derneği</p>
-                                <p class="m-0 font-jakarta text-xs text-teal-muted">Haber Yayını</p>
+                                <p class="m-0 font-jakarta text-[13px] font-semibold text-primary">{{ $editorAdSoyad }}</p>
+                                <p class="m-0 font-jakarta text-xs text-teal-muted">{{ $editorUnvan }}</p>
                             </div>
                         </div>
                         <div class="flex items-center gap-1.5 font-jakarta text-[13px] text-teal-muted">
