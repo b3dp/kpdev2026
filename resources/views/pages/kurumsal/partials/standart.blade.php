@@ -1,5 +1,10 @@
 @php
     $icerikHtml = trim((string) $sayfa->icerik);
+    $galeriGorselleri = $sayfa->gorseller;
+    $tumKurumsalGorsellerJson = $galeriGorselleri->map(fn($gorsel) => [
+        'lg' => $gorsel->orijinalUrl(),
+        'alt' => $gorsel->alt_text ?: $sayfa->ad,
+    ])->toJson(JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE);
 @endphp
 
 @if($sayfa->slug === 'hakkimizda')
@@ -26,6 +31,102 @@
                 ></iframe>
             </div>
         @endif
+
+        @if($galeriGorselleri->count())
+            @php
+                $onecikanKurumsalGorseller = $galeriGorselleri->take(4)->values();
+                $kalanKurumsalGorselSayisi = max($galeriGorselleri->count() - 4, 0);
+            @endphp
+
+            <div class="mt-8 border-t border-primary/10 pt-8">
+                <div class="mb-6 flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                        <p class="kurumsal-eyebrow">Galeri</p>
+                        <h3 class="kurumsal-section-title">Sayfa Galerisi</h3>
+                    </div>
+                    <span class="inline-flex items-center rounded-full bg-[#F4EFE5] px-4 py-2 font-jakarta text-[15px] font-medium text-teal-muted">
+                        {{ $galeriGorselleri->count() }} görsel
+                    </span>
+                </div>
+
+                <div
+                    x-data="{
+                        acik: false,
+                        aktifIndex: 0,
+                        gorseller: {{ $tumKurumsalGorsellerJson }},
+                        ac(i) { this.aktifIndex = i; this.acik = true; document.body.style.overflow = 'hidden'; },
+                        kapat() { this.acik = false; document.body.style.overflow = ''; },
+                        onceki() { this.aktifIndex = (this.aktifIndex - 1 + this.gorseller.length) % this.gorseller.length; },
+                        sonraki() { this.aktifIndex = (this.aktifIndex + 1) % this.gorseller.length; }
+                    }"
+                    @keydown.escape.window="kapat()"
+                    @keydown.arrow-left.window="if(acik) onceki()"
+                    @keydown.arrow-right.window="if(acik) sonraki()"
+                >
+                    <div class="kurumsal-galeri-grid">
+                        @foreach($onecikanKurumsalGorseller as $index => $gorsel)
+                            <button
+                                type="button"
+                                @click="ac({{ $index }})"
+                                class="kurumsal-galeri-item {{ $index === 0 ? 'kurumsal-galeri-item--buyuk' : '' }}"
+                                aria-label="{{ $sayfa->ad }} görsel {{ $index + 1 }}"
+                            >
+                                <img
+                                    src="{{ $gorsel->orijinalUrl() }}"
+                                    alt="{{ $gorsel->alt_text ?: $sayfa->ad }}"
+                                    loading="lazy"
+                                    width="{{ $index === 0 ? '820' : '360' }}"
+                                    height="{{ $index === 0 ? '375' : '220' }}"
+                                    class="kurumsal-galeri-gorsel"
+                                >
+
+                                @if($index === 3 && $kalanKurumsalGorselSayisi > 0)
+                                    <div class="kurumsal-galeri-ek-overlay">
+                                        <span class="font-baskerville text-[44px] font-bold leading-none">+{{ $kalanKurumsalGorselSayisi }}</span>
+                                        <span class="mt-2 font-jakarta text-[15px] font-medium">görsel daha</span>
+                                    </div>
+                                @endif
+                            </button>
+                        @endforeach
+                    </div>
+
+                    <div
+                        x-show="acik"
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0"
+                        x-transition:enter-end="opacity-100"
+                        x-transition:leave="transition ease-in duration-150"
+                        x-transition:leave-start="opacity-100"
+                        x-transition:leave-end="opacity-0"
+                        class="lightbox"
+                        style="display:none;"
+                        role="dialog"
+                        aria-modal="true"
+                        @click.self="kapat()"
+                    >
+                        <button type="button" @click="kapat()" class="lightbox-kapat" aria-label="Kapat">
+                            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+
+                        <button type="button" @click.stop="onceki()" class="lightbox-nav lightbox-nav--sol" aria-label="Önceki" x-show="gorseller.length > 1">
+                            <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M15 19l-7-7 7-7"/></svg>
+                        </button>
+
+                        <div class="lightbox-icerik" @click.stop>
+                            <img :src="gorseller[aktifIndex]?.lg" :alt="gorseller[aktifIndex]?.alt" class="lightbox-gorsel">
+                            <div class="lightbox-alt">
+                                <span x-text="gorseller[aktifIndex]?.alt" class="truncate"></span>
+                                <span x-show="gorseller.length > 1" class="lightbox-sayac" x-text="(aktifIndex + 1) + ' / ' + gorseller.length"></span>
+                            </div>
+                        </div>
+
+                        <button type="button" @click.stop="sonraki()" class="lightbox-nav lightbox-nav--sag" aria-label="Sonraki" x-show="gorseller.length > 1">
+                            <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        @endif
     </section>
 @else
     <section class="kurumsal-section-card">
@@ -49,6 +150,102 @@
                     loading="lazy"
                     allowfullscreen
                 ></iframe>
+            </div>
+        @endif
+
+        @if($galeriGorselleri->count())
+            @php
+                $onecikanKurumsalGorseller = $galeriGorselleri->take(4)->values();
+                $kalanKurumsalGorselSayisi = max($galeriGorselleri->count() - 4, 0);
+            @endphp
+
+            <div class="mt-8 border-t border-primary/10 pt-8">
+                <div class="mb-6 flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                        <p class="kurumsal-eyebrow">Galeri</p>
+                        <h3 class="kurumsal-section-title">Sayfa Galerisi</h3>
+                    </div>
+                    <span class="inline-flex items-center rounded-full bg-[#F4EFE5] px-4 py-2 font-jakarta text-[15px] font-medium text-teal-muted">
+                        {{ $galeriGorselleri->count() }} görsel
+                    </span>
+                </div>
+
+                <div
+                    x-data="{
+                        acik: false,
+                        aktifIndex: 0,
+                        gorseller: {{ $tumKurumsalGorsellerJson }},
+                        ac(i) { this.aktifIndex = i; this.acik = true; document.body.style.overflow = 'hidden'; },
+                        kapat() { this.acik = false; document.body.style.overflow = ''; },
+                        onceki() { this.aktifIndex = (this.aktifIndex - 1 + this.gorseller.length) % this.gorseller.length; },
+                        sonraki() { this.aktifIndex = (this.aktifIndex + 1) % this.gorseller.length; }
+                    }"
+                    @keydown.escape.window="kapat()"
+                    @keydown.arrow-left.window="if(acik) onceki()"
+                    @keydown.arrow-right.window="if(acik) sonraki()"
+                >
+                    <div class="kurumsal-galeri-grid">
+                        @foreach($onecikanKurumsalGorseller as $index => $gorsel)
+                            <button
+                                type="button"
+                                @click="ac({{ $index }})"
+                                class="kurumsal-galeri-item {{ $index === 0 ? 'kurumsal-galeri-item--buyuk' : '' }}"
+                                aria-label="{{ $sayfa->ad }} görsel {{ $index + 1 }}"
+                            >
+                                <img
+                                    src="{{ $gorsel->orijinalUrl() }}"
+                                    alt="{{ $gorsel->alt_text ?: $sayfa->ad }}"
+                                    loading="lazy"
+                                    width="{{ $index === 0 ? '820' : '360' }}"
+                                    height="{{ $index === 0 ? '375' : '220' }}"
+                                    class="kurumsal-galeri-gorsel"
+                                >
+
+                                @if($index === 3 && $kalanKurumsalGorselSayisi > 0)
+                                    <div class="kurumsal-galeri-ek-overlay">
+                                        <span class="font-baskerville text-[44px] font-bold leading-none">+{{ $kalanKurumsalGorselSayisi }}</span>
+                                        <span class="mt-2 font-jakarta text-[15px] font-medium">görsel daha</span>
+                                    </div>
+                                @endif
+                            </button>
+                        @endforeach
+                    </div>
+
+                    <div
+                        x-show="acik"
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0"
+                        x-transition:enter-end="opacity-100"
+                        x-transition:leave="transition ease-in duration-150"
+                        x-transition:leave-start="opacity-100"
+                        x-transition:leave-end="opacity-0"
+                        class="lightbox"
+                        style="display:none;"
+                        role="dialog"
+                        aria-modal="true"
+                        @click.self="kapat()"
+                    >
+                        <button type="button" @click="kapat()" class="lightbox-kapat" aria-label="Kapat">
+                            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+
+                        <button type="button" @click.stop="onceki()" class="lightbox-nav lightbox-nav--sol" aria-label="Önceki" x-show="gorseller.length > 1">
+                            <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M15 19l-7-7 7-7"/></svg>
+                        </button>
+
+                        <div class="lightbox-icerik" @click.stop>
+                            <img :src="gorseller[aktifIndex]?.lg" :alt="gorseller[aktifIndex]?.alt" class="lightbox-gorsel">
+                            <div class="lightbox-alt">
+                                <span x-text="gorseller[aktifIndex]?.alt" class="truncate"></span>
+                                <span x-show="gorseller.length > 1" class="lightbox-sayac" x-text="(aktifIndex + 1) + ' / ' + gorseller.length"></span>
+                            </div>
+                        </div>
+
+                        <button type="button" @click.stop="sonraki()" class="lightbox-nav lightbox-nav--sag" aria-label="Sonraki" x-show="gorseller.length > 1">
+                            <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
+                        </button>
+                    </div>
+                </div>
             </div>
         @endif
     </section>

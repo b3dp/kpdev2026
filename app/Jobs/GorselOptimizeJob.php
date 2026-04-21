@@ -287,24 +287,19 @@ class GorselOptimizeJob implements ShouldQueue
 
         if ($this->gorselTipi === 'galeri_gorseli') {
             $siraNo = str_pad((string) $this->sira, 3, '0', STR_PAD_LEFT);
+            $uzanti = pathinfo($this->geciciYol, PATHINFO_EXTENSION) ?: 'jpeg';
 
-            $orijinalYol = "{$oriDizin}/{$slug}-galeri-{$siraNo}-orijinal.jpeg";
-            $lgYol = "{$optDizin}/{$slug}-galeri-{$siraNo}-lg.webp";
-            $ogYol = "{$optDizin}/{$slug}-galeri-{$siraNo}-og.webp";
-            $smYol = "{$optDizin}/{$slug}-galeri-{$siraNo}-sm.webp";
+            $orijinalYol = "{$oriDizin}/{$slug}-galeri-{$siraNo}-orijinal.{$uzanti}";
 
-            Storage::disk('spaces')->put($orijinalYol, (string) $resim->toJpeg(quality: 90), 'public');
-            Storage::disk('spaces')->put($lgYol, (string) $resim->cover(1280, 720)->toWebp(quality: 85), 'public');
-            Storage::disk('spaces')->put($ogYol, (string) $resim->cover(1200, 675)->toWebp(quality: 85), 'public');
-            Storage::disk('spaces')->put($smYol, (string) $resim->cover(320, 180)->toWebp(quality: 80), 'public');
+            Storage::disk('spaces')->put($orijinalYol, Storage::disk('local')->get($this->geciciYol), 'public');
 
             KurumsalSayfaGorseli::updateOrCreate(
                 ['sayfa_id' => $sayfa->id, 'sira' => $this->sira],
                 [
                     'orijinal_yol' => $orijinalYol,
-                    'lg_yol' => $lgYol,
-                    'og_yol' => $ogYol,
-                    'sm_yol' => $smYol,
+                    'lg_yol' => $orijinalYol,
+                    'og_yol' => $orijinalYol,
+                    'sm_yol' => $orijinalYol,
                 ]
             );
         }

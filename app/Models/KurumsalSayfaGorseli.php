@@ -41,10 +41,43 @@ class KurumsalSayfaGorseli extends Model
 
     public function lgUrl(): string
     {
-        if (filter_var((string) $this->lg_yol, FILTER_VALIDATE_URL)) {
-            return (string) $this->lg_yol;
+        $yol = $this->lg_yol ?: $this->orijinal_yol;
+
+        if (filter_var((string) $yol, FILTER_VALIDATE_URL)) {
+            return (string) $yol;
         }
 
-        return Storage::disk('spaces')->url((string) $this->lg_yol);
+        return Storage::disk('spaces')->url((string) $yol);
+    }
+
+    public function smUrl(): string
+    {
+        $yol = $this->sm_yol ?: $this->orijinal_yol;
+
+        if (filter_var((string) $yol, FILTER_VALIDATE_URL)) {
+            return (string) $yol;
+        }
+
+        return Storage::disk('spaces')->url((string) $yol);
+    }
+
+    public function ogUrl(): string
+    {
+        $yol = $this->og_yol ?: $this->orijinal_yol;
+
+        if (filter_var((string) $yol, FILTER_VALIDATE_URL)) {
+            return (string) $yol;
+        }
+
+        return Storage::disk('spaces')->url((string) $yol);
+    }
+
+    public function orijinalUrl(): string
+    {
+        if (filter_var((string) $this->orijinal_yol, FILTER_VALIDATE_URL)) {
+            return (string) $this->orijinal_yol;
+        }
+
+        return Storage::disk('spaces')->url((string) $this->orijinal_yol);
     }
 }
