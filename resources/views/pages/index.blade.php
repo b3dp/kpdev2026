@@ -360,35 +360,26 @@
   </div>
 </section>
 
-<section class="bg-bg-soft py-[72px]">
+<section class="hisar-tanitim py-[72px]">
   <div class="mx-auto max-w-7xl px-6">
+    <div class="hisar-tanitim-kart hisar-tanitim-kart--stacked">
+      <div class="hisar-tanitim-icerik hisar-tanitim-icerik--center">
+        <p class="hisar-tanitim-etiket">Kurum Hafızası</p>
+        <h2 class="hisar-tanitim-baslik hisar-tanitim-baslik--center">Hafızların Yuvası <span class="text-accent">Kestanepazarı</span></h2>
+        <p class="hisar-tanitim-metin hisar-tanitim-metin--center">Kestanepazarı; Kurra Hafız Salih Tanrıbuyruğu Hocamız tarafından yüz yılı aşkın süre önce temeli atılmış, o günün şartlarında hedefi Allah'ın dinini öğretmek ve öğrenmek olan bir kuruluştur. Derneğimiz bugün de, bu çizgiden ayrılmadan, gelişen ve değişen şartlarda, aynı gayeyle yoluna devam etmekte, aynı heyecan ve coşkuyu yüreklerinde hissetmektedir.</p>
+      </div>
 
-    {{-- Başlık satırı --}}
-    <div class="mb-7 flex items-baseline justify-between border-b border-primary/15 pb-5">
-      <h2 class="font-baskerville text-[clamp(22px,3vw,36px)] font-bold text-primary">
-        Hafızların Yuvası <span class="text-accent">Kestanepazarı</span>
-      </h2>
-      <a href="#" class="font-jakarta text-sm font-semibold text-accent transition-colors hover:text-orange-cta">Bizi Tanıyın...</a>
+      <div class="hisar-tanitim-gorsel-wrap hisar-tanitim-gorsel-wrap--full">
+        <img
+          src="{{ asset('images/hisar.png') }}"
+          alt="Kestanepazarı Hisar görseli"
+          class="hisar-tanitim-gorsel hisar-tanitim-gorsel--full"
+          loading="lazy"
+          width="1054"
+          height="216"
+        >
+      </div>
     </div>
-
-    {{-- Açıklama metni --}}
-    <p class="mx-auto mb-10 max-w-3xl text-center font-jakarta text-[15.5px] leading-[1.85] text-primary/75">
-      Kestanepazarı; Kurra Hafız Salih Tanrıbuyruğu Hocamız tarafından yüz yılı aşkın süre önce temeli atılmış,
-      o günün şartlarında hedefi Allah'ın dinini öğretmek ve öğrenmek olan bir kuruluştur. Derneğimiz bugün de,
-      bu çizgiden ayrılmadan, gelişen ve değişen şartlarda, aynı gayeyle yoluna devam etmekte, aynı heyecan ve
-      coşkuyu yüreklerinde hissetmektedir.
-    </p>
-
-    {{-- Tam genişlik görsel --}}
-    <img
-      src="{{ asset('images/hisar.png') }}"
-      alt="Kestanepazarı Hisar görseli"
-      class="mx-auto h-auto w-full max-w-5xl"
-      loading="lazy"
-      width="1054"
-      height="216"
-    >
-
   </div>
 </section>
 @endsection

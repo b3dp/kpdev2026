@@ -149,16 +149,29 @@
     backdrop-filter: blur(10px);
 }
 
+.hisar-tanitim-kart--stacked {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 36px;
+}
+
 @media (min-width: 1024px) {
     .hisar-tanitim-kart {
         grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr);
         padding: 42px;
+    }
+
+    .hisar-tanitim-kart--stacked {
+        grid-template-columns: minmax(0, 1fr);
     }
 }
 
 .hisar-tanitim-icerik {
     position: relative;
     z-index: 1;
+}
+
+.hisar-tanitim-icerik--center {
+    text-align: center;
 }
 
 .hisar-tanitim-etiket {
@@ -180,6 +193,11 @@
     color: #fff8ea;
 }
 
+.hisar-tanitim-baslik--center {
+    max-width: none;
+    text-align: center;
+}
+
 .hisar-tanitim-metin {
     margin: 0;
     max-width: 66ch;
@@ -187,6 +205,11 @@
     font-size: 15px;
     line-height: 1.8;
     color: rgba(255, 248, 234, 0.78);
+}
+
+.hisar-tanitim-metin--center {
+    margin: 0 auto;
+    text-align: center;
 }
 
 .hisar-tanitim-gorsel-wrap {
@@ -197,12 +220,20 @@
     justify-content: center;
 }
 
+.hisar-tanitim-gorsel-wrap--full {
+    width: 100%;
+}
+
 .hisar-tanitim-gorsel {
     width: 100%;
     max-width: 520px;
     height: auto;
     object-fit: contain;
     filter: drop-shadow(0 16px 36px rgba(0, 0, 0, 0.28));
+}
+
+.hisar-tanitim-gorsel--full {
+    max-width: 100%;
 }
 
 .haber-buyuk {
