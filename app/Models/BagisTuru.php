@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Support\Facades\Cache;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Sluggable\HasSlug;
@@ -18,6 +19,19 @@ use Spatie\Sluggable\SlugOptions;
 class BagisTuru extends Model
 {
     use HasFactory, HasSlug, LogsActivity;
+
+    protected static function booted(): void
+    {
+        static::saved(function (): void {
+            Cache::forget('sitemap_bagis');
+            Cache::forget('sitemap_static');
+        });
+
+        static::deleted(function (): void {
+            Cache::forget('sitemap_bagis');
+            Cache::forget('sitemap_static');
+        });
+    }
 
     protected $table = 'bagis_turleri';
 

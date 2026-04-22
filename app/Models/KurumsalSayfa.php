@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Laravel\Scout\Searchable;
@@ -87,6 +88,21 @@ class KurumsalSayfa extends Model
             }
 
             Kurum::query()->where('kurumsal_sayfa_id', $sayfa->id)->update(['kurumsal_sayfa_id' => null]);
+        });
+
+        static::saved(function (): void {
+            Cache::forget('sitemap_kurumsal');
+            Cache::forget('sitemap_static');
+        });
+
+        static::deleted(function (): void {
+            Cache::forget('sitemap_kurumsal');
+            Cache::forget('sitemap_static');
+        });
+
+        static::restored(function (): void {
+            Cache::forget('sitemap_kurumsal');
+            Cache::forget('sitemap_static');
         });
     }
 

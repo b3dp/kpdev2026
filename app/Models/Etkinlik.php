@@ -9,8 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -23,28 +22,20 @@ class Etkinlik extends Model
 
     protected static function booted(): void
     {
-        static::updated(function (): void {
-            self::siteHaritasiniYenile();
+        static::saved(function (): void {
+            Cache::forget('sitemap_etkinlikler');
+            Cache::forget('sitemap_static');
         });
 
         static::deleted(function (): void {
-            self::siteHaritasiniYenile();
+            Cache::forget('sitemap_etkinlikler');
+            Cache::forget('sitemap_static');
         });
 
         static::restored(function (): void {
-            self::siteHaritasiniYenile();
+            Cache::forget('sitemap_etkinlikler');
+            Cache::forget('sitemap_static');
         });
-    }
-
-    private static function siteHaritasiniYenile(): void
-    {
-        try {
-            Artisan::call('site-haritasi:olustur');
-        } catch (\Throwable $e) {
-            Log::error('Etkinlik kaydinda sitemap yenileme hatasi', [
-                'hata' => $e->getMessage(),
-            ]);
-        }
     }
 
     public function getGorselLgCdnUrlAttribute(): ?string

@@ -21,7 +21,6 @@ Schedule::command('ekayit:donem-kontrol')->dailyAt('00:05');
 Schedule::command('yedek:log-aylik')->monthlyOn(1, '03:00')->withoutOverlapping();
 Schedule::command('yedek:db-gunluk')->dailyAt('04:00')->withoutOverlapping();
 Schedule::command('yedek:db-aylik')->monthlyOn(1, '05:00')->withoutOverlapping();
-Schedule::command('site-haritasi:olustur')->dailyAt('03:30')->withoutOverlapping();
 Schedule::command('sms:durum-guncelle')->everyTenMinutes();
 Schedule::call(function () {
     \App\Models\Haber::query()

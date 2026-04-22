@@ -11,8 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -105,28 +104,20 @@ class Haber extends Model
             }
         });
 
-        static::updated(function (): void {
-            self::siteHaritasiniYenile();
+        static::saved(function (): void {
+            Cache::forget('sitemap_haberler');
+            Cache::forget('sitemap_static');
         });
 
         static::deleted(function (): void {
-            self::siteHaritasiniYenile();
+            Cache::forget('sitemap_haberler');
+            Cache::forget('sitemap_static');
         });
 
         static::restored(function (): void {
-            self::siteHaritasiniYenile();
+            Cache::forget('sitemap_haberler');
+            Cache::forget('sitemap_static');
         });
-    }
-
-    private static function siteHaritasiniYenile(): void
-    {
-        try {
-            Artisan::call('site-haritasi:olustur');
-        } catch (\Throwable $e) {
-            Log::error('Haber kaydinda sitemap yenileme hatasi', [
-                'hata' => $e->getMessage(),
-            ]);
-        }
     }
 
     public function getSlugOptions(): SlugOptions
