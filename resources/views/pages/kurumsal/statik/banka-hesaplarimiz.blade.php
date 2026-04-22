@@ -32,14 +32,6 @@
                         <span x-show="mesaj['albaraka-iban']" x-transition class="text-xs font-semibold text-emerald-600" style="display:none;">Kopyalandı</span>
                     </div>
                 </div>
-                <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                    <p class="text-xs font-semibold uppercase tracking-[0.12em] text-[#62868d]">Hesap No</p>
-                    <div class="mt-1 flex flex-wrap items-center gap-2">
-                        <p class="font-jakarta text-sm font-semibold text-primary">327370-1</p>
-                        <button type="button" @click="kopyala('327370-1', 'albaraka-hesap')" class="rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-semibold text-primary hover:bg-slate-100">Kopyala</button>
-                        <span x-show="mesaj['albaraka-hesap']" x-transition class="text-xs font-semibold text-emerald-600" style="display:none;">Kopyalandı</span>
-                    </div>
-                </div>
             </div>
         </article>
 
@@ -76,14 +68,6 @@
                         <p class="font-jakarta text-sm font-semibold text-primary">TR82 0020 5000 0004 3062 2000 01</p>
                         <button type="button" @click="kopyala('TR820020500000043062200001', 'kuveyt-iban')" class="rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-semibold text-primary hover:bg-slate-100">Kopyala</button>
                         <span x-show="mesaj['kuveyt-iban']" x-transition class="text-xs font-semibold text-emerald-600" style="display:none;">Kopyalandı</span>
-                    </div>
-                </div>
-                <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                    <p class="text-xs font-semibold uppercase tracking-[0.12em] text-[#62868d]">Hesap No</p>
-                    <div class="mt-1 flex flex-wrap items-center gap-2">
-                        <p class="font-jakarta text-sm font-semibold text-primary">430622</p>
-                        <button type="button" @click="kopyala('430622', 'kuveyt-hesap')" class="rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-semibold text-primary hover:bg-slate-100">Kopyala</button>
-                        <span x-show="mesaj['kuveyt-hesap']" x-transition class="text-xs font-semibold text-emerald-600" style="display:none;">Kopyalandı</span>
                     </div>
                 </div>
             </div>
