@@ -9,13 +9,13 @@
     inset: 0;
     background-position: center;
     background-size: cover;
-    opacity: 0.28;
+    opacity: 0.62;
 }
 
 .kurumsal-hero-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(22, 46, 75, 0.94) 0%, rgba(13, 32, 53, 0.96) 100%);
+    background: linear-gradient(135deg, rgba(22, 46, 75, 0.56) 0%, rgba(13, 32, 53, 0.64) 100%);
 }
 
 .kurumsal-chip {
@@ -420,41 +420,31 @@
 }
 
 .kurumsal-galeri-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 14px;
+    column-count: 3;
+    column-gap: 14px;
 }
 
 .kurumsal-galeri-item {
     position: relative;
+    display: inline-block;
+    width: 100%;
+    margin: 0 0 14px;
     overflow: hidden;
     border-radius: 22px;
-    background: linear-gradient(160deg,#f2f5f7 0%,#e3eaef 100%);
-    min-height: 220px;
+    background: #fff;
     border: 1px solid rgba(22, 46, 75, 0.08);
-}
-
-.kurumsal-galeri-item--buyuk {
-    grid-column: span 2;
-    min-height: 375px;
+    break-inside: avoid;
+    -webkit-column-break-inside: avoid;
+    box-shadow: 0 10px 22px rgba(22, 46, 75, 0.06);
+    cursor: pointer;
 }
 
 .kurumsal-galeri-gorsel {
     width: 100%;
-    height: 100%;
+    height: auto;
+    display: block;
     object-fit: contain;
     background: #fff;
-}
-
-.kurumsal-galeri-ek-overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: rgba(9,20,32,.72);
-    color: #EBDFB5;
 }
 
 .lightbox {
@@ -558,13 +548,7 @@
 
 @media (max-width: 767px) {
     .kurumsal-galeri-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .kurumsal-galeri-item,
-    .kurumsal-galeri-item--buyuk {
-        grid-column: span 1;
-        min-height: 220px;
+        column-count: 1;
     }
 
     .lightbox-nav--sol {
@@ -573,5 +557,11 @@
 
     .lightbox-nav--sag {
         right: 8px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+    .kurumsal-galeri-grid {
+        column-count: 2;
     }
 }

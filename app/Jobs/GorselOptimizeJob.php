@@ -222,61 +222,55 @@ class GorselOptimizeJob implements ShouldQueue
         $optDizin = "img26/opt/kurumsal/{$sayfa->id}";
 
         if ($this->gorselTipi === 'ana_gorsel') {
-            $orijinalYol = "{$oriDizin}/{$slug}-orijinal.jpeg";
-            $lgYol = "{$optDizin}/{$slug}-lg.webp";
-            $ogYol = "{$optDizin}/{$slug}-og.webp";
-            $smYol = "{$optDizin}/{$slug}-sm.webp";
+            $uzanti = pathinfo($this->geciciYol, PATHINFO_EXTENSION) ?: 'jpeg';
+            $orijinalYol = "{$oriDizin}/{$slug}-orijinal.{$uzanti}";
 
-            Storage::disk('spaces')->put($orijinalYol, (string) $resim->toJpeg(quality: 90), 'public');
-            Storage::disk('spaces')->put($lgYol, (string) $resim->cover(1280, 720)->toWebp(quality: 85), 'public');
-            Storage::disk('spaces')->put($ogYol, (string) $resim->cover(1200, 675)->toWebp(quality: 85), 'public');
-            Storage::disk('spaces')->put($smYol, (string) $resim->cover(320, 180)->toWebp(quality: 80), 'public');
+            Storage::disk('spaces')->put($orijinalYol, Storage::disk('local')->get($this->geciciYol), 'public');
 
             $sayfa->update([
                 'gorsel_orijinal' => Storage::disk('spaces')->url($orijinalYol),
-                'gorsel_lg' => Storage::disk('spaces')->url($lgYol),
-                'gorsel_og' => Storage::disk('spaces')->url($ogYol),
-                'gorsel_sm' => Storage::disk('spaces')->url($smYol),
+                'gorsel_lg' => Storage::disk('spaces')->url($orijinalYol),
+                'gorsel_og' => Storage::disk('spaces')->url($orijinalYol),
+                'gorsel_sm' => Storage::disk('spaces')->url($orijinalYol),
             ]);
 
             return;
         }
 
         if ($this->gorselTipi === 'banner_masaustu') {
-            $bannerOrijinalYol = "{$oriDizin}/{$slug}-banner-orijinal.jpeg";
-            $bannerLgYol = "{$optDizin}/{$slug}-banner-lg.webp";
+            $uzanti = pathinfo($this->geciciYol, PATHINFO_EXTENSION) ?: 'jpeg';
+            $bannerOrijinalYol = "{$oriDizin}/{$slug}-banner-orijinal.{$uzanti}";
 
-            Storage::disk('spaces')->put($bannerOrijinalYol, (string) $resim->toJpeg(quality: 90), 'public');
-            Storage::disk('spaces')->put($bannerLgYol, (string) $resim->cover(1920, 1080)->toWebp(quality: 85), 'public');
+            Storage::disk('spaces')->put($bannerOrijinalYol, Storage::disk('local')->get($this->geciciYol), 'public');
 
             $sayfa->update([
                 'banner_orijinal' => Storage::disk('spaces')->url($bannerOrijinalYol),
-                'banner_masaustu' => Storage::disk('spaces')->url($bannerLgYol),
-                'banner_mobil' => $sayfa->banner_mobil ?: Storage::disk('spaces')->url($bannerLgYol),
+                'banner_masaustu' => Storage::disk('spaces')->url($bannerOrijinalYol),
+                'banner_mobil' => $sayfa->banner_mobil ?: Storage::disk('spaces')->url($bannerOrijinalYol),
             ]);
 
             return;
         }
 
         if ($this->gorselTipi === 'banner_mobil') {
-            $bannerOrijinalYol = "{$oriDizin}/{$slug}-banner-mobil-orijinal.jpeg";
-            $bannerMobilYol = "{$optDizin}/{$slug}-banner-mobil.webp";
+            $uzanti = pathinfo($this->geciciYol, PATHINFO_EXTENSION) ?: 'jpeg';
+            $bannerOrijinalYol = "{$oriDizin}/{$slug}-banner-mobil-orijinal.{$uzanti}";
 
-            Storage::disk('spaces')->put($bannerOrijinalYol, (string) $resim->toJpeg(quality: 90), 'public');
-            Storage::disk('spaces')->put($bannerMobilYol, (string) $resim->cover(768, 432)->toWebp(quality: 85), 'public');
+            Storage::disk('spaces')->put($bannerOrijinalYol, Storage::disk('local')->get($this->geciciYol), 'public');
 
             $sayfa->update([
                 'banner_orijinal' => Storage::disk('spaces')->url($bannerOrijinalYol),
-                'banner_mobil' => Storage::disk('spaces')->url($bannerMobilYol),
+                'banner_mobil' => Storage::disk('spaces')->url($bannerOrijinalYol),
             ]);
 
             return;
         }
 
         if ($this->gorselTipi === 'og_gorsel') {
-            $ogYol = "{$optDizin}/{$slug}-ozel-og.webp";
+            $uzanti = pathinfo($this->geciciYol, PATHINFO_EXTENSION) ?: 'jpeg';
+            $ogYol = "{$oriDizin}/{$slug}-ozel-og.{$uzanti}";
 
-            Storage::disk('spaces')->put($ogYol, (string) $resim->cover(1200, 675)->toWebp(quality: 85), 'public');
+            Storage::disk('spaces')->put($ogYol, Storage::disk('local')->get($this->geciciYol), 'public');
 
             $sayfa->update([
                 'og_gorsel' => Storage::disk('spaces')->url($ogYol),

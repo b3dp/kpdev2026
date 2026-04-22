@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BagisTuru;
 use App\Models\Etkinlik;
 use App\Models\Haber;
 use App\Models\KurumsalSayfa;
@@ -16,6 +17,7 @@ class AramaController extends Controller
         /** @var AramaService $arama_servisi */
         $arama_servisi = app(AramaService::class);
 
+        $bagisTurleri = collect();
         $haberler = collect();
         $etkinlikler = collect();
         $sayfalar = collect();
@@ -24,6 +26,28 @@ class AramaController extends Controller
             if (! $request->filled('tip')) {
                 $arama_servisi->kaydetArama($q);
             }
+
+            $bagisTurleri = BagisTuru::query()
+                ->where('aktif', true)
+                ->where(function ($query) use ($q) {
+                    $query->where('ad', 'like', "%{$q}%")
+                        ->orWhere('slug', 'like', "%{$q}%")
+                        ->orWhere('aciklama', 'like', "%{$q}%");
+                })
+                ->orderByRaw(
+                    "CASE
+                        WHEN LOWER(ad) = LOWER(?) THEN 0
+                        WHEN LOWER(slug) = LOWER(?) THEN 1
+                        WHEN LOWER(ad) LIKE LOWER(?) THEN 2
+                        WHEN LOWER(slug) LIKE LOWER(?) THEN 3
+                        WHEN LOWER(aciklama) LIKE LOWER(?) THEN 4
+                        ELSE 5
+                    END",
+                    [$q, $q, $q . '%', $q . '%', '%' . $q . '%']
+                )
+                ->orderBy('sira')
+                ->take(8)
+                ->get();
 
             $haberler = Haber::with('kategori')
                 ->where('durum', 'yayinda')
@@ -54,14 +78,15 @@ class AramaController extends Controller
                 ->get();
         }
 
-        $toplamSonuc = $haberler->count()
+        $toplamSonuc = $bagisTurleri->count()
+            + $haberler->count()
             + $etkinlikler->count()
             + $sayfalar->count();
 
         $populerAramalar = $arama_servisi->getirPopulerAramalar();
 
         return view('pages.arama', compact(
-            'q', 'haberler', 'etkinlikler', 'sayfalar', 'toplamSonuc', 'populerAramalar'
+            'q', 'bagisTurleri', 'haberler', 'etkinlikler', 'sayfalar', 'toplamSonuc', 'populerAramalar'
         ));
     }
 }

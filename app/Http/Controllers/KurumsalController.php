@@ -27,6 +27,32 @@ class KurumsalController extends Controller
             ->orderBy('sira')
             ->get();
 
+        if (! filled($slug)) {
+            $standartSayfalar = $yayindakiSayfalar
+                ->where('sablon', KurumsalSablonu::Standart->value)
+                ->values()
+                ->map(function (KurumsalSayfa $sayfa): KurumsalSayfa {
+                    $sayfa->kart_gorseli = $sayfa->bannerMasaustuUrl() ?: $sayfa->gorselLgUrl();
+
+                    return $sayfa;
+                });
+
+            return view('pages.kurumsal.liste', compact('standartSayfalar'));
+        }
+
+        if ($slug === 'kurumlar') {
+            $kurumSayfalari = $yayindakiSayfalar
+                ->where('sablon', KurumsalSablonu::Kurum->value)
+                ->values()
+                ->map(function (KurumsalSayfa $sayfa): KurumsalSayfa {
+                    $sayfa->kart_gorseli = $sayfa->bannerMasaustuUrl() ?: $sayfa->gorselLgUrl();
+
+                    return $sayfa;
+                });
+
+            return view('pages.kurumsal.kurumlar-liste', compact('kurumSayfalari'));
+        }
+
         $menuSayfalari = $yayindakiSayfalar
             ->whereNull('ust_sayfa_id')
             ->values()

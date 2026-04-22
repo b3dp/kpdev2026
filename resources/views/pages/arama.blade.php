@@ -22,9 +22,11 @@
 @section('content')
 @php
     $aktifTip = request('tip', 'tumu');
+  $gosterBagis = in_array($aktifTip, ['tumu', 'bagis']);
     $gosterHaber = in_array($aktifTip, ['tumu', 'haber']);
     $gosterEtkinlik = in_array($aktifTip, ['tumu', 'etkinlik']);
     $gosterSayfa = in_array($aktifTip, ['tumu', 'sayfa']);
+  $bagisTurleri = $bagisTurleri ?? collect();
     $populerAramalar = $populerAramalar ?? app(\App\Services\AramaService::class)->getirPopulerAramalar();
 @endphp
 
@@ -81,6 +83,14 @@
             <div id="filter-bar" class="flex flex-wrap gap-2">
               <a href="{{ route('arama.index', ['q' => $q, 'tip' => 'tumu']) }}" class="filter-pill {{ $aktifTip === 'tumu' ? 'active' : 'inactive' }}">Tümü</a>
 
+              <a href="{{ route('arama.index', ['q' => $q, 'tip' => 'bagis']) }}" class="filter-pill {{ $aktifTip === 'bagis' ? 'active' : 'inactive' }}">
+                <span style="display:flex;align-items:center;gap:5px;">
+                  <span style="width:7px;height:7px;border-radius:50%;background:#E95925;display:inline-block;"></span>
+                  Bağışlar
+                  <span style="border-radius:999px;background:rgba(233,89,37,.12);padding:2px 8px;font-size:11px;font-weight:700;color:#C2410C;">{{ $bagisTurleri->count() }}</span>
+                </span>
+              </a>
+
               <a href="{{ route('arama.index', ['q' => $q, 'tip' => 'haber']) }}" class="filter-pill {{ $aktifTip === 'haber' ? 'active' : 'inactive' }}">
                 <span style="display:flex;align-items:center;gap:5px;">
                   <span style="width:7px;height:7px;border-radius:50%;background:#3B82F6;display:inline-block;"></span>
@@ -115,6 +125,41 @@
 
         @if($toplamSonuc > 0)
           <div id="results-list" class="flex flex-col gap-2.5">
+            @if($gosterBagis)
+              @foreach($bagisTurleri as $bagisTuru)
+                <a href="{{ route('bagis.show', $bagisTuru->slug) }}" class="result-card" data-tip="bagis">
+                  <div class="result-thumb" style="background:linear-gradient(135deg,#E95925,#C2410C);">
+                    <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,.88)" stroke-width="1.5">
+                      <path stroke-linecap="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                  </div>
+
+                  <div style="flex:1;min-width:0;">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
+                      <span class="tip-badge" style="background:#FFF3EE;color:#C2410C;">
+                        <span style="width:6px;height:6px;border-radius:50%;background:#E95925;display:inline-block;"></span>
+                        Bağış
+                      </span>
+                    </div>
+
+                    <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;color:#162E4B;margin-bottom:5px;line-height:1.35;">
+                      {{ $bagisTuru->ad }}
+                    </h3>
+
+                    @if($bagisTuru->aciklama)
+                      <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;line-height:1.6;">
+                        {{ \Illuminate\Support\Str::limit(strip_tags((string) $bagisTuru->aciklama), 120) }}
+                      </p>
+                    @endif
+                  </div>
+
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#B27829" stroke-width="2.5" style="flex-shrink:0;margin-top:4px;">
+                    <path stroke-linecap="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </a>
+              @endforeach
+            @endif
+
             @if($gosterHaber)
               @foreach($haberler as $haber)
                 <a href="{{ route('haberler.show', $haber->slug) }}" class="result-card" data-tip="haber">
@@ -296,6 +341,14 @@
         <div class="sidebar-card">
           <h3 class="sidebar-title">İçerik Türleri</h3>
           <div class="flex flex-col gap-2.5">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span style="width:10px;height:10px;border-radius:50%;background:#E95925;display:inline-block;"></span>
+                <span class="font-jakarta text-[13.5px] font-medium text-primary">Bağışlar</span>
+              </div>
+              <span class="rounded-full bg-[#FFF3EE] px-2.5 py-0.5 font-jakarta text-[13px] font-bold text-primary">{{ $bagisTurleri->count() }}</span>
+            </div>
+
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
                 <span style="width:10px;height:10px;border-radius:50%;background:#3B82F6;display:inline-block;"></span>

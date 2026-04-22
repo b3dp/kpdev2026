@@ -214,7 +214,7 @@ class KurumsalSayfaResource extends Resource
                         ->dehydrated(false)
                         ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                         ->maxSize(65536)
-                        ->helperText('Bu alan yeni görsel yüklemek içindir. Kaydedilen mevcut görsel aşağıda gösterilir.'),
+                        ->helperText('Kırpma yapılmaz. Yüklenen orijinal görsel kullanılır. Öneri: en az 1280px genişlik, serbest oran.'),
 
                     Placeholder::make('mevcut_sayfa_gorseli')
                         ->label('Mevcut Sayfa Görseli')
@@ -224,7 +224,7 @@ class KurumsalSayfaResource extends Resource
                             }
 
                             return new \Illuminate\Support\HtmlString(
-                                '<img src="' . e((string) $record->gorsel_lg) . '" style="max-width:100%;max-height:180px;border-radius:8px;object-fit:cover;" alt="Sayfa görseli" />'
+                                '<img src="' . e((string) $record->gorsel_lg) . '" style="max-width:100%;max-height:180px;border-radius:8px;object-fit:contain;background:#fff;" alt="Sayfa görseli" />'
                             );
                         }),
 
@@ -238,7 +238,7 @@ class KurumsalSayfaResource extends Resource
                         ->dehydrated(false)
                         ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                         ->maxSize(65536)
-                        ->helperText('Bu alan yeni banner yüklemek içindir. Kaydedilen banner aşağıda gösterilir.'),
+                        ->helperText('Kırpma yapılmaz. Yüklenen orijinal görsel kullanılır. Öneri: 1920x1080 veya daha geniş.'),
 
                     Placeholder::make('mevcut_banner_masaustu')
                         ->label('Mevcut Banner Masaüstü')
@@ -248,7 +248,7 @@ class KurumsalSayfaResource extends Resource
                             }
 
                             return new \Illuminate\Support\HtmlString(
-                                '<img src="' . e((string) $record->banner_masaustu) . '" style="max-width:100%;max-height:180px;border-radius:8px;object-fit:cover;" alt="Banner masaustu" />'
+                                '<img src="' . e((string) $record->banner_masaustu) . '" style="max-width:100%;max-height:180px;border-radius:8px;object-fit:contain;background:#fff;" alt="Banner masaustu" />'
                             );
                         }),
 
@@ -262,7 +262,7 @@ class KurumsalSayfaResource extends Resource
                         ->dehydrated(false)
                         ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                         ->maxSize(65536)
-                        ->helperText('Bu alan yeni mobil banner yüklemek içindir. Kaydedilen mobil banner aşağıda gösterilir.'),
+                        ->helperText('Kırpma yapılmaz. Yüklenen orijinal görsel kullanılır. Öneri: 768x432 veya daha geniş.'),
 
                     Placeholder::make('mevcut_banner_mobil')
                         ->label('Mevcut Banner Mobil')
@@ -272,7 +272,7 @@ class KurumsalSayfaResource extends Resource
                             }
 
                             return new \Illuminate\Support\HtmlString(
-                                '<img src="' . e((string) $record->banner_mobil) . '" style="max-width:100%;max-height:180px;border-radius:8px;object-fit:cover;" alt="Banner mobil" />'
+                                '<img src="' . e((string) $record->banner_mobil) . '" style="max-width:100%;max-height:180px;border-radius:8px;object-fit:contain;background:#fff;" alt="Banner mobil" />'
                             );
                         }),
 
@@ -286,7 +286,7 @@ class KurumsalSayfaResource extends Resource
                         ->dehydrated(false)
                         ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                         ->maxSize(65536)
-                        ->helperText('Bu alan yeni OG görsel yüklemek içindir. Kaydedilen OG görsel aşağıda gösterilir.'),
+                        ->helperText('Kırpma yapılmaz. Yüklenen orijinal görsel kullanılır. Sosyal paylaşım için öneri: 1200x675.'),
 
                     Placeholder::make('mevcut_og_gorsel')
                         ->label('Mevcut OG Görsel')
@@ -300,7 +300,7 @@ class KurumsalSayfaResource extends Resource
                                 : Storage::disk('spaces')->url((string) $record->og_gorsel);
 
                             return new \Illuminate\Support\HtmlString(
-                                '<img src="' . e($url) . '" style="max-width:100%;max-height:180px;border-radius:8px;object-fit:cover;" alt="OG gorsel" />'
+                                '<img src="' . e($url) . '" style="max-width:100%;max-height:180px;border-radius:8px;object-fit:contain;background:#fff;" alt="OG gorsel" />'
                             );
                         }),
 
@@ -317,6 +317,7 @@ class KurumsalSayfaResource extends Resource
                         ->dehydrated(false)
                         ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                         ->maxSize(65536)
+                        ->helperText('Kırpma yapılmaz. Galeride yüklenen orijinal dosya gösterilir.')
                         ->columnSpanFull(),
 
                     Placeholder::make('galeri_onizleme')
@@ -330,7 +331,7 @@ class KurumsalSayfaResource extends Resource
                             foreach ($record->gorseller as $gorsel) {
                                 $url = $gorsel->lgUrl();
                                 $html .= '<div style="position:relative;">'
-                                    . '<img src="' . e($url) . '" style="border-radius:6px;width:100%;height:96px;object-fit:cover;">'
+                                    . '<img src="' . e($url) . '" style="border-radius:6px;width:100%;height:96px;object-fit:contain;background:#fff;">'
                                     . '<span style="position:absolute;top:4px;left:4px;background:rgba(0,0,0,0.55);color:#fff;font-size:11px;padding:1px 5px;border-radius:4px;">' . $gorsel->sira . '</span>'
                                     . '</div>';
                             }
@@ -347,14 +348,12 @@ class KurumsalSayfaResource extends Resource
                     Textarea::make('ozet')
                         ->label('Özet/Summary')
                         ->rows(4)
-                        ->maxLength(300)
-                        ->helperText(fn (?string $state) => mb_strlen((string) ($state ?? ''), 'UTF-8') . '/300'),
+                        ->helperText(fn (?string $state) => mb_strlen((string) ($state ?? ''), 'UTF-8') . ' karakter - Tam metin kaydedilir'),
 
                     Textarea::make('meta_description')
                         ->label('Meta Description')
                         ->rows(3)
-                        ->maxLength(160)
-                        ->helperText(fn (?string $state) => mb_strlen((string) ($state ?? ''), 'UTF-8') . '/160'),
+                        ->helperText(fn (?string $state) => mb_strlen((string) ($state ?? ''), 'UTF-8') . ' karakter - Tam metin kaydedilir'),
 
                     Select::make('robots')
                         ->label('Robots')
@@ -374,13 +373,14 @@ class KurumsalSayfaResource extends Resource
                             ->color('primary')
                             ->action(function (callable $set, callable $get): void {
                                 $icerik = strip_tags((string) $get('icerik'));
+                                $duzIcerik = trim((string) preg_replace('/\s+/u', ' ', $icerik));
 
-                                if (blank($get('meta_description')) && filled($icerik)) {
-                                    $set('meta_description', Str::limit($icerik, 160, ''));
+                                if (blank($get('meta_description')) && filled($duzIcerik)) {
+                                    $set('meta_description', $duzIcerik);
                                 }
 
-                                if (blank($get('ozet')) && filled($icerik)) {
-                                    $set('ozet', Str::limit($icerik, 300, ''));
+                                if (blank($get('ozet')) && filled($duzIcerik)) {
+                                    $set('ozet', $duzIcerik);
                                 }
 
                                 if (blank($get('slug')) && filled($get('ad'))) {

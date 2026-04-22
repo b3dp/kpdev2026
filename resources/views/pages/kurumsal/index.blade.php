@@ -78,10 +78,26 @@
         ];
     }
 
-    $yatayMenu = $menuSayfalari->map(fn ($menuSayfa) => [
+    $standartMenuSayfalari = $menuSayfalari
+        ->filter(function ($menuSayfa) {
+            $sablonDegeri = $menuSayfa->sablon instanceof \BackedEnum
+                ? $menuSayfa->sablon->value
+                : (string) ($menuSayfa->sablon ?? '');
+
+            return $sablonDegeri === 'standart';
+        })
+        ->values();
+
+    $yatayMenu = $standartMenuSayfalari->map(fn ($menuSayfa) => [
         'href' => route('kurumsal.show', ['slug' => $menuSayfa->slug]),
         'label' => $menuSayfa->ad,
         'aktif' => $menuSayfa->slug === $sayfaSlug,
+    ])->values();
+
+    $yatayMenu->push([
+        'href' => route('kurumsal.show', ['slug' => 'kurumlar']),
+        'label' => 'Kurumlar',
+        'aktif' => $sablon === 'kurum' || $sayfaSlug === 'kurumlar',
     ]);
 @endphp
 

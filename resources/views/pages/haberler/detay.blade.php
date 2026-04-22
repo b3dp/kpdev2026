@@ -523,12 +523,21 @@
                         <button
                             type="button"
                             class="share-btn border border-primary/15 bg-bg-soft text-primary"
-                            onclick="navigator.clipboard.writeText(window.location.href)"
+                            onclick="haberLinkiniKopyala()"
                         >
                             <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                             Linki Kopyala
                         </button>
                     </div>
+                </div>
+
+                <div
+                    id="kopyalama-bildirimi"
+                    class="font-jakarta"
+                    style="position:fixed;right:24px;bottom:24px;z-index:9999;padding:12px 16px;border-radius:12px;background:#162E4B;color:#fff;font-size:13px;font-weight:600;box-shadow:0 16px 40px rgba(22,46,75,.24);opacity:0;transform:translateY(12px);pointer-events:none;transition:opacity .2s ease, transform .2s ease;"
+                    aria-live="polite"
+                >
+                    Haber linki panoya kopyalandı.
                 </div>
 
                 @if($ilgiliHaberler->count())
@@ -585,5 +594,56 @@
         cubuk.style.width = toplam > 0 ? (window.scrollY / toplam * 100) + '%' : '100%';
     }, { passive: true });
 })();
+
+function haberLinkiniKopyala() {
+    const bildirim = document.getElementById('kopyalama-bildirimi');
+    const bildirimGoster = function (mesaj, hata = false) {
+        if (!bildirim) return;
+
+        bildirim.textContent = mesaj;
+        bildirim.style.background = hata ? '#B42318' : '#162E4B';
+        bildirim.style.opacity = '1';
+        bildirim.style.transform = 'translateY(0)';
+
+        window.clearTimeout(window.haberKopyaBildirimZamani);
+        window.haberKopyaBildirimZamani = window.setTimeout(function () {
+            bildirim.style.opacity = '0';
+            bildirim.style.transform = 'translateY(12px)';
+        }, 2200);
+    };
+
+    const yedekKopyalama = function () {
+        const geciciAlan = document.createElement('textarea');
+        geciciAlan.value = window.location.href;
+        geciciAlan.setAttribute('readonly', 'readonly');
+        geciciAlan.style.position = 'absolute';
+        geciciAlan.style.left = '-9999px';
+        document.body.appendChild(geciciAlan);
+        geciciAlan.select();
+
+        try {
+            const basarili = document.execCommand('copy');
+            bildirimGoster(basarili ? 'Haber linki panoya kopyalandı.' : 'Link kopyalanamadı.', !basarili);
+        } catch (e) {
+            bildirimGoster('Link kopyalanamadı.', true);
+        }
+
+        document.body.removeChild(geciciAlan);
+    };
+
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(window.location.href)
+            .then(function () {
+                bildirimGoster('Haber linki panoya kopyalandı.');
+            })
+            .catch(function () {
+                yedekKopyalama();
+            });
+
+        return;
+    }
+
+    yedekKopyalama();
+}
 </script>
 @endpush

@@ -368,8 +368,24 @@ class HaberResource extends Resource
                     ->sortable(),
 
                 TextColumn::make('kategori.ad')
-                    ->label('Kategori')
-                    ->sortable()
+                    ->label('Kategoriler')
+                    ->html()
+                    ->formatStateUsing(function (Haber $record): string {
+                        $kategoriler = collect([$record->kategori?->ad])
+                            ->merge($record->kategoriler->pluck('ad'))
+                            ->filter()
+                            ->unique()
+                            ->values();
+
+                        if ($kategoriler->isEmpty()) {
+                            return '<span style="font-size:11px;color:#94a3b8;">-</span>';
+                        }
+
+                        return $kategoriler
+                            ->map(fn (string $ad) => '<span style="display:inline-block;margin:1px 4px 1px 0;padding:1px 6px;border:1px solid #cbd5e1;border-radius:999px;font-size:10px;line-height:1.2;white-space:nowrap;">' . e($ad) . '</span>')
+                            ->implode('');
+                    })
+                    ->wrap()
                     ->toggleable(),
 
                 TextColumn::make('durum')
@@ -405,7 +421,20 @@ class HaberResource extends Resource
                     ->options(HaberDurumu::secenekler()),
                 SelectFilter::make('kategori_id')
                     ->label('Kategori')
-                    ->options(fn () => HaberKategorisi::query()->orderBy('ad')->pluck('ad', 'id')->all()),
+                    ->options(fn () => HaberKategorisi::query()->orderBy('ad')->pluck('ad', 'id')->all())
+                    ->query(function (Builder $query, array $data): Builder {
+                        $kategoriId = (int) ($data['value'] ?? 0);
+
+                        if ($kategoriId <= 0) {
+                            return $query;
+                        }
+
+                        return $query->where(function (Builder $altQuery) use ($kategoriId): void {
+                            $altQuery
+                                ->where('kategori_id', $kategoriId)
+                                ->orWhereHas('kategoriler', fn (Builder $kategoriQuery) => $kategoriQuery->where('haber_kategorileri.id', $kategoriId));
+                        });
+                    }),
                 TernaryFilter::make('manset')
                     ->label('Manşet'),
                 Filter::make('yayin_tarihi')
@@ -438,7 +467,7 @@ class HaberResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery()
-            ->with(['kategori', 'yonetici'])
+            ->with(['kategori', 'kategoriler', 'yonetici'])
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
