@@ -13,6 +13,25 @@
     $uye_oturumu_acik = \Illuminate\Support\Facades\Auth::guard('uye')->check();
     $aktif_uye = $uye_oturumu_acik ? \Illuminate\Support\Facades\Auth::guard('uye')->user() : null;
     $yonetici_oturumu_acik = auth()->guard('web')->check();
+    $kurumsal_sayfalar = \App\Models\KurumsalSayfa::query()
+      ->where('durum', 'yayinda')
+      ->whereNull('ust_sayfa_id')
+      ->orderBy('sira')
+      ->orderBy('ad')
+      ->get(['ad', 'slug', 'sablon']);
+    $kurumsal_standart_sayfalar = $kurumsal_sayfalar
+      ->where('sablon', \App\Enums\KurumsalSablonu::Standart->value)
+      ->values();
+    $egitim_ogretim_sayfalari = $kurumsal_sayfalar
+      ->where('sablon', \App\Enums\KurumsalSablonu::Kurum->value)
+      ->values();
+    $aktif_kurumsal_slug = (string) request()->route('slug', '');
+    $egitim_menu_aktif = request()->routeIs('kurumsal*')
+      && (
+        $aktif_kurumsal_slug === 'kurumlar'
+        || $egitim_ogretim_sayfalari->contains('slug', $aktif_kurumsal_slug)
+      );
+    $kurumsal_menu_aktif = request()->routeIs('kurumsal*') && ! $egitim_menu_aktif;
     $uye_bas_harfleri = $aktif_uye
         ? collect(preg_split('/\s+/', trim((string) $aktif_uye->ad_soyad)))
             ->filter()
@@ -80,17 +99,34 @@
 
       <nav class="hidden lg:flex items-center gap-0.5">
         <div class="has-dropdown">
-          <button class="nav-link {{ request()->routeIs('kurumsal*') ? 'active text-accent font-semibold' : 'text-primary font-medium' }} flex items-center gap-1 font-jakarta text-[13.5px] px-3 py-2 rounded cursor-pointer">
+          <a href="{{ route('kurumsal.show') }}" class="nav-link {{ $kurumsal_menu_aktif ? 'active text-accent font-semibold' : 'text-primary font-medium' }} flex items-center gap-1 font-jakarta text-[13.5px] px-3 py-2 rounded cursor-pointer">
             Kurumsal
-            <svg class="chev w-3.5 h-3.5 {{ request()->routeIs('kurumsal*') ? 'opacity-60' : 'opacity-40' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <svg class="chev w-3.5 h-3.5 {{ $kurumsal_menu_aktif ? 'opacity-60' : 'opacity-40' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
               <path stroke-linecap="round" d="M19 9l-7 7-7-7"/>
             </svg>
-          </button>
+          </a>
           <div class="dropdown-panel bg-white rounded-xl shadow-xl shadow-primary/10 border border-gray-100 p-2">
-            <a href="{{ route('kurumsal.show', 'hakkimizda') }}" class="dropdown-item"><span class="dot"></span>Hakkımızda</a>
-            <a href="{{ route('kurumsal.show', 'yonetim-kurulu') }}" class="dropdown-item"><span class="dot"></span>Yönetim Kurulu</a>
-            <a href="{{ route('kurumsal.show', 'dernek-tuzugu') }}" class="dropdown-item"><span class="dot"></span>Dernek Tüzüğü</a>
-            <a href="{{ route('kurumsal.show', 'faaliyet-raporlari') }}" class="dropdown-item"><span class="dot"></span>Faaliyet Raporları</a>
+            @forelse($kurumsal_standart_sayfalar as $kurumsal_sayfa)
+              <a href="{{ route('kurumsal.show', $kurumsal_sayfa->slug) }}" class="dropdown-item"><span class="dot"></span>{{ $kurumsal_sayfa->ad }}</a>
+            @empty
+              <a href="{{ route('kurumsal.show', 'hakkimizda') }}" class="dropdown-item"><span class="dot"></span>Hakkımızda</a>
+            @endforelse
+          </div>
+        </div>
+
+        <div class="has-dropdown">
+          <a href="{{ route('kurumsal.show', 'kurumlar') }}" class="nav-link {{ $egitim_menu_aktif ? 'active text-accent font-semibold' : 'text-primary font-medium' }} flex items-center gap-1 font-jakarta text-[13.5px] px-3 py-2 rounded cursor-pointer">
+            Eğitim/Öğretim
+            <svg class="chev w-3.5 h-3.5 {{ $egitim_menu_aktif ? 'opacity-60' : 'opacity-40' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </a>
+          <div class="dropdown-panel bg-white rounded-xl shadow-xl shadow-primary/10 border border-gray-100 p-2">
+            @forelse($egitim_ogretim_sayfalari as $egitim_ogretim_sayfasi)
+              <a href="{{ route('kurumsal.show', $egitim_ogretim_sayfasi->slug) }}" class="dropdown-item"><span class="dot"></span>{{ $egitim_ogretim_sayfasi->ad }}</a>
+            @empty
+              <a href="{{ route('kurumsal.show', 'kurumlar') }}" class="dropdown-item"><span class="dot"></span>Kurumlar</a>
+            @endforelse
           </div>
         </div>
 
@@ -286,7 +322,7 @@
   <div id="mobile-menu" aria-hidden="true">
     <nav class="border-t border-gray-100 bg-white px-4 pb-5 pt-2 space-y-0.5">
       <div>
-        <button class="mob-acc-btn {{ request()->routeIs('kurumsal*') ? 'open text-accent font-semibold bg-bg-soft' : 'text-primary font-medium hover:bg-bg-soft hover:text-accent' }} w-full flex items-center justify-between px-3 py-2.5 rounded-lg font-jakarta text-[14px] transition-colors" data-target="mob-kurumsal">
+        <button class="mob-acc-btn {{ $kurumsal_menu_aktif ? 'open text-accent font-semibold bg-bg-soft' : 'text-primary font-medium hover:bg-bg-soft hover:text-accent' }} w-full flex items-center justify-between px-3 py-2.5 rounded-lg font-jakarta text-[14px] transition-colors" data-target="mob-kurumsal">
           <span class="flex items-center gap-2">
             <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>Kurumsal
           </span>
@@ -294,11 +330,30 @@
             <path stroke-linecap="round" d="M19 9l-7 7-7-7"/>
           </svg>
         </button>
-        <div id="mob-kurumsal" class="mob-sub pl-5 space-y-0.5 mt-0.5 {{ request()->routeIs('kurumsal*') ? 'open' : '' }}">
-          <a href="{{ route('kurumsal.show', 'hakkimizda') }}" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">Hakkımızda</a>
-          <a href="{{ route('kurumsal.show', 'yonetim-kurulu') }}" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">Yönetim Kurulu</a>
-          <a href="{{ route('kurumsal.show', 'dernek-tuzugu') }}" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">Dernek Tüzüğü</a>
-          <a href="{{ route('kurumsal.show', 'faaliyet-raporlari') }}" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">Faaliyet Raporları</a>
+        <div id="mob-kurumsal" class="mob-sub pl-5 space-y-0.5 mt-0.5 {{ $kurumsal_menu_aktif ? 'open' : '' }}">
+          <a href="{{ route('kurumsal.show') }}" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">Kurumsal Anasayfa</a>
+          @forelse($kurumsal_standart_sayfalar as $kurumsal_sayfa)
+            <a href="{{ route('kurumsal.show', $kurumsal_sayfa->slug) }}" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">{{ $kurumsal_sayfa->ad }}</a>
+          @empty
+            <a href="{{ route('kurumsal.show', 'hakkimizda') }}" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">Hakkımızda</a>
+          @endforelse
+        </div>
+      </div>
+
+      <div>
+        <button class="mob-acc-btn {{ $egitim_menu_aktif ? 'open text-accent font-semibold bg-bg-soft' : 'text-primary font-medium hover:bg-bg-soft hover:text-accent' }} w-full flex items-center justify-between px-3 py-2.5 rounded-lg font-jakarta text-[14px] transition-colors" data-target="mob-egitim-ogretim">
+          Eğitim/Öğretim
+          <svg class="mob-chev w-4 h-4 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        <div id="mob-egitim-ogretim" class="mob-sub pl-5 space-y-0.5 mt-0.5 {{ $egitim_menu_aktif ? 'open' : '' }}">
+          <a href="{{ route('kurumsal.show', 'kurumlar') }}" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">Kurumlar</a>
+          @forelse($egitim_ogretim_sayfalari as $egitim_ogretim_sayfasi)
+            <a href="{{ route('kurumsal.show', $egitim_ogretim_sayfasi->slug) }}" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">{{ $egitim_ogretim_sayfasi->ad }}</a>
+          @empty
+            <a href="{{ route('kurumsal.show', 'kurumlar') }}" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">Kurum listesi yakında eklenecek</a>
+          @endforelse
         </div>
       </div>
 
