@@ -8,7 +8,8 @@
         'alt' => $g->alt_text ?: $haber->baslik,
     ])->toJson(JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE);
     $yayinTarihi = $haber->yayin_tarihi ?? $haber->created_at;
-    $metaAciklama = html_entity_decode($haber->meta_description ?? $haber->ozet ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    // SEO: Meta aciklama degeri HTML ve entity temizlenerek guvenli hale getirildi.
+    $metaAciklama = strip_tags(html_entity_decode($haber->meta_description ?? $haber->ozet ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8'));
     $robotsDeger = $haber->robots ?? 'index, follow';
     $kategoriAdlari = $haber->kategoriler->pluck('ad')->filter()->unique()->values();
     $editor = $haber->yonetici;
@@ -37,7 +38,8 @@
         '@type' => 'NewsArticle',
         // SEO: JSON kirilmasini engellemek icin metinler HTML'den arindirildi.
         'headline' => strip_tags($haber->baslik ?? ''),
-        'description' => strip_tags($haber->ozet ?? ''),
+        // SEO: Schema description alani ham ozet yerine temizlenmis metinle beslenir.
+        'description' => strip_tags(html_entity_decode($haber->ozet ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8')),
         'url' => url()->current(),
         'image' => [($haber->gorselLgUrl() ?: ($haber->gorselOgUrl() ?: ''))],
         'datePublished' => $haber->created_at?->toIso8601String(),
@@ -81,7 +83,7 @@
 @section('og_type', 'article')
 @section('og_image', $haber->gorselLgUrl() ?: $haber->gorselOgUrl() ?: asset('img/og-default.jpg'))
 
-@section('title', $haber->seo_baslik ?? $haber->baslik)
+@section('title', strip_tags($haber->seo_baslik ?? $haber->baslik))
 @section('meta_description', $metaAciklama)
 @section('robots', $robotsDeger)
 

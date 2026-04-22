@@ -1,9 +1,3 @@
-use App\Console\Commands\HaberSmSmartCropSon6;
-Artisan::command('haber:sm-smart-crop-son6', [HaberSmSmartCropSon6::class, 'handle']);
-use App\Console\Commands\HaberOrijinalGorselKopyalaSon10;
-Artisan::command('haber:orijinal-gorsel-kopyala-son10', [HaberOrijinalGorselKopyalaSon10::class, 'handle']);
-use App\Console\Commands\HaberSmSmartCropSon5;
-Artisan::command('haber:sm-smart-crop-son5', [HaberSmSmartCropSon5::class, 'handle']);
 <?php
 
 use App\Console\Commands\BagisTerkSepetKontrol;
