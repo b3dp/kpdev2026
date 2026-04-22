@@ -24,7 +24,7 @@
 
     $schemaTipi = match ($sablon) {
         'iletisim' => 'ContactPage',
-        'kurum' => 'Organization',
+        'kurum', 'atolye' => 'Organization',
         default => 'WebPage',
     };
 
@@ -99,6 +99,12 @@
         'label' => 'Kurumlar',
         'aktif' => $sablon === 'kurum' || $sayfaSlug === 'kurumlar',
     ]);
+
+    $yatayMenu->push([
+        'href' => route('kurumsal.show', ['slug' => 'atolyeler']),
+        'label' => 'Atölyeler',
+        'aktif' => $sablon === 'atolye' || $sayfaSlug === 'atolyeler',
+    ]);
 @endphp
 
 @section('title', $sayfaBaslik)
@@ -166,6 +172,7 @@
                 @include('pages.kurumsal.partials.' . match ($sablon) {
                     'iletisim' => 'iletisim',
                     'kurum' => 'kurum',
+                    'atolye' => 'kurum',
                     default => 'standart',
                 })
             </div>

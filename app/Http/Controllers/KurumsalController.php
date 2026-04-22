@@ -8,6 +8,7 @@ use App\Models\Etkinlik;
 use App\Models\Haber;
 use App\Models\HaberKategorisi;
 use App\Models\KurumsalSayfa;
+use App\Support\KurumsalStatikSayfalar;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -15,6 +16,15 @@ class KurumsalController extends Controller
 {
     public function show(?string $slug = null)
     {
+        if (filled($slug)) {
+            $statikSayfa = KurumsalStatikSayfalar::slugIle($slug);
+            if ($statikSayfa && ($statikSayfa['aktif'] ?? false)) {
+                return view((string) $statikSayfa['view'], [
+                    'statikSayfa' => $statikSayfa,
+                ]);
+            }
+        }
+
         $yayindakiSayfalar = KurumsalSayfa::query()
             ->where('durum', 'yayinda')
             ->with([
@@ -51,6 +61,19 @@ class KurumsalController extends Controller
                 });
 
             return view('pages.kurumsal.kurumlar-liste', compact('kurumSayfalari'));
+        }
+
+        if ($slug === 'atolyeler') {
+            $atolyeSayfalari = $yayindakiSayfalar
+                ->where('sablon', KurumsalSablonu::Atolye->value)
+                ->values()
+                ->map(function (KurumsalSayfa $sayfa): KurumsalSayfa {
+                    $sayfa->kart_gorseli = $sayfa->bannerMasaustuUrl() ?: $sayfa->gorselLgUrl();
+
+                    return $sayfa;
+                });
+
+            return view('pages.kurumsal.atolyeler-liste', compact('atolyeSayfalari'));
         }
 
         $menuSayfalari = $yayindakiSayfalar

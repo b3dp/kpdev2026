@@ -25,13 +25,21 @@
     $egitim_ogretim_sayfalari = $kurumsal_sayfalar
       ->where('sablon', \App\Enums\KurumsalSablonu::Kurum->value)
       ->values();
+    $atolye_sayfalari = $kurumsal_sayfalar
+      ->where('sablon', \App\Enums\KurumsalSablonu::Atolye->value)
+      ->values();
     $aktif_kurumsal_slug = (string) request()->route('slug', '');
     $egitim_menu_aktif = request()->routeIs('kurumsal*')
       && (
         $aktif_kurumsal_slug === 'kurumlar'
         || $egitim_ogretim_sayfalari->contains('slug', $aktif_kurumsal_slug)
       );
-    $kurumsal_menu_aktif = request()->routeIs('kurumsal*') && ! $egitim_menu_aktif;
+    $atolye_menu_aktif = request()->routeIs('kurumsal*')
+      && (
+        $aktif_kurumsal_slug === 'atolyeler'
+        || $atolye_sayfalari->contains('slug', $aktif_kurumsal_slug)
+      );
+    $kurumsal_menu_aktif = request()->routeIs('kurumsal*') && ! $egitim_menu_aktif && ! $atolye_menu_aktif;
     $uye_bas_harfleri = $aktif_uye
         ? collect(preg_split('/\s+/', trim((string) $aktif_uye->ad_soyad)))
             ->filter()
@@ -126,6 +134,22 @@
               <a href="{{ route('kurumsal.show', $egitim_ogretim_sayfasi->slug) }}" class="dropdown-item"><span class="dot"></span>{{ $egitim_ogretim_sayfasi->ad }}</a>
             @empty
               <a href="{{ route('kurumsal.show', 'kurumlar') }}" class="dropdown-item"><span class="dot"></span>Kurumlar</a>
+            @endforelse
+          </div>
+        </div>
+
+        <div class="has-dropdown">
+          <a href="{{ route('kurumsal.show', 'atolyeler') }}" class="nav-link {{ $atolye_menu_aktif ? 'active text-accent font-semibold' : 'text-primary font-medium' }} flex items-center gap-1 font-jakarta text-[13.5px] px-3 py-2 rounded cursor-pointer">
+            Atölyeler
+            <svg class="chev w-3.5 h-3.5 {{ $atolye_menu_aktif ? 'opacity-60' : 'opacity-40' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </a>
+          <div class="dropdown-panel bg-white rounded-xl shadow-xl shadow-primary/10 border border-gray-100 p-2">
+            @forelse($atolye_sayfalari as $atolye_sayfasi)
+              <a href="{{ route('kurumsal.show', $atolye_sayfasi->slug) }}" class="dropdown-item"><span class="dot"></span>{{ $atolye_sayfasi->ad }}</a>
+            @empty
+              <a href="{{ route('kurumsal.show', 'atolyeler') }}" class="dropdown-item"><span class="dot"></span>Atölyeler</a>
             @endforelse
           </div>
         </div>
@@ -353,6 +377,23 @@
             <a href="{{ route('kurumsal.show', $egitim_ogretim_sayfasi->slug) }}" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">{{ $egitim_ogretim_sayfasi->ad }}</a>
           @empty
             <a href="{{ route('kurumsal.show', 'kurumlar') }}" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">Kurum listesi yakında eklenecek</a>
+          @endforelse
+        </div>
+      </div>
+
+      <div>
+        <button class="mob-acc-btn {{ $atolye_menu_aktif ? 'open text-accent font-semibold bg-bg-soft' : 'text-primary font-medium hover:bg-bg-soft hover:text-accent' }} w-full flex items-center justify-between px-3 py-2.5 rounded-lg font-jakarta text-[14px] transition-colors" data-target="mob-atolyeler">
+          Atölyeler
+          <svg class="mob-chev w-4 h-4 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        <div id="mob-atolyeler" class="mob-sub pl-5 space-y-0.5 mt-0.5 {{ $atolye_menu_aktif ? 'open' : '' }}">
+          <a href="{{ route('kurumsal.show', 'atolyeler') }}" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">Atölyeler</a>
+          @forelse($atolye_sayfalari as $atolye_sayfasi)
+            <a href="{{ route('kurumsal.show', $atolye_sayfasi->slug) }}" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">{{ $atolye_sayfasi->ad }}</a>
+          @empty
+            <a href="{{ route('kurumsal.show', 'atolyeler') }}" class="block px-3 py-2 rounded-lg text-primary hover:bg-bg-soft hover:text-accent font-jakarta text-[13.5px] transition-colors">Atölye listesi yakında eklenecek</a>
           @endforelse
         </div>
       </div>

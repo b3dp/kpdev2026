@@ -7,6 +7,7 @@ enum KurumsalSablonu: string
     case Standart = 'standart';
     case Iletisim = 'iletisim';
     case Kurum = 'kurum';
+    case Atolye = 'atolye';
 
     public function label(): string
     {
@@ -14,6 +15,7 @@ enum KurumsalSablonu: string
             self::Standart => 'Standart',
             self::Iletisim => 'Iletisim',
             self::Kurum => 'Kurum',
+            self::Atolye => 'Atolye',
         };
     }
 

@@ -151,7 +151,7 @@ class KurumsalSayfaResource extends Resource
                         ->label('Kurum İlişkisi')
                         ->options(fn () => Kurum::query()->orderBy('ad')->pluck('ad', 'id')->all())
                         ->searchable()
-                        ->visible(fn (callable $get): bool => $get('sablon') === KurumsalSablonu::Kurum->value),
+                        ->visible(fn (callable $get): bool => in_array($get('sablon'), [KurumsalSablonu::Kurum->value, KurumsalSablonu::Atolye->value], true)),
 
                     ToggleButtons::make('durum')
                         ->label('Durum')
@@ -471,6 +471,7 @@ class KurumsalSayfaResource extends Resource
                         KurumsalSablonu::Standart => 'primary',
                         KurumsalSablonu::Iletisim => 'warning',
                         KurumsalSablonu::Kurum => 'success',
+                        KurumsalSablonu::Atolye => 'info',
                         default => 'gray',
                     })
                     ->sortable(),
