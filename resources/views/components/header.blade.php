@@ -187,49 +187,12 @@
       </nav>
 
       <div class="flex items-center gap-1 lg:gap-2">
-        <div class="header-search-shell hidden xl:block">
-          <form action="{{ route('arama.index') }}" method="GET" role="search" class="header-search-form" data-search-form>
-            <div class="relative">
-              <svg class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-primary/45" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <circle cx="11" cy="11" r="8" />
-                <path stroke-linecap="round" d="M21 21l-4.35-4.35" />
-              </svg>
-              <input
-                type="search"
-                name="q"
-                value="{{ $header_arama }}"
-                class="header-search-input"
-                placeholder="Sitede ara..."
-                autocomplete="off"
-                aria-label="Sitede ara"
-              >
-              <button type="submit" class="header-search-submit">Ara</button>
-            </div>
-          </form>
-
-          <div class="header-search-panel">
-            <div>
-              <p class="header-search-heading">Popüler Aramalar</p>
-              <div class="flex flex-wrap gap-2">
-                @foreach($populer_aramalar as $etiket)
-                  <a href="{{ route('arama.index', ['q' => $etiket]) }}" class="search-chip">{{ $etiket }}</a>
-                @endforeach
-              </div>
-            </div>
-
-            <div data-recent-block class="mt-4 hidden">
-              <p class="header-search-heading">Son Aramalar</p>
-              <div data-recent-searches class="flex flex-wrap gap-2"></div>
-            </div>
-          </div>
-        </div>
-
         <button
           id="search-toggle"
           type="button"
           aria-label="Aramayı aç"
           aria-expanded="false"
-          class="xl:hidden flex items-center justify-center w-9 h-9 rounded-md transition-colors {{ request()->routeIs('arama.*') ? 'bg-bg-soft text-accent' : 'text-primary hover:text-accent hover:bg-bg-soft' }}"
+          class="flex items-center justify-center w-9 h-9 rounded-md transition-colors {{ request()->routeIs('arama.*') ? 'bg-bg-soft text-accent' : 'text-primary hover:text-accent hover:bg-bg-soft' }}"
         >
           <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
             <circle cx="11" cy="11" r="8" />
@@ -304,8 +267,17 @@
     </div>
   </div>
 
-  <div id="search-drawer" aria-hidden="true" class="xl:hidden">
-    <div class="border-t border-gray-100 bg-white px-4 pb-4 pt-3">
+  <div id="search-drawer" aria-hidden="true">
+    <div class="search-modal-panel">
+      <div class="mb-3 flex items-center justify-between gap-3">
+        <h3 class="font-jakarta text-base font-bold text-primary">Site İçi Arama</h3>
+        <button type="button" data-search-close class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-primary/10 text-primary transition-colors hover:bg-bg-soft" aria-label="Aramayı kapat">
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
       <form action="{{ route('arama.index') }}" method="GET" role="search" class="flex items-center gap-2" data-search-form>
         <div class="relative flex-1">
           <svg class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-primary/45" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

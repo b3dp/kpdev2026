@@ -2,6 +2,7 @@ const ham_btn = document.getElementById('ham-btn');
 const mob_menu = document.getElementById('mobile-menu');
 const search_toggle = document.getElementById('search-toggle');
 const search_drawer = document.getElementById('search-drawer');
+const search_close_buttons = document.querySelectorAll('[data-search-close]');
 const header = document.getElementById('main-header');
 const cart_triggers = document.querySelectorAll('[data-cart-trigger]');
 const cart_drawer = document.getElementById('cart-drawer');
@@ -30,6 +31,7 @@ const closeSearchDrawer = () => {
   search_toggle.setAttribute('aria-expanded', 'false');
   search_drawer.classList.remove('open');
   search_drawer.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('overflow-hidden');
 };
 
 const escape_html = (value = '') => String(value)
@@ -174,8 +176,24 @@ if (search_toggle && search_drawer) {
     search_drawer.classList.toggle('open', !is_open);
     search_toggle.setAttribute('aria-expanded', String(!is_open));
     search_drawer.setAttribute('aria-hidden', String(is_open));
+
+    if (!is_open) {
+      document.body.classList.add('overflow-hidden');
+    } else {
+      document.body.classList.remove('overflow-hidden');
+    }
+  });
+
+  search_drawer.addEventListener('click', (event) => {
+    if (event.target === search_drawer) {
+      closeSearchDrawer();
+    }
   });
 }
+
+search_close_buttons.forEach((button) => {
+  button.addEventListener('click', closeSearchDrawer);
+});
 
 cart_triggers.forEach((trigger) => {
   trigger.addEventListener('click', (event) => {
