@@ -20,7 +20,6 @@
                 <img src="{{ asset('images/albaraka_logo.svg') }}" alt="Albaraka Türk" class="h-10 w-auto object-contain">
                 <span class="rounded-full bg-[#eff6ff] px-3 py-1 text-xs font-semibold text-[#1e40af]">İzmir Şubesi</span>
             </div>
-            <h2 class="font-jakarta text-lg font-bold text-primary">ALBARAKA TÜRK İZMİR ŞUBESİ</h2>
             <p class="mt-1 text-sm text-[#5f7480]">Kestanepazarı Öğrenci Yetiştirme Derneği</p>
 
             <div class="mt-4 space-y-3">
@@ -40,7 +39,6 @@
                 <img src="{{ asset('images/vakifkatilim_logo.svg') }}" alt="Vakıf Katılım" class="h-10 w-auto object-contain">
                 <span class="rounded-full bg-[#eff6ff] px-3 py-1 text-xs font-semibold text-[#1e40af]">Konak Şubesi</span>
             </div>
-            <h2 class="font-jakarta text-lg font-bold text-primary">VAKIF KATILIM KONAK ŞUBESİ</h2>
             <p class="mt-1 text-sm text-[#5f7480]">Kestanepazarı Öğrenci Yetiştirme Derneği</p>
 
             <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
@@ -58,7 +56,6 @@
                 <img src="{{ asset('images/kuveytturk_logo.svg') }}" alt="Kuveyt Türk" class="h-10 w-auto object-contain">
                 <span class="rounded-full bg-[#eff6ff] px-3 py-1 text-xs font-semibold text-[#1e40af]">İzmir Şubesi</span>
             </div>
-            <h2 class="font-jakarta text-lg font-bold text-primary">KUVEYT TÜRK İZMİR ŞUBESİ</h2>
             <p class="mt-1 text-sm text-[#5f7480]">Kestanepazarı Öğrenci Yetiştirme Derneği</p>
 
             <div class="mt-4 space-y-3">
