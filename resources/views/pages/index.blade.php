@@ -3,6 +3,8 @@
 @php
   // SEO: Ana sayfa aciklamasi meta ve og aciklamasi icin zenginlestirildi.
   $anaSayfaSeoAciklama = "İzmir Karabağlar'da faaliyet gösteren Kestanepazarı Öğrenci Yetiştirme Derneği — eğitim, etkinlik ve bağış kampanyaları.";
+  // SEO: HTML entity encode kaynakli metin bozulmasini engelle.
+  $anaSayfaSeoAciklama = html_entity_decode($anaSayfaSeoAciklama ?? '', ENT_QUOTES, 'UTF-8');
 @endphp
 
 @section('title', 'Ana Sayfa')

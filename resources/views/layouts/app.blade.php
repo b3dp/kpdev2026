@@ -131,13 +131,8 @@
     'itemListElement' => $breadcrumbItems,
   ];
 
-  $icerikSchema = [
-    '@context' => 'https://schema.org',
-    '@type' => 'WebPage',
-    'name' => $pageTitle,
-    'description' => $metaDescription,
-    'url' => $canonicalUrl,
-  ];
+  // SEO: Layout bazli WebPage schema kaldirildi, sadece ilgili sayfa tiplerinde schema uretilir.
+  $icerikSchema = null;
 
   // SEO: Haber detayinda NewsArticle sadece sayfa bazli bloktan gelsin.
   if (request()->routeIs('etkinlikler.show')) {
@@ -187,7 +182,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>@yield('title', config('site.ad')) — Kestanepazarı</title>
-<meta name="description" content="{{ $metaDescription }}">
+<meta name="description" content="{!! html_entity_decode($metaDescription, ENT_QUOTES, 'UTF-8') !!}">
 <meta name="robots" content="{{ $robotsMeta }}">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#162E4B">
@@ -200,7 +195,7 @@
 <meta property="og:type" content="{{ $ogType }}">
 <meta property="og:site_name" content="Kestanepazarı">
 <meta property="og:title" content="{{ $pageTitle }} — Kestanepazarı">
-<meta property="og:description" content="{{ $metaDescription }}">
+<meta property="og:description" content="{!! html_entity_decode($metaDescription, ENT_QUOTES, 'UTF-8') !!}">
 <meta property="og:image" content="{{ $ogImage }}">
 <meta property="og:url" content="{{ url()->current() }}">
 <meta property="og:locale" content="tr_TR">
@@ -218,7 +213,7 @@
 <meta name="twitter:site" content="Kestanepazarı">
 <meta name="twitter:creator" content="Kestanepazarı">
 <meta name="twitter:title" content="{{ $pageTitle }} — Kestanepazarı">
-<meta name="twitter:description" content="{{ $metaDescription }}">
+<meta name="twitter:description" content="{!! html_entity_decode($metaDescription, ENT_QUOTES, 'UTF-8') !!}">
 <meta name="twitter:image" content="{{ $ogImage }}">
 
 <!-- GEO -->
@@ -252,9 +247,12 @@
 </script>
 @endif
 
+@if(is_array($icerikSchema))
+{{-- SEO: Sadece Event/ContactPage gibi durumlarda layout schema cikar. --}}
 <script type="application/ld+json">
 {!! json_encode($icerikSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
 </script>
+@endif
 
 <!-- Sayfa bazlı Schema -->
 @yield('schema')

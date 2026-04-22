@@ -28,12 +28,16 @@
         $robotsDeger .= ', follow';
     }
 
+    // SEO: Keywords sadece veri varsa schema'ya eklenecek.
+    $haberKeywords = $haber->etiketler?->pluck('ad')?->filter()?->values()?->toArray() ?? [];
+
     // SEO: Haber detay schema verisi PHP array + json_encode ile olusturuldu.
     $haberNewsSchema = [
         '@context' => 'https://schema.org',
         '@type' => 'NewsArticle',
-        'headline' => $haber->baslik,
-        'description' => $haber->ozet ?? '',
+        // SEO: JSON kirilmasini engellemek icin metinler HTML'den arindirildi.
+        'headline' => strip_tags($haber->baslik ?? ''),
+        'description' => strip_tags($haber->ozet ?? ''),
         'url' => url()->current(),
         'image' => [($haber->gorselLgUrl() ?: ($haber->gorselOgUrl() ?: ''))],
         'datePublished' => $haber->created_at?->toIso8601String(),
@@ -42,7 +46,6 @@
         'wordCount' => str_word_count(strip_tags($haber->icerik ?? '')),
         'timeRequired' => 'PT' . max(1, (int) ceil(str_word_count(strip_tags($haber->icerik ?? '')) / 200)) . 'M',
         'articleSection' => $haber->kategori->ad ?? '',
-        'keywords' => $haber->etiketler?->pluck('ad')?->toArray() ?? [],
         'author' => [
             '@type' => $editor ? 'Person' : 'Organization',
             'name' => $editor?->ad_soyad ?? 'Kestanepazarı Öğrenci Yetiştirme Derneği',
@@ -68,6 +71,11 @@
             'cssSelector' => ['h1', '.haber-ozet'],
         ],
     ];
+
+    // SEO: Bos keywords alani schema'ya eklenmez.
+    if (!empty($haberKeywords)) {
+        $haberNewsSchema['keywords'] = $haberKeywords;
+    }
 @endphp
 
 @section('og_type', 'article')
