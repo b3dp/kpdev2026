@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
 use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -18,6 +20,32 @@ use Spatie\Sluggable\SlugOptions;
 class Etkinlik extends Model
 {
     use HasFactory, HasSlug, LogsActivity, Searchable, SoftDeletes;
+
+    protected static function booted(): void
+    {
+        static::updated(function (): void {
+            self::siteHaritasiniYenile();
+        });
+
+        static::deleted(function (): void {
+            self::siteHaritasiniYenile();
+        });
+
+        static::restored(function (): void {
+            self::siteHaritasiniYenile();
+        });
+    }
+
+    private static function siteHaritasiniYenile(): void
+    {
+        try {
+            Artisan::call('site-haritasi:olustur');
+        } catch (\Throwable $e) {
+            Log::error('Etkinlik kaydinda sitemap yenileme hatasi', [
+                'hata' => $e->getMessage(),
+            ]);
+        }
+    }
 
     public function getGorselLgCdnUrlAttribute(): ?string
     {
