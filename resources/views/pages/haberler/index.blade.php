@@ -1,10 +1,81 @@
 @extends('layouts.app')
 
+@php
+    // SEO: Liste sayfasi icin genel OG gorsel secimi yapildi.
+    $haberlerOgPath = public_path('img/og-haberler.jpg');
+    $haberlerOgImage = file_exists($haberlerOgPath)
+        ? rtrim((string) config('app.url'), '/') . '/img/og-haberler.jpg'
+        : rtrim((string) config('app.url'), '/') . '/img/og-default.jpg';
+
+    // SEO: CollectionPage > ItemList elemanlari hazirlandi.
+    $haberItemListElements = [];
+    foreach ($haberler as $index => $haberKaydi) {
+        $haberItemListElements[] = [
+            '@type' => 'ListItem',
+            'position' => $index + 1,
+            'url' => route('haberler.show', $haberKaydi->slug),
+            'name' => $haberKaydi->baslik,
+            'image' => $haberKaydi->gorselLgUrl() ?: ($haberKaydi->gorselOgUrl() ?: ''),
+            'datePublished' => $haberKaydi->created_at?->toIso8601String(),
+        ];
+    }
+
+    $haberlerCollectionSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'CollectionPage',
+        'name' => 'Haberler — Kestanepazarı',
+        'description' => 'Kestanepazarı Öğrenci Yetiştirme Derneği haberleri ve duyuruları',
+        'url' => url()->current(),
+        'inLanguage' => 'tr-TR',
+        'isPartOf' => [
+            '@type' => 'WebSite',
+            '@id' => rtrim((string) config('app.url'), '/') . '/#website',
+        ],
+        'publisher' => [
+            '@type' => 'Organization',
+            'name' => 'Kestanepazarı Öğrenci Yetiştirme Derneği',
+        ],
+        'mainEntity' => [
+            '@type' => 'ItemList',
+            'name' => 'Haberler',
+            'numberOfItems' => $haberler->total() ?? count($haberler),
+            'itemListElement' => $haberItemListElements,
+        ],
+    ];
+
+    // SEO: Haber liste sayfasi icin zengin WebPage schema eklendi.
+    $haberlerSayfaSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'WebPage',
+        'name' => 'Haberler — Kestanepazarı',
+        'description' => 'Kestanepazarı Öğrenci Yetiştirme Derneği haberleri ve duyuruları',
+        'url' => url()->current(),
+        'inLanguage' => 'tr-TR',
+        'isPartOf' => [
+            '@type' => 'WebSite',
+            '@id' => rtrim((string) config('app.url'), '/') . '/#website',
+        ],
+        'publisher' => [
+            '@type' => 'Organization',
+            'name' => 'Kestanepazarı Öğrenci Yetiştirme Derneği',
+        ],
+    ];
+@endphp
+
 @section('title', 'Haberler')
 @section('meta_description', 'Kestanepazarı haberleri ve duyurular')
 @section('robots', 'index, follow')
 @section('og_type', 'website')
-@section('og_image', $oneCikanHaber?->gorselLgUrl() ?: asset('img/og-default.jpg'))
+@section('og_image', $haberlerOgImage)
+
+@section('schema')
+<script type="application/ld+json">
+{!! json_encode($haberlerCollectionSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+</script>
+<script type="application/ld+json">
+{!! json_encode($haberlerSayfaSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+</script>
+@endsection
 
 @section('content')
 <section class="border-b border-primary/10 bg-white pb-0 pt-0">

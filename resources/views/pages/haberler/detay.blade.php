@@ -27,6 +27,47 @@
     if ($robotsDeger && !str_contains($robotsDeger, 'follow') && !str_contains($robotsDeger, 'nofollow')) {
         $robotsDeger .= ', follow';
     }
+
+    // SEO: Haber detay schema verisi PHP array + json_encode ile olusturuldu.
+    $haberNewsSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'NewsArticle',
+        'headline' => $haber->baslik,
+        'description' => $haber->ozet ?? '',
+        'url' => url()->current(),
+        'image' => [($haber->gorselLgUrl() ?: ($haber->gorselOgUrl() ?: ''))],
+        'datePublished' => $haber->created_at?->toIso8601String(),
+        'dateModified' => $haber->updated_at?->toIso8601String(),
+        'inLanguage' => 'tr-TR',
+        'wordCount' => str_word_count(strip_tags($haber->icerik ?? '')),
+        'timeRequired' => 'PT' . max(1, (int) ceil(str_word_count(strip_tags($haber->icerik ?? '')) / 200)) . 'M',
+        'articleSection' => $haber->kategori->ad ?? '',
+        'keywords' => $haber->etiketler?->pluck('ad')?->toArray() ?? [],
+        'author' => [
+            '@type' => $editor ? 'Person' : 'Organization',
+            'name' => $editor?->ad_soyad ?? 'Kestanepazarı Öğrenci Yetiştirme Derneği',
+        ],
+        'publisher' => [
+            '@type' => 'Organization',
+            'name' => 'Kestanepazarı Öğrenci Yetiştirme Derneği',
+            'logo' => [
+                '@type' => 'ImageObject',
+                'url' => 'https://cdn.kestanepazari.org.tr/logo.png',
+            ],
+        ],
+        'mainEntityOfPage' => [
+            '@type' => 'WebPage',
+            '@id' => url()->current(),
+        ],
+        'isPartOf' => [
+            '@type' => 'WebSite',
+            '@id' => rtrim((string) config('app.url'), '/') . '/#website',
+        ],
+        'speakable' => [
+            '@type' => 'SpeakableSpecification',
+            'cssSelector' => ['h1', '.haber-ozet'],
+        ],
+    ];
 @endphp
 
 @section('og_type', 'article')
@@ -38,29 +79,7 @@
 
 @section('schema')
 <script type="application/ld+json">
-{
-  "@@context": "https://schema.org",
-  "@@type": "NewsArticle",
-  "headline": "{{ $haber->baslik }}",
-  "image": ["{{ $haber->gorselLgUrl() ?: $haber->gorselOgUrl() ?: asset('img/og-default.jpg') }}"],
-  "datePublished": "{{ $yayinTarihi?->toIso8601String() }}",
-  "dateModified": "{{ $haber->updated_at?->toIso8601String() }}",
-  "description": "{{ $metaAciklama }}",
-    "articleSection": @json($kategoriAdlari->first() ?: $haber->kategori?->ad),
-    "keywords": @json($kategoriAdlari->all()),
-  "wordCount": {{ $kelimeSayisi }},
-  "timeRequired": "PT{{ $okumaSuresi }}M",
-  "speakable": {
-    "@@type": "SpeakableSpecification",
-    "cssSelector": ["h1", ".haber-ozet"]
-  },
-    "author": {"@@type": "{{ $editor ? 'Person' : 'Organization' }}", "name": "{{ $editorAdSoyad }}"},
-  "publisher": {
-    "@@type": "Organization",
-    "name": "Kestanepazarı Derneği",
-    "logo": {"@@type": "ImageObject", "url": "https://cdn.kestanepazari.org.tr/logo.png"}
-  }
-}
+{!! json_encode($haberNewsSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
 </script>
 @endsection
 

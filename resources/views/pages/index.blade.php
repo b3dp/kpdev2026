@@ -1,24 +1,42 @@
 @extends('layouts.app')
 
+@php
+  // SEO: Ana sayfa aciklamasi meta ve og aciklamasi icin zenginlestirildi.
+  $anaSayfaSeoAciklama = "İzmir Karabağlar'da faaliyet gösteren Kestanepazarı Öğrenci Yetiştirme Derneği — eğitim, etkinlik ve bağış kampanyaları.";
+@endphp
+
 @section('title', 'Ana Sayfa')
-@section('meta_description', config('site.aciklama'))
+@section('meta_description', $anaSayfaSeoAciklama)
 @section('robots', 'index, follow')
 @section('og_type', 'website')
 @section('og_image', asset('img/og-default.jpg'))
 
 @section('schema')
+@php
+  // SEO: Ana sayfada yinelenen WebSite yerine tekil WebPage schema kullanildi.
+  $anaSayfaSchema = [
+    '@context' => 'https://schema.org',
+    '@type' => 'WebPage',
+    'name' => 'Ana Sayfa — Kestanepazarı',
+    'description' => $anaSayfaSeoAciklama,
+    'url' => rtrim((string) config('app.url'), '/'),
+    'inLanguage' => 'tr-TR',
+    'isPartOf' => [
+      '@type' => 'WebSite',
+      '@id' => rtrim((string) config('app.url'), '/') . '/#website',
+    ],
+    'about' => [
+      '@type' => 'Organization',
+      '@id' => rtrim((string) config('app.url'), '/') . '/#organization',
+    ],
+    'publisher' => [
+      '@type' => 'Organization',
+      'name' => 'Kestanepazarı Öğrenci Yetiştirme Derneği',
+    ],
+  ];
+@endphp
 <script type="application/ld+json">
-{
-  "@@context": "https://schema.org",
-  "@type": "WebSite",
-  "name": "{{ config('site.ad') }} Öğrenci Yetiştirme Derneği",
-  "url": "{{ url('/') }}",
-  "potentialAction": {
-    "@type": "SearchAction",
-    "target": "{{ url('/arama') }}?q={search_term_string}",
-    "query-input": "required name=search_term_string"
-  }
-}
+{!! json_encode($anaSayfaSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
 </script>
 @endsection
 

@@ -1,4 +1,7 @@
 @php
+  // SEO: Sabit kurumsal ad ve kok URL tanimi.
+  $siteRoot = rtrim((string) config('app.url'), '/');
+  $kurulusAdi = 'Kestanepazarı Öğrenci Yetiştirme Derneği';
   $pageTitle = trim($__env->yieldContent('title', config('site.ad')));
   $metaDescription = trim($__env->yieldContent('meta_description', config('site.aciklama')));
   $canonicalUrl = trim($__env->yieldContent('canonical', url()->current()));
@@ -30,8 +33,10 @@
   $websiteSchema = [
     '@context' => 'https://schema.org',
     '@type' => 'WebSite',
-    'name' => config('site.ad') . ' Öğrenci Yetiştirme Derneği',
-    'url' => url('/'),
+    // SEO: WebSite kimligini sabitlemek icin @id eklendi.
+    '@id' => $siteRoot . '/#website',
+    'name' => $kurulusAdi,
+    'url' => $siteRoot,
     'potentialAction' => [
       '@type' => 'SearchAction',
       'target' => route('arama.index') . '?q={search_term_string}',
@@ -42,8 +47,10 @@
   $organizationSchema = [
     '@context' => 'https://schema.org',
     '@type' => 'Organization',
-    'name' => config('site.ad') . ' Öğrenci Yetiştirme Derneği',
-    'url' => url('/'),
+    // SEO: Organization kimligini sabitlemek icin @id eklendi.
+    '@id' => $siteRoot . '/#organization',
+    'name' => $kurulusAdi,
+    'url' => $siteRoot,
     'logo' => 'https://cdn.kestanepazari.org.tr/logo.png',
     'telephone' => config('site.telefon'),
     'email' => config('site.eposta'),
@@ -79,6 +86,18 @@
     'arama' => 'Arama',
   ];
 
+  // SEO: Detay sayfalarinda breadcrumb son etiketini kullanici dostu adla guncelle.
+  $sonSegmentOzelAdi = null;
+  if (request()->routeIs('haberler.show') && isset($haber)) {
+    $sonSegmentOzelAdi = $haber->baslik ?? null;
+  } elseif (request()->routeIs('etkinlikler.show') && isset($etkinlik)) {
+    $sonSegmentOzelAdi = $etkinlik->baslik ?? null;
+  } elseif (request()->routeIs('kurumsal.show') && isset($sayfa)) {
+    $sonSegmentOzelAdi = $sayfa->ad ?? ($sayfa->baslik ?? null);
+  } elseif (request()->routeIs('bagis.show') && isset($bagisTuru)) {
+    $sonSegmentOzelAdi = $bagisTuru->ad ?? null;
+  }
+
   $breadcrumbItems = [[
     '@type' => 'ListItem',
     'position' => 1,
@@ -86,11 +105,17 @@
     'item' => url('/'),
   ]];
 
+  $segmentler = request()->segments();
+  $sonSegmentIndeksi = count($segmentler) - 1;
   $accumulatedPath = '';
-  foreach (request()->segments() as $index => $segment) {
+  foreach ($segmentler as $index => $segment) {
     $accumulatedPath .= '/' . $segment;
     $slug = strtolower((string) $segment);
     $label = $labelMap[$slug] ?? \Illuminate\Support\Str::title(str_replace('-', ' ', (string) $segment));
+
+    if ($index === $sonSegmentIndeksi && filled($sonSegmentOzelAdi)) {
+      $label = $sonSegmentOzelAdi;
+    }
 
     $breadcrumbItems[] = [
       '@type' => 'ListItem',
@@ -114,20 +139,8 @@
     'url' => $canonicalUrl,
   ];
 
-  if (request()->routeIs('haberler.show')) {
-    $icerikSchema = [
-      '@context' => 'https://schema.org',
-      '@type' => 'NewsArticle',
-      'headline' => $pageTitle,
-      'description' => $metaDescription,
-      'url' => $canonicalUrl,
-      'image' => [$ogImage],
-      'publisher' => [
-        '@type' => 'Organization',
-        'name' => config('site.ad') . ' Öğrenci Yetiştirme Derneği',
-      ],
-    ];
-  } elseif (request()->routeIs('etkinlikler.show')) {
+  // SEO: Haber detayinda NewsArticle sadece sayfa bazli bloktan gelsin.
+  if (request()->routeIs('etkinlikler.show')) {
     $icerikSchema = [
       '@context' => 'https://schema.org',
       '@type' => 'Event',
@@ -142,7 +155,7 @@
       ],
       'organizer' => [
         '@type' => 'Organization',
-        'name' => config('site.ad') . ' Öğrenci Yetiştirme Derneği',
+        'name' => $kurulusAdi,
       ],
     ];
   } elseif (request()->routeIs('iletisim.*')) {
@@ -154,7 +167,7 @@
       'url' => $canonicalUrl,
       'mainEntity' => [
         '@type' => 'Organization',
-        'name' => config('site.ad') . ' Öğrenci Yetiştirme Derneği',
+        'name' => $kurulusAdi,
         'contactPoint' => [[
           '@type' => 'ContactPoint',
           'telephone' => config('site.telefon'),
@@ -232,9 +245,12 @@
 {!! json_encode($websiteSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
 </script>
 
+@if(!request()->routeIs('home'))
+{{-- SEO: Ana sayfada tek ogeli breadcrumb cikarmamak icin kosul eklendi. --}}
 <script type="application/ld+json">
 {!! json_encode($breadcrumbSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
 </script>
+@endif
 
 <script type="application/ld+json">
 {!! json_encode($icerikSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}

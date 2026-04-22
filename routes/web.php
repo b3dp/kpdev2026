@@ -41,6 +41,10 @@ Route::post('/kayit/store', [EkayitController::class, 'store'])->name('ekayit.st
 Route::get('/kayit/evrak/{kayit}', [EkayitController::class, 'evrakIndir'])->name('ekayit.evrak.indir');
 Route::get('/kayit/tesekkur', [EkayitController::class, 'tesekkur'])->name('ekayit.tesekkur');
 Route::get('/arama', [AramaController::class, 'index'])->name('arama.index');
+// SEO: LLM araclari icin metin tabanli index cikisi.
+Route::get('/llms.txt', function () {
+    return response(view('llms'), 200, ['Content-Type' => 'text/plain']);
+});
 
 Route::get('/haber-onayla/{token}', [HaberOnayController::class, 'onayla'])->name('haber.onayla');
 Route::get('/haber-reddet/{token}', [HaberOnayController::class, 'reddet'])->name('haber.reddet');
