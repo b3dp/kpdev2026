@@ -8,8 +8,17 @@
 @endphp
 
 <section class="kurumsal-section-card">
-    <p class="kurumsal-eyebrow">Kurum sayfası</p>
-    <h2 class="kurumsal-section-title">{{ $sayfa->ad }}</h2>
+    <div class="mb-5 flex items-start justify-between gap-3">
+        <h2 class="kurumsal-section-title">{{ $sayfa->ad }}</h2>
+        @if($galeriGorselleri->count())
+            <a href="#foto-galeri" class="kurumsal-galeri-kisayol" aria-label="Foto galeriye git">
+                <span>Foto galeri</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14m0 0l-6-6m6 6l6-6"/>
+                </svg>
+            </a>
+        @endif
+    </div>
 
     <div class="kurumsal-prose">
         @if($icerikHtml)
@@ -20,7 +29,7 @@
     </div>
 
     @if($galeriGorselleri->count())
-        <div class="mt-8 border-t border-primary/10 pt-8">
+        <div id="foto-galeri" class="mt-8 border-t border-primary/10 pt-8">
             <div class="mb-6 flex flex-wrap items-start justify-between gap-3">
                 <div>
                     <p class="kurumsal-eyebrow">Galeri</p>

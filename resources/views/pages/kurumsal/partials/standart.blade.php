@@ -9,6 +9,17 @@
 @endphp
 
 <section class="kurumsal-section-card">
+    @if($galeriGorselleri->count())
+        <div class="mb-4 flex justify-end">
+            <a href="#foto-galeri" class="kurumsal-galeri-kisayol" aria-label="Foto galeriye git">
+                <span>Foto galeri</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14m0 0l-6-6m6 6l6-6"/>
+                </svg>
+            </a>
+        </div>
+    @endif
+
     @if($bannerGorseli)
         <div class="mb-6 overflow-hidden rounded-[20px] border border-[#162e4b]/10 bg-[#f1f5f9]">
             <div style="position:relative;width:100%;padding-top:56.25%;">
@@ -43,7 +54,7 @@
     @endif
 
     @if($galeriGorselleri->count())
-        <div class="mt-8 border-t border-primary/10 pt-8">
+        <div id="foto-galeri" class="mt-8 border-t border-primary/10 pt-8">
             <div class="mb-6 flex flex-wrap items-start justify-between gap-3">
                 <div>
                     <p class="kurumsal-eyebrow">Galeri</p>

@@ -302,6 +302,27 @@
     color: #2c3e50;
 }
 
+.kurumsal-galeri-kisayol {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: 999px;
+    border: 1px solid rgba(22, 46, 75, 0.14);
+    padding: 0.28rem 0.62rem;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #62868d;
+    transition: 0.2s ease;
+}
+
+.kurumsal-galeri-kisayol:hover {
+    border-color: rgba(178, 120, 41, 0.35);
+    background: #f7f5f0;
+    color: #b27829;
+}
+
 .kurumsal-prose p,
 .kurumsal-prose ul,
 .kurumsal-prose ol {
