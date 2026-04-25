@@ -12,6 +12,17 @@ class EditKurumsalSayfa extends EditRecord
 {
     protected static string $resource = KurumsalSayfaResource::class;
 
+    public function getTitle(): string
+    {
+        $ad = trim((string) ($this->record?->ad ?? ''));
+
+        if ($ad === '') {
+            return 'Sayfa Düzenle';
+        }
+
+        return 'Sayfa Düzenle - ' . \Illuminate\Support\Str::limit($ad, 60);
+    }
+
     protected function getHeaderActions(): array
     {
         return [

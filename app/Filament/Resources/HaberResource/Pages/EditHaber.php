@@ -20,6 +20,17 @@ class EditHaber extends EditRecord
 {
     protected static string $resource = HaberResource::class;
 
+    public function getTitle(): string
+    {
+        $baslik = trim((string) ($this->record?->baslik ?? ''));
+
+        if ($baslik === '') {
+            return 'Haber Düzenle';
+        }
+
+        return 'Haber Düzenle - ' . \Illuminate\Support\Str::limit($baslik, 60);
+    }
+
     protected function getHeaderActions(): array
     {
         return [
