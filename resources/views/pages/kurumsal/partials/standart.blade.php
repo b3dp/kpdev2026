@@ -11,7 +11,7 @@
 <section class="kurumsal-section-card">
     @if($galeriGorselleri->count())
         <div class="mb-4 flex justify-end">
-            <a href="#foto-galeri" class="kurumsal-galeri-kisayol" aria-label="Foto galeriye git">
+            <a href="#foto-galeri" class="kurumsal-galeri-kisayol" aria-label="Foto galeriye git" style="display:inline-flex;align-items:center;justify-content:center;border-radius:999px;border:1px solid #8eb5ea;background:#e9f2ff;padding:4px 10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;line-height:1;white-space:nowrap;color:#1f4f8f;text-decoration:none;">
                 <span>Foto galeri</span>
             </a>
         </div>

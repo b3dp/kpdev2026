@@ -11,7 +11,7 @@
     <div class="mb-5 flex items-start justify-between gap-3">
         <h2 class="kurumsal-section-title">{{ $sayfa->ad }}</h2>
         @if($galeriGorselleri->count())
-            <a href="#foto-galeri" class="kurumsal-galeri-kisayol" aria-label="Foto galeriye git">
+            <a href="#foto-galeri" class="kurumsal-galeri-kisayol" aria-label="Foto galeriye git" style="display:inline-flex;align-items:center;justify-content:center;border-radius:999px;border:1px solid #8eb5ea;background:#e9f2ff;padding:4px 10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;line-height:1;white-space:nowrap;color:#1f4f8f;text-decoration:none;">
                 <span>Foto galeri</span>
             </a>
         @endif
