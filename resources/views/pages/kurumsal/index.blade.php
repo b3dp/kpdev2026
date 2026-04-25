@@ -9,6 +9,22 @@
     $sayfaBaslik = $sayfa->ad ?: 'Kurumsal';
     $sayfaOzet = $sayfa->ozet ?: \Illuminate\Support\Str::limit(strip_tags((string) $sayfa->icerik), 170, '...');
     $metaDescription = $sayfa->meta_description ?: $sayfaOzet ?: config('site.aciklama');
+    $atolyeMetni = mb_strtolower(trim($sayfaBaslik . ' ' . $sayfaOzet . ' ' . strip_tags((string) $sayfa->icerik)), 'UTF-8');
+    $stemAtolyesiMi = \Illuminate\Support\Str::contains($atolyeMetni, 'stem');
+
+    if ($sablon === 'atolye' && $stemAtolyesiMi && ! \Illuminate\Support\Str::contains(mb_strtolower($metaDescription, 'UTF-8'), 'stem atölyesi nedir')) {
+        $metaDescription = \Illuminate\Support\Str::limit(
+            trim($metaDescription . ' STEM atölyesi nedir sorusuna yönelik amaç, içerik ve uygulama yaklaşımı bu sayfada açıklanır.'),
+            160,
+            ''
+        );
+    }
+
+    $seoBaslik = $sayfaBaslik;
+    if ($sablon === 'atolye' && $stemAtolyesiMi) {
+        $seoBaslik .= ' | STEM Atölyesi Nedir?';
+    }
+
     $canonicalUrl = $sayfa->canonical_url ?: ($sayfa->slug
         ? route('kurumsal.show', ['slug' => $sayfa->slug])
         : route('kurumsal.show'));
@@ -39,7 +55,8 @@
 
     $schemaTipi = match ($sablon) {
         'iletisim' => 'ContactPage',
-        'kurum', 'atolye' => 'Organization',
+        'kurum' => 'Organization',
+        'atolye' => 'EducationalOrganization',
         default => 'WebPage',
     };
 
@@ -83,13 +100,57 @@
         'image' => $ogImage,
     ];
 
-    if ($schemaTipi === 'Organization') {
+    if (in_array($schemaTipi, ['Organization', 'EducationalOrganization'], true)) {
         $sayfaSchema['telephone'] = config('site.telefon');
         $sayfaSchema['email'] = config('site.eposta');
         $sayfaSchema['address'] = [
             '@type' => 'PostalAddress',
             'streetAddress' => config('site.adres'),
             'addressCountry' => 'TR',
+        ];
+    }
+
+    if ($schemaTipi === 'EducationalOrganization') {
+        $sayfaSchema['areaServed'] = [
+            '@type' => 'AdministrativeArea',
+            'name' => 'İzmir, Türkiye',
+        ];
+        $sayfaSchema['knowsAbout'] = $stemAtolyesiMi
+            ? ['STEM', 'Fen eğitimi', 'Teknoloji', 'Mühendislik', 'Matematik']
+            : ['Atölye eğitimi', 'Uygulamalı öğrenme'];
+    }
+
+    $stemFaqSchema = null;
+    if ($sablon === 'atolye' && $stemAtolyesiMi) {
+        $stemFaqSchema = [
+            '@context' => 'https://schema.org',
+            '@type' => 'FAQPage',
+            'mainEntity' => [
+                [
+                    '@type' => 'Question',
+                    'name' => 'STEM atölyesi nedir?',
+                    'acceptedAnswer' => [
+                        '@type' => 'Answer',
+                        'text' => trim($sayfaOzet ?: ($sayfaBaslik . ' öğrencilerin fen, teknoloji, mühendislik ve matematik alanlarında uygulamalı öğrenmesini destekleyen bir atölye modelidir.')),
+                    ],
+                ],
+                [
+                    '@type' => 'Question',
+                    'name' => 'STEM atölyesinde hangi beceriler gelişir?',
+                    'acceptedAnswer' => [
+                        '@type' => 'Answer',
+                        'text' => 'Problem çözme, analitik düşünme, takım çalışması, tasarım odaklı düşünme ve üretim becerileri gelişir.',
+                    ],
+                ],
+                [
+                    '@type' => 'Question',
+                    'name' => 'STEM atölyesi kimler için uygundur?',
+                    'acceptedAnswer' => [
+                        '@type' => 'Answer',
+                        'text' => 'Uygulamalı öğrenmeye ilgi duyan öğrenciler, gençler ve STEM becerilerini güçlendirmek isteyen katılımcılar için uygundur.',
+                    ],
+                ],
+            ],
         ];
     }
 
@@ -122,7 +183,7 @@
     ]);
 @endphp
 
-@section('title', $sayfaBaslik)
+@section('title', $seoBaslik)
 @section('meta_description', $metaDescription)
 @section('robots', $robotsMeta)
 @section('canonical', $canonicalUrl)
@@ -135,6 +196,11 @@
 <script type="application/ld+json">
 {!! json_encode($breadcrumbSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
 </script>
+@if(is_array($stemFaqSchema))
+<script type="application/ld+json">
+{!! json_encode($stemFaqSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+</script>
+@endif
 @endsection
 
 @section('content')
@@ -190,6 +256,16 @@
                     'atolye' => 'kurum',
                     default => 'standart',
                 })
+
+                @if($sablon === 'atolye' && $stemAtolyesiMi)
+                    <section class="kurumsal-section-card">
+                        <h2 class="kurumsal-section-title">STEM Atölyesi Nedir?</h2>
+                        <div class="kurumsal-prose mt-4">
+                            <p>{{ $sayfaOzet ?: ($sayfaBaslik . ' öğrencilerin fen, teknoloji, mühendislik ve matematik alanlarında uygulamalı öğrenmesini destekleyen bir atölye modelidir.') }}</p>
+                            <p>Bu atölye modeli, teorik bilgiyi uygulama ile birleştirerek problem çözme, üretim ve takım çalışması becerilerini güçlendirmeyi hedefler.</p>
+                        </div>
+                    </section>
+                @endif
             </div>
 
             <aside class="order-2 space-y-6 lg:order-2 lg:col-span-1 lg:w-80 lg:sticky lg:top-6">
