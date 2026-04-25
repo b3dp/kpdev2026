@@ -106,6 +106,60 @@ class GeminiService
         }
     }
 
+    public function atolyeSssUret(string $metin, string $atolyeAdi, int $adet = 5): array
+    {
+        $adet = max(1, min(10, $adet));
+
+        $json = $this->jsonCevabiAl(
+            "Aşağıdaki atölye içeriği için {$adet} adet Türkçe soru-cevap üret.\n"
+            . "Kısa, net ve bilgilendirici olmalı. Uydurma bilgi ekleme; sadece içerikteki bağlama sadık kal.\n"
+            . "Atölye adı: {$atolyeAdi}\n\n"
+            . "İÇERİK:\n{$metin}",
+            <<<'PROMPT'
+Sen eğitim içerik editörüsün.
+
+Kurallar:
+- SADECE geçerli JSON döndür.
+- Soru alanı 'soru', cevap alanı 'cevap' olsun.
+- En fazla 120 karakter soru, en fazla 260 karakter cevap yaz.
+- Cevaplar aynı kalıpta tekrar etmesin.
+- İçerikte olmayan kesin sayı/tarih/vaat üretme.
+
+Çıktı formatı:
+{
+  "sss": [
+    {"soru": "...", "cevap": "..."}
+  ]
+}
+PROMPT
+        );
+
+        $liste = $this->listeyiNormalizeEt($json, ['sss', 'faq', 'sorular']) ?: [];
+
+        return collect($liste)
+            ->map(function ($oge): ?array {
+                if (! is_array($oge)) {
+                    return null;
+                }
+
+                $soru = trim((string) ($oge['soru'] ?? ''));
+                $cevap = trim((string) ($oge['cevap'] ?? ''));
+
+                if ($soru === '' || $cevap === '') {
+                    return null;
+                }
+
+                return [
+                    'soru' => $this->metniAnlamliSinirla($soru, 120),
+                    'cevap' => $this->metniAnlamliSinirla($cevap, 260),
+                ];
+            })
+            ->filter()
+            ->take($adet)
+            ->values()
+            ->all();
+    }
+
     public function kisiTespitEt(string $metin): array
     {
         return $this->kisiVeKurumTespitEt($metin)['kisiler'] ?? [];

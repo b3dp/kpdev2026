@@ -120,8 +120,43 @@
             : ['Atölye eğitimi', 'Uygulamalı öğrenme'];
     }
 
+    $atolyeSssListesi = collect((array) ($sayfa->sss_listesi ?? []))
+        ->map(function ($oge): ?array {
+            if (! is_array($oge)) {
+                return null;
+            }
+
+            $soru = trim((string) ($oge['soru'] ?? ''));
+            $cevap = trim((string) ($oge['cevap'] ?? ''));
+
+            if ($soru === '' || $cevap === '') {
+                return null;
+            }
+
+            return [
+                'soru' => $soru,
+                'cevap' => $cevap,
+            ];
+        })
+        ->filter()
+        ->take(5)
+        ->values();
+
     $stemFaqSchema = null;
-    if ($sablon === 'atolye' && $stemAtolyesiMi) {
+    if ($sablon === 'atolye' && $atolyeSssListesi->isNotEmpty()) {
+        $stemFaqSchema = [
+            '@context' => 'https://schema.org',
+            '@type' => 'FAQPage',
+            'mainEntity' => $atolyeSssListesi->map(fn (array $sss) => [
+                '@type' => 'Question',
+                'name' => $sss['soru'],
+                'acceptedAnswer' => [
+                    '@type' => 'Answer',
+                    'text' => $sss['cevap'],
+                ],
+            ])->all(),
+        ];
+    } elseif ($sablon === 'atolye' && $stemAtolyesiMi) {
         $stemFaqSchema = [
             '@context' => 'https://schema.org',
             '@type' => 'FAQPage',
@@ -279,6 +314,20 @@
                         <div class="kurumsal-prose mt-4">
                             <p>{{ $sayfaOzet ?: ($sayfaBaslik . ' öğrencilerin fen, teknoloji, mühendislik ve matematik alanlarında uygulamalı öğrenmesini destekleyen bir atölye modelidir.') }}</p>
                             <p>Bu atölye modeli, teorik bilgiyi uygulama ile birleştirerek problem çözme, üretim ve takım çalışması becerilerini güçlendirmeyi hedefler.</p>
+                        </div>
+                    </section>
+                @endif
+
+                @if($sablon === 'atolye' && $atolyeSssListesi->isNotEmpty())
+                    <section class="kurumsal-section-card">
+                        <h2 class="kurumsal-section-title">Sık Sorulan Sorular</h2>
+                        <div class="mt-4 space-y-4">
+                            @foreach($atolyeSssListesi as $sss)
+                                <div class="rounded-xl border border-primary/10 bg-white p-4">
+                                    <h3 class="text-[16px] font-semibold text-[#162e4b]">{{ $sss['soru'] }}</h3>
+                                    <p class="mt-2 text-sm leading-6 text-[#62868d]">{{ $sss['cevap'] }}</p>
+                                </div>
+                            @endforeach
                         </div>
                     </section>
                 @endif

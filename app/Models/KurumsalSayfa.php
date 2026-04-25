@@ -33,6 +33,7 @@ class KurumsalSayfa extends Model
         'icerik',
         'ozet',
         'meta_description',
+        'sss_listesi',
         'robots',
         'canonical_url',
         'og_gorsel',
@@ -54,6 +55,7 @@ class KurumsalSayfa extends Model
         return [
             'sablon' => KurumsalSablonu::class,
             'robots' => RobotsKurali::class,
+            'sss_listesi' => 'array',
             'ai_islendi' => 'boolean',
             'sira' => 'integer',
         ];
@@ -124,6 +126,7 @@ class KurumsalSayfa extends Model
                 'kurum_id',
                 'ozet',
                 'meta_description',
+                'sss_listesi',
                 'robots',
                 'canonical_url',
                 'og_gorsel',

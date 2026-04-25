@@ -400,9 +400,15 @@ class KurumsalSayfaResource extends Resource
 
                                 $ozet = $geminiService->ozetUret($duzIcerik);
                                 $metaDescription = $geminiService->metaDescriptionUret($duzIcerik);
+                                $sssListesi = $geminiService->atolyeSssUret(
+                                    metin: $duzIcerik,
+                                    atolyeAdi: (string) ($get('ad') ?: 'Atölye'),
+                                    adet: 5,
+                                );
 
                                 $set('ozet', $ozet);
                                 $set('meta_description', $metaDescription);
+                                $set('sss_listesi', $sssListesi);
 
                                 if (blank($get('slug')) && filled($get('ad'))) {
                                     $set('slug', Str::slug((string) $get('ad')));
@@ -411,13 +417,39 @@ class KurumsalSayfaResource extends Resource
                                 $set('ai_islendi', true);
 
                                 Notification::make()
-                                    ->title('Atölye için AI alanları güncellendi.')
+                                    ->title('Atölye için AI alanları ve FAQ güncellendi.')
                                     ->success()
                                     ->send();
                             }),
                     ]),
                 ])
                 ->columns(2),
+
+            Section::make('Atölye SSS (FAQ)')
+                ->schema([
+                    Repeater::make('sss_listesi')
+                        ->label('Soru-Cevap Listesi')
+                        ->defaultItems(0)
+                        ->minItems(0)
+                        ->maxItems(5)
+                        ->reorderableWithButtons()
+                        ->addActionLabel('Soru-Cevap Ekle')
+                        ->schema([
+                            TextInput::make('soru')
+                                ->label('Soru')
+                                ->required()
+                                ->maxLength(160),
+                            Textarea::make('cevap')
+                                ->label('Cevap')
+                                ->required()
+                                ->rows(3)
+                                ->maxLength(500),
+                        ])
+                        ->columns(1)
+                        ->columnSpanFull(),
+                ])
+                ->visible(fn (callable $get): bool => $get('sablon') === KurumsalSablonu::Atolye->value)
+                ->columns(1),
 
             Section::make('İletişim Lokasyonları')
                 ->schema([
