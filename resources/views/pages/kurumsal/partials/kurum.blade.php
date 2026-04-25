@@ -2,7 +2,7 @@
     $icerikHtml = trim((string) $sayfa->icerik);
     $galeriGorselleri = $sayfa->gorseller;
     $tumKurumsalGorsellerJson = $galeriGorselleri->map(fn($gorsel) => [
-        'lg' => $gorsel->orijinalUrl(),
+        'lg' => $gorsel->lgUrl(),
         'alt' => $gorsel->alt_text ?: $sayfa->ad,
     ])->toJson(JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE);
 @endphp
@@ -60,7 +60,7 @@
                             aria-label="{{ $sayfa->ad }} görsel {{ $index + 1 }}"
                         >
                             <img
-                                src="{{ $gorsel->orijinalUrl() }}"
+                                src="{{ $gorsel->smUrl() }}"
                                 alt="{{ $gorsel->alt_text ?: $sayfa->ad }}"
                                 loading="lazy"
                                 width="360"
