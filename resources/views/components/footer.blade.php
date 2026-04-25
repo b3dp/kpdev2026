@@ -98,7 +98,7 @@
 
   <div class="bg-[#DED099]">
     <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6 py-3.5">
-      <p class="text-xs text-primary/60">© {{ date('Y') }} {{ config('site.ad') }} {{ config('site.aciklama') }}. Tüm hakları saklıdır.</p>
+      <p class="text-xs text-primary/60">© {{ date('Y') }} {{ config('site.ad') }}. Tüm hakları saklıdır.</p>
 
       <div class="flex flex-wrap items-center gap-4">
         <a href="{{ route('kurumsal.show', ['slug' => 'gizlilik-politikasi']) }}" class="bottom-link">Gizlilik Politikası</a>
