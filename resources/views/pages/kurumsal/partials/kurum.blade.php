@@ -13,7 +13,7 @@
     </div>
 
     @if($galeriGorselleri->count())
-        <a href="#foto-galeri" class="kurumsal-galeri-kisayol" aria-label="Foto galeriye git" style="position:absolute;top:0;right:0;display:inline-flex;align-items:center;justify-content:center;border-left:1px solid #8eb5ea;border-bottom:1px solid #8eb5ea;background:#e9f2ff;padding:9px 14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;line-height:1.05;white-space:nowrap;color:#1f4f8f;text-decoration:none;border-radius:0 0 0 14px;">
+        <a href="#foto-galeri" class="kurumsal-galeri-kisayol" aria-label="Foto galeriye git" style="position:absolute;top:0;right:0;display:inline-flex;align-items:center;justify-content:center;border-left:1px solid #8eb5ea;border-bottom:1px solid #8eb5ea;background:#e9f2ff;padding:9px 14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;line-height:1.05;white-space:nowrap;color:#1f4f8f;text-decoration:none;border-radius:0 25px 0 14px;">
             <span>Foto Galeri</span>
         </a>
     @endif
