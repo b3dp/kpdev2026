@@ -5,6 +5,25 @@
     $varsayilanOg = 'https://cdn.kestanepazari.org.tr/logo.png';
     $ilkGorsel = $atolyeSayfalari->first()?->kart_gorseli;
     $ogImage = filled($ilkGorsel) ? $ilkGorsel : $varsayilanOg;
+    $heroGorsel = $ilkGorsel ?: $varsayilanOg;
+
+    $yatayMenu = collect($standartMenuSayfalari ?? [])->map(fn ($menuSayfa) => [
+        'href' => route('kurumsal.show', ['slug' => $menuSayfa->slug]),
+        'label' => $menuSayfa->ad,
+        'aktif' => false,
+    ])->values();
+
+    $yatayMenu->push([
+        'href' => route('kurumsal.show', ['slug' => 'kurumlar']),
+        'label' => 'Kurumlar',
+        'aktif' => false,
+    ]);
+
+    $yatayMenu->push([
+        'href' => route('kurumsal.show', ['slug' => 'atolyeler']),
+        'label' => 'Atölyeler',
+        'aktif' => true,
+    ]);
 @endphp
 
 @section('title', 'Atölyeler')
@@ -13,11 +32,41 @@
 @section('og_image', $ogImage)
 
 @section('content')
-    <section class="mx-auto max-w-7xl px-4 py-10 lg:px-6 lg:py-12">
-        <div class="mb-8">
-            <h1 class="font-baskerville text-3xl font-bold text-primary md:text-5xl">Atölyeler</h1>
-        </div>
+    <section class="kurumsal-hero">
+        @if($heroGorsel)
+            <div class="kurumsal-hero-image" style="background-image: url('{{ $heroGorsel }}');"></div>
+        @endif
 
+        <div class="kurumsal-hero-overlay"></div>
+
+        <div class="relative mx-auto max-w-7xl px-4 py-16 lg:px-6 lg:py-20">
+            <div class="mb-4 flex flex-wrap items-center gap-2 text-sm text-[#ebdfb5]/70">
+                <a href="{{ route('home') }}" class="transition hover:text-[#ebdfb5]">Ana Sayfa</a>
+                <span>/</span>
+                <a href="{{ route('kurumsal.show') }}" class="transition hover:text-[#ebdfb5]">Kurumsal</a>
+                <span>/</span>
+                <span class="text-[#ebdfb5]">Atölyeler</span>
+            </div>
+
+            <div>
+                <h1 class="font-baskerville text-3xl font-bold leading-tight text-[#ebdfb5] md:text-5xl">Atölyeler</h1>
+            </div>
+        </div>
+    </section>
+
+    <div class="kurumsal-top-nav">
+        <div class="mx-auto max-w-7xl px-4 lg:px-6">
+            <div class="kurumsal-top-nav-inner">
+                @foreach($yatayMenu as $item)
+                    <a href="{{ $item['href'] }}" class="page-nav-link {{ $item['aktif'] ? 'active' : '' }}">
+                        {{ $item['label'] }}
+                    </a>
+                @endforeach
+            </div>
+        </div>
+    </div>
+
+    <section class="mx-auto max-w-7xl px-4 py-10 lg:px-6 lg:py-12">
         @if($atolyeSayfalari->isEmpty())
             <div class="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-500">
                 Atölye sayfasi bulunamadi.

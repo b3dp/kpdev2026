@@ -51,6 +51,11 @@ class KurumsalController extends Controller
         }
 
         if ($slug === 'kurumlar') {
+            $standartMenuSayfalari = $yayindakiSayfalar
+                ->where('sablon', KurumsalSablonu::Standart->value)
+                ->whereNull('ust_sayfa_id')
+                ->values();
+
             $kurumSayfalari = $yayindakiSayfalar
                 ->where('sablon', KurumsalSablonu::Kurum->value)
                 ->values()
@@ -60,10 +65,15 @@ class KurumsalController extends Controller
                     return $sayfa;
                 });
 
-            return view('pages.kurumsal.kurumlar-liste', compact('kurumSayfalari'));
+            return view('pages.kurumsal.kurumlar-liste', compact('kurumSayfalari', 'standartMenuSayfalari'));
         }
 
         if ($slug === 'atolyeler') {
+            $standartMenuSayfalari = $yayindakiSayfalar
+                ->where('sablon', KurumsalSablonu::Standart->value)
+                ->whereNull('ust_sayfa_id')
+                ->values();
+
             $atolyeSayfalari = $yayindakiSayfalar
                 ->where('sablon', KurumsalSablonu::Atolye->value)
                 ->values()
@@ -73,7 +83,7 @@ class KurumsalController extends Controller
                     return $sayfa;
                 });
 
-            return view('pages.kurumsal.atolyeler-liste', compact('atolyeSayfalari'));
+            return view('pages.kurumsal.atolyeler-liste', compact('atolyeSayfalari', 'standartMenuSayfalari'));
         }
 
         $menuSayfalari = $yayindakiSayfalar

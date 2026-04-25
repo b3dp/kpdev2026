@@ -22,6 +22,21 @@
     $heroGorsel = $sayfa->bannerMasaustuUrl() ?: $sayfa->gorselLgUrl();
     $ogImage = $sayfa->ogGorselUrl() ?: $heroGorsel ?: 'https://cdn.kestanepazari.org.tr/logo.png';
 
+    $ustBolum = match ($sablon) {
+        'kurum' => [
+            'label' => 'Kurumlar',
+            'href' => route('kurumsal.show', ['slug' => 'kurumlar']),
+        ],
+        'atolye' => [
+            'label' => 'Atölyeler',
+            'href' => route('kurumsal.show', ['slug' => 'atolyeler']),
+        ],
+        default => [
+            'label' => 'Kurumsal',
+            'href' => route('kurumsal.show'),
+        ],
+    };
+
     $schemaTipi = match ($sablon) {
         'iletisim' => 'ContactPage',
         'kurum', 'atolye' => 'Organization',
@@ -41,8 +56,8 @@
             [
                 '@type' => 'ListItem',
                 'position' => 2,
-                'name' => 'Kurumsal',
-                'item' => route('kurumsal.show'),
+                'name' => $ustBolum['label'],
+                'item' => $ustBolum['href'],
             ],
             ...collect($breadcrumbSayfalari ?? [])->values()->map(fn ($breadcrumb, $index) => [
                 '@type' => 'ListItem',
@@ -134,7 +149,7 @@
             <div class="mb-4 flex flex-wrap items-center gap-2 text-sm text-[#ebdfb5]/70">
                 <a href="{{ route('home') }}" class="transition hover:text-[#ebdfb5]">Ana Sayfa</a>
                 <span>/</span>
-                <a href="{{ route('kurumsal.show') }}" class="transition hover:text-[#ebdfb5]">Kurumsal</a>
+                <a href="{{ $ustBolum['href'] }}" class="transition hover:text-[#ebdfb5]">{{ $ustBolum['label'] }}</a>
                 @if($sayfaSlug !== 'hakkimizda')
                     <span>/</span>
                     <span class="text-[#ebdfb5]">{{ $sayfaBaslik }}</span>
