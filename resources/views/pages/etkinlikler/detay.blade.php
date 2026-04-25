@@ -18,6 +18,12 @@
     $gcStart = $baslangicUtc?->format('Ymd\THis\Z');
     $gcEnd = $bitisUtc?->format('Ymd\THis\Z') ?? $gcStart;
     $googleCalUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='.urlencode($etkinlik->baslik).'&dates='.$gcStart.'/'.$gcEnd.'&location='.urlencode($etkinlik->konum_ad ?? '');
+    $yolTarifiUrl = null;
+    if ($etkinlik->konum_lat && $etkinlik->konum_lng) {
+        $yolTarifiUrl = 'https://www.google.com/maps/dir/?api=1&destination=' . urlencode($etkinlik->konum_lat . ',' . $etkinlik->konum_lng);
+    } elseif ($etkinlik->konum_ad || $etkinlik->konum_adres) {
+        $yolTarifiUrl = 'https://www.google.com/maps/dir/?api=1&destination=' . urlencode(trim(($etkinlik->konum_ad ?? '') . ' ' . ($etkinlik->konum_adres ?? '')));
+    }
 
 @endphp
 
@@ -224,7 +230,15 @@
 
             @if($etkinlik->konum_lat && $etkinlik->konum_lng)
                 <section id="etkinlik-harita" class="rounded-2xl border border-primary/8 bg-white p-6 sm:p-7">
-                    <h2 class="mb-4 border-b border-primary/8 pb-3 font-baskerville text-[19px] font-bold text-primary">Konum</h2>
+                    <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-primary/8 pb-3">
+                        <h2 class="font-baskerville text-[19px] font-bold text-primary">Konum</h2>
+                        @if($yolTarifiUrl)
+                            <a href="{{ $yolTarifiUrl }}" target="_blank" rel="noopener" class="cal-btn">
+                                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#B27829" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 01.553-.894L9 2m0 18l6-2m-6 2V2m6 16l5.447 2.724A1 1 0 0021 19.382V8.618a1 1 0 00-.553-.894L15 5m0 13V5m0 0L9 2"/></svg>
+                                Yol Tarifi
+                            </a>
+                        @endif
+                    </div>
                     <div class="map-frame">
                         <iframe
                             src="https://maps.google.com/maps?q={{ $etkinlik->konum_lat }},{{ $etkinlik->konum_lng }}&z=15&output=embed"
