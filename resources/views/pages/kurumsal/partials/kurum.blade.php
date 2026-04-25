@@ -7,15 +7,16 @@
     ])->toJson(JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE);
 @endphp
 
-<section class="kurumsal-section-card">
-    <div class="mb-5 flex items-start justify-between gap-3">
+<section class="kurumsal-section-card relative overflow-hidden">
+    <div class="mb-5 pr-32">
         <h2 class="kurumsal-section-title">{{ $sayfa->ad }}</h2>
-        @if($galeriGorselleri->count())
-            <a href="#foto-galeri" class="kurumsal-galeri-kisayol" aria-label="Foto galeriye git" style="display:inline-flex;align-items:center;justify-content:center;border-radius:999px;border:1px solid #8eb5ea;background:#e9f2ff;padding:4px 10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;line-height:1;white-space:nowrap;color:#1f4f8f;text-decoration:none;">
-                <span>Foto galeri</span>
-            </a>
-        @endif
     </div>
+
+    @if($galeriGorselleri->count())
+        <a href="#foto-galeri" class="kurumsal-galeri-kisayol" aria-label="Foto galeriye git" style="position:absolute;top:0;right:0;display:inline-flex;align-items:center;justify-content:center;border-left:1px solid #8eb5ea;border-bottom:1px solid #8eb5ea;background:#e9f2ff;padding:9px 14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;line-height:1.05;white-space:nowrap;color:#1f4f8f;text-decoration:none;border-radius:0 0 0 14px;">
+            <span>Foto Galeri</span>
+        </a>
+    @endif
 
     <div class="kurumsal-prose">
         @if($icerikHtml)
