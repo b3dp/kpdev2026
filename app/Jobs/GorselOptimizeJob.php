@@ -251,67 +251,76 @@ class GorselOptimizeJob implements ShouldQueue
         }
 
         $slug = $sayfa->slug ?: 'kurumsal-sayfa-' . $sayfa->id;
-        $geciciTamYol = Storage::disk('local')->path($this->geciciYol);
+        $uzanti = strtolower(pathinfo($this->geciciYol, PATHINFO_EXTENSION) ?: 'jpeg');
+        $orijinalIcerik = Storage::disk('local')->get($this->geciciYol);
 
         $manager = ImageManager::imagick();
-        $resim = $manager->read($geciciTamYol);
+        $resim = $manager->read($orijinalIcerik);
 
         $oriDizin = "img26/ori/kurumsal/{$sayfa->id}";
         $optDizin = "img26/opt/kurumsal/{$sayfa->id}";
 
         if ($this->gorselTipi === 'ana_gorsel') {
-            $uzanti = pathinfo($this->geciciYol, PATHINFO_EXTENSION) ?: 'jpeg';
             $orijinalYol = "{$oriDizin}/{$slug}-orijinal.{$uzanti}";
+            $lgYol = "{$optDizin}/{$slug}-lg.webp";
+            $ogYol = "{$optDizin}/{$slug}-og.webp";
+            $smYol = "{$optDizin}/{$slug}-sm.webp";
 
-            Storage::disk('spaces')->put($orijinalYol, Storage::disk('local')->get($this->geciciYol), 'public');
+            Storage::disk('spaces')->put($orijinalYol, $orijinalIcerik, 'public');
+            Storage::disk('spaces')->put($lgYol, (string) $resim->toWebp(quality: 85), 'public');
+            Storage::disk('spaces')->put($ogYol, (string) $resim->toWebp(quality: 85), 'public');
+            Storage::disk('spaces')->put($smYol, (string) $resim->toWebp(quality: 80), 'public');
 
             $sayfa->update([
                 'gorsel_orijinal' => Storage::disk('spaces')->url($orijinalYol),
-                'gorsel_lg' => Storage::disk('spaces')->url($orijinalYol),
-                'gorsel_og' => Storage::disk('spaces')->url($orijinalYol),
-                'gorsel_sm' => Storage::disk('spaces')->url($orijinalYol),
+                'gorsel_lg' => Storage::disk('spaces')->url($lgYol),
+                'gorsel_og' => Storage::disk('spaces')->url($ogYol),
+                'gorsel_sm' => Storage::disk('spaces')->url($smYol),
             ]);
 
             return;
         }
 
         if ($this->gorselTipi === 'banner_masaustu') {
-            $uzanti = pathinfo($this->geciciYol, PATHINFO_EXTENSION) ?: 'jpeg';
             $bannerOrijinalYol = "{$oriDizin}/{$slug}-banner-orijinal.{$uzanti}";
+            $bannerMasaustuWebpYol = "{$optDizin}/{$slug}-banner-masaustu.webp";
 
-            Storage::disk('spaces')->put($bannerOrijinalYol, Storage::disk('local')->get($this->geciciYol), 'public');
+            Storage::disk('spaces')->put($bannerOrijinalYol, $orijinalIcerik, 'public');
+            Storage::disk('spaces')->put($bannerMasaustuWebpYol, (string) $resim->toWebp(quality: 85), 'public');
 
             $sayfa->update([
                 'banner_orijinal' => Storage::disk('spaces')->url($bannerOrijinalYol),
-                'banner_masaustu' => Storage::disk('spaces')->url($bannerOrijinalYol),
-                'banner_mobil' => $sayfa->banner_mobil ?: Storage::disk('spaces')->url($bannerOrijinalYol),
+                'banner_masaustu' => Storage::disk('spaces')->url($bannerMasaustuWebpYol),
+                'banner_mobil' => $sayfa->banner_mobil ?: Storage::disk('spaces')->url($bannerMasaustuWebpYol),
             ]);
 
             return;
         }
 
         if ($this->gorselTipi === 'banner_mobil') {
-            $uzanti = pathinfo($this->geciciYol, PATHINFO_EXTENSION) ?: 'jpeg';
             $bannerOrijinalYol = "{$oriDizin}/{$slug}-banner-mobil-orijinal.{$uzanti}";
+            $bannerMobilWebpYol = "{$optDizin}/{$slug}-banner-mobil.webp";
 
-            Storage::disk('spaces')->put($bannerOrijinalYol, Storage::disk('local')->get($this->geciciYol), 'public');
+            Storage::disk('spaces')->put($bannerOrijinalYol, $orijinalIcerik, 'public');
+            Storage::disk('spaces')->put($bannerMobilWebpYol, (string) $resim->toWebp(quality: 85), 'public');
 
             $sayfa->update([
                 'banner_orijinal' => Storage::disk('spaces')->url($bannerOrijinalYol),
-                'banner_mobil' => Storage::disk('spaces')->url($bannerOrijinalYol),
+                'banner_mobil' => Storage::disk('spaces')->url($bannerMobilWebpYol),
             ]);
 
             return;
         }
 
         if ($this->gorselTipi === 'og_gorsel') {
-            $uzanti = pathinfo($this->geciciYol, PATHINFO_EXTENSION) ?: 'jpeg';
             $ogYol = "{$oriDizin}/{$slug}-ozel-og.{$uzanti}";
+            $ogWebpYol = "{$optDizin}/{$slug}-ozel-og.webp";
 
-            Storage::disk('spaces')->put($ogYol, Storage::disk('local')->get($this->geciciYol), 'public');
+            Storage::disk('spaces')->put($ogYol, $orijinalIcerik, 'public');
+            Storage::disk('spaces')->put($ogWebpYol, (string) $resim->toWebp(quality: 85), 'public');
 
             $sayfa->update([
-                'og_gorsel' => Storage::disk('spaces')->url($ogYol),
+                'og_gorsel' => Storage::disk('spaces')->url($ogWebpYol),
             ]);
 
             return;
@@ -319,19 +328,24 @@ class GorselOptimizeJob implements ShouldQueue
 
         if ($this->gorselTipi === 'galeri_gorseli') {
             $siraNo = str_pad((string) $this->sira, 3, '0', STR_PAD_LEFT);
-            $uzanti = pathinfo($this->geciciYol, PATHINFO_EXTENSION) ?: 'jpeg';
 
             $orijinalYol = "{$oriDizin}/{$slug}-galeri-{$siraNo}-orijinal.{$uzanti}";
+            $lgYol = "{$optDizin}/{$slug}-galeri-{$siraNo}-lg.webp";
+            $ogYol = "{$optDizin}/{$slug}-galeri-{$siraNo}-og.webp";
+            $smYol = "{$optDizin}/{$slug}-galeri-{$siraNo}-sm.webp";
 
-            Storage::disk('spaces')->put($orijinalYol, Storage::disk('local')->get($this->geciciYol), 'public');
+            Storage::disk('spaces')->put($orijinalYol, $orijinalIcerik, 'public');
+            Storage::disk('spaces')->put($lgYol, (string) $resim->toWebp(quality: 85), 'public');
+            Storage::disk('spaces')->put($ogYol, (string) $resim->toWebp(quality: 85), 'public');
+            Storage::disk('spaces')->put($smYol, (string) $resim->toWebp(quality: 80), 'public');
 
             KurumsalSayfaGorseli::updateOrCreate(
                 ['sayfa_id' => $sayfa->id, 'sira' => $this->sira],
                 [
                     'orijinal_yol' => $orijinalYol,
-                    'lg_yol' => $orijinalYol,
-                    'og_yol' => $orijinalYol,
-                    'sm_yol' => $orijinalYol,
+                    'lg_yol' => $lgYol,
+                    'og_yol' => $ogYol,
+                    'sm_yol' => $smYol,
                 ]
             );
         }
