@@ -19,11 +19,12 @@
     ];
 @endphp
 
-<div class="mr-2">
-    <x-filament::dropdown placement="bottom-end" width="xs">
+<div class="mr-2 shrink-0">
+    <x-filament::dropdown placement="bottom-end" width="xs" teleport>
         <x-slot name="trigger">
             <button
                 type="button"
+                class="shrink-0"
                 style="display:flex;align-items:center;gap:8px;border-radius:999px;border:1px solid #8fb4ea;background:#e9f2ff;padding:8px 14px;font-size:14px;font-weight:800;color:#1450a3;transition:all .2s ease;"
             >
                 <span style="font-size:30px;font-weight:900;line-height:1;color:#1e5ec2;">+</span>
