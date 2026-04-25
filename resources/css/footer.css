@@ -94,3 +94,70 @@
     font-family: 'Libre Baskerville', serif;
     font-weight: 700;
 }
+
+/* ── Yeni footer (dark top bar) sınıfları ─────────────────────── */
+.ftr-social-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.5);
+    transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.15s;
+}
+
+.ftr-social-btn:hover {
+    background: rgba(235, 223, 181, 0.15);
+    border-color: rgba(235, 223, 181, 0.4);
+    color: #ebdfb5;
+    transform: translateY(-2px);
+}
+
+.ftr-col-head {
+    font-family: 'Libre Baskerville', serif;
+    font-weight: 700;
+    font-size: 12px;
+    color: #162e4b;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.ftr-col-head::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 20px;
+    height: 2px;
+    background: #b27829;
+    border-radius: 1px;
+}
+
+.ftr-link-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.ftr-link {
+    color: rgba(22, 46, 75, 0.5);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px;
+    line-height: 1.4;
+    transition: color 0.18s, padding-left 0.18s;
+    display: inline-block;
+    text-decoration: none;
+}
+
+.ftr-link:hover {
+    color: #b27829;
+    padding-left: 4px;
+}

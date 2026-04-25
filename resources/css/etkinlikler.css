@@ -146,6 +146,7 @@
     flex-shrink: 0;
     overflow: hidden;
     background: linear-gradient(160deg, #1e3a58 0%, #0a1d30 100%);
+    aspect-ratio: 3 / 5;
 }
 
 .etk-yatay-foto img {
@@ -284,7 +285,8 @@
 
     .etk-yatay-foto {
         width: 100%;
-        height: 200px;
+        aspect-ratio: 3 / 5;
+        max-height: 280px;
     }
 
     .etk-yatay-icerik {
