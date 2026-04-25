@@ -84,7 +84,7 @@
 </section>
 
 <main class="mx-auto max-w-7xl px-6 py-9">
-    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
         @forelse($etkinlikler as $etkinlik)
             @php
                 $gecmis = $etkinlik->baslangic_tarihi?->isPast();
@@ -95,62 +95,68 @@
                     : null;
             @endphp
             <a href="{{ route('etkinlikler.show', $etkinlik->slug) }}"
-               class="etk-grid-kart {{ $gecmis ? 'opacity-75' : '' }}">
+               class="etk-yatay-kart {{ $gecmis ? 'opacity-70' : '' }}">
 
-                <div class="etk-grid-foto aspect-[3/5]">
+                {{-- SOL: Görsel --}}
+                <div class="etk-yatay-foto">
                     @if($gorselUrl)
                         <img src="{{ $gorselUrl }}"
                              alt="{{ $etkinlik->baslik }}"
-                             class="absolute inset-0 h-full w-full object-cover"
-                             style="aspect-ratio:3/5;"
                              loading="lazy"
-                             width="1080"
-                             height="1350">
+                             width="540"
+                             height="720">
                     @else
                         <div class="absolute inset-0 bg-[linear-gradient(160deg,#162E4B,#091420)]"></div>
                     @endif
 
-                    <div class="etk-grid-overlay"></div>
+                    <div class="etk-yatay-overlay"></div>
 
-                    <div class="absolute left-4 right-4 top-4 z-[2] flex items-center justify-between gap-3">
+                    <div class="etk-yatay-badges">
                         @if($gecmis)
-                            <span class="rounded-full bg-gray-100 px-3 py-1 font-jakarta text-[11px] font-bold text-gray-500">Tamamlandı</span>
+                            <span class="rounded-full bg-black/30 px-2.5 py-1 font-jakarta text-[10.5px] font-bold text-white/70 backdrop-blur-sm">Tamamlandı</span>
                         @elseif($etkinlik->baslangic_tarihi?->isCurrentMonth())
-                            <span class="rounded-full bg-green-100 px-3 py-1 font-jakarta text-[11px] font-bold text-green-700">Bu Ay</span>
+                            <span class="rounded-full bg-green-500/80 px-2.5 py-1 font-jakarta text-[10.5px] font-bold text-white backdrop-blur-sm">Bu Ay</span>
                         @else
-                            <span class="rounded-full bg-blue-100 px-3 py-1 font-jakarta text-[11px] font-bold text-blue-700">Gelecek</span>
+                            <span class="rounded-full bg-blue-500/70 px-2.5 py-1 font-jakarta text-[10.5px] font-bold text-white backdrop-blur-sm">Gelecek</span>
                         @endif
 
-                        <span class="flex h-7 w-7 items-center justify-center rounded-[7px] border border-[#EBDFB5]/25 bg-[#EBDFB5]/15 font-baskerville text-[13px] font-bold text-[#EBDFB5]">K</span>
+                        <span class="flex h-6 w-6 items-center justify-center rounded-[6px] border border-[#EBDFB5]/30 bg-[#EBDFB5]/20 font-baskerville text-[12px] font-bold text-[#EBDFB5] backdrop-blur-sm">K</span>
                     </div>
+                </div>
 
-                    <div class="absolute bottom-0 left-0 right-0 z-[2] p-5">
-                        <div class="tarih-badge mb-3 inline-flex items-center gap-2 rounded-[8px] border border-accent/50 bg-accent/30 px-3 py-1.5 backdrop-blur-sm">
-                            <span class="font-baskerville text-base font-bold leading-none text-cream">{{ $etkinlik->baslangic_tarihi?->format('d') }}</span>
-                            <span class="font-jakarta text-[11px] font-semibold uppercase tracking-[0.06em] text-cream/80">{{ $etkinlik->baslangic_tarihi?->translatedFormat('M Y') }}</span>
-                        </div>
+                {{-- SAĞ: Bilgiler --}}
+                <div class="etk-yatay-icerik">
+                    <div>
+                        @if($etkinlik->baslangic_tarihi)
+                            <div class="etk-yatay-tarih">
+                                <span class="etk-yatay-tarih-gun">{{ $etkinlik->baslangic_tarihi->format('d') }}</span>
+                                <div class="etk-yatay-tarih-ay">
+                                    <span>{{ $etkinlik->baslangic_tarihi->translatedFormat('M') }}</span>
+                                    <span>{{ $etkinlik->baslangic_tarihi->format('Y') }}</span>
+                                </div>
+                            </div>
+                        @endif
 
-                        <h3 class="mb-2 font-baskerville text-[17px] font-bold leading-[1.3] text-white">{{ $etkinlik->baslik }}</h3>
+                        <h3 class="etk-yatay-baslik">{{ $etkinlik->baslik }}</h3>
 
-                        <div class="mb-3 flex flex-col gap-1.5">
+                        <div class="etk-yatay-meta">
                             @if($etkinlik->baslangic_tarihi)
-                                <span class="flex items-center gap-1.5 font-jakarta text-xs text-white/70">
-                                    <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                                    {{ $etkinlik->baslangic_tarihi->format('H:i') }}
-                                    @if($etkinlik->bitis_tarihi) — {{ $etkinlik->bitis_tarihi->format('H:i') }} @endif
+                                <span>
+                                    <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                                    {{ $etkinlik->baslangic_tarihi->format('H:i') }}@if($etkinlik->bitis_tarihi) — {{ $etkinlik->bitis_tarihi->format('H:i') }}@endif
                                 </span>
                             @endif
 
                             @if($etkinlik->konum_ad)
-                                <span class="flex items-center gap-1.5 font-jakarta text-xs text-white/70">
-                                    <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                <span>
+                                    <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                                     {{ $etkinlik->konum_ad }}
                                 </span>
                             @endif
                         </div>
-
-                        <span class="detay-link">Detay &amp; Kayıt →</span>
                     </div>
+
+                    <span class="detay-link">Detay &amp; Kayıt →</span>
                 </div>
             </a>
         @empty
