@@ -110,7 +110,7 @@
     @endif
 </section>
 
-@if($ilgiliHaberler->isNotEmpty())
+@if($ilgiliHaberler->isNotEmpty() && (($sayfa->sablon?->value ?? $sayfa->sablon) !== 'atolye'))
     <section class="kurumsal-section-card">
         <div class="mb-5 flex items-center justify-between gap-4">
             <div>

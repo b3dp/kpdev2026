@@ -7,6 +7,7 @@ use App\Enums\RobotsKurali;
 use App\Filament\Resources\KurumsalSayfaResource\Pages;
 use App\Models\Kurum;
 use App\Models\KurumsalSayfa;
+use App\Services\GeminiService;
 use Filament\Forms\Components\Actions;
 use Filament\Forms\Components\Actions\Action as FormAction;
 use Filament\Forms\Components\FileUpload;
@@ -372,16 +373,36 @@ class KurumsalSayfaResource extends Resource
                             ->icon('heroicon-o-sparkles')
                             ->color('primary')
                             ->action(function (callable $set, callable $get): void {
+                                $sablon = (string) $get('sablon');
+
+                                if ($sablon !== KurumsalSablonu::Atolye->value) {
+                                    Notification::make()
+                                        ->title('Bu AI akışı şimdilik sadece Atölye sayfaları için aktif.')
+                                        ->warning()
+                                        ->send();
+
+                                    return;
+                                }
+
                                 $icerik = strip_tags((string) $get('icerik'));
                                 $duzIcerik = trim((string) preg_replace('/\s+/u', ' ', $icerik));
 
-                                if (blank($get('meta_description')) && filled($duzIcerik)) {
-                                    $set('meta_description', $duzIcerik);
+                                if (blank($duzIcerik)) {
+                                    Notification::make()
+                                        ->title('AI işlemi için önce içerik girin.')
+                                        ->warning()
+                                        ->send();
+
+                                    return;
                                 }
 
-                                if (blank($get('ozet')) && filled($duzIcerik)) {
-                                    $set('ozet', $duzIcerik);
-                                }
+                                $geminiService = app(GeminiService::class);
+
+                                $ozet = $geminiService->ozetUret($duzIcerik);
+                                $metaDescription = $geminiService->metaDescriptionUret($duzIcerik);
+
+                                $set('ozet', $ozet);
+                                $set('meta_description', $metaDescription);
 
                                 if (blank($get('slug')) && filled($get('ad'))) {
                                     $set('slug', Str::slug((string) $get('ad')));
@@ -390,7 +411,7 @@ class KurumsalSayfaResource extends Resource
                                 $set('ai_islendi', true);
 
                                 Notification::make()
-                                    ->title('AI alanları güncellendi.')
+                                    ->title('Atölye için AI alanları güncellendi.')
                                     ->success()
                                     ->send();
                             }),

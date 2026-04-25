@@ -150,6 +150,22 @@
                         'text' => 'Uygulamalı öğrenmeye ilgi duyan öğrenciler, gençler ve STEM becerilerini güçlendirmek isteyen katılımcılar için uygundur.',
                     ],
                 ],
+                [
+                    '@type' => 'Question',
+                    'name' => 'STEM atölyesinde hangi etkinlikler yapılır?',
+                    'acceptedAnswer' => [
+                        '@type' => 'Answer',
+                        'text' => 'Atölyede deney, proje tabanlı uygulama, problem çözme görevleri, modelleme ve takım çalışması odaklı üretim etkinlikleri yapılır.',
+                    ],
+                ],
+                [
+                    '@type' => 'Question',
+                    'name' => 'STEM atölyesi öğrencinin eğitimine nasıl katkı sağlar?',
+                    'acceptedAnswer' => [
+                        '@type' => 'Answer',
+                        'text' => 'STEM atölyesi öğrencinin analitik düşünme, araştırma yapma, yaratıcı çözüm üretme ve disiplinler arası öğrenme becerilerini güçlendirir.',
+                    ],
+                ],
             ],
         ];
     }
