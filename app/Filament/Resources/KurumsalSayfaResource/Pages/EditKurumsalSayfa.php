@@ -15,12 +15,13 @@ class EditKurumsalSayfa extends EditRecord
     public function getTitle(): string
     {
         $ad = trim((string) ($this->record?->ad ?? ''));
+        $id = (int) ($this->record?->id ?? 0);
 
         if ($ad === '') {
-            return 'Sayfa Düzenle';
+            return $id > 0 ? "Sayfa #{$id} Düzenle" : 'Sayfa Düzenle';
         }
 
-        return 'Sayfa Düzenle - ' . \Illuminate\Support\Str::limit($ad, 60);
+        return ($id > 0 ? "#{$id} " : '') . 'Sayfa - ' . \Illuminate\Support\Str::limit($ad, 50);
     }
 
     protected function getHeaderActions(): array

@@ -23,12 +23,13 @@ class EditHaber extends EditRecord
     public function getTitle(): string
     {
         $baslik = trim((string) ($this->record?->baslik ?? ''));
+        $id = (int) ($this->record?->id ?? 0);
 
         if ($baslik === '') {
-            return 'Haber Düzenle';
+            return $id > 0 ? "Haber #{$id} Düzenle" : 'Haber Düzenle';
         }
 
-        return 'Haber Düzenle - ' . \Illuminate\Support\Str::limit($baslik, 60);
+        return ($id > 0 ? "#{$id} " : '') . 'Haber - ' . \Illuminate\Support\Str::limit($baslik, 50);
     }
 
     protected function getHeaderActions(): array
