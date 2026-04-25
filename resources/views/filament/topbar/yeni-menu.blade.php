@@ -22,15 +22,18 @@
 <div
     x-data="{ acik: false }"
     class="relative mr-2"
+    x-on:mouseenter="acik = true"
+    x-on:mouseleave="acik = false"
     x-on:keydown.escape.window="acik = false"
 >
     <button
         type="button"
+        x-on:focus="acik = true"
         x-on:click="acik = ! acik"
-        class="flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700 transition hover:border-blue-300 hover:bg-blue-100"
+        style="display:flex;align-items:center;gap:8px;border-radius:999px;border:1px solid #8fb4ea;background:#e9f2ff;padding:8px 14px;font-size:14px;font-weight:800;color:#1450a3;transition:all .2s ease;"
     >
-        <span class="text-2xl font-black leading-none text-blue-600">+</span>
-        <span class="tracking-[0.14em]">YENI</span>
+        <span style="font-size:30px;font-weight:900;line-height:1;color:#1e5ec2;">+</span>
+        <span style="letter-spacing:.14em;">YENI</span>
     </button>
 
     <div
@@ -43,6 +46,8 @@
         x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 -translate-y-1"
         x-on:click.outside="acik = false"
+        x-on:mouseenter="acik = true"
+        x-on:mouseleave="acik = false"
         class="absolute right-0 z-50 mt-2 w-64 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl"
         style="display: none;"
     >
