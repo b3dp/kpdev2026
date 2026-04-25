@@ -52,10 +52,13 @@
     'name' => $kurulusAdi,
     'url' => $siteRoot,
     'logo' => 'https://cdn.kestanepazari.org.tr/logo.png',
+    'image' => asset('images/kp-gorsel.jpg'),
     'telephone' => config('site.telefon'),
     'email' => config('site.eposta'),
     'address' => [
       '@type' => 'PostalAddress',
+      'streetAddress' => '872. Sk. No:52',
+      'postalCode' => '35250',
       'addressLocality' => $schemaLocality,
       'addressRegion' => $schemaRegion,
       'addressCountry' => 'TR',

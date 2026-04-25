@@ -16,11 +16,15 @@
         'mainEntity' => [
             '@type' => 'Organization',
             'name' => config('site.ad') . ' ' . config('site.aciklama'),
+            'image' => asset('images/kp-gorsel.jpg'),
             'telephone' => $telefon,
             'email' => $eposta,
             'address' => [
                 '@type' => 'PostalAddress',
-                'streetAddress' => config('site.adres'),
+                'streetAddress' => '872. Sk. No:52',
+                'postalCode' => '35250',
+                'addressLocality' => config('site.schema_locality', 'Karabağlar'),
+                'addressRegion' => config('site.schema_region', 'İzmir'),
                 'addressCountry' => 'TR',
             ],
         ],

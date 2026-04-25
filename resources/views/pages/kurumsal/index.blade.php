@@ -36,7 +36,8 @@
     };
 
     $heroGorsel = $sayfa->bannerMasaustuUrl() ?: $sayfa->gorselLgUrl();
-    $ogImage = $sayfa->ogGorselUrl() ?: $heroGorsel ?: 'https://cdn.kestanepazari.org.tr/logo.png';
+    $schemaImage = asset('images/kp-gorsel.jpg');
+    $ogImage = $sayfa->ogGorselUrl() ?: $heroGorsel ?: $schemaImage;
 
     $ustBolum = match ($sablon) {
         'kurum' => [
@@ -97,7 +98,7 @@
         'name' => $sayfaBaslik,
         'description' => $metaDescription,
         'url' => $canonicalUrl,
-        'image' => $ogImage,
+        'image' => $ogImage ?: $schemaImage,
     ];
 
     if (in_array($schemaTipi, ['Organization', 'EducationalOrganization'], true)) {
@@ -105,7 +106,10 @@
         $sayfaSchema['email'] = config('site.eposta');
         $sayfaSchema['address'] = [
             '@type' => 'PostalAddress',
-            'streetAddress' => config('site.adres'),
+            'streetAddress' => '872. Sk. No:52',
+            'postalCode' => '35250',
+            'addressLocality' => config('site.schema_locality', 'Karabağlar'),
+            'addressRegion' => config('site.schema_region', 'İzmir'),
             'addressCountry' => 'TR',
         ];
     }
