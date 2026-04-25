@@ -10,6 +10,8 @@ use App\Models\KurumsalSayfa;
 use App\Models\KurumsalSayfaGorseli;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;
 use Throwable;
@@ -147,10 +149,8 @@ class GorselOptimizeJob implements ShouldQueue
         }
 
         $slug = $etkinlik->slug ?: 'etkinlik-' . $etkinlik->id;
-        $geciciTamYol = Storage::disk('local')->path($this->geciciYol);
 
-        $manager = ImageManager::imagick();
-        $resim = $manager->read($geciciTamYol);
+        $resim = $this->etkinlikGorseliniOku($this->geciciYol);
 
         $oriDizin = "img26/ori/etkinlikler/{$etkinlik->id}";
         $optDizin = "img26/opt/etkinlikler/{$etkinlik->id}";
@@ -202,6 +202,44 @@ class GorselOptimizeJob implements ShouldQueue
                 ]
             );
         }
+    }
+
+    private function etkinlikGorseliniOku(string $kaynak)
+    {
+        $manager = ImageManager::imagick();
+
+        if (str_starts_with($kaynak, 'http://') || str_starts_with($kaynak, 'https://')) {
+            $yanit = Http::timeout(15)->get($kaynak);
+
+            if (! $yanit->ok() || blank($yanit->body())) {
+                throw new \RuntimeException('Etkinlik görseli URL üzerinden okunamadı: ' . $kaynak);
+            }
+
+            return $manager->read($yanit->body());
+        }
+
+        $lokalTamYol = Storage::disk('local')->path($kaynak);
+        if (is_file($lokalTamYol)) {
+            return $manager->read($lokalTamYol);
+        }
+
+        if (Storage::disk('spaces')->exists($kaynak)) {
+            $icerik = Storage::disk('spaces')->get($kaynak);
+
+            if (blank($icerik)) {
+                throw new \RuntimeException('Etkinlik görseli spaces diskten boş döndü: ' . $kaynak);
+            }
+
+            return $manager->read($icerik);
+        }
+
+        Log::warning('Etkinlik görsel kaynağı bulunamadı', [
+            'model_id' => $this->modelId,
+            'kaynak' => $kaynak,
+            'lokal_tam_yol' => $lokalTamYol,
+        ]);
+
+        throw new \RuntimeException('Etkinlik görsel kaynağı bulunamadı: ' . $kaynak);
     }
 
     protected function kurumsalSayfaGorselleriniIsle(): void

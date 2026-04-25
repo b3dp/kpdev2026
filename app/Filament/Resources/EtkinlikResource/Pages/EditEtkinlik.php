@@ -40,11 +40,15 @@ class EditEtkinlik extends EditRecord
         $etkinlik = $this->record;
 
         $anaGorsel = $this->tekDosyaYolu(data_get($this->data, 'gorsel_lg'));
-        if (filled($anaGorsel)) {
+        if ($etkinlik->wasChanged('gorsel_lg') && $this->optimizasyonaUygunKaynakMi($anaGorsel)) {
             dispatch_sync(new GorselOptimizeJob($etkinlik->id, 'etkinlik', 'ana_gorsel', $anaGorsel, 1));
         }
 
-        $galeriGorseller = $this->cokluDosyaYollari((array) data_get($this->data, 'galeri_gorseller', []));
+        $galeriGorseller = array_values(array_filter(
+            $this->cokluDosyaYollari((array) data_get($this->data, 'galeri_gorseller', [])),
+            fn (string $yol): bool => $this->optimizasyonaUygunKaynakMi($yol)
+        ));
+
         $baslangicSirasi = ((int) $etkinlik->gorseller()->max('sira')) + 1;
         foreach ($galeriGorseller as $sira => $geciciYol) {
             dispatch_sync(new GorselOptimizeJob($etkinlik->id, 'etkinlik', 'galeri_gorseli', $geciciYol, $baslangicSirasi + $sira));
@@ -88,5 +92,15 @@ class EditEtkinlik extends EditRecord
         }
 
         return array_values($sonuc);
+    }
+
+    private function optimizasyonaUygunKaynakMi(?string $kaynak): bool
+    {
+        if (blank($kaynak)) {
+            return false;
+        }
+
+        return ! str_starts_with($kaynak, 'http://')
+            && ! str_starts_with($kaynak, 'https://');
     }
 }
