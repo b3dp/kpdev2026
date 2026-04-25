@@ -81,7 +81,25 @@ class KurumsalController extends Controller
                     $sayfa->kart_gorseli = $sayfa->bannerMasaustuUrl() ?: $sayfa->gorselLgUrl();
 
                     return $sayfa;
-                });
+                })
+                ->sortBy(fn (KurumsalSayfa $sayfa) => Str::lower(
+                    strtr((string) $sayfa->ad, [
+                        'Ç' => 'c',
+                        'Ğ' => 'g',
+                        'İ' => 'i',
+                        'I' => 'i',
+                        'Ö' => 'o',
+                        'Ş' => 's',
+                        'Ü' => 'u',
+                        'ç' => 'c',
+                        'ğ' => 'g',
+                        'ı' => 'i',
+                        'ö' => 'o',
+                        'ş' => 's',
+                        'ü' => 'u',
+                    ])
+                ))
+                ->values();
 
             return view('pages.kurumsal.atolyeler-liste', compact('atolyeSayfalari', 'standartMenuSayfalari'));
         }
