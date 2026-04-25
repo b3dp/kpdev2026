@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\EtkinlikController;
 use App\Http\Controllers\Uye\GirisController;
 use App\Http\Controllers\Uye\KayitController;
 use App\Http\Controllers\Uye\ProfilController;
@@ -35,6 +36,7 @@ Route::middleware('auth:uye')->group(function () {
     Route::get('/profilim', [ProfilController::class, 'index'])->name('uye.profil.index');
     Route::post('/profilim', [ProfilController::class, 'guncelle'])->name('uye.profil.guncelle');
     Route::post('/profil/abonelik', [ProfilController::class, 'abonelikGuncelle'])->name('uye.abonelik.guncelle');
+    Route::post('/etkinlikler/{slug}/katilim', [EtkinlikController::class, 'katilimGuncelle'])->name('etkinlikler.katilim.guncelle');
 });
 
 // Abonelik iptal (token bazlı, unauthenticated)

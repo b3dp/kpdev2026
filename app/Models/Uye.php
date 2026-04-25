@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -118,5 +119,17 @@ class Uye extends Authenticatable implements HasName
     public function bildirimler(): HasMany
     {
         return $this->hasMany(UyeBildirim::class, 'uye_id');
+    }
+
+    public function etkinlikKatilimlari(): HasMany
+    {
+        return $this->hasMany(EtkinlikKatilimi::class, 'uye_id');
+    }
+
+    public function etkinlikler(): BelongsToMany
+    {
+        return $this->belongsToMany(Etkinlik::class, 'etkinlik_katilimlari', 'uye_id', 'etkinlik_id')
+            ->withPivot(['durum'])
+            ->withTimestamps();
     }
 }

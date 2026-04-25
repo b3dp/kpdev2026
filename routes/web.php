@@ -21,6 +21,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/haberler', [HaberController::class, 'index'])->name('haberler.index');
 Route::get('/haberler/{slug}', [HaberController::class, 'show'])->name('haberler.show');
 Route::get('/etkinlikler', [EtkinlikController::class, 'index'])->name('etkinlikler.index');
+Route::get('/etkinlikler/{slug}/takvim.ics', [EtkinlikController::class, 'takvimIcs'])->name('etkinlikler.takvim');
 Route::get('/etkinlikler/{slug}', [EtkinlikController::class, 'show'])->name('etkinlikler.show');
 Route::get('/bagis', [BagisController::class, 'index'])->name('bagis.index');
 Route::get('/bagis/sepet', [BagisController::class, 'sepet'])->name('bagis.sepet');

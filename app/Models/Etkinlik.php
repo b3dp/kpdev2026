@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Scout\Searchable;
@@ -171,5 +172,17 @@ class Etkinlik extends Model
     public function gorseller(): HasMany
     {
         return $this->hasMany(EtkinlikGorseli::class, 'etkinlik_id')->orderBy('sira');
+    }
+
+    public function katilimlar(): HasMany
+    {
+        return $this->hasMany(EtkinlikKatilimi::class, 'etkinlik_id');
+    }
+
+    public function uyeler(): BelongsToMany
+    {
+        return $this->belongsToMany(Uye::class, 'etkinlik_katilimlari', 'etkinlik_id', 'uye_id')
+            ->withPivot(['durum'])
+            ->withTimestamps();
     }
 }

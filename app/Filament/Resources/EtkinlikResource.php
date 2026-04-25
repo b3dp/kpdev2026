@@ -7,6 +7,7 @@ use App\Data\TurkiyeIller;
 use App\Enums\EtkinlikDurumu;
 use App\Enums\EtkinlikTipi;
 use App\Filament\Resources\EtkinlikResource\Pages;
+use App\Filament\Resources\EtkinlikResource\RelationManagers\KatilimlarRelationManager;
 use App\Jobs\AiEtkinlikIsleJob;
 use App\Models\Etkinlik;
 use Filament\Forms\Components\Actions;
@@ -581,6 +582,13 @@ class EtkinlikResource extends Resource
             'index' => Pages\ListEtkinliks::route('/'),
             'create' => Pages\CreateEtkinlik::route('/create'),
             'edit' => Pages\EditEtkinlik::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            KatilimlarRelationManager::class,
         ];
     }
 }

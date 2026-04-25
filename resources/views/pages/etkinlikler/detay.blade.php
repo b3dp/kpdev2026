@@ -214,32 +214,47 @@
                             loading="lazy"
                             allowfullscreen
                             referrerpolicy="no-referrer-when-downgrade">
-                        </iframe>
-                    </div>
-                    <div class="flex flex-wrap gap-3 mt-4">
-                        @php
-                            $yolTarifiUrl = 'https://www.google.com/maps/dir/?api=1&destination=' . $etkinlik->konum_lat . ',' . $etkinlik->konum_lng;
-                        @endphp
-                        <a href="{{ $yolTarifiUrl }}" target="_blank" rel="noopener" class="cal-btn">
-                            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#B27829" stroke-width="2"><path stroke-linecap="round" d="M12 2v20m10-10H2"/></svg>
-                            Yol Tarifi
-                        </a>
-                    </div>
-                    @if($etkinlik->konum_adres)
-                        <p class="mt-3 font-jakarta text-sm leading-[1.7] text-teal-muted">{{ $etkinlik->konum_adres }}</p>
-                    @endif
-                </section>
-            @endif
-
-            @if($etkinlik->gorseller->isNotEmpty())
                 <section class="rounded-2xl border border-primary/8 bg-white p-6 sm:p-7">
                     <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
                         <div>
                             <h2 class="font-baskerville text-[18px] font-bold text-primary">Etkinlik Galerisi</h2>
-                            <p class="mt-1 font-jakarta text-[13px] text-teal-muted">Etkinliğe ait görseller</p>
+                            <a href="{{ route('etkinlikler.takvim', $etkinlik->slug) }}" class="cal-btn apple">
                         </div>
                         <span class="rounded-full bg-bg-soft px-3 py-1 font-jakarta text-[12px] font-semibold text-teal-muted">{{ $etkinlik->gorseller->count() }} görsel</span>
                     </div>
+
+                        <div class="mt-4 border-t border-gray-100 pt-4">
+                            <h4 class="mb-3 text-sm font-semibold text-gray-900">Katılım Durumu</h4>
+
+                            @if(auth('uye')->check())
+                                <div class="flex flex-wrap gap-2">
+                                    <form method="POST" action="{{ route('etkinlikler.katilim.guncelle', $etkinlik->slug) }}">
+                                        @csrf
+                                        <input type="hidden" name="durum" value="katiliyorum">
+                                        <button type="submit" class="cal-btn {{ $uyeKatilimDurumu === 'katiliyorum' ? 'google' : '' }}">Katılıyorum ({{ $katilimSayilari['katiliyorum'] ?? 0 }})</button>
+                                    </form>
+
+                                    <form method="POST" action="{{ route('etkinlikler.katilim.guncelle', $etkinlik->slug) }}">
+                                        @csrf
+                                        <input type="hidden" name="durum" value="katilmiyorum">
+                                        <button type="submit" class="cal-btn {{ $uyeKatilimDurumu === 'katilmiyorum' ? 'apple' : '' }}">Katılmıyorum ({{ $katilimSayilari['katilmiyorum'] ?? 0 }})</button>
+                                    </form>
+
+                                    <form method="POST" action="{{ route('etkinlikler.katilim.guncelle', $etkinlik->slug) }}">
+                                        @csrf
+                                        <input type="hidden" name="durum" value="belirsiz">
+                                        <button type="submit" class="cal-btn {{ $uyeKatilimDurumu === 'belirsiz' ? 'outlook' : '' }}">Belirsiz ({{ $katilimSayilari['belirsiz'] ?? 0 }})</button>
+                                    </form>
+                                </div>
+                            @else
+                                <div class="rounded-xl border border-blue-100 bg-blue-50 p-3 text-sm text-blue-900">
+                                    Bu etkinlik için katılım durumunu belirtmek ister misiniz?
+                                    <a href="{{ route('uye.kayit.form') }}" class="ml-1 font-semibold text-blue-700 underline underline-offset-2">Üye olun</a>
+                                    veya
+                                    <a href="{{ route('uye.giris.form') }}" class="ml-1 font-semibold text-blue-700 underline underline-offset-2">giriş yapın</a>.
+                                </div>
+                            @endif
+                        </div>
 
                     <div class="galeri-grid">
                         @forelse($etkinlik->gorseller->sortBy('sira') as $i => $gorsel)
