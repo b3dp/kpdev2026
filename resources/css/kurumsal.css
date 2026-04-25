@@ -307,23 +307,23 @@
     align-items: center;
     justify-content: center;
     border-radius: 999px;
-    border: 1px solid #f0b8c5;
-    background: linear-gradient(135deg, #e6f2ff 0%, #ffe8ee 100%);
-    padding: 0.22rem 0.56rem;
+    border: 1px solid #8eb5ea;
+    background: #e9f2ff;
+    padding: 0.24rem 0.62rem;
     font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 0.66rem;
+    font-size: 0.68rem;
     font-weight: 700;
     letter-spacing: 0.04em;
     line-height: 1.1;
     white-space: nowrap;
-    color: #5f5a93;
+    color: #1f4f8f;
     transition: 0.2s ease;
 }
 
 .kurumsal-galeri-kisayol:hover {
-    border-color: #e59ab0;
-    background: linear-gradient(135deg, #dfeeff 0%, #ffdfe8 100%);
-    color: #7b3453;
+    border-color: #5f93db;
+    background: #d7e8ff;
+    color: #173d70;
 }
 
 .kurumsal-prose p,
