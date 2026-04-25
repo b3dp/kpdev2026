@@ -95,31 +95,34 @@
     font-weight: 700;
 }
 
-/* ── Yeni footer (dark top bar) sınıfları ─────────────────────── */
+/* ── Yeni footer sınıfları ─────────────────────────────────────── */
+
+/* 1. Satır: Beyaz arka plan — sosyal medya butonları */
 .ftr-social-btn {
     width: 34px;
     height: 34px;
     border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(22, 46, 75, 0.15);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(22, 46, 75, 0.45);
     transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.15s;
 }
 
 .ftr-social-btn:hover {
-    background: rgba(235, 223, 181, 0.15);
-    border-color: rgba(235, 223, 181, 0.4);
-    color: #ebdfb5;
+    background: rgba(178, 120, 41, 0.1);
+    border-color: rgba(178, 120, 41, 0.45);
+    color: #b27829;
     transform: translateY(-2px);
 }
 
+/* 2. Satır: Lacivert arka plan — sütun başlıkları */
 .ftr-col-head {
     font-family: 'Libre Baskerville', serif;
     font-weight: 700;
     font-size: 12px;
-    color: #162e4b;
+    color: #ebdfb5;
     letter-spacing: 0.07em;
     text-transform: uppercase;
     margin-bottom: 14px;
@@ -147,8 +150,9 @@
     gap: 9px;
 }
 
+/* 2. Satır: Lacivert arka plan — linkler */
 .ftr-link {
-    color: rgba(22, 46, 75, 0.5);
+    color: rgba(235, 223, 181, 0.5);
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 13px;
     line-height: 1.4;
@@ -158,6 +162,15 @@
 }
 
 .ftr-link:hover {
-    color: #b27829;
+    color: #ebdfb5;
     padding-left: 4px;
+}
+
+.ftr-link--vurgu {
+    color: #ff9300;
+    font-weight: 600;
+}
+
+.ftr-link--vurgu:hover {
+    color: #ffc04d;
 }

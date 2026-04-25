@@ -14,7 +14,7 @@
     <div class="h-[3px] bg-[linear-gradient(to_right,transparent,#B27829_30%,#B27829_70%,transparent)] opacity-70"></div>
 
     {{-- ──────────────── 1. SATIR: Logo + Sosyal Medya + Telefon ──────────────── --}}
-    <div class="bg-primary">
+    <div class="border-b border-primary/10 bg-white">
         <div class="mx-auto max-w-7xl px-6 py-4">
             <div class="flex flex-wrap items-center justify-between gap-4">
 
@@ -27,7 +27,7 @@
                              loading="lazy">
                     </a>
 
-                    <div class="h-8 w-px bg-white/15"></div>
+                    <div class="h-8 w-px bg-primary/15"></div>
 
                     <div class="flex items-center gap-2">
                         @if(config('site.facebook'))
@@ -55,15 +55,15 @@
 
                 {{-- Sağ: Çağrı Merkezi --}}
                 <a href="tel:{{ $telefon_link }}"
-                   class="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 transition-colors hover:bg-white/10">
-                    <span class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-accent/80">
+                   class="flex items-center gap-3 rounded-xl border border-primary/12 bg-primary/5 px-4 py-2.5 transition-colors hover:bg-primary/10">
+                    <span class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-accent">
                         <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2" aria-hidden="true">
                             <path stroke-linecap="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                         </svg>
                     </span>
                     <div>
-                        <p class="font-jakarta text-[10px] font-semibold uppercase tracking-[0.08em] text-white/45">Çağrı Merkezi</p>
-                        <p class="font-jakarta text-[14px] font-bold text-white">{{ $telefon }}</p>
+                        <p class="font-jakarta text-[10px] font-semibold uppercase tracking-[0.08em] text-primary/45">Çağrı Merkezi</p>
+                        <p class="font-jakarta text-[14px] font-bold text-primary">{{ $telefon }}</p>
                     </div>
                 </a>
 
@@ -72,7 +72,7 @@
     </div>
 
     {{-- ──────────────── 2. SATIR: 5 Sütunlu Bağlantılar ──────────────── --}}
-    <div class="bg-cream">
+    <div class="bg-primary">
         <div class="mx-auto max-w-7xl px-6 py-12">
             <div class="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-5">
 
@@ -128,7 +128,7 @@
                             </li>
                         @endforeach
                         <li>
-                            <a href="{{ route('bagis.index') }}" class="ftr-link font-semibold text-accent">
+                            <a href="{{ route('bagis.index') }}" class="ftr-link ftr-link--vurgu">
                                 Tüm Bağışlar →
                             </a>
                         </li>
@@ -151,7 +151,7 @@
         </div>
 
         <div class="mx-auto max-w-7xl px-6">
-            <div class="h-px bg-primary/10"></div>
+            <div class="h-px bg-white/10"></div>
         </div>
     </div>
 
