@@ -65,6 +65,9 @@
           </svg>
           {{ config('site.eposta') }}
         </a>
+        <a href="{{ route('iletisim.index') }}" class="hidden md:flex items-center gap-1 opacity-75 hover:opacity-100 transition-opacity font-medium">
+          İletişim
+        </a>
       </div>
 
       <div class="flex items-center gap-3">

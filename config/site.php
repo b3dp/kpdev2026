@@ -4,7 +4,7 @@ return [
     'ad'        => env('SITE_ADI', 'Kestanepazarı'),
     'aciklama'  => env('SITE_ACIKLAMA', 'Öğrenci Yetiştirme Derneği'),
     'telefon'   => env('ILETISIM_TELEFON', '444 9 232'),
-    'eposta'    => env('ILETISIM_EPOSTA', 'info@kestanepazari.org.tr'),
+    'eposta'    => env('ILETISIM_EPOSTA', 'bilgi@kestanepazari.org.tr'),
     'adres'     => env('ILETISIM_ADRES', 'İzmir'),
     'geo_region' => env('SITE_GEO_REGION', 'TR-35'),
     'geo_placename' => env('SITE_GEO_PLACENAME', 'Karabağlar, İzmir'),
