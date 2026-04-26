@@ -2,6 +2,7 @@
     use App\Enums\KurumsalSablonu;
     $telefon = config('site.telefon');
     $telefon_link = preg_replace('/\D+/', '', (string) $telefon);
+    $eposta = config('site.eposta', 'bilgi@kestanepazari.org.tr');
     $footerKurumlar = \App\Models\KurumsalSayfa::where('sablon', KurumsalSablonu::Kurum->value)
         ->where('durum', 'yayinda')->orderBy('sira')->get(['ad', 'slug']);
     $footerAtölyeler = \App\Models\KurumsalSayfa::where('sablon', KurumsalSablonu::Atolye->value)
@@ -13,22 +14,14 @@
     {{-- Dekoratif çizgi --}}
     <div class="h-[3px] bg-[linear-gradient(to_right,transparent,#B27829_30%,#B27829_70%,transparent)] opacity-70"></div>
 
-    {{-- ──────────────── 1. SATIR: Logo + Sosyal Medya + Telefon ──────────────── --}}
+    {{-- ──────────────── 1. SATIR: Sosyal Medya + E-posta + Telefon ──────────────── --}}
     <div class="border-b border-primary/10 bg-white">
         <div class="mx-auto max-w-7xl px-6 py-4">
-            <div class="flex flex-wrap items-center justify-between gap-4">
+            <div class="grid grid-cols-1 items-center gap-4 text-center md:grid-cols-3 md:text-left">
 
-                {{-- Sol: Logo + Ayraç + Sosyal medya --}}
-                <div class="flex items-center gap-5">
-                    <a href="{{ route('home') }}" class="flex-shrink-0" aria-label="{{ config('site.ad') }}">
-                        <img src="{{ asset('images/logo.svg') }}"
-                             alt="{{ config('site.ad') }} logosu"
-                             class="h-9 w-auto"
-                             loading="lazy">
-                    </a>
-
-                    <div class="h-8 w-px bg-primary/15"></div>
-
+                {{-- Sol: Sosyal medya --}}
+                <div class="flex flex-wrap items-center justify-center gap-3 md:justify-start">
+                    <span class="font-jakarta text-[11px] font-semibold uppercase tracking-[0.08em] text-primary/45">Sosyal Medya</span>
                     <div class="flex items-center gap-2">
                         @if(config('site.facebook'))
                             <a href="{{ config('site.facebook') }}" class="ftr-social-btn" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
@@ -53,9 +46,20 @@
                     </div>
                 </div>
 
+                {{-- Orta: E-posta --}}
+                <div class="flex items-center justify-center">
+                    <a href="mailto:{{ $eposta }}"
+                       class="inline-flex items-center gap-2 font-jakarta text-[14px] font-medium text-primary/70 transition-colors hover:text-primary">
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path stroke-linecap="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                        <span>{{ $eposta }}</span>
+                    </a>
+                </div>
+
                 {{-- Sağ: Çağrı Merkezi --}}
                 <a href="tel:{{ $telefon_link }}"
-                   class="flex items-center gap-3 rounded-xl border border-primary/12 bg-primary/5 px-4 py-2.5 transition-colors hover:bg-primary/10">
+                   class="ml-auto flex items-center gap-3 rounded-xl border border-primary/12 bg-primary/5 px-4 py-2.5 transition-colors hover:bg-primary/10 md:justify-self-end">
                     <span class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-accent">
                         <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2" aria-hidden="true">
                             <path stroke-linecap="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
@@ -74,11 +78,18 @@
     {{-- ──────────────── 2. SATIR: 5 Sütunlu Bağlantılar ──────────────── --}}
     <div class="bg-primary">
         <div class="mx-auto max-w-7xl px-6 py-12">
-            <div class="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-5">
+            <div class="grid grid-cols-2 gap-8 sm:grid-cols-3 xl:grid-cols-6">
 
-                {{-- Sütun 1: Kurumsal --}}
                 <div>
-                    <h3 class="ftr-col-head">Kurumsal</h3>
+                    <a href="{{ route('home') }}" class="inline-flex" aria-label="{{ config('site.ad') }}">
+                        <img src="{{ asset('images/logo.svg') }}"
+                             alt="{{ config('site.ad') }} logosu"
+                             class="h-16 w-auto"
+                             loading="lazy">
+                    </a>
+                </div>
+
+                <div>
                     <ul class="ftr-link-list">
                         <li><a href="{{ route('kurumsal.show', ['slug' => 'hakkimizda']) }}" class="ftr-link">Hakkımızda</a></li>
                         <li><a href="{{ route('kurumsal.show', ['slug' => 'tarihce']) }}" class="ftr-link">Tarihçe</a></li>
@@ -88,9 +99,7 @@
                     </ul>
                 </div>
 
-                {{-- Sütun 2: Kurumlar --}}
                 <div>
-                    <h3 class="ftr-col-head">Kurumlar</h3>
                     <ul class="ftr-link-list">
                         @foreach($footerKurumlar as $kurum)
                             <li>
@@ -102,9 +111,7 @@
                     </ul>
                 </div>
 
-                {{-- Sütun 3: Atölyeler --}}
                 <div>
-                    <h3 class="ftr-col-head">Atölyeler</h3>
                     <ul class="ftr-link-list">
                         @foreach($footerAtölyeler as $atolye)
                             <li>
@@ -116,9 +123,7 @@
                     </ul>
                 </div>
 
-                {{-- Sütun 4: Bağış --}}
                 <div>
-                    <h3 class="ftr-col-head">Bağış</h3>
                     <ul class="ftr-link-list">
                         @foreach($footerBagislar as $tur)
                             <li>
@@ -135,9 +140,7 @@
                     </ul>
                 </div>
 
-                {{-- Sütun 5: Diğer --}}
                 <div>
-                    <h3 class="ftr-col-head">Daha Fazla</h3>
                     <ul class="ftr-link-list">
                         <li><a href="{{ route('iletisim.index') }}" class="ftr-link">İletişim</a></li>
                         <li><a href="{{ route('kurumsal.show', ['slug' => 'kvkk']) }}" class="ftr-link">KVKK</a></li>
