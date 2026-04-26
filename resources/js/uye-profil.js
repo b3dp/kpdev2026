@@ -3,6 +3,7 @@ const profilKoku = document.querySelector('[data-uye-profil]');
 if (profilKoku) {
     const sekmeler = Array.from(profilKoku.querySelectorAll('[data-profil-tab]'));
     const paneller = Array.from(profilKoku.querySelectorAll('[data-profil-panel]'));
+    const cerezKoku = profilKoku.querySelector('[data-cerez-profil]');
 
     const sekmeDegistir = (hedef) => {
         sekmeler.forEach((sekme) => {
@@ -23,6 +24,49 @@ if (profilKoku) {
 
     const ilkSekme = window.location.hash?.replace('#', '') || sekmeler[0]?.dataset.profilTab || 'bilgiler';
     sekmeDegistir(ilkSekme);
+
+    const cerezDurumunuGuncelle = () => {
+        if (!cerezKoku || !window.kpCerez?.getPreferences) {
+            return;
+        }
+
+        const tercihler = window.kpCerez.getPreferences();
+        const analitikDurum = cerezKoku.querySelector('[data-cerez-durum="analitik"]');
+        const pazarlamaDurum = cerezKoku.querySelector('[data-cerez-durum="pazarlama"]');
+        const genelDurum = cerezKoku.querySelector('[data-cerez-genel-durum]');
+
+        if (analitikDurum) {
+            analitikDurum.textContent = tercihler.analitik ? 'Açık' : 'Kapalı';
+            analitikDurum.className = tercihler.analitik ? 'uye-profil__pill uye-profil__pill--green' : 'uye-profil__pill uye-profil__pill--gray';
+        }
+
+        if (pazarlamaDurum) {
+            pazarlamaDurum.textContent = tercihler.pazarlama ? 'Açık' : 'Kapalı';
+            pazarlamaDurum.className = tercihler.pazarlama ? 'uye-profil__pill uye-profil__pill--green' : 'uye-profil__pill uye-profil__pill--gray';
+        }
+
+        if (genelDurum) {
+            genelDurum.textContent = tercihler.analitik || tercihler.pazarlama
+                ? 'Tercihleriniz kaydedildi. İstediğiniz zaman güncelleyebilirsiniz.'
+                : 'Şu anda yalnızca zorunlu çerezler aktif.';
+        }
+    };
+
+    cerezDurumunuGuncelle();
+
+    cerezKoku?.querySelector('[data-cerez-aksiyon="ac"]')?.addEventListener('click', () => {
+        window.kpCerez?.openPreferences?.();
+    });
+
+    cerezKoku?.querySelector('[data-cerez-aksiyon="kabul"]')?.addEventListener('click', () => {
+        window.kpCerez?.acceptAll?.();
+    });
+
+    cerezKoku?.querySelector('[data-cerez-aksiyon="reddet"]')?.addEventListener('click', () => {
+        window.kpCerez?.rejectAll?.();
+    });
+
+    window.addEventListener('kp:cerez-guncellendi', cerezDurumunuGuncelle);
 
     const formlar = profilKoku.querySelectorAll('[data-ajax-form]');
 

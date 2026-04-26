@@ -182,6 +182,7 @@
                         <button type="button" class="uye-profil__tab rounded-t-xl px-4 py-3 text-sm font-semibold" data-profil-tab="bagis" aria-selected="false">Bağış Geçmişim</button>
                         <button type="button" class="uye-profil__tab rounded-t-xl px-4 py-3 text-sm font-semibold" data-profil-tab="ekayit" aria-selected="false">E-Kayıt Takibi</button>
                         <button type="button" class="uye-profil__tab rounded-t-xl px-4 py-3 text-sm font-semibold" data-profil-tab="etkinlik" aria-selected="false">Etkinlikler</button>
+                        <button type="button" class="uye-profil__tab rounded-t-xl px-4 py-3 text-sm font-semibold" data-profil-tab="cerez" aria-selected="false">Çerez Tercihleri</button>
                     </div>
 
                     <div class="p-5 md:p-7">
@@ -516,6 +517,52 @@
                                 @empty
                                     <div class="uye-profil__notice">Geçmiş etkinlik listesi şu an boş görünüyor.</div>
                                 @endforelse
+                            </div>
+                        </div>
+
+                        <div data-profil-panel="cerez" class="hidden space-y-6">
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                    <h3 class="font-['Libre_Baskerville'] text-xl font-bold text-[#162E4B]">Çerez Tercihleri</h3>
+                                    <p class="mt-1 text-sm text-slate-500">Analitik ve reklam/pazarlama izinlerinizi hesabınızdan istediğiniz an yönetebilirsiniz.</p>
+                                </div>
+                                <span class="uye-profil__pill uye-profil__pill--gold">Zorunlu çerezler her zaman açık</span>
+                            </div>
+
+                            <div data-cerez-profil class="space-y-4">
+                                <div class="uye-profil__notice">
+                                    <p class="font-semibold text-[#B27829]">Genel Durum</p>
+                                    <p class="mt-1 text-sm text-slate-600" data-cerez-genel-durum>Şu anda yalnızca zorunlu çerezler aktif.</p>
+                                </div>
+
+                                <div class="grid gap-4 md:grid-cols-3">
+                                    <div class="uye-profil__consent-card">
+                                        <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Zorunlu</p>
+                                        <p class="mt-2 text-sm font-semibold text-[#162E4B]">Giriş, güvenlik ve form akışları</p>
+                                        <p class="mt-2 text-sm text-slate-500">Üye girişi, e-kayıt ve bağış adımlarının çalışması için gereklidir.</p>
+                                        <div class="mt-4"><span class="uye-profil__pill uye-profil__pill--green">Her zaman açık</span></div>
+                                    </div>
+
+                                    <div class="uye-profil__consent-card">
+                                        <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Analitik</p>
+                                        <p class="mt-2 text-sm font-semibold text-[#162E4B]">Ziyaret ve akış ölçümü</p>
+                                        <p class="mt-2 text-sm text-slate-500">Bağış sayfası, e-kayıt akışı ve içerik performansını ölçer.</p>
+                                        <div class="mt-4"><span class="uye-profil__pill uye-profil__pill--gray" data-cerez-durum="analitik">Kapalı</span></div>
+                                    </div>
+
+                                    <div class="uye-profil__consent-card">
+                                        <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Reklam / Pazarlama</p>
+                                        <p class="mt-2 text-sm font-semibold text-[#162E4B]">Kampanya ve dönüşüm takibi</p>
+                                        <p class="mt-2 text-sm text-slate-500">Reklam performansı ve dönüşüm bilgisini yalnızca onayınızla işler.</p>
+                                        <div class="mt-4"><span class="uye-profil__pill uye-profil__pill--gray" data-cerez-durum="pazarlama">Kapalı</span></div>
+                                    </div>
+                                </div>
+
+                                <div class="flex flex-wrap gap-3">
+                                    <button type="button" class="rounded-xl bg-[#162E4B] px-5 py-3 text-sm font-bold text-[#EBDFB5] transition hover:bg-[#091420]" data-cerez-aksiyon="ac">Ayrıntılı Tercihleri Aç</button>
+                                    <button type="button" class="rounded-xl bg-[#E95925] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#c94620]" data-cerez-aksiyon="kabul">Analitik ve Pazarlamayı Aç</button>
+                                    <button type="button" class="rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold text-[#162E4B] transition hover:bg-[#F7F5F0]" data-cerez-aksiyon="reddet">Yalnızca Zorunlu Kalsın</button>
+                                </div>
                             </div>
                         </div>
 

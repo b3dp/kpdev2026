@@ -145,6 +145,53 @@ const initConsentUi = () => {
         }
 
         activateTracking(preferences, config);
+        window.dispatchEvent(new CustomEvent('kp:cerez-guncellendi', {
+            detail: {
+                preferences,
+            },
+        }));
+    };
+
+    const tumunuKabulEt = () => {
+        const preferences = persistPreferences({
+            ...defaultPreferences,
+            analitik: true,
+            pazarlama: true,
+        });
+
+        banner?.remove();
+        setPanelState(false);
+        applyPreferences(preferences);
+
+        return preferences;
+    };
+
+    const tumunuReddet = () => {
+        const preferences = persistPreferences({
+            ...defaultPreferences,
+            analitik: false,
+            pazarlama: false,
+        });
+
+        banner?.remove();
+        setPanelState(false);
+        applyPreferences(preferences);
+
+        return preferences;
+    };
+
+    const secimleriKaydet = () => {
+        const preferences = persistPreferences({
+            ...defaultPreferences,
+            analitik: Boolean(analitikInput?.checked),
+            pazarlama: Boolean(pazarlamaInput?.checked),
+        });
+
+        banner?.remove();
+        setPanelState(false);
+        applyPreferences(preferences);
+
+        return preferences;
     };
 
     const savedPreferences = parsePreferences();
@@ -164,47 +211,22 @@ const initConsentUi = () => {
         button.addEventListener('click', () => setPanelState(false));
     });
 
-    acceptAllButton?.addEventListener('click', () => {
-        const preferences = persistPreferences({
-            ...defaultPreferences,
-            analitik: true,
-            pazarlama: true,
-        });
+    acceptAllButton?.addEventListener('click', tumunuKabulEt);
 
-        banner?.remove();
-        setPanelState(false);
-        applyPreferences(preferences);
-    });
+    rejectAllButton?.addEventListener('click', tumunuReddet);
 
-    rejectAllButton?.addEventListener('click', () => {
-        const preferences = persistPreferences({
-            ...defaultPreferences,
-            analitik: false,
-            pazarlama: false,
-        });
-
-        banner?.remove();
-        setPanelState(false);
-        applyPreferences(preferences);
-    });
-
-    saveButton?.addEventListener('click', () => {
-        const preferences = persistPreferences({
-            ...defaultPreferences,
-            analitik: Boolean(analitikInput?.checked),
-            pazarlama: Boolean(pazarlamaInput?.checked),
-        });
-
-        banner?.remove();
-        setPanelState(false);
-        applyPreferences(preferences);
-    });
+    saveButton?.addEventListener('click', secimleriKaydet);
 
     window.kpCerez = {
         getPreferences: () => parsePreferences() || { ...defaultPreferences },
         hasConsent: (category) => Boolean((parsePreferences() || defaultPreferences)[category]),
         trackEvent: (eventName, params = {}, category = 'analitik') => olayGonder(eventName, params, category),
         olayGonder: (eventName, params = {}, category = 'analitik') => olayGonder(eventName, params, category),
+        openPreferences: () => setPanelState(true),
+        closePreferences: () => setPanelState(false),
+        acceptAll: () => tumunuKabulEt(),
+        rejectAll: () => tumunuReddet(),
+        saveCurrentSelections: () => secimleriKaydet(),
     };
 };
 

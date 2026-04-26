@@ -170,6 +170,14 @@
     color: var(--kp-lacivert);
 }
 
+.uye-profil__consent-card {
+    border-radius: 1rem;
+    border: 1px solid rgba(22, 46, 75, 0.08);
+    background: #fff;
+    padding: 1rem;
+    box-shadow: 0 10px 26px rgba(22, 46, 75, 0.04);
+}
+
 @media (max-width: 1023px) {
     .uye-profil__sidebar {
         position: static;
