@@ -84,7 +84,7 @@
 </section>
 
 <main class="mx-auto max-w-7xl px-6 py-9">
-    <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+    <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
         @forelse($etkinlikler as $etkinlik)
             @php
                 $gecmis = $etkinlik->baslangic_tarihi?->isPast();
@@ -119,8 +119,6 @@
                         @else
                             <span class="rounded-full bg-blue-500/70 px-2.5 py-1 font-jakarta text-[10.5px] font-bold text-white backdrop-blur-sm">Gelecek</span>
                         @endif
-
-                        <span class="flex h-6 w-6 items-center justify-center rounded-[6px] border border-[#EBDFB5]/30 bg-[#EBDFB5]/20 font-baskerville text-[12px] font-bold text-[#EBDFB5] backdrop-blur-sm">K</span>
                     </div>
                 </div>
 

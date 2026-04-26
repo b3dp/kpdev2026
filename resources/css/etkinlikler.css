@@ -142,7 +142,7 @@
 
 .etk-yatay-foto {
     position: relative;
-    width: 42%;
+    width: 50%;
     flex-shrink: 0;
     overflow: hidden;
     background: linear-gradient(160deg, #1e3a58 0%, #0a1d30 100%);
@@ -154,8 +154,8 @@
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    object-position: center top;
+    object-fit: contain;
+    object-position: center center;
     transition: transform 0.35s ease;
 }
 
@@ -247,6 +247,7 @@
     line-height: 1.35;
     margin-bottom: 10px;
     display: -webkit-box;
+    line-clamp: 2;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
@@ -271,6 +272,12 @@
 .etk-yatay-meta svg {
     flex-shrink: 0;
     color: rgba(22, 46, 75, 0.35);
+    width: 12px;
+    height: 12px;
+}
+
+.etk-yatay-icerik .detay-link {
+    font-size: 12.5px;
 }
 
 .etk-yatay-kart:hover .detay-link {
@@ -297,7 +304,23 @@
         font-size: 26px;
     }
 
+    .etk-yatay-tarih-ay span:first-child {
+        font-size: 11px;
+    }
+
+    .etk-yatay-tarih-ay span:last-child {
+        font-size: 10.5px;
+    }
+
     .etk-yatay-baslik {
         font-size: 15px;
+    }
+
+    .etk-yatay-meta span {
+        font-size: 12px;
+    }
+
+    .etk-yatay-icerik .detay-link {
+        font-size: 12.5px;
     }
 }

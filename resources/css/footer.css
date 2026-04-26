@@ -97,32 +97,64 @@
 
 /* ── Yeni footer sınıfları ─────────────────────────────────────── */
 
-/* 1. Satır: Beyaz arka plan — sosyal medya butonları */
+/* 1. Satır: Lacivert arka plan */
+.ftr-top-label {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.ftr-top-link {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.72);
+    transition: color 0.2s;
+}
+
+.ftr-top-link:hover {
+    color: #fff;
+}
+
+.ftr-call-card {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.05);
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.ftr-call-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
 .ftr-social-btn {
     width: 34px;
     height: 34px;
     border-radius: 8px;
-    border: 1px solid rgba(22, 46, 75, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.14);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: rgba(22, 46, 75, 0.45);
+    color: rgba(255, 255, 255, 0.58);
     transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.15s;
 }
 
 .ftr-social-btn:hover {
-    background: rgba(178, 120, 41, 0.1);
-    border-color: rgba(178, 120, 41, 0.45);
-    color: #b27829;
+    background: rgba(235, 223, 181, 0.12);
+    border-color: rgba(235, 223, 181, 0.42);
+    color: #ebdfb5;
     transform: translateY(-2px);
 }
 
-/* 2. Satır: Lacivert arka plan — sütun başlıkları */
+/* 2. Satır: Beyaz arka plan */
 .ftr-col-head {
     font-family: 'Libre Baskerville', serif;
     font-weight: 700;
     font-size: 12px;
-    color: #ebdfb5;
+    color: #162e4b;
     letter-spacing: 0.07em;
     text-transform: uppercase;
     margin-bottom: 14px;
@@ -150,9 +182,9 @@
     gap: 9px;
 }
 
-/* 2. Satır: Lacivert arka plan — linkler */
+/* 2. Satır: Beyaz arka plan — linkler */
 .ftr-link {
-    color: rgba(235, 223, 181, 0.5);
+    color: rgba(22, 46, 75, 0.58);
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 13px;
     line-height: 1.4;
@@ -162,7 +194,7 @@
 }
 
 .ftr-link:hover {
-    color: #ebdfb5;
+    color: #162e4b;
     padding-left: 4px;
 }
 

@@ -15,13 +15,13 @@
     <div class="h-[3px] bg-[linear-gradient(to_right,transparent,#B27829_30%,#B27829_70%,transparent)] opacity-70"></div>
 
     {{-- ──────────────── 1. SATIR: Sosyal Medya + E-posta + Telefon ──────────────── --}}
-    <div class="border-b border-primary/10 bg-white">
+    <div class="border-b border-white/10 bg-primary">
         <div class="mx-auto max-w-7xl px-6 py-4">
             <div class="grid grid-cols-1 items-center gap-4 text-center md:grid-cols-3 md:text-left">
 
                 {{-- Sol: Sosyal medya --}}
                 <div class="flex flex-wrap items-center justify-center gap-3 md:justify-start">
-                    <span class="font-jakarta text-[11px] font-semibold uppercase tracking-[0.08em] text-primary/45">Sosyal Medya</span>
+                    <span class="ftr-top-label">Sosyal Medya</span>
                     <div class="flex items-center gap-2">
                         @if(config('site.facebook'))
                             <a href="{{ config('site.facebook') }}" class="ftr-social-btn" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
@@ -49,7 +49,7 @@
                 {{-- Orta: E-posta --}}
                 <div class="flex items-center justify-center">
                     <a href="mailto:{{ $eposta }}"
-                       class="inline-flex items-center gap-2 font-jakarta text-[14px] font-medium text-primary/70 transition-colors hover:text-primary">
+                       class="ftr-top-link inline-flex items-center gap-2">
                         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                             <path stroke-linecap="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                         </svg>
@@ -59,15 +59,15 @@
 
                 {{-- Sağ: Çağrı Merkezi --}}
                 <a href="tel:{{ $telefon_link }}"
-                   class="ml-auto flex items-center gap-3 rounded-xl border border-primary/12 bg-primary/5 px-4 py-2.5 transition-colors hover:bg-primary/10 md:justify-self-end">
+                   class="ftr-call-card ml-auto flex items-center gap-3 rounded-xl px-4 py-2.5 md:justify-self-end">
                     <span class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-accent">
                         <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2" aria-hidden="true">
                             <path stroke-linecap="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                         </svg>
                     </span>
                     <div>
-                        <p class="font-jakarta text-[10px] font-semibold uppercase tracking-[0.08em] text-primary/45">Çağrı Merkezi</p>
-                        <p class="font-jakarta text-[14px] font-bold text-primary">{{ $telefon }}</p>
+                        <p class="ftr-top-label">Çağrı Merkezi</p>
+                        <p class="font-jakarta text-[14px] font-bold text-white">{{ $telefon }}</p>
                     </div>
                 </a>
 
@@ -75,8 +75,8 @@
         </div>
     </div>
 
-    {{-- ──────────────── 2. SATIR: 5 Sütunlu Bağlantılar ──────────────── --}}
-    <div class="bg-primary">
+    {{-- ──────────────── 2. SATIR: 6 Sütunlu Bağlantılar ──────────────── --}}
+    <div class="bg-white">
         <div class="mx-auto max-w-7xl px-6 py-12">
             <div class="grid grid-cols-2 gap-8 sm:grid-cols-3 xl:grid-cols-6">
 
@@ -84,12 +84,13 @@
                     <a href="{{ route('home') }}" class="inline-flex" aria-label="{{ config('site.ad') }}">
                         <img src="{{ asset('images/logo.svg') }}"
                              alt="{{ config('site.ad') }} logosu"
-                             class="h-16 w-auto"
+                             class="h-auto w-full max-w-[210px]"
                              loading="lazy">
                     </a>
                 </div>
 
                 <div>
+                    <h3 class="ftr-col-head">Kurumsal</h3>
                     <ul class="ftr-link-list">
                         <li><a href="{{ route('kurumsal.show', ['slug' => 'hakkimizda']) }}" class="ftr-link">Hakkımızda</a></li>
                         <li><a href="{{ route('kurumsal.show', ['slug' => 'tarihce']) }}" class="ftr-link">Tarihçe</a></li>
@@ -100,6 +101,7 @@
                 </div>
 
                 <div>
+                    <h3 class="ftr-col-head">Kurumlar</h3>
                     <ul class="ftr-link-list">
                         @foreach($footerKurumlar as $kurum)
                             <li>
@@ -112,6 +114,7 @@
                 </div>
 
                 <div>
+                    <h3 class="ftr-col-head">Atölyeler</h3>
                     <ul class="ftr-link-list">
                         @foreach($footerAtölyeler as $atolye)
                             <li>
@@ -124,6 +127,7 @@
                 </div>
 
                 <div>
+                    <h3 class="ftr-col-head">Bağış Yap</h3>
                     <ul class="ftr-link-list">
                         @foreach($footerBagislar as $tur)
                             <li>
@@ -132,15 +136,11 @@
                                 </a>
                             </li>
                         @endforeach
-                        <li>
-                            <a href="{{ route('bagis.index') }}" class="ftr-link ftr-link--vurgu">
-                                Tüm Bağışlar →
-                            </a>
-                        </li>
                     </ul>
                 </div>
 
                 <div>
+                    <h3 class="ftr-col-head">Bilgi Al</h3>
                     <ul class="ftr-link-list">
                         <li><a href="{{ route('iletisim.index') }}" class="ftr-link">İletişim</a></li>
                         <li><a href="{{ route('kurumsal.show', ['slug' => 'kvkk']) }}" class="ftr-link">KVKK</a></li>
@@ -154,7 +154,7 @@
         </div>
 
         <div class="mx-auto max-w-7xl px-6">
-            <div class="h-px bg-white/10"></div>
+            <div class="h-px bg-primary/10"></div>
         </div>
     </div>
 
