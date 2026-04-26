@@ -18,6 +18,20 @@
     $gcStart = $baslangicUtc?->format('Ymd\THis\Z');
     $gcEnd = $bitisUtc?->format('Ymd\THis\Z') ?? $gcStart;
     $googleCalUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='.urlencode($etkinlik->baslik).'&dates='.$gcStart.'/'.$gcEnd.'&location='.urlencode($etkinlik->konum_ad ?? '');
+    $hicriTarih = null;
+    if ($etkinlik->baslangic_tarihi && class_exists(\IntlDateFormatter::class)) {
+        $hicriFormatter = new \IntlDateFormatter(
+            'tr_TR@calendar=islamic-umalqura',
+            \IntlDateFormatter::LONG,
+            \IntlDateFormatter::NONE,
+            config('app.timezone', 'Europe/Istanbul'),
+            \IntlDateFormatter::TRADITIONAL,
+            'd MMMM y, EEEE'
+        );
+
+        $formatlananHicriTarih = $hicriFormatter->format($etkinlik->baslangic_tarihi);
+        $hicriTarih = $formatlananHicriTarih !== false ? $formatlananHicriTarih : null;
+    }
     $yolTarifiUrl = null;
     if ($etkinlik->konum_lat && $etkinlik->konum_lng) {
         $yolTarifiUrl = 'https://www.google.com/maps/dir/?api=1&destination=' . urlencode($etkinlik->konum_lat . ',' . $etkinlik->konum_lng);
@@ -131,6 +145,9 @@
                             <div>
                                 <p class="font-jakarta text-[11px] font-medium text-teal-muted">Tarih</p>
                                 <p class="font-jakarta text-sm font-semibold text-primary">{{ $etkinlik->baslangic_tarihi?->translatedFormat('d F Y, l') ?? '—' }}</p>
+                                @if($hicriTarih)
+                                    <p class="mt-1 font-jakarta text-[12px] italic text-teal-muted">{{ $hicriTarih }} (Hicri)</p>
+                                @endif
                             </div>
                         </div>
 
