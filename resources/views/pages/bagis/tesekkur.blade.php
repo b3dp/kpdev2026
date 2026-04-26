@@ -203,6 +203,20 @@
 @endsection
 
 @push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const payload = {
+                bagis_no: @json($bagis->bagis_no),
+                bagis_ozeti: @json($bagisTuruOzeti),
+                value: @json((float) $bagis->toplam_tutar),
+                currency: 'TRY',
+            };
+
+            window.kpCerez?.trackEvent?.('bagis_tesekkur_goruntuleme', payload, 'analitik');
+            window.kpCerez?.trackEvent?.('conversion', payload, 'pazarlama');
+        }, { once: true });
+    </script>
+
     @if (! $makbuzUrl)
         <script>
             document.addEventListener('DOMContentLoaded', () => {

@@ -1,9 +1,35 @@
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('ekayit-form');
+  let ekayitBaslangicEventGonderildi = false;
+
+  const consentEventGonder = (eventName, params = {}, category = 'analitik') => {
+    if (window.kpCerez?.trackEvent) {
+      window.kpCerez.trackEvent(eventName, params, category);
+    }
+  };
 
   if (!form) {
     return;
   }
+
+  const ekayitBaslangicEventiniGonder = () => {
+    if (ekayitBaslangicEventGonderildi) {
+      return;
+    }
+
+    ekayitBaslangicEventGonderildi = true;
+
+    const payload = {
+      sinif_id: form.dataset.sinifId || '',
+      sinif_adi: form.dataset.sinifAdi || 'Genel Basvuru',
+      page_type: 'ekayit_form',
+    };
+
+    consentEventGonder('ekayit_baslangic', payload, 'analitik');
+    consentEventGonder('ekayit_baslangic', payload, 'pazarlama');
+  };
+
+  ekayitBaslangicEventiniGonder();
 
   const textInputs = document.querySelectorAll(".ekayit-form-wrap input[type='text'], .ekayit-form-wrap input[type='search'], .uppercase-input");
   const telefonInputs = document.querySelectorAll(".ekayit-form-wrap input[type='tel']");
@@ -370,7 +396,18 @@ document.addEventListener('DOMContentLoaded', () => {
         hataAlani.reportValidity();
         hataAlani.focus();
       }
+
+      return;
     }
+
+    const payload = {
+      sinif_id: form.dataset.sinifId || '',
+      sinif_adi: form.dataset.sinifAdi || 'Genel Basvuru',
+      adim_sayisi: 4,
+    };
+
+    consentEventGonder('ekayit_form_gonderildi', payload, 'analitik');
+    consentEventGonder('ekayit_form_gonderildi', payload, 'pazarlama');
   });
 
   ['ogrenci', 'kimlik', 'veli', 'okul'].forEach((grup) => {

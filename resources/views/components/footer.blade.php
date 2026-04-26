@@ -144,7 +144,7 @@
                     <ul class="ftr-link-list">
                         <li><a href="{{ route('iletisim.index') }}" class="ftr-link">İletişim</a></li>
                         <li><a href="{{ route('kurumsal.show', ['slug' => 'kvkk']) }}" class="ftr-link">KVKK</a></li>
-                        <li><a href="{{ route('kurumsal.show', ['slug' => 'banka-hesaplari']) }}" class="ftr-link">Banka Hesapları</a></li>
+                        <li><a href="{{ route('kurumsal.show', ['slug' => 'banka-hesaplarimiz']) }}" class="ftr-link">Banka Hesapları</a></li>
                         <li><a href="{{ route('kurumsal.show', ['slug' => 'gizlilik-politikasi']) }}" class="ftr-link">Gizlilik Politikası</a></li>
                         <li><a href="{{ route('kurumsal.show', ['slug' => 'cerez-politikasi']) }}" class="ftr-link">Çerez Politikası</a></li>
                     </ul>

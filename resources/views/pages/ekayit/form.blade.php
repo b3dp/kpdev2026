@@ -62,7 +62,7 @@
       @endforeach
     </div>
 
-    <form action="{{ route('ekayit.store') }}" method="POST" id="ekayit-form" novalidate>
+    <form action="{{ route('ekayit.store') }}" method="POST" id="ekayit-form" novalidate data-sinif-id="{{ $sinif?->id ?? '' }}" data-sinif-adi="{{ $sinif?->ad ?? 'Genel Başvuru' }}">
       @csrf
 
       <input type="hidden" name="donem_id" value="{{ $aktifDonem->id }}">

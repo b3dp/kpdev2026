@@ -67,6 +67,10 @@ return [
         'api_secret' => env('GA4_API_SECRET'),
     ],
 
+    'google_ads' => [
+        'tag_id' => env('GOOGLE_ADS_TAG_ID'),
+    ],
+
     'zeptomail' => [
         'api_key' => env('ZEPTOMAIL_API_KEY'),
         'from_address' => env('ZEPTOMAIL_FROM_ADDRESS'),

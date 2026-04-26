@@ -4,6 +4,7 @@
 @plugin '@tailwindcss/typography';
 @import './header.css';
 @import './footer.css';
+@import './cerez.css';
 @import './sidebar.css';
 @import './home.css';
 @import './ekayit.css';

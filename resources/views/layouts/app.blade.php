@@ -267,6 +267,7 @@
   <main>
     @yield('content')
   </main>
+  @include('components.cerez-izni')
   @include('components.footer')
   @stack('scripts')
 </body>

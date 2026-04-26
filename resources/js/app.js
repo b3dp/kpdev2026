@@ -10,6 +10,7 @@ import './kurumsal';
 import './iletisim';
 import './mezunlar';
 import './uye-profil';
+import './cerez-yonetimi';
 import Alpine from 'alpinejs';
 
 window.Alpine = Alpine;

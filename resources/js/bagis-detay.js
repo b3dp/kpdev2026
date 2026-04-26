@@ -34,6 +34,14 @@ let aktifAdet = 1;
 let hisseSayisi = 1;
 let kopyalaOn = false;
 let sepetKalemleri = [];
+let bagisSayfaGoruntulendi = false;
+let bagisTamamlandiEventGonderildi = false;
+
+function consentEventGonder(eventName, params = {}, category = 'analitik') {
+    if (window.kpCerez?.trackEvent) {
+        window.kpCerez.trackEvent(eventName, params, category);
+    }
+}
 
 function escapeHtml(deger = '') {
     return String(deger)
@@ -89,6 +97,29 @@ function aktifSlugAl() {
     }
 
     return turToSlug[aktifTur] || initSlug;
+}
+
+function bagisSayfaGoruntulemesiniGonder() {
+    if (bagisSayfaGoruntulendi) {
+        return;
+    }
+
+    const form = bagisFormunuAl();
+
+    if (!form) {
+        return;
+    }
+
+    bagisSayfaGoruntulendi = true;
+
+    const payload = {
+        bagis_slug: form.dataset.slug || aktifSlugAl(),
+        bagis_turu: form.dataset.baslik || mevcutTurBilgisiniAl(aktifTur)?.baslik || 'Bagis',
+        page_type: 'bagis_detay',
+    };
+
+    consentEventGonder('bagis_sayfa_goruntuleme', payload, 'analitik');
+    consentEventGonder('bagis_sayfa_goruntuleme', payload, 'pazarlama');
 }
 
 function mevcutTurBilgisiniAl(tur) {
@@ -699,6 +730,21 @@ async function odemeyiTamamla() {
 
         sepetMesajiGoster(data.message || 'Test ödeme başarıyla tamamlandı.');
 
+        if (!bagisTamamlandiEventGonderildi) {
+            bagisTamamlandiEventGonderildi = true;
+
+            const payload = {
+                bagis_slug: aktifSlugAl(),
+                bagis_turu: mevcutTurBilgisiniAl(aktifTur)?.baslik || 'Bagis',
+                value: Number(data.toplam_tutar || sepetToplaminiHesapla() || (gecerliTutarAl() * gecerliCarpanAl()) || 0),
+                currency: 'TRY',
+                payment_type: 'mock',
+            };
+
+            consentEventGonder('bagis_tamamlandi', payload, 'analitik');
+            consentEventGonder('conversion', payload, 'pazarlama');
+        }
+
         if (data.redirect_url) {
             window.setTimeout(() => {
                 window.location.href = data.redirect_url;
@@ -724,6 +770,8 @@ document.addEventListener('kp:sepet-guncellendi', (event) => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
+    bagisSayfaGoruntulemesiniGonder();
+
     document.querySelectorAll('.tutar-btn[data-tutar], .tutar-btn[data-adet]').forEach((buton) => {
         buton.addEventListener('click', () => {
             document.querySelectorAll('.tutar-btn[data-tutar], .tutar-btn[data-adet]').forEach((digerButon) => digerButon.classList.remove('selected'));

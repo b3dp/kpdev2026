@@ -115,3 +115,18 @@
   </div>
 </main>
 @endsection
+
+@push('scripts')
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const payload = {
+        kayit_id: @json($kayit?->id),
+        sinif_adi: @json($sinifBaslik),
+        kurum_adi: @json($kurumAdi),
+      };
+
+      window.kpCerez?.trackEvent?.('ekayit_tamamlandi', payload, 'analitik');
+      window.kpCerez?.trackEvent?.('ekayit_tamamlandi', payload, 'pazarlama');
+    }, { once: true });
+  </script>
+@endpush

@@ -65,7 +65,6 @@
 
         <div class="flex flex-wrap items-end justify-between gap-4 pb-7">
             <div>
-                <p class="mb-2 font-jakarta text-[12.5px] font-semibold uppercase tracking-[0.1em] text-accent">İyiliğin Farklı Yüzleri</p>
                 <h1 class="font-baskerville text-[clamp(26px,3.5vw,38px)] font-bold leading-[1.2] text-primary">Bağış Yap</h1>
             </div>
 
@@ -80,7 +79,7 @@
                 </div>
                 <div class="inline-flex items-center gap-1.5 rounded-lg border border-primary/10 bg-bg-soft px-3.5 py-2">
                     <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#B27829" stroke-width="2"><path stroke-linecap="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                    <span class="font-jakarta text-[12.5px] font-medium text-primary">9.000+ Bağışçı</span>
+                    <span class="font-jakarta text-[12.5px] font-medium text-primary">Her Yıl 600 Öğrenci</span>
                 </div>
             </div>
         </div>
@@ -90,9 +89,9 @@
 <section class="bg-bg-soft py-[72px]">
     <div class="mx-auto max-w-7xl px-6">
         <div class="mb-12 text-center">
-            <p class="mb-2.5 font-jakarta text-[12.5px] font-semibold uppercase tracking-[0.1em] text-accent">Bağış Kategorileri</p>
-            <h2 class="mb-3.5 font-baskerville text-[clamp(24px,3vw,36px)] font-bold text-primary">Hangi İyiliği Yapmak İstersiniz?</h2>
-            <p class="mx-auto max-w-[540px] font-jakarta text-[15px] leading-[1.7] text-teal-muted">Her bağış türünü ayrı ayrı inceleyerek dilediğiniz kategoriden destek olabilirsiniz.</p>
+            <p class="mb-2.5 font-jakarta text-[12.5px] font-semibold uppercase tracking-[0.1em] text-accent">Hadis-i Şerif</p>
+            <p class="mb-3.5 font-baskerville text-[clamp(12px,3vw,18px)] font-bold text-primary">Kim, helâl kazancından bir hurma kadar sadaka verirse, - ki Allah, helâlden başkasını kabul etmez - Allah o sadakayı kabul eder. Sonra onu dağ gibi oluncaya kadar, herhangi birinizin tayını büyüttüğü gibi, sahibi adına ihtimamla büyütür.</p>
+            <p class="mx-auto max-w-[540px] font-jakarta text-[15px] leading-[1.7] text-teal-muted">(Buhârî, Zekât 8; Tevhîd 23; Müslim, Zekât 63, 64)</p>
         </div>
 
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -143,3 +142,17 @@
 </section>
 
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const payload = {
+            page_type: 'bagis_index',
+            bagis_tur_sayisi: @json($bagisturleri->count()),
+        };
+
+        window.kpCerez?.trackEvent?.('bagis_sayfa_goruntuleme', payload, 'analitik');
+        window.kpCerez?.trackEvent?.('bagis_sayfa_goruntuleme', payload, 'pazarlama');
+    }, { once: true });
+</script>
+@endpush

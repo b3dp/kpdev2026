@@ -1,0 +1,294 @@
+.cerez-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    background: rgba(9, 20, 32, 0.46);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.cerez-backdrop.is-open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.cerez-banner {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 80;
+    width: min(720px, calc(100vw - 24px));
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: linear-gradient(145deg, #162e4b 0%, #1b395d 100%);
+    box-shadow: 0 20px 55px rgba(9, 20, 32, 0.24);
+    color: #fff;
+}
+
+.cerez-banner__icerik {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 18px;
+    padding: 22px;
+}
+
+.cerez-banner__baslik {
+    margin: 0 0 8px;
+    font-family: 'Libre Baskerville', serif;
+    font-size: 23px;
+    font-weight: 700;
+    color: #ebdfb5;
+}
+
+.cerez-banner__metin {
+    margin: 0;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.cerez-banner__metin a {
+    color: #ebdfb5;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.cerez-banner__aksiyonlar {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 180px;
+}
+
+.cerez-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    border-radius: 14px;
+    border: 1px solid transparent;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.cerez-btn:hover {
+    transform: translateY(-1px);
+}
+
+.cerez-btn--altin {
+    background: #ff6a2a;
+    color: #fff;
+}
+
+.cerez-btn--altin:hover {
+    background: #e95925;
+}
+
+.cerez-btn--beyaz {
+    background: #fff;
+    color: #162e4b;
+}
+
+.cerez-btn--cizgili {
+    border-color: rgba(235, 223, 181, 0.38);
+    background: transparent;
+    color: #ebdfb5;
+}
+
+.cerez-panel {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    z-index: 81;
+    width: min(740px, calc(100vw - 24px));
+    max-height: min(88vh, 860px);
+    overflow: auto;
+    transform: translate(-50%, -46%) scale(0.98);
+    border-radius: 26px;
+    background: #fff;
+    box-shadow: 0 28px 80px rgba(9, 20, 32, 0.28);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.cerez-panel.is-open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.cerez-panel__ust {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 24px 24px 18px;
+    border-bottom: 1px solid rgba(22, 46, 75, 0.08);
+}
+
+.cerez-panel__baslik {
+    margin: 0 0 8px;
+    font-family: 'Libre Baskerville', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: #162e4b;
+}
+
+.cerez-panel__aciklama {
+    margin: 0;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.75;
+    color: rgba(22, 46, 75, 0.65);
+}
+
+.cerez-panel__kapat {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    border: 1px solid rgba(22, 46, 75, 0.1);
+    background: #f7f5f0;
+    color: #162e4b;
+    cursor: pointer;
+}
+
+.cerez-kategoriler {
+    padding: 20px 24px 8px;
+}
+
+.cerez-kategori {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 0;
+    border-bottom: 1px solid rgba(22, 46, 75, 0.08);
+}
+
+.cerez-kategori__baslik {
+    margin: 0 0 6px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #162e4b;
+}
+
+.cerez-kategori__metin {
+    margin: 0;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px;
+    line-height: 1.7;
+    color: rgba(22, 46, 75, 0.6);
+}
+
+.cerez-switch {
+    position: relative;
+    flex-shrink: 0;
+    width: 58px;
+    height: 32px;
+}
+
+.cerez-switch input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.cerez-switch span {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 999px;
+    background: rgba(22, 46, 75, 0.18);
+    transition: background 0.2s ease;
+}
+
+.cerez-switch span::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(9, 20, 32, 0.18);
+    transition: transform 0.2s ease;
+}
+
+.cerez-switch input:checked + span {
+    background: #21a55b;
+}
+
+.cerez-switch input:checked + span::after {
+    transform: translateX(26px);
+}
+
+.cerez-switch input:disabled + span {
+    background: #162e4b;
+    opacity: 0.94;
+}
+
+.cerez-panel__alt {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 18px 24px 24px;
+}
+
+@media (max-width: 767px) {
+    .cerez-banner {
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        width: auto;
+        border-radius: 20px;
+    }
+
+    .cerez-banner__icerik {
+        grid-template-columns: 1fr;
+        padding: 18px;
+    }
+
+    .cerez-banner__baslik {
+        font-size: 20px;
+    }
+
+    .cerez-banner__aksiyonlar {
+        width: 100%;
+    }
+
+    .cerez-panel {
+        left: 12px;
+        right: 12px;
+        top: auto;
+        bottom: 12px;
+        width: auto;
+        max-height: 84vh;
+        transform: translateY(10px);
+        border-radius: 22px;
+    }
+
+    .cerez-panel.is-open {
+        transform: translateY(0);
+    }
+
+    .cerez-panel__ust,
+    .cerez-kategoriler,
+    .cerez-panel__alt {
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    .cerez-panel__alt {
+        flex-direction: column;
+    }
+}
