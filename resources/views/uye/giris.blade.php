@@ -143,7 +143,7 @@
                 <div class="mb-4 flex items-start justify-between gap-3">
                     <div>
                         <h3 class="font-baskerville text-[20px] font-bold text-primary">Doğrulama Kodu</h3>
-                        <p class="mt-1 text-[13px] text-teal-muted">Telefonunuza veya e-posta adresinize gönderilen 6 haneli kodu girin.</p>
+                        <p id="otp-bilgi-metni" class="mt-1 text-[13px] text-teal-muted">Telefonunuza veya e-posta adresinize gönderilen 6 haneli kodu girin.</p>
                     </div>
                 </div>
 
@@ -180,11 +180,21 @@ function switchGirisTip(tip) {
     const tipTelefon = document.getElementById('tip-telefon');
     const girisEposta = document.getElementById('giris-eposta');
     const girisTelefon = document.getElementById('giris-telefon');
+    const epostaInput = document.getElementById('eposta');
+    const telefonInput = document.getElementById('telefon');
 
     tipEposta?.classList.toggle('active', tip === 'eposta');
     tipTelefon?.classList.toggle('active', tip === 'telefon');
     girisEposta?.classList.toggle('hidden', tip !== 'eposta');
     girisTelefon?.classList.toggle('hidden', tip !== 'telefon');
+
+    if (tip === 'telefon' && epostaInput) {
+        epostaInput.value = '';
+    }
+
+    if (tip === 'eposta' && telefonInput) {
+        telefonInput.value = '';
+    }
 }
 </script>
 
@@ -212,6 +222,7 @@ document.getElementById('giriş-formu').addEventListener('submit', async functio
     const girisButonu = document.getElementById('giris-submit');
     const hataBolumu = document.getElementById('hata-alani');
     const hataMesaji = document.getElementById('hata-mesaji');
+    const otpBilgiMetni = document.getElementById('otp-bilgi-metni');
     butonYukleniyorYap(girisButonu, true, 'OTP Gönder', 'Gönderiliyor...');
     hataBolumu.classList.add('hidden');
     hataMesaji.textContent = '';
@@ -265,6 +276,10 @@ document.getElementById('giriş-formu').addEventListener('submit', async functio
 
         const data = await response.json();
         if (data.step === 'otp') {
+            if (otpBilgiMetni && data.message) {
+                otpBilgiMetni.textContent = data.message;
+            }
+
             document.getElementById('otp-modal').classList.remove('hidden');
         }
     } catch (error) {

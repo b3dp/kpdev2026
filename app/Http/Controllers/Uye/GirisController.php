@@ -66,9 +66,14 @@ class GirisController extends Controller
                 $this->otpGonder($uye, $kanal);
                 Session::put('uye_id_temp', $uye->id);
 
+                $kanalMesaji = $kanal === 'sms'
+                    ? 'Doğrulama kodu telefonunuza gönderildi.'
+                    : 'Doğrulama kodu e-posta adresinize gönderildi.';
+
                 return response()->json([
                     'step' => 'otp',
-                    'message' => 'Doğrulama kodu gönderildi.',
+                    'message' => $kanalMesaji,
+                    'kanal' => $kanal,
                 ]);
             }
 
@@ -185,8 +190,7 @@ class GirisController extends Controller
 
     /**
      * OTP Gönder
-     * Mantık: Eğer eposta varsa, HER ZAMAN eposta ile gönder.
-     * Sadece email yoksa, telefon üzerinden SMS deneme.
+        * Mantık: Kullanıcının seçtiği giriş kanalını öncelikle uygula.
      */
     private function otpGonder(Uye $uye, string $kanal = 'eposta')
     {
@@ -206,7 +210,29 @@ class GirisController extends Controller
             'created_at' => now(),
         ]);
 
-        // Eposta varsa her zaman email ile gönder (kanalından bağımsız)
+        if ($kanal === 'sms' && $uye->telefon) {
+            try {
+                $mesaj = 'Kestanepazarı doğrulama kodunuz: ' . $kod . '. 10 dakika geçerlidir.';
+                app(\App\Services\HermesService::class)->sendSMS([$uye->telefon], $mesaj);
+                Log::info('OTP SMS gönderildi (giriş)', [
+                    'telefon' => $uye->telefon,
+                    'uye_id' => $uye->id,
+                ]);
+
+                return;
+            } catch (\Throwable $e) {
+                Log::error('OTP SMS gönderilemedi (giriş)', [
+                    'telefon' => $uye->telefon,
+                    'uye_id' => $uye->id,
+                    'hata' => $e->getMessage(),
+                ]);
+
+                throw ValidationException::withMessages([
+                    'telefon' => 'Doğrulama SMSi şu anda gönderilemedi. Lütfen tekrar deneyiniz.',
+                ]);
+            }
+        }
+
         if ($uye->eposta) {
             app(ZeptomailService::class)->otpGonder(
                 $uye->eposta,
@@ -219,8 +245,11 @@ class GirisController extends Controller
                 'kod' => $kod,
                 'uye_id' => $uye->id,
             ]);
-        } else {
-            // Sadece telefon varsa SMS ile gönder
+
+            return;
+        }
+
+        if ($uye->telefon) {
             try {
                 $mesaj = 'Kestanepazarı doğrulama kodunuz: ' . $kod . '. 10 dakika geçerlidir.';
                 app(\App\Services\HermesService::class)->sendSMS([$uye->telefon], $mesaj);
@@ -234,8 +263,18 @@ class GirisController extends Controller
                     'uye_id' => $uye->id,
                     'hata' => $e->getMessage(),
                 ]);
+
+                throw ValidationException::withMessages([
+                    'telefon' => 'Doğrulama SMSi şu anda gönderilemedi. Lütfen tekrar deneyiniz.',
+                ]);
             }
+
+            return;
         }
+
+        throw ValidationException::withMessages([
+            'eposta' => 'Bu hesap için kullanılabilir e-posta veya telefon bilgisi bulunamadı.',
+        ]);
     }
 
     /**
