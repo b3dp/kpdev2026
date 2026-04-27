@@ -46,6 +46,15 @@ class AlbarakaService
             // Albaraka OrderId tam olarak 20 karakter olmalı; sol-sıfır pad uygula
             $albarakaOrderId = $this->albarakaOrderId($orderId);
             $useOos = (int) config('services.albaraka.use_oos', 1) === 1;
+            $transactionType = (string) config('services.albaraka.txn_type', 'Sale');
+            $installmentCount = (string) config('services.albaraka.installment_count', 0);
+            $merchantReturnUrl = $this->returnUrl;
+            $language = (string) config('services.albaraka.language', 'TR');
+            $currencyCode = (string) config('services.albaraka.currency_code', 'TL');
+            $openNewWindow = (string) config('services.albaraka.open_new_window', 0);
+            $useOosValue = $useOos ? '1' : '0';
+            $txnState = (string) config('services.albaraka.txn_state', 'INITIAL');
+            $useJokerVadaa = '1';
 
             $cardNo = '';
             $cvv = '';
@@ -62,8 +71,27 @@ class AlbarakaService
                 $cardHolderName = trim((string) ($kartBilgileri['kart_sahibi'] ?? ''));
             }
 
-            $mac = $this->formMacHesapla($cardNo, $cvv, $expireDate, $tutarKurus);
-            $macNew = $this->formMacNewHesapla($cardNo, $cvv, $expireDate, $tutarKurus, $albarakaOrderId);
+            $macNewPayload = [
+                $this->eposNo,
+                $this->merchantNo,
+                $this->terminalNo,
+                $albarakaOrderId,
+                $transactionType,
+                $cardNo,
+                $expireDate,
+                $cvv,
+                $cardHolderName,
+                (string) $tutarKurus,
+                $installmentCount,
+                $merchantReturnUrl,
+                $language,
+                $currencyCode,
+                $useJokerVadaa,
+                $openNewWindow,
+                $useOosValue,
+                $txnState,
+            ];
+            $macNew = $this->formMacNewHesapla($macNewPayload);
 
             Log::info('Albaraka 3D form MAC hazırlandı.', [
                 'orderId' => $albarakaOrderId,
@@ -71,7 +99,6 @@ class AlbarakaService
                 'amount' => $tutarKurus,
                 'card_len' => strlen($cardNo),
                 'expire_len' => strlen($expireDate),
-                'mac_len' => strlen($mac),
                 'mac_new_len' => strlen($macNew),
             ]);
 
@@ -84,27 +111,24 @@ class AlbarakaService
             $html .= $alan('MerchantNo',        $this->merchantNo);
             $html .= $alan('TerminalNo',        $this->terminalNo);
             $html .= $alan('OrderId',           $albarakaOrderId);
-            $html .= $alan('TransactionType',   config('services.albaraka.txn_type', 'Sale'));
+            $html .= $alan('TransactionType',   $transactionType);
             $html .= $alan('CardNo',            $cardNo);
-            // Banka parser sürümlerindeki farklı alan isimleri için iki alias da gönderilir.
             $html .= $alan('ExpireDate',        $expireDate);
             $html .= $alan('ExpiredDate',       $expireDate);
             $html .= $alan('Cvc2',              $cvv);
             $html .= $alan('Cvv',               $cvv);
             $html .= $alan('CardHolderName',    $cardHolderName);
             $html .= $alan('Amount',            (string) $tutarKurus);
-            $html .= $alan('InstallmentCount',  (string) config('services.albaraka.installment_count', 0));
-            $html .= $alan('MerchantReturnURL', $this->returnUrl);
-            $html .= $alan('Language',          config('services.albaraka.language', 'TR'));
-            $html .= $alan('CurrencyCode',      config('services.albaraka.currency_code', 'TL'));
-            $html .= $alan('MacParams',         'MerchantNo:TerminalNo:CardNo:Cvc2:ExpireDate:Amount');
-            $html .= $alan('Mac',               $mac);
-            $html .= $alan('MacNewParams',      'MerchantNo:TerminalNo:CardNo:Cvc2:ExpireDate:Amount:OrderId');
+            $html .= $alan('InstallmentCount',  $installmentCount);
+            $html .= $alan('MerchantReturnURL', $merchantReturnUrl);
+            $html .= $alan('Language',          $language);
+            $html .= $alan('CurrencyCode',      $currencyCode);
             $html .= $alan('MacNew',            $macNew);
-            $html .= $alan('TxnState',          config('services.albaraka.txn_state', 'INITIAL'));
+            $html .= $alan('UseJokerVadaa',     $useJokerVadaa);
+            $html .= $alan('TxnState',          $txnState);
             $html .= $alan('IsTDSecureMerchant','Y');
-            $html .= $alan('UseOOS',            $useOos ? '1' : '0');
-            $html .= $alan('OpenNewWindow',     (string) config('services.albaraka.open_new_window', 0));
+            $html .= $alan('UseOOS',            $useOosValue);
+            $html .= $alan('OpenNewWindow',     $openNewWindow);
             $html .= '</form>';
             $html .= '<script>document.getElementById("albaraka3dForm").submit();</script>';
             $html .= '</body></html>';
@@ -315,26 +339,12 @@ class AlbarakaService
     }
 
     /**
-     * 3D formu için MAC hesaplama
-     */
-    private function formMacHesapla(string $cardNo, string $cvc2, string $expireDate, int $tutarKurus): string
-    {
-        $str = $this->merchantNo.$this->terminalNo.$cardNo.$cvc2.$expireDate.$tutarKurus;
-        return base64_encode(hash('sha256', $str.$this->encKey, true));
-    }
-
-    /**
      * Yeni düzenleme: MAC hesaplamasına OrderId dahil edilir (MacNew).
      */
-    private function formMacNewHesapla(
-        string $cardNo,
-        string $cvc2,
-        string $expireDate,
-        int $tutarKurus,
-        string $orderId
-    ): string {
-        $str = $this->merchantNo.$this->terminalNo.$cardNo.$cvc2.$expireDate.$tutarKurus.$orderId;
-        return base64_encode(hash('sha256', $str.$this->encKey, true));
+    private function formMacNewHesapla(array $payloadValues): string
+    {
+        $str = implode(';', $payloadValues);
+        return base64_encode(hash_hmac('sha256', $str, $this->encKey, true));
     }
 
     /**
