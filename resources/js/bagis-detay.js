@@ -703,7 +703,6 @@ async function odemeyiTamamla() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                Accept: 'application/json',
                 'X-CSRF-TOKEN': csrfToken,
             },
             body: JSON.stringify({
@@ -720,6 +719,16 @@ async function odemeyiTamamla() {
                 form_verisi: formVerisiniTopla(),
             }),
         });
+
+        // Albaraka 3D Secure: yanıt HTML ise doğrudan sayfaya yaz (otomatik form submit)
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('text/html')) {
+            const html = await response.text();
+            document.open();
+            document.write(html);
+            document.close();
+            return;
+        }
 
         const data = await response.json().catch(() => ({}));
 
