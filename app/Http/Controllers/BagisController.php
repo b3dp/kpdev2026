@@ -197,11 +197,14 @@ class BagisController extends Controller
             return redirect($hataliUrl)->with('error', 'Ödeme işlemi başarısız oldu.');
         }
 
-        // Bağışı bul
-        $bagis = Bagis::query()->where('bagis_no', $orderId)->first();
+        // Albaraka'dan gelen padli OrderId'den asıl bagis_no'yu çöz
+        $bagisNo = app(AlbarakaService::class)->bagisNoCoz($orderId);
+
+        // Bağışı bul (çözümlenmiş bagis_no ile)
+        $bagis = Bagis::query()->where('bagis_no', $bagisNo)->first();
 
         if (! $bagis) {
-            Log::warning('Albaraka callback: Bağış bulunamadı.', ['orderId' => $orderId]);
+            Log::warning('Albaraka callback: Bağış bulunamadı.', ['orderId' => $orderId, 'bagisNo' => $bagisNo]);
             return redirect($hataliUrl)->with('error', 'Ödeme bilgisi bulunamadı.');
         }
 

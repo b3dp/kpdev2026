@@ -35,13 +35,16 @@ class AlbarakaService
      * 3D Secure doğrulama HTML formu üretir.
      * UseOOS=1 olduğu için kart alanları boş gönderilir; banka kendi sayfasında toplar.
      *
-     * @param  string $orderId   20 karakter, benzersiz sipariş no (bagis_no bazlı)
+     * @param  string $orderId   Bağış no (bagis_no); Albaraka için 20 karaktere pad edilir
      * @param  int    $tutarKurus Tutar kuruş olarak (1 TL = 100)
      * @return string            Otomatik submit eden HTML
      */
     public function ucBoyutluFormOlustur(string $orderId, int $tutarKurus): string
     {
         try {
+            // Albaraka OrderId tam olarak 20 karakter olmalı; sol-sıfır pad uygula
+            $albarakaOrderId = $this->albarakaOrderId($orderId);
+
             // UseOOS=1 olduğunda kart alanları boş olur → MAC parametrelerinde CardNo/Cvc2/ExpireDate boş string
             $mac = $this->formMacHesapla('', '', '', $tutarKurus);
 
@@ -53,7 +56,7 @@ class AlbarakaService
             $html .= $alan('PosnetID',          $this->eposNo);
             $html .= $alan('MerchantNo',        $this->merchantNo);
             $html .= $alan('TerminalNo',        $this->terminalNo);
-            $html .= $alan('OrderId',           $orderId);
+            $html .= $alan('OrderId',           $albarakaOrderId);
             $html .= $alan('TransactionType',   config('services.albaraka.txn_type', 'Sale'));
             $html .= $alan('CardNo',            '');
             $html .= $alan('ExpiredDate',       '');
@@ -153,7 +156,7 @@ class AlbarakaService
                 'Amount'                 => $tutarKurus,
                 'CurrencyCode'           => config('services.albaraka.currency_code', 'TL'),
                 'PointAmount'            => 0,
-                'OrderId'                => $orderId,
+                'OrderId'                => $this->albarakaOrderId($orderId),
                 'InstallmentCount'       => config('services.albaraka.installment_count', 0),
             ];
 
@@ -209,6 +212,23 @@ class AlbarakaService
                 'hata_mesaji'  => $e->getMessage(),
             ];
         }
+    }
+
+    /**
+     * Albaraka için 20 karakterlik OrderId üretir (sol-sıfır pad).
+     * bagis_no hiçbir zaman '0' ile başlamaz, bu yüzden ltrim ile geri dönüşüm güvenlidir.
+     */
+    public function albarakaOrderId(string $bagisNo): string
+    {
+        return str_pad($bagisNo, 20, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Albaraka'dan dönen padli OrderId'den orijinal bagis_no'yu çıkarır.
+     */
+    public function bagisNoCoz(string $albarakaOrderId): string
+    {
+        return ltrim($albarakaOrderId, '0') ?: $albarakaOrderId;
     }
 
     /**
