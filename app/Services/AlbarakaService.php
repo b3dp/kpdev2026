@@ -113,18 +113,41 @@ class AlbarakaService
     public function callbackDogrula(array $data): bool
     {
         try {
-            if (($data['MdStatus'] ?? '') !== '1') {
+            $mdStatus = $this->callbackDegeriAl($data, ['MdStatus', 'MDSTATUS', 'mdstatus']);
+
+            if ($mdStatus !== '1') {
                 return false;
             }
 
-            $secureTransactionId = (string) ($data['SecureTransactionId'] ?? '');
-            $cavv                = (string) ($data['CAVV'] ?? '');
-            $eci                 = (string) ($data['ECI'] ?? '');
-            $mdStatus            = (string) ($data['MdStatus'] ?? '');
+            $secureTransactionId = $this->callbackDegeriAl($data, ['SecureTransactionId', 'secureTransactionId', 'SECURETRANSACTIONID']);
+            $cavv = $this->callbackDegeriAl($data, ['CAVV', 'CavvData', 'Cavv', 'cavvData', 'cavv']);
+            $eci = $this->callbackDegeriAl($data, ['ECI', 'Eci', 'eci']);
+            $gelenMac = $this->callbackDegeriAl($data, ['Mac', 'MAC', 'mac']);
 
             $mac = $this->callbackMacHesapla($secureTransactionId, $cavv, $eci, $mdStatus);
 
-            return hash_equals($mac, (string) ($data['Mac'] ?? $data['MAC'] ?? ''));
+            if ($gelenMac !== '' && hash_equals($mac, $gelenMac)) {
+                return true;
+            }
+
+            // Bazı bankacılık dönüşlerinde CAVV yerine MD değeri MAC'e girilebiliyor; ikincil doğrulama
+            $md = $this->callbackDegeriAl($data, ['MD', 'Md', 'md']);
+            if ($md !== '') {
+                $yedekMac = $this->callbackMacHesapla($secureTransactionId, $md, $eci, $mdStatus);
+                if ($gelenMac !== '' && hash_equals($yedekMac, $gelenMac)) {
+                    return true;
+                }
+            }
+
+            Log::warning('Albaraka callback MAC eşleşmedi.', [
+                'secureTransactionId_var' => $secureTransactionId !== '',
+                'cavv_var' => $cavv !== '',
+                'eci_var' => $eci !== '',
+                'md_var' => ($md ?? '') !== '',
+                'mdStatus' => $mdStatus,
+            ]);
+
+            return false;
         } catch (Throwable $e) {
             Log::error('Albaraka callback MAC doğrulama hatası.', ['hata' => $e->getMessage()]);
             return false;
@@ -142,11 +165,15 @@ class AlbarakaService
     public function satisYap(array $callbackData, string $orderId, int $tutarKurus): array
     {
         try {
-            $secureTransactionId = (string) ($callbackData['SecureTransactionId'] ?? '');
-            $cavv                = (string) ($callbackData['CAVV'] ?? '');
-            $eci                 = (string) ($callbackData['ECI'] ?? '');
-            $mdStatus            = (string) ($callbackData['MdStatus'] ?? '');
-            $md                  = (string) ($callbackData['MD'] ?? '');
+            $secureTransactionId = $this->callbackDegeriAl($callbackData, ['SecureTransactionId', 'secureTransactionId', 'SECURETRANSACTIONID']);
+            $cavv = $this->callbackDegeriAl($callbackData, ['CAVV', 'CavvData', 'Cavv', 'cavvData', 'cavv']);
+            $eci = $this->callbackDegeriAl($callbackData, ['ECI', 'Eci', 'eci']);
+            $mdStatus = $this->callbackDegeriAl($callbackData, ['MdStatus', 'MDSTATUS', 'mdstatus']);
+            $md = $this->callbackDegeriAl($callbackData, ['MD', 'Md', 'md']);
+
+            if ($cavv === '' && $md !== '') {
+                $cavv = $md;
+            }
 
             $mac = $this->callbackMacHesapla($secureTransactionId, $cavv, $eci, $mdStatus);
 
@@ -266,5 +293,31 @@ class AlbarakaService
     ): string {
         $str = $this->merchantNo.$this->terminalNo.$secureTransactionId.$cavv.$eci.$mdStatus;
         return base64_encode(hash('sha256', $str.$this->encKey, true));
+    }
+
+    /**
+     * Callback alan adları banka tarafında farklı casing ile gelebilir.
+     */
+    private function callbackDegeriAl(array $data, array $anahtarlar): string
+    {
+        foreach ($anahtarlar as $anahtar) {
+            if (array_key_exists($anahtar, $data)) {
+                return trim((string) $data[$anahtar]);
+            }
+        }
+
+        $lowerMap = [];
+        foreach ($data as $anahtar => $deger) {
+            $lowerMap[strtolower((string) $anahtar)] = $deger;
+        }
+
+        foreach ($anahtarlar as $anahtar) {
+            $lower = strtolower($anahtar);
+            if (array_key_exists($lower, $lowerMap)) {
+                return trim((string) $lowerMap[$lower]);
+            }
+        }
+
+        return '';
     }
 }

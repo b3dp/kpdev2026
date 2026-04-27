@@ -240,6 +240,7 @@ class BagisController extends Controller
         // MAC doğrulama ve MdStatus=1 kontrolü
         if (! $albarakaService->callbackDogrula($data)) {
             $mdStatus = (string) ($data['MdStatus'] ?? '?');
+            $mdStatusHatasi = $mdStatus !== '1';
             Log::warning('Albaraka callback: MAC doğrulama başarısız veya MdStatus!=1.', [
                 'orderId'  => $orderId,
                 'mdStatus' => $mdStatus,
@@ -248,8 +249,10 @@ class BagisController extends Controller
             OdemeHatasi::query()->create([
                 'bagis_id'    => $bagis->id,
                 'saglayici'   => 'albaraka',
-                'hata_kodu'   => 'MDSTATUS_'.$mdStatus,
-                'hata_mesaji' => '3D Secure doğrulama başarısız. MdStatus: '.$mdStatus,
+                'hata_kodu'   => $mdStatusHatasi ? 'MDSTATUS_'.$mdStatus : 'MAC_INVALID',
+                'hata_mesaji' => $mdStatusHatasi
+                    ? '3D Secure doğrulama başarısız. MdStatus: '.$mdStatus
+                    : '3D Secure doğrulama başarısız. Callback MAC doğrulanamadı.',
                 'tutar'       => $bagis->toplam_tutar,
                 'created_at'  => now(),
             ]);
