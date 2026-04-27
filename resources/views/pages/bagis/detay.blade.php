@@ -360,11 +360,6 @@
             Sepete Ekle
           </button>
 
-          <button type="button" id="odeme-tamamla-btn" onclick="odemeyiTamamla()" class="flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-xl border-none bg-[#162E4B] py-4 font-jakarta text-[15px] font-bold text-white shadow-[0_4px_16px_rgba(22,46,75,.18)] transition-all hover:-translate-y-px hover:bg-[#0f2238]">
-            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-            {{ $testOdemeAktif ? 'Test Ödemeyi Tamamla' : 'Ödemeyi Tamamla' }}
-          </button>
-
           <div id="sepet-mesaj" style="display:none;" class="rounded-xl border px-4 py-3 font-jakarta text-[13px]"></div>
 
           <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:-8px;">
@@ -383,19 +378,8 @@
               <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#EBDFB5" stroke-width="2"><path stroke-linecap="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
               <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;color:#EBDFB5;">Sepet Özeti</span>
             </div>
-            <span id="sepet-adet" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:rgba(235,223,181,.6);">{{ $sepetAdet > 0 ? $sepetAdet.' kalem' : '1 kalem' }}</span>
+            <span id="sepet-adet" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:rgba(235,223,181,.6);">{{ $sepetAdet > 0 ? $sepetAdet.' kalem' : 'Sepet boş' }}</span>
           </div>
-          <div style="padding:16px 20px 12px;border-bottom:1px solid rgba(22,46,75,.06);">
-            <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#62868D;margin-bottom:10px;">Seçili Bağış</p>
-            <div id="sepet-secili-onizleme" style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
-              <div>
-                <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;font-weight:600;color:#162E4B;">{{ $bagisTuru->ad }}</p>
-                <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:#62868D;margin-top:2px;">Kendi adıma</p>
-              </div>
-              <p id="sepet-tutar-goster" style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:16px;color:#162E4B;white-space:nowrap;">₺{{ number_format($ilkTutar, 0, ',', '.') }}</p>
-            </div>
-          </div>
-
           <div style="padding:14px 20px 10px;">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;">
               <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#62868D;">Sepettekiler</p>
@@ -426,7 +410,7 @@
           <div style="padding:12px 20px 16px;border-top:1px solid rgba(22,46,75,.06);">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
               <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;">Toplam</span>
-              <span id="sepet-toplam" style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:22px;color:#162E4B;">₺{{ number_format($sepetToplam > 0 ? $sepetToplam : $ilkTutar, 2, ',', '.') }}</span>
+              <span id="sepet-toplam" style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:22px;color:#162E4B;">₺{{ number_format($sepetToplam, 2, ',', '.') }}</span>
             </div>
             <button type="button" id="odeme-ozet-btn" onclick="odemeyiTamamla()" class="flex w-full items-center justify-center gap-2 rounded-[10px] border-none bg-orange-cta px-4 py-[13px] font-jakarta text-sm font-bold text-white transition-colors hover:bg-[#c94620]">
               <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>

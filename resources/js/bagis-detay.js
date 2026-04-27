@@ -404,7 +404,6 @@ function renderSepetOzeti() {
     const elToplam = document.getElementById('sepet-toplam');
     const elAdet = document.getElementById('sepet-adet');
     const badge = document.getElementById('sepet-badge');
-    const seciliToplam = gecerliCarpanAl() * gecerliTutarAl();
     const sepetToplam = sepetToplaminiHesapla();
 
     if (elIcerik) {
@@ -435,7 +434,7 @@ function renderSepetOzeti() {
     }
 
     if (elToplam) {
-        elToplam.textContent = formatPara(sepetKalemleri.length ? sepetToplam : seciliToplam);
+        elToplam.textContent = formatPara(sepetToplam);
     }
 
     if (elAdet) {
@@ -454,32 +453,6 @@ function renderSepetOzeti() {
 }
 
 function updateSepet() {
-    const t = mevcutTurBilgisiniAl(aktifTur);
-    const tutar = gecerliTutarAl();
-    const carpan = gecerliCarpanAl();
-    const toplam = tutar * carpan;
-
-    const elTutar = document.getElementById('sepet-tutar-goster');
-    const elSecili = document.getElementById('sepet-secili-onizleme');
-    const hisseText = aktifTur === 'buyukbas'
-        ? ` · ${hisseSayisi} hisse`
-        : adetModuAktifMi()
-            ? ` · ${aktifAdet} adet`
-            : '';
-
-    if (elTutar) {
-        elTutar.textContent = formatPara(toplam);
-    }
-
-    if (elSecili) {
-        elSecili.innerHTML = `
-            <div>
-                <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;font-weight:600;color:#162E4B;">${escapeHtml(t.baslik)}${hisseText}</p>
-                <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:#62868D;margin-top:2px;">${aktifTur === 'buyukbas' ? `Hisse başı: ${formatPara(tutar)}` : adetModuAktifMi() ? `Birim fiyat: ${formatPara(tutar)}` : seciliSahipMetni()}</p>
-            </div>
-            <p id="sepet-tutar-goster" style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:16px;color:#162E4B;white-space:nowrap;">${formatPara(toplam)}</p>`;
-    }
-
     renderSepetOzeti();
 }
 
@@ -768,6 +741,11 @@ async function odemeyiTamamla() {
 
     if (!odemeUrl || !csrfToken) {
         sepetMesajiGoster('Ödeme bağlantısı şu anda hazır değil.', 'error');
+        return;
+    }
+
+    if (!sepetKalemleri.length) {
+        sepetMesajiGoster('Ödeme için önce bağışı sepete ekleyin.', 'error');
         return;
     }
 
