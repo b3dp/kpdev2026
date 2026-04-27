@@ -170,7 +170,7 @@ class BagisController extends Controller
 
             // Tutar kuruşa çevir (1 TL = 100)
             $tutarKurus = (int) round($bagis->toplam_tutar * 100);
-            $html = app(AlbarakaService::class)->ucBoyutluFormOlustur($bagis->bagis_no, $tutarKurus, [
+            $html = app(AlbarakaService::class)->ucBoyutluFormOlustur($bagis->id, $tutarKurus, [
                 'kart_no' => $veri['kart_no'] ?? '',
                 'kart_sahibi' => $veri['kart_sahibi'] ?? '',
                 'son_kullanma_ay' => $veri['son_kullanma_ay'] ?? '',
@@ -219,14 +219,14 @@ class BagisController extends Controller
             return redirect($hataliUrl)->with('error', 'Ödeme işlemi başarısız oldu.');
         }
 
-        // Albaraka'dan gelen padli OrderId'den asıl bagis_no'yu çöz
-        $bagisNo = app(AlbarakaService::class)->bagisNoCoz($orderId);
+        // Albaraka'dan gelen padli OrderId'den asıl bagis.id'yi çöz
+        $bagisId = app(AlbarakaService::class)->bagisIdCoz($orderId);
 
-        // Bağışı bul (çözümlenmiş bagis_no ile)
-        $bagis = Bagis::query()->where('bagis_no', $bagisNo)->first();
+        // Bağışı id ile bul
+        $bagis = Bagis::query()->find($bagisId);
 
         if (! $bagis) {
-            Log::channel('odeme')->warning('Albaraka callback: Bağış bulunamadı.', ['orderId' => $orderId, 'bagisNo' => $bagisNo]);
+            Log::channel('odeme')->warning('Albaraka callback: Bağış bulunamadı.', ['orderId' => $orderId, 'bagisId' => $bagisId]);
             return redirect($hataliUrl)->with('error', 'Ödeme bilgisi bulunamadı.');
         }
 
@@ -285,7 +285,7 @@ class BagisController extends Controller
         }
 
         // Sale çağrısı
-        $sonuc = $albarakaService->satisYap($data, $orderId, $beklenenTutar);
+        $sonuc = $albarakaService->satisYap($data, $bagisId, $beklenenTutar);
 
         if (! $sonuc['basarili']) {
             OdemeHatasi::query()->create([

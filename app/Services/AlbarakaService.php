@@ -35,16 +35,16 @@ class AlbarakaService
      * 3D Secure doğrulama HTML formu üretir.
      * UseOOS=0 ise kart alanları merchant formundan gönderilir.
      *
-     * @param  string $orderId   Bağış no (bagis_no); Albaraka için 20 karaktere pad edilir
-     * @param  int    $tutarKurus Tutar kuruş olarak (1 TL = 100)
-     * @param  array  $kartBilgileri kart_no, kart_sahibi, son_kullanma_ay, son_kullanma_yil, cvv
+     * @param  int   $bagisId    Bağış tablosunun id'si (PK); Albaraka OrderId için 20 basamağa pad edilir
+     * @param  int   $tutarKurus Tutar kuruş olarak (1 TL = 100)
+     * @param  array $kartBilgileri kart_no, kart_sahibi, son_kullanma_ay, son_kullanma_yil, cvv
      * @return string            Otomatik submit eden HTML
      */
-    public function ucBoyutluFormOlustur(string $orderId, int $tutarKurus, array $kartBilgileri = []): string
+    public function ucBoyutluFormOlustur(int $bagisId, int $tutarKurus, array $kartBilgileri = []): string
     {
         try {
-            // Albaraka OrderId tam olarak 20 karakter olmalı; sol-sıfır pad uygula
-            $albarakaOrderId = $this->albarakaOrderId($orderId);
+            // Albaraka OrderId tam olarak 20 karakter olmalı; bagis.id sayısal pad edilir
+            $albarakaOrderId = $this->albarakaOrderId($bagisId);
             $useOos = (int) config('services.albaraka.use_oos', 1) === 1;
             $transactionType = (string) config('services.albaraka.txn_type', 'Sale');
             $installmentCount = (string) config('services.albaraka.installment_count', 0);
@@ -91,6 +91,9 @@ class AlbarakaService
             ];
             $macNew = $this->formMacNewHesapla($macNewPayload);
 
+            // Payload'un tam stringini logla (debug)
+            $payloadJoined = implode(';', $macNewPayload);
+
             Log::channel('odeme')->info('Albaraka 3D form MAC hazırlandı.', [
                 'orderId' => $albarakaOrderId,
                 'useOos' => $useOos,
@@ -99,6 +102,7 @@ class AlbarakaService
                 'expire_len' => strlen($expiredDate),
                 'mac_new_len' => strlen($macNew),
                 'macnew_payload_fields_count' => count($macNewPayload),
+                'payload_joined_preview' => substr($payloadJoined, 0, 150),
                 'payload_fields' => [
                     'PosnetID', 'MerchantNo', 'TerminalNo', 'OrderId', 'TransactionType',
                     'CardNo', 'ExpiredDate', 'Cvv', 'CardHolderName', 'Amount',
@@ -215,11 +219,11 @@ class AlbarakaService
      * 3D doğrulaması başarılıysa bankaya Sale çağrısı atar.
      *
      * @param  array  $callbackData  Bankadan dönen POST verisi
-     * @param  string $orderId       Orijinal OrderId
+     * @param  int    $bagisId       bagis.id (PK)
      * @param  int    $tutarKurus    Kuruş cinsinden tutar
      * @return array  ['basarili' => bool, 'referans' => string|null, 'hata_kodu' => string|null, 'hata_mesaji' => string|null]
      */
-    public function satisYap(array $callbackData, string $orderId, int $tutarKurus): array
+    public function satisYap(array $callbackData, int $bagisId, int $tutarKurus): array
     {
         try {
             $secureTransactionId = $this->callbackDegeriAl($callbackData, ['SecureTransactionId', 'secureTransactionId', 'SECURETRANSACTIONID']);
@@ -238,7 +242,7 @@ class AlbarakaService
                 $cavv,
                 $eci,
                 $mdStatus,
-                $this->albarakaOrderId($orderId)
+                $this->albarakaOrderId($bagisId)
             );
 
             $params = [
@@ -264,7 +268,7 @@ class AlbarakaService
                 'Amount'                 => $tutarKurus,
                 'CurrencyCode'           => config('services.albaraka.currency_code', 'TL'),
                 'PointAmount'            => 0,
-                'OrderId'                => $this->albarakaOrderId($orderId),
+                'OrderId'                => $this->albarakaOrderId($bagisId),
                 'InstallmentCount'       => config('services.albaraka.installment_count', 0),
             ];
 
@@ -326,17 +330,21 @@ class AlbarakaService
      * Albaraka için 20 karakterlik OrderId üretir (sol-sıfır pad).
      * bagis_no hiçbir zaman '0' ile başlamaz, bu yüzden ltrim ile geri dönüşüm güvenlidir.
      */
-    public function albarakaOrderId(string $bagisNo): string
+    /**
+     * Albaraka için OrderId üretir: bagis.id sayısını 20 basamağa sol sıfır ile pad eder.
+     * Alfanümerik zorunluluğu nedeniyle tire içeren bagis_no kullanılmaz.
+     */
+    public function albarakaOrderId(int $bagisId): string
     {
-        return str_pad($bagisNo, 20, '0', STR_PAD_LEFT);
+        return str_pad((string) $bagisId, 20, '0', STR_PAD_LEFT);
     }
 
     /**
-     * Albaraka'dan dönen padli OrderId'den orijinal bagis_no'yu çıkarır.
+     * Albaraka'dan dönen padli OrderId'den orijinal bagis.id'yi çözer.
      */
-    public function bagisNoCoz(string $albarakaOrderId): string
+    public function bagisIdCoz(string $albarakaOrderId): int
     {
-        return ltrim($albarakaOrderId, '0') ?: $albarakaOrderId;
+        return (int) ltrim($albarakaOrderId, '0');
     }
 
     /**
