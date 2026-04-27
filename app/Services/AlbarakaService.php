@@ -75,8 +75,8 @@ class AlbarakaService
             $html .= $alan('OrderId',           $albarakaOrderId);
             $html .= $alan('TransactionType',   config('services.albaraka.txn_type', 'Sale'));
             $html .= $alan('CardNo',            $cardNo);
-            $html .= $alan('ExpiredDate',       $expireDate);
-            $html .= $alan('Cvv',               $cvv);
+            $html .= $alan('ExpireDate',        $expireDate);
+            $html .= $alan('Cvc2',              $cvv);
             $html .= $alan('CardHolderName',    $cardHolderName);
             $html .= $alan('Amount',            (string) $tutarKurus);
             $html .= $alan('InstallmentCount',  (string) config('services.albaraka.installment_count', 0));

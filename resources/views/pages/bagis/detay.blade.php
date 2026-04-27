@@ -338,7 +338,7 @@
             <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-top:14px;">
               <div class="form-group">
                 <label class="form-label">Kart Üzerindeki İsim <span>*</span></label>
-                <input type="text" id="kart-sahibi" name="cc-name" class="form-input" autocomplete="cc-name" placeholder="Ad Soyad" />
+                <input type="text" id="kart-sahibi" name="kart_sahibi" class="form-input" autocomplete="cc-name" placeholder="Ad Soyad" />
               </div>
               <div class="form-group">
                 <label class="form-label">Son Kullanma Tarihi <span>*</span></label>

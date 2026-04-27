@@ -685,8 +685,30 @@ function sonKullanmayiMaskele(deger) {
 
 function kartAlanlariniHazirla() {
     const kartNoAlani = document.getElementById('kart-no');
+    const kartSahibiAlani = document.getElementById('kart-sahibi');
+    const odeyenAdAlani = document.getElementById('odeyen-ad');
     const sonKullanmaAlani = document.getElementById('kart-son-kullanma');
     const cvvAlani = document.getElementById('kart-cvv');
+
+    if (kartSahibiAlani) {
+        const tekSoyisimDuzelt = () => {
+            const kartSahibi = kartSahibiAlani.value.trim();
+            const odeyenAd = odeyenAdAlani?.value?.trim() || '';
+
+            // Safari bazı profillerde sadece soyadı yazabiliyor; mümkünse tam ada tamamla.
+            if (kartSahibi !== '' && !kartSahibi.includes(' ') && odeyenAd.includes(' ')) {
+                const odeyenParcalar = odeyenAd.split(/\s+/).filter(Boolean);
+                const soyad = odeyenParcalar[odeyenParcalar.length - 1] || '';
+
+                if (soyad !== '' && kartSahibi.localeCompare(soyad, 'tr', { sensitivity: 'base' }) === 0) {
+                    kartSahibiAlani.value = odeyenAd;
+                }
+            }
+        };
+
+        kartSahibiAlani.addEventListener('change', tekSoyisimDuzelt);
+        kartSahibiAlani.addEventListener('blur', tekSoyisimDuzelt);
+    }
 
     if (kartNoAlani) {
         kartNoAlani.addEventListener('input', () => {
