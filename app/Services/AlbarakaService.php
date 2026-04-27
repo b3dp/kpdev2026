@@ -57,12 +57,23 @@ class AlbarakaService
                 $cvv = preg_replace('/\D+/', '', (string) ($kartBilgileri['cvv'] ?? '')) ?: '';
                 $ay = str_pad(substr((string) ($kartBilgileri['son_kullanma_ay'] ?? ''), 0, 2), 2, '0', STR_PAD_LEFT);
                 $yil = substr(preg_replace('/\D+/', '', (string) ($kartBilgileri['son_kullanma_yil'] ?? '')) ?: '', -2);
-                $expireDate = $ay.$yil;
+                // Dokümana göre son kullanma formatı YYAA (örn: 2001)
+                $expireDate = $yil.$ay;
                 $cardHolderName = trim((string) ($kartBilgileri['kart_sahibi'] ?? ''));
             }
 
             $mac = $this->formMacHesapla($cardNo, $cvv, $expireDate, $tutarKurus);
             $macNew = $this->formMacNewHesapla($cardNo, $cvv, $expireDate, $tutarKurus, $albarakaOrderId);
+
+            Log::info('Albaraka 3D form MAC hazırlandı.', [
+                'orderId' => $albarakaOrderId,
+                'useOos' => $useOos,
+                'amount' => $tutarKurus,
+                'card_len' => strlen($cardNo),
+                'expire_len' => strlen($expireDate),
+                'mac_len' => strlen($mac),
+                'mac_new_len' => strlen($macNew),
+            ]);
 
             $alan = fn (string $name, string $value): string =>
                 '<input type="hidden" name="'.htmlspecialchars($name, ENT_QUOTES).'" value="'.htmlspecialchars($value, ENT_QUOTES).'" />';
@@ -75,8 +86,11 @@ class AlbarakaService
             $html .= $alan('OrderId',           $albarakaOrderId);
             $html .= $alan('TransactionType',   config('services.albaraka.txn_type', 'Sale'));
             $html .= $alan('CardNo',            $cardNo);
+            // Banka parser sürümlerindeki farklı alan isimleri için iki alias da gönderilir.
             $html .= $alan('ExpireDate',        $expireDate);
+            $html .= $alan('ExpiredDate',       $expireDate);
             $html .= $alan('Cvc2',              $cvv);
+            $html .= $alan('Cvv',               $cvv);
             $html .= $alan('CardHolderName',    $cardHolderName);
             $html .= $alan('Amount',            (string) $tutarKurus);
             $html .= $alan('InstallmentCount',  (string) config('services.albaraka.installment_count', 0));
