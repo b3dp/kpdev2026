@@ -25,6 +25,7 @@ Route::get('/etkinlikler/{slug}/takvim.ics', [EtkinlikController::class, 'takvim
 Route::get('/etkinlikler/{slug}', [EtkinlikController::class, 'show'])->name('etkinlikler.show');
 Route::get('/bagis', [BagisController::class, 'index'])->name('bagis.index');
 Route::get('/bagis/sepet', [BagisController::class, 'sepet'])->name('bagis.sepet');
+Route::get('/bagis/odeme', [BagisController::class, 'odemeSayfasi'])->name('bagis.odeme-sayfasi');
 Route::get('/bagis/tesekkur', [BagisController::class, 'tesekkur'])->name('bagis.tesekkur');
 Route::get('/bagis/makbuz-durum/{bagisNo}', [BagisController::class, 'makbuzDurum'])->name('bagis.makbuz-durum');
 Route::post('/bagis/sepete-ekle', [BagisController::class, 'sepeteEkle'])->name('bagis.sepete-ekle');

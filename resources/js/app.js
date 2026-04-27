@@ -4,6 +4,7 @@ import './ekayit-form';
 import './ekayit-tesekkur';
 import './bagis';
 import './bagis-detay';
+import './bagis-odeme';
 import './tesekkur';
 import './etkinlik-detay';
 import './kurumsal';

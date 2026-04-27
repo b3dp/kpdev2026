@@ -404,6 +404,7 @@ function renderSepetOzeti() {
     const elToplam = document.getElementById('sepet-toplam');
     const elAdet = document.getElementById('sepet-adet');
     const badge = document.getElementById('sepet-badge');
+    const odemeSayfasiButonu = document.getElementById('odeme-sayfasina-git-btn');
     const sepetToplam = sepetToplaminiHesapla();
 
     if (elIcerik) {
@@ -450,10 +451,18 @@ function renderSepetOzeti() {
             badge.style.display = 'none';
         }
     }
+
+    if (odemeSayfasiButonu) {
+        if (sepetKalemleri.length) {
+            odemeSayfasiButonu.classList.remove('pointer-events-none', 'opacity-50');
+        } else {
+            odemeSayfasiButonu.classList.add('pointer-events-none', 'opacity-50');
+        }
+    }
 }
 
 function updateSepet() {
-    renderSepetOzeti();
+    // İstenen UX: soldaki tutar/adet seçimi sepete otomatik yansımaz.
 }
 
 function formVerisiniTopla() {

@@ -38,11 +38,50 @@ class BagisController extends Controller
     {
         $sepet = $this->sessionSepetiGetir($request);
         $sepetToplam = $this->sepetToplaminiHesapla($sepet);
-        $odemeSayfasiUrl = filled($sepet[0]['slug'] ?? null)
-            ? route('bagis.show', $sepet[0]['slug'])
-            : route('bagis.index');
+        $odemeSayfasiUrl = route('bagis.odeme-sayfasi');
 
         return view('pages.bagis.sepet', compact('sepet', 'sepetToplam', 'odemeSayfasiUrl'));
+    }
+
+    public function odemeSayfasi(Request $request)
+    {
+        $sepet = $this->sessionSepetiGetir($request);
+
+        if (count($sepet) === 0) {
+            return redirect()
+                ->route('bagis.sepet')
+                ->with('info', 'Ödeme adımı için önce sepetinize en az bir bağış ekleyin.');
+        }
+
+        $sepetToplam = $this->sepetToplaminiHesapla($sepet);
+        $ilkSatir = $sepet[0] ?? [];
+
+        $odemeSlug = (string) ($ilkSatir['slug'] ?? '');
+        if ($odemeSlug === '') {
+            $odemeSlug = (string) (BagisTuru::query()->orderBy('sira')->value('slug') ?? 'genel-bagis');
+        }
+
+        $odemeTutar = max((float) ($ilkSatir['birim_fiyat'] ?? 1), 1);
+        $odemeAdet = max((int) ($ilkSatir['adet'] ?? 1), 1);
+        $odemeSahipTipi = in_array(($ilkSatir['sahip_tipi'] ?? 'kendi'), ['kendi', 'baskasi'], true)
+            ? (string) $ilkSatir['sahip_tipi']
+            : 'kendi';
+        $odemeFormVerisi = is_array($ilkSatir['form_verisi'] ?? null) ? $ilkSatir['form_verisi'] : [];
+
+        $testOdemeAktif = app(BagisOdemeService::class)->testModuAktifMi();
+        $testKartlari = $testOdemeAktif ? app(BagisOdemeService::class)->testKartlariniGetir() : [];
+
+        return view('pages.bagis.odeme', compact(
+            'sepet',
+            'sepetToplam',
+            'odemeSlug',
+            'odemeTutar',
+            'odemeAdet',
+            'odemeSahipTipi',
+            'odemeFormVerisi',
+            'testOdemeAktif',
+            'testKartlari'
+        ));
     }
 
     public function sepeteEkle(Request $request): JsonResponse

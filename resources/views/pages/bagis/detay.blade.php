@@ -295,63 +295,9 @@
           <div class="section-divider"></div>
 
           <div>
-            <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;color:#162E4B;margin-bottom:12px;">Ödeme Yöntemi</p>
-            <div style="display:flex;flex-direction:column;gap:8px;">
-              <div class="radio-opt selected" id="odeme-albaraka" onclick="selectOdeme('albaraka')">
-                <div class="radio-circle"><div class="radio-dot"></div></div>
-                <div style="flex:1;">
-                  <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;color:#162E4B;">Kredi / Banka Kartı</p>
-                  <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:#62868D;margin-top:1px;">@if($testOdemeAktif) Test ödeme modu aktif — gerçek tahsilat yapılmaz @else Albaraka Türk güvencesiyle — Visa, Mastercard, Troy @endif</p>
-                </div>
-                <div style="display:flex;gap:4px;flex-shrink:0;">
-                  <div style="width:32px;height:20px;background:#1a1f71;border-radius:4px;display:flex;align-items:center;justify-content:center;">
-                    <span style="font-size:8px;font-weight:800;color:#fff;letter-spacing:-.5px;">VISA</span>
-                  </div>
-                  <div style="width:32px;height:20px;background:#fff;border:1px solid #e5e7eb;border-radius:4px;display:flex;align-items:center;justify-content:center;">
-                    <svg width="18" height="12" viewBox="0 0 38 24"><circle cx="15" cy="12" r="10" fill="#EB001B"/><circle cx="23" cy="12" r="10" fill="#F79E1B"/><path d="M19 5.268A10 10 0 0 1 23 12a10 10 0 0 1-4 6.732A10 10 0 0 1 15 12a10 10 0 0 1 4-6.732z" fill="#FF5F00"/></svg>
-                  </div>
-                  <div style="width:32px;height:20px;background:#005BAA;border-radius:4px;display:flex;align-items:center;justify-content:center;">
-                    <span style="font-size:7px;font-weight:800;color:#fff;letter-spacing:-.3px;">TROY</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            @if($testOdemeAktif)
-              <div style="margin-top:14px;border:1px solid rgba(22,163,74,.2);background:#ecfdf5;border-radius:14px;padding:14px;">
-                <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:#166534;margin-bottom:4px;">Test ödeme modu</p>
-                <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;line-height:1.6;color:#166534;margin-bottom:12px;">Aşağıdaki kartlardan biri ile normal ödeme adımlarını deneyebilirsiniz. Gerçek çekim yapılmaz; sadece başarı / hata akışı simüle edilir.</p>
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;">
-                  @foreach($testKartlari as $kart)
-                    <button type="button"
-                            onclick="testKartiniDoldur('{{ $kart['kart_no'] }}')"
-                            style="text-align:left;border:1px solid rgba(22,46,75,.08);background:#fff;border-radius:12px;padding:10px 12px;cursor:pointer;">
-                      <span style="display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;color:#162E4B;">{{ $kart['etiket'] }}</span>
-                      <span style="display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:#62868D;margin-top:2px;">{{ $kart['kart_no'] }}</span>
-                      <span style="display:inline-flex;margin-top:8px;border-radius:999px;padding:3px 8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;{{ $kart['sonuc'] === 'basarili' ? 'background:#dcfce7;color:#166534;' : 'background:#fef2f2;color:#b91c1c;' }}">{{ $kart['sonuc'] === 'basarili' ? 'Başarılı' : 'Hata' }}</span>
-                    </button>
-                  @endforeach
-                </div>
-              </div>
-            @endif
-
-            <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-top:14px;">
-              <div class="form-group">
-                <label class="form-label">Kart Üzerindeki İsim <span>*</span></label>
-                <input type="text" id="kart-sahibi" name="kart_sahibi" class="form-input" autocomplete="cc-name" placeholder="Ad Soyad" />
-              </div>
-              <div class="form-group">
-                <label class="form-label">Son Kullanma Tarihi <span>*</span></label>
-                <input type="text" id="kart-son-kullanma" name="cc-exp" class="form-input" inputmode="numeric" maxlength="7" autocomplete="cc-exp" placeholder="AA/YY" />
-              </div>
-              <div class="form-group" style="grid-column:span 2;">
-                <label class="form-label">Kart Numarası <span>*</span></label>
-                <input type="text" id="kart-no" name="cc-number" class="form-input" inputmode="numeric" autocomplete="cc-number" placeholder="0000 0000 0000 0000" />
-              </div>
-              <div class="form-group">
-                <label class="form-label">CVV <span>*</span></label>
-                <input type="text" id="kart-cvv" name="cc-csc" class="form-input" inputmode="numeric" maxlength="4" autocomplete="cc-csc" placeholder="123" />
-              </div>
+            <div style="border:1px dashed rgba(22,46,75,.14);border-radius:12px;padding:12px 14px;background:#F8FAFB;">
+              <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:#162E4B;">Kart bilgileri ayrı ödeme adımında alınır.</p>
+              <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;line-height:1.6;color:#62868D;margin-top:4px;">Bu sayfada yalnızca bağış kalemlerinizi ve kişi bilgilerini düzenleyip sepete ekleyin. Güvenli ödeme ekranına sonraki adımda geçeceksiniz.</p>
             </div>
           </div>
 
@@ -412,10 +358,10 @@
               <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#62868D;">Toplam</span>
               <span id="sepet-toplam" style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:22px;color:#162E4B;">₺{{ number_format($sepetToplam, 2, ',', '.') }}</span>
             </div>
-            <button type="button" id="odeme-ozet-btn" onclick="odemeyiTamamla()" class="flex w-full items-center justify-center gap-2 rounded-[10px] border-none bg-orange-cta px-4 py-[13px] font-jakarta text-sm font-bold text-white transition-colors hover:bg-[#c94620]">
+            <a href="{{ route('bagis.odeme-sayfasi') }}" id="odeme-sayfasina-git-btn" class="flex w-full items-center justify-center gap-2 rounded-[10px] border-none bg-orange-cta px-4 py-[13px] font-jakarta text-sm font-bold text-white transition-colors hover:bg-[#c94620] {{ $sepetAdet === 0 ? 'pointer-events-none opacity-50' : '' }}">
               <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-              {{ $testOdemeAktif ? 'Test Ödemeyi Tamamla' : 'Ödemeyi Tamamla' }}
-            </button>
+              Ödeme Sayfasına Geç
+            </a>
           </div>
         </div>
 

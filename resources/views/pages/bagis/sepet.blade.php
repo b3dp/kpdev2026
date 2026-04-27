@@ -58,7 +58,7 @@
 
                 <div class="mt-5 space-y-2.5">
                     <a href="{{ $odemeSayfasiUrl }}" class="flex w-full items-center justify-center rounded-[10px] bg-orange-cta px-4 py-3 font-jakarta text-sm font-bold text-white transition-colors hover:bg-[#c94620] {{ count($sepet) === 0 ? 'pointer-events-none opacity-50' : '' }}">
-                        Ödeme adımına dön
+                        Ödeme sayfasına geç
                     </a>
                     <a href="{{ route('bagis.index') }}" class="flex w-full items-center justify-center rounded-[10px] border border-primary/10 bg-white px-4 py-3 font-jakarta text-sm font-semibold text-primary transition-colors hover:bg-bg-soft">
                         Yeni bağış ekle
