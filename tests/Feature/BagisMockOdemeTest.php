@@ -14,6 +14,16 @@ class BagisMockOdemeTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Bu testler test (mock) ödeme modunu doğrular; Albaraka entegrasyonu kapalı
+        config([
+            'services.albaraka.aktif' => false,
+            'services.bagis.test_mode' => true,
+        ]);
+    }
+
     public function test_mock_bagis_odeme_basarili_olarak_tamamlanir(): void
     {
         Queue::fake();

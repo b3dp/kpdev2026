@@ -1,0 +1,235 @@
+<?php
+
+namespace App\Services;
+
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Throwable;
+
+class AlbarakaService
+{
+    private string $merchantNo;
+    private string $terminalNo;
+    private string $eposNo;
+    private string $encKey;
+    private string $jsonApiUrl;
+    private string $threeDUrl;
+    private string $returnUrl;
+    private int $timeoutSn;
+    private bool $verifySsl;
+
+    public function __construct()
+    {
+        $this->merchantNo  = (string) config('services.albaraka.merchant_no');
+        $this->terminalNo  = (string) config('services.albaraka.terminal_no');
+        $this->eposNo      = (string) config('services.albaraka.epos_no');
+        $this->encKey      = (string) config('services.albaraka.enc_key');
+        $this->jsonApiUrl  = rtrim((string) config('services.albaraka.json_api_url'), '/');
+        $this->threeDUrl   = (string) config('services.albaraka.3d_url');
+        $this->returnUrl   = (string) config('services.albaraka.return_url');
+        $this->timeoutSn   = (int) config('services.albaraka.timeout_sn', 30);
+        $this->verifySsl   = (bool) config('services.albaraka.verify_ssl', true);
+    }
+
+    /**
+     * 3D Secure doğrulama HTML formu üretir.
+     * UseOOS=1 olduğu için kart alanları boş gönderilir; banka kendi sayfasında toplar.
+     *
+     * @param  string $orderId   20 karakter, benzersiz sipariş no (bagis_no bazlı)
+     * @param  int    $tutarKurus Tutar kuruş olarak (1 TL = 100)
+     * @return string            Otomatik submit eden HTML
+     */
+    public function ucBoyutluFormOlustur(string $orderId, int $tutarKurus): string
+    {
+        try {
+            // UseOOS=1 olduğunda kart alanları boş olur → MAC parametrelerinde CardNo/Cvc2/ExpireDate boş string
+            $mac = $this->formMacHesapla('', '', '', $tutarKurus);
+
+            $alan = fn (string $name, string $value): string =>
+                '<input type="hidden" name="'.htmlspecialchars($name, ENT_QUOTES).'" value="'.htmlspecialchars($value, ENT_QUOTES).'" />';
+
+            $html  = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>';
+            $html .= '<form id="albaraka3dForm" method="post" action="'.htmlspecialchars($this->threeDUrl, ENT_QUOTES).'">';
+            $html .= $alan('PosnetID',          $this->eposNo);
+            $html .= $alan('MerchantNo',        $this->merchantNo);
+            $html .= $alan('TerminalNo',        $this->terminalNo);
+            $html .= $alan('OrderId',           $orderId);
+            $html .= $alan('TransactionType',   config('services.albaraka.txn_type', 'Sale'));
+            $html .= $alan('CardNo',            '');
+            $html .= $alan('ExpiredDate',       '');
+            $html .= $alan('Cvv',               '');
+            $html .= $alan('CardHolderName',    '');
+            $html .= $alan('Amount',            (string) $tutarKurus);
+            $html .= $alan('InstallmentCount',  (string) config('services.albaraka.installment_count', 0));
+            $html .= $alan('MerchantReturnURL', $this->returnUrl);
+            $html .= $alan('Language',          config('services.albaraka.language', 'TR'));
+            $html .= $alan('CurrencyCode',      config('services.albaraka.currency_code', 'TL'));
+            $html .= $alan('MacParams',         'MerchantNo:TerminalNo:CardNo:Cvc2:ExpireDate:Amount');
+            $html .= $alan('Mac',               $mac);
+            $html .= $alan('TxnState',          config('services.albaraka.txn_state', 'INITIAL'));
+            $html .= $alan('IsTDSecureMerchant','Y');
+            $html .= $alan('UseOOS',            (string) config('services.albaraka.use_oos', 1));
+            $html .= $alan('OpenNewWindow',     (string) config('services.albaraka.open_new_window', 0));
+            $html .= '</form>';
+            $html .= '<script>document.getElementById("albaraka3dForm").submit();</script>';
+            $html .= '</body></html>';
+
+            return $html;
+        } catch (Throwable $e) {
+            Log::error('Albaraka 3D form oluşturulamadı.', [
+                'hata'     => $e->getMessage(),
+                'orderId'  => $orderId,
+                'tutar'    => $tutarKurus,
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Bankadan gelen callback verisinin MAC doğrulamasını yapar.
+     * MdStatus=1 (Full 3D) şartı da burada kontrol edilir.
+     *
+     * @param  array $data  $_POST içeriği
+     * @return bool
+     */
+    public function callbackDogrula(array $data): bool
+    {
+        try {
+            if (($data['MdStatus'] ?? '') !== '1') {
+                return false;
+            }
+
+            $secureTransactionId = (string) ($data['SecureTransactionId'] ?? '');
+            $cavv                = (string) ($data['CAVV'] ?? '');
+            $eci                 = (string) ($data['ECI'] ?? '');
+            $mdStatus            = (string) ($data['MdStatus'] ?? '');
+
+            $mac = $this->callbackMacHesapla($secureTransactionId, $cavv, $eci, $mdStatus);
+
+            return hash_equals($mac, (string) ($data['Mac'] ?? $data['MAC'] ?? ''));
+        } catch (Throwable $e) {
+            Log::error('Albaraka callback MAC doğrulama hatası.', ['hata' => $e->getMessage()]);
+            return false;
+        }
+    }
+
+    /**
+     * 3D doğrulaması başarılıysa bankaya Sale çağrısı atar.
+     *
+     * @param  array  $callbackData  Bankadan dönen POST verisi
+     * @param  string $orderId       Orijinal OrderId
+     * @param  int    $tutarKurus    Kuruş cinsinden tutar
+     * @return array  ['basarili' => bool, 'referans' => string|null, 'hata_kodu' => string|null, 'hata_mesaji' => string|null]
+     */
+    public function satisYap(array $callbackData, string $orderId, int $tutarKurus): array
+    {
+        try {
+            $secureTransactionId = (string) ($callbackData['SecureTransactionId'] ?? '');
+            $cavv                = (string) ($callbackData['CAVV'] ?? '');
+            $eci                 = (string) ($callbackData['ECI'] ?? '');
+            $mdStatus            = (string) ($callbackData['MdStatus'] ?? '');
+            $md                  = (string) ($callbackData['MD'] ?? '');
+
+            $mac = $this->callbackMacHesapla($secureTransactionId, $cavv, $eci, $mdStatus);
+
+            $params = [
+                'ApiType'                => 'JSON',
+                'ApiVersion'             => 'V100',
+                'MerchantNo'             => $this->merchantNo,
+                'TerminalNo'             => $this->terminalNo,
+                'PaymentInstrumentType'  => 'CARD',
+                'IsEncrypted'            => 'N',
+                'IsTDSecureMerchant'     => 'Y',
+                'IsMailOrder'            => 'N',
+                'ThreeDSecureData'       => [
+                    'SecureTransactionId' => $secureTransactionId,
+                    'CavvData'            => $cavv,
+                    'Eci'                 => $eci,
+                    'MdStatus'            => $mdStatus,
+                    'MD'                  => $md,
+                ],
+                'MAC'                    => $mac,
+                'MACParams'              => 'MerchantNo:TerminalNo:SecureTransactionId:CavvData:Eci:MdStatus',
+                'Amount'                 => $tutarKurus,
+                'CurrencyCode'           => config('services.albaraka.currency_code', 'TL'),
+                'PointAmount'            => 0,
+                'OrderId'                => $orderId,
+                'InstallmentCount'       => config('services.albaraka.installment_count', 0),
+            ];
+
+            $response = Http::withHeaders([
+                'Content-Type'      => 'application/json',
+                'X-MERCHANT-ID'     => $this->merchantNo,
+                'X-TERMINAL-ID'     => $this->terminalNo,
+                'X-POSNET-ID'       => $this->eposNo,
+                'X-CORRELATION-ID'  => $orderId,
+            ])
+                ->timeout($this->timeoutSn)
+                ->withOptions(['verify' => $this->verifySsl])
+                ->post($this->jsonApiUrl.'/Sale', $params);
+
+            $veri = $response->json();
+
+            $responseCode = (string) ($veri['ServiceResponseData']['ResponseCode'] ?? 'UNKNOWN');
+            $responseDesc = (string) ($veri['ServiceResponseData']['ResponseDescription'] ?? 'Bilinmeyen hata');
+            $approvedCode = (string) ($veri['ServiceResponseData']['ApprovedCode'] ?? '');
+
+            if ($responseCode === '0000') {
+                return [
+                    'basarili'     => true,
+                    'referans'     => $approvedCode ?: $orderId,
+                    'hata_kodu'    => null,
+                    'hata_mesaji'  => null,
+                ];
+            }
+
+            Log::warning('Albaraka Sale başarısız.', [
+                'orderId'       => $orderId,
+                'responseCode'  => $responseCode,
+                'responseDesc'  => $responseDesc,
+            ]);
+
+            return [
+                'basarili'     => false,
+                'referans'     => null,
+                'hata_kodu'    => $responseCode,
+                'hata_mesaji'  => $responseDesc,
+            ];
+        } catch (Throwable $e) {
+            Log::error('Albaraka Sale çağrısı başarısız.', [
+                'hata'     => $e->getMessage(),
+                'orderId'  => $orderId,
+                'tutar'    => $tutarKurus,
+            ]);
+
+            return [
+                'basarili'     => false,
+                'referans'     => null,
+                'hata_kodu'    => 'EXCEPTION',
+                'hata_mesaji'  => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * 3D formu için MAC hesaplama (UseOOS=1 → kart alanları boş string)
+     */
+    private function formMacHesapla(string $cardNo, string $cvc2, string $expireDate, int $tutarKurus): string
+    {
+        $str = $this->merchantNo.$this->terminalNo.$cardNo.$cvc2.$expireDate.$tutarKurus;
+        return base64_encode(hash('sha256', $str.$this->encKey, true));
+    }
+
+    /**
+     * Callback ve Sale için MAC hesaplama
+     */
+    private function callbackMacHesapla(
+        string $secureTransactionId,
+        string $cavv,
+        string $eci,
+        string $mdStatus
+    ): string {
+        $str = $this->merchantNo.$this->terminalNo.$secureTransactionId.$cavv.$eci.$mdStatus;
+        return base64_encode(hash('sha256', $str.$this->encKey, true));
+    }
+}

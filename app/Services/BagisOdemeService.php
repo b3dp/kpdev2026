@@ -16,6 +16,8 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
+// NOT: kart verisi bu servise asla gönderilmez; doğrudan bankaya iletilir.
+
 class BagisOdemeService
 {
     public function testModuAktifMi(): bool
@@ -78,6 +80,37 @@ class BagisOdemeService
                 ]);
             }
 
+            $kartSenaryosu = $this->kartSenaryosunuBelirle((string) ($veri['kart_no'] ?? ''));
+
+            if (! ($kartSenaryosu['basarili'] ?? false)) {
+                throw ValidationException::withMessages([
+                    'kart_no' => (string) ($kartSenaryosu['mesaj'] ?? 'Kart doğrulanamadı.'),
+                ]);
+            }
+
+            $bagis = $this->bagisKaydet($request, $veri);
+            $this->odemeBasarili($bagis, 'TEST-'.strtoupper(Str::random(10)));
+
+            return $bagis->fresh(['kalemler.bagisTuru', 'kisiler']);
+        } catch (ValidationException $exception) {
+            throw $exception;
+        } catch (Throwable $exception) {
+            Log::error('Bağış test ödeme işlemi başarısız.', [
+                'hata' => $exception->getMessage(),
+                'slug' => $veri['slug'] ?? null,
+            ]);
+
+            throw $exception;
+        }
+    }
+
+    /**
+     * Bağış kaydeder (Beklemede durumunda). Ödeme tahsilatı yapılmaz.
+     * Hem test modu hem Albaraka akışı bu metodu kullanır.
+     */
+    public function bagisKaydet(Request $request, array $veri): Bagis
+    {
+        try {
             $bagisTuru = BagisTuru::query()->where('slug', $veri['slug'])->firstOrFail();
             $tutar = max((float) ($veri['tutar'] ?? 0), 0);
             $maksimumAdet = ($bagisTuru->fiyat_tipi?->value ?? $bagisTuru->fiyat_tipi) === 'sabit'
@@ -91,14 +124,6 @@ class BagisOdemeService
             if ($bagisTuru->minimum_tutar && $tutar < (float) $bagisTuru->minimum_tutar) {
                 throw ValidationException::withMessages([
                     'tutar' => 'Minimum bağış tutarı ₺'.number_format((float) $bagisTuru->minimum_tutar, 0, ',', '.').' olmalıdır.',
-                ]);
-            }
-
-            $kartSenaryosu = $this->kartSenaryosunuBelirle((string) ($veri['kart_no'] ?? ''));
-
-            if (! ($kartSenaryosu['basarili'] ?? false)) {
-                throw ValidationException::withMessages([
-                    'kart_no' => (string) ($kartSenaryosu['mesaj'] ?? 'Kart doğrulanamadı.'),
                 ]);
             }
 
@@ -189,35 +214,42 @@ class BagisOdemeService
                 ]);
             }
 
-            Bagis::withoutEvents(function () use ($bagis): void {
-                $bagis->update([
-                    'durum' => BagisDurumu::Odendi->value,
-                    'odeme_referans' => 'TEST-'.strtoupper(Str::random(10)),
-                    'odeme_tarihi' => now(),
-                ]);
-            });
-
-            MakbuzOlusturJob::dispatch($bagis)->onQueue('default');
-            KurbanAktarimJob::dispatch($bagis->id)->onQueue('default');
-            app(KisiEslestirmeService::class)->bagisEslestir($bagis->fresh(['kisiler', 'uye']));
-
-            $sepetService->sepetiBosalt($sepet);
-            $sepet->update([
-                'durum' => SepetDurumu::Tamamlandi->value,
-            ]);
-
-            return $bagis->fresh(['kalemler.bagisTuru', 'kisiler']);
+            return $bagis;
         } catch (ValidationException $exception) {
             throw $exception;
         } catch (Throwable $exception) {
-            Log::error('Bağış test ödeme işlemi başarısız.', [
+            Log::error('Bağış kaydedilemedi.', [
                 'hata' => $exception->getMessage(),
                 'slug' => $veri['slug'] ?? null,
-                'telefon' => $veri['form_verisi']['odeyen_telefon'] ?? null,
-                'eposta' => $veri['form_verisi']['odeyen_eposta'] ?? null,
             ]);
 
             throw $exception;
+        }
+    }
+
+    /**
+     * Ödeme başarılıysa bağışı günceller, iş kuyruğunu tetikler, sepeti temizler.
+     */
+    public function odemeBasarili(Bagis $bagis, string $referans, ?Request $request = null): void
+    {
+        Bagis::withoutEvents(function () use ($bagis, $referans): void {
+            $bagis->update([
+                'durum' => BagisDurumu::Odendi->value,
+                'odeme_referans' => $referans,
+                'odeme_tarihi' => now(),
+            ]);
+        });
+
+        MakbuzOlusturJob::dispatch($bagis)->onQueue('default');
+        KurbanAktarimJob::dispatch($bagis->id)->onQueue('default');
+        app(KisiEslestirmeService::class)->bagisEslestir($bagis->fresh(['kisiler', 'uye']));
+
+        if ($request) {
+            $sepetService = app(SepetService::class);
+            $sepet = $sepetService->aktifSepetAl($request);
+            $sepetService->sepetiBosalt($sepet);
+            $sepet->update(['durum' => SepetDurumu::Tamamlandi->value]);
+            $request->session()->forget('sepet');
         }
     }
 

@@ -30,6 +30,9 @@ Route::get('/bagis/makbuz-durum/{bagisNo}', [BagisController::class, 'makbuzDuru
 Route::post('/bagis/sepete-ekle', [BagisController::class, 'sepeteEkle'])->name('bagis.sepete-ekle');
 Route::post('/bagis/sepetten-cikar/{satirId}', [BagisController::class, 'sepettenCikar'])->name('bagis.sepetten-cikar');
 Route::post('/bagis/odeme', [BagisController::class, 'odemeYap'])->name('bagis.odeme');
+Route::post('/bagis/albaraka/callback', [BagisController::class, 'albarakaCallback'])
+    ->name('bagis.albaraka.callback')
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
 Route::get('/bagis/{slug}', [BagisController::class, 'show'])->name('bagis.show');
 Route::get('/kurumsal/{slug?}', [KurumsalController::class, 'show'])->name('kurumsal.show');
 Route::get('/iletisim', [IletisimController::class, 'index'])->name('iletisim.index');

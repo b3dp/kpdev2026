@@ -93,8 +93,31 @@ return [
         'validity_period' => (int) env('ILETISIM_MAKINESI_VALIDITY_PERIOD', 1440),
     ],
 
+    'albaraka' => [
+        'aktif'              => (bool) env('ALBARAKA_AKTIF', false),
+        'test_mode'          => (bool) env('ALBARAKA_TEST_MODE', true),
+        'merchant_no'        => env('ALBARAKA_MERCHANT_NO'),
+        'terminal_no'        => env('ALBARAKA_TERMINAL_NO'),
+        'epos_no'            => env('ALBARAKA_EPOS_NO'),
+        'enc_key'            => env('ALBARAKA_ENC_KEY'),
+        'json_api_url'       => env('ALBARAKA_JSON_API_URL'),
+        '3d_url'             => env('ALBARAKA_3D_URL'),
+        'return_url'         => env('ALBARAKA_RETURN_URL'),
+        'basarili_url'       => env('ALBARAKA_BASARILI_URL'),
+        'hatali_url'         => env('ALBARAKA_HATALI_URL'),
+        'use_oos'            => (int) env('ALBARAKA_USE_OOS', 1),
+        'open_new_window'    => (int) env('ALBARAKA_OPEN_NEW_WINDOW', 0),
+        'language'           => env('ALBARAKA_LANGUAGE', 'TR'),
+        'currency_code'      => env('ALBARAKA_CURRENCY_CODE', 'TL'),
+        'installment_count'  => (int) env('ALBARAKA_INSTALLMENT_COUNT', 0),
+        'txn_type'           => env('ALBARAKA_TXN_TYPE', 'Sale'),
+        'txn_state'          => env('ALBARAKA_TXN_STATE', 'INITIAL'),
+        'timeout_sn'         => (int) env('ALBARAKA_TIMEOUT_SN', 30),
+        'verify_ssl'         => (bool) env('ALBARAKA_VERIFY_SSL', true),
+    ],
+
     'bagis' => [
-        'test_mode' => (bool) env('BAGIS_TEST_ODEME_AKTIF', true),
+        'test_mode' => (bool) env('BAGIS_TEST_ODEME_AKTIF', false),
         'test_cards' => [
             [
                 'etiket' => 'Başarılı Visa',

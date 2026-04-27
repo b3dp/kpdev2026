@@ -2,12 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\BagisDurumu;
 use App\Models\Bagis;
 use App\Models\BagisTuru;
+use App\Models\OdemeHatasi;
+use App\Services\AlbarakaService;
 use App\Services\BagisOdemeService;
 use App\Services\SepetService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
 
 class BagisController extends Controller
 {
@@ -114,22 +120,47 @@ class BagisController extends Controller
         ]);
     }
 
-    public function odemeYap(Request $request): JsonResponse
+    public function odemeYap(Request $request): JsonResponse|Response
     {
-        $veri = $request->validate([
+        // Albaraka aktifse kart alanları sunucu tarafında toplanmaz; banka kendi sayfasında toplar.
+        $albarakaAktif = (bool) config('services.albaraka.aktif', false);
+
+        $kurallar = [
             'slug' => ['required', 'string', 'exists:bagis_turleri,slug'],
             'tutar' => ['required', 'numeric', 'min:1'],
             'adet' => ['nullable', 'integer', 'min:1', 'max:30'],
             'sahip_tipi' => ['nullable', 'in:kendi,baskasi'],
             'odeme_yontemi' => ['nullable', 'in:albaraka,paytr'],
-            'kart_no' => ['required', 'string', 'min:12'],
-            'kart_sahibi' => ['required', 'string', 'max:255'],
-            'son_kullanma_ay' => ['required', 'string', 'min:2', 'max:2'],
-            'son_kullanma_yil' => ['required', 'string', 'min:2', 'max:4'],
-            'cvv' => ['required', 'string', 'min:3', 'max:4'],
             'form_verisi' => ['nullable', 'array'],
-        ]);
+        ];
 
+        if (! $albarakaAktif) {
+            // Test modunda kart alanları zorunlu
+            $kurallar += [
+                'kart_no' => ['required', 'string', 'min:12'],
+                'kart_sahibi' => ['required', 'string', 'max:255'],
+                'son_kullanma_ay' => ['required', 'string', 'min:2', 'max:2'],
+                'son_kullanma_yil' => ['required', 'string', 'min:2', 'max:4'],
+                'cvv' => ['required', 'string', 'min:3', 'max:4'],
+            ];
+        }
+
+        $veri = $request->validate($kurallar);
+
+        if ($albarakaAktif) {
+            // 3D Secure yönlendirme: bagis oluştur, banka formunu döndür
+            $bagis = app(BagisOdemeService::class)->bagisKaydet($request, $veri);
+
+            $request->session()->put('son_bagis_no', $bagis->bagis_no);
+
+            // Tutar kuruşa çevir (1 TL = 100)
+            $tutarKurus = (int) round($bagis->toplam_tutar * 100);
+            $html = app(AlbarakaService::class)->ucBoyutluFormOlustur($bagis->bagis_no, $tutarKurus);
+
+            return response($html, 200)->header('Content-Type', 'text/html');
+        }
+
+        // Test modu
         $bagis = app(BagisOdemeService::class)->odemeYap($request, $veri);
 
         $request->session()->put('son_bagis_no', $bagis->bagis_no);
@@ -142,6 +173,112 @@ class BagisController extends Controller
             'redirect_url' => route('bagis.tesekkur'),
             'bagis_no' => $bagis->bagis_no,
         ]);
+    }
+
+    /**
+     * Albaraka 3D Secure geri dönüş noktası (bank POST callback).
+     * CSRF muafiyeti routes/web.php'de tanımlanmıştır.
+     */
+    public function albarakaCallback(Request $request): RedirectResponse
+    {
+        $data = $request->all();
+
+        Log::info('Albaraka callback alındı.', [
+            'MdStatus' => $data['MdStatus'] ?? 'yok',
+            'OrderId'  => $data['OrderId'] ?? 'yok',
+        ]);
+
+        $orderId = (string) ($data['OrderId'] ?? '');
+        $hataliUrl = (string) config('services.albaraka.hatali_url', route('bagis.sepet'));
+        $basariliUrl = (string) config('services.albaraka.basarili_url', route('bagis.tesekkur'));
+
+        if ($orderId === '') {
+            Log::warning('Albaraka callback: OrderId eksik.');
+            return redirect($hataliUrl)->with('error', 'Ödeme işlemi başarısız oldu.');
+        }
+
+        // Bağışı bul
+        $bagis = Bagis::query()->where('bagis_no', $orderId)->first();
+
+        if (! $bagis) {
+            Log::warning('Albaraka callback: Bağış bulunamadı.', ['orderId' => $orderId]);
+            return redirect($hataliUrl)->with('error', 'Ödeme bilgisi bulunamadı.');
+        }
+
+        // İdempotency: zaten ödenmiş
+        if ($bagis->durum === BagisDurumu::Odendi) {
+            $request->session()->put('son_bagis_no', $bagis->bagis_no);
+            return redirect($basariliUrl);
+        }
+
+        $albarakaService = app(AlbarakaService::class);
+
+        // MAC doğrulama ve MdStatus=1 kontrolü
+        if (! $albarakaService->callbackDogrula($data)) {
+            $mdStatus = (string) ($data['MdStatus'] ?? '?');
+            Log::warning('Albaraka callback: MAC doğrulama başarısız veya MdStatus!=1.', [
+                'orderId'  => $orderId,
+                'mdStatus' => $mdStatus,
+            ]);
+
+            OdemeHatasi::query()->create([
+                'bagis_id'    => $bagis->id,
+                'saglayici'   => 'albaraka',
+                'hata_kodu'   => 'MDSTATUS_'.$mdStatus,
+                'hata_mesaji' => '3D Secure doğrulama başarısız. MdStatus: '.$mdStatus,
+                'tutar'       => $bagis->toplam_tutar,
+                'created_at'  => now(),
+            ]);
+
+            return redirect($hataliUrl)->with('error', '3D Secure doğrulama başarısız oldu. Lütfen tekrar deneyiniz.');
+        }
+
+        // Tutar doğrulama: callback'teki Amount kuruş cinsinden gelir
+        $callbackTutar = (int) ($data['Amount'] ?? 0);
+        $beklenenTutar = (int) round($bagis->toplam_tutar * 100);
+
+        if ($callbackTutar !== $beklenenTutar) {
+            Log::error('Albaraka callback: Tutar uyuşmazlığı.', [
+                'orderId'         => $orderId,
+                'callbackTutar'   => $callbackTutar,
+                'beklenenTutar'   => $beklenenTutar,
+            ]);
+
+            OdemeHatasi::query()->create([
+                'bagis_id'    => $bagis->id,
+                'saglayici'   => 'albaraka',
+                'hata_kodu'   => 'AMOUNT_MISMATCH',
+                'hata_mesaji' => "Tutar uyuşmazlığı: beklenen {$beklenenTutar}, gelen {$callbackTutar}",
+                'tutar'       => $bagis->toplam_tutar,
+                'created_at'  => now(),
+            ]);
+
+            return redirect($hataliUrl)->with('error', 'Ödeme tutarı doğrulanamadı.');
+        }
+
+        // Sale çağrısı
+        $sonuc = $albarakaService->satisYap($data, $orderId, $beklenenTutar);
+
+        if (! $sonuc['basarili']) {
+            OdemeHatasi::query()->create([
+                'bagis_id'    => $bagis->id,
+                'saglayici'   => 'albaraka',
+                'hata_kodu'   => $sonuc['hata_kodu'] ?? 'UNKNOWN',
+                'hata_mesaji' => $sonuc['hata_mesaji'] ?? 'Sale çağrısı başarısız.',
+                'tutar'       => $bagis->toplam_tutar,
+                'created_at'  => now(),
+            ]);
+
+            return redirect($hataliUrl)->with('error', 'Ödeme işlemi bankada reddedildi. Lütfen tekrar deneyiniz.');
+        }
+
+        // Başarılı: bağışı güncelle, iş kuyruğunu tetikle
+        $referans = (string) ($sonuc['referans'] ?? $orderId);
+        app(BagisOdemeService::class)->odemeBasarili($bagis, $referans, $request);
+
+        $request->session()->put('son_bagis_no', $bagis->bagis_no);
+
+        return redirect($basariliUrl);
     }
 
     public function makbuzDurum(string $bagisNo): JsonResponse
