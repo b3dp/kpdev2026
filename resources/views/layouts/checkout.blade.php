@@ -41,9 +41,8 @@
   <header style="position:fixed;top:0;left:0;right:0;z-index:50;background:#fff;border-bottom:1px solid #f1f1ef;">
     <div style="max-width:1280px;margin:0 auto;padding:0 24px;">
       <div style="display:flex;align-items:center;justify-content:space-between;height:64px;gap:16px;">
-        <a href="{{ route('home') }}" style="display:flex;align-items:center;gap:12px;text-decoration:none;flex-shrink:0;">
-          <span style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#162E4B,#28484C);color:#EBDFB5;font-family:'Libre Baskerville',serif;font-weight:700;font-size:17px;display:flex;align-items:center;justify-content:center;">K</span>
-          <span style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:16px;color:#162E4B;">{{ config('site.ad') }}</span>
+        <a href="{{ route('home') }}" style="display:flex;align-items:center;text-decoration:none;flex-shrink:0;" aria-label="{{ config('site.ad') }}">
+          <img src="{{ asset('images/logo.svg') }}" alt="{{ config('site.ad') }} logosu" style="height:54px;width:auto;display:block;" loading="eager" decoding="async">
         </a>
 
         @hasSection('checkout_progress')
@@ -132,9 +131,8 @@
     <div style="background-color:#EBDFB5;">
       <div style="max-width:1280px;margin:0 auto;padding:32px 24px;">
         <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;">
-          <a href="{{ route('home') }}" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
-            <span style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#162E4B,#28484C);color:#EBDFB5;font-family:'Libre Baskerville',serif;font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;">K</span>
-            <span style="font-family:'Libre Baskerville',serif;font-weight:700;font-size:15px;color:#162E4B;">{{ config('site.ad') }}</span>
+          <a href="{{ route('home') }}" style="display:flex;align-items:center;text-decoration:none;" aria-label="{{ config('site.ad') }}">
+            <img src="{{ asset('images/logo.svg') }}" alt="{{ config('site.ad') }} logosu" style="height:48px;width:auto;display:block;" loading="lazy" decoding="async">
           </a>
           <div style="display:flex;gap:16px;align-items:center;">
             <a href="{{ route('kurumsal.show', 'gizlilik-politikasi') }}" class="bottom-link transition-colors hover:text-accent">Gizlilik</a>
