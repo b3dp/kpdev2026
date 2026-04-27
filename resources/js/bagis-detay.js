@@ -562,6 +562,7 @@ async function sepeteEkle() {
 
         const badge = document.getElementById('sepet-badge');
         const adet = document.getElementById('sepet-adet');
+        const odemeSayfasiButonu = document.getElementById('odeme-sayfasina-git-btn');
 
         if (badge) {
             badge.textContent = data.sepet_adet ?? `${(parseInt(badge.textContent, 10) || 0) + 1}`;
@@ -576,11 +577,16 @@ async function sepeteEkle() {
             adet.textContent = `${data.sepet_adet} kalem`;
         }
 
+        if (odemeSayfasiButonu && Number(data.sepet_adet || 0) > 0) {
+            odemeSayfasiButonu.classList.remove('pointer-events-none', 'opacity-50');
+        }
+
         if (Array.isArray(data.sepet)) {
             sepetKalemleri = data.sepet;
-            renderSepetOzeti();
-            sepetGuncellemesiniYayinla();
         }
+
+        renderSepetOzeti();
+        sepetGuncellemesiniYayinla();
 
         sepetMesajiGoster(data.message || 'Bağış sepetinize eklendi.');
     } catch (error) {

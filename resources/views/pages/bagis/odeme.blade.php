@@ -73,7 +73,12 @@
                     </div>
                 @endif
 
-                <div class="mt-4 grid gap-3 sm:grid-cols-[2fr,1fr,1fr]">
+                <div class="mt-4">
+                    <label class="mb-1 block font-jakarta text-xs font-semibold text-primary">Kart Numarası <span class="text-orange-cta">*</span></label>
+                    <input type="text" id="kart-no" class="w-full rounded-xl border border-primary/15 bg-white px-3 py-2.5 font-jakarta text-sm text-primary outline-none ring-0 transition-colors focus:border-accent" placeholder="0000 0000 0000 0000">
+                </div>
+
+                <div class="mt-3 grid gap-3 sm:grid-cols-[2fr,1fr,1fr]">
                     <div>
                         <label class="mb-1 block font-jakarta text-xs font-semibold text-primary">Kart Üzerindeki İsim <span class="text-orange-cta">*</span></label>
                         <input type="text" id="kart-sahibi" class="w-full rounded-xl border border-primary/15 bg-white px-3 py-2.5 font-jakarta text-sm text-primary outline-none ring-0 transition-colors focus:border-accent" placeholder="Ad Soyad">
@@ -86,11 +91,6 @@
                         <label class="mb-1 block font-jakarta text-xs font-semibold text-primary">CVV <span class="text-orange-cta">*</span></label>
                         <input type="text" id="kart-cvv" maxlength="4" class="w-full rounded-xl border border-primary/15 bg-white px-3 py-2.5 font-jakarta text-sm text-primary outline-none ring-0 transition-colors focus:border-accent" placeholder="123">
                     </div>
-                </div>
-
-                <div class="mt-3">
-                    <label class="mb-1 block font-jakarta text-xs font-semibold text-primary">Kart Numarası <span class="text-orange-cta">*</span></label>
-                    <input type="text" id="kart-no" class="w-full rounded-xl border border-primary/15 bg-white px-3 py-2.5 font-jakarta text-sm text-primary outline-none ring-0 transition-colors focus:border-accent" placeholder="0000 0000 0000 0000">
                 </div>
 
                 <div id="odeme-mesaj" class="mt-4 hidden rounded-xl border px-4 py-3 font-jakarta text-[13px]"></div>
