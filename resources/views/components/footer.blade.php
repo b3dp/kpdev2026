@@ -7,6 +7,8 @@
         ->where('durum', 'yayinda')->orderBy('sira')->get(['ad', 'slug']);
     $footerAtölyeler = \App\Models\KurumsalSayfa::where('sablon', KurumsalSablonu::Atolye->value)
         ->where('durum', 'yayinda')->orderBy('ad')->get(['ad', 'slug']);
+    $footerSozlesmeler = \App\Models\KurumsalSayfa::where('sablon', KurumsalSablonu::Sozlesmeler->value)
+        ->where('durum', 'yayinda')->orderBy('sira')->get(['ad', 'slug']);
     $footerBagislar = \App\Models\BagisTuru::where('aktif', true)->orderBy('ad')->get(['ad', 'slug']);
 @endphp
 
@@ -97,6 +99,13 @@
                         <li><a href="{{ route('kurumsal.show', ['slug' => 'amacimiz']) }}" class="ftr-link">Amacımız</a></li>
                         <li><a href="{{ route('kurumsal.show', ['slug' => 'kurumlar']) }}" class="ftr-link">Kurumlar</a></li>
                         <li><a href="{{ route('kurumsal.show', ['slug' => 'atolyeler']) }}" class="ftr-link">Atölyeler</a></li>
+                        @foreach($footerSozlesmeler as $sozlesme)
+                            <li>
+                                <a href="{{ route('kurumsal.show', ['slug' => $sozlesme->slug]) }}" class="ftr-link">
+                                    {{ $sozlesme->ad }}
+                                </a>
+                            </li>
+                        @endforeach
                     </ul>
                 </div>
 
