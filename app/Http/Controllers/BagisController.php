@@ -204,7 +204,7 @@ class BagisController extends Controller
     {
         $data = $request->all();
 
-        Log::info('Albaraka callback alındı.', [
+        Log::channel('odeme')->info('Albaraka callback alındı.', [
             'MdStatus' => $data['MdStatus'] ?? 'yok',
             'OrderId'  => $data['OrderId'] ?? 'yok',
             'keys'     => array_keys($data),
@@ -215,7 +215,7 @@ class BagisController extends Controller
         $basariliUrl = (string) config('services.albaraka.basarili_url', route('bagis.tesekkur'));
 
         if ($orderId === '') {
-            Log::warning('Albaraka callback: OrderId eksik.');
+            Log::channel('odeme')->warning('Albaraka callback: OrderId eksik.');
             return redirect($hataliUrl)->with('error', 'Ödeme işlemi başarısız oldu.');
         }
 
@@ -226,7 +226,7 @@ class BagisController extends Controller
         $bagis = Bagis::query()->where('bagis_no', $bagisNo)->first();
 
         if (! $bagis) {
-            Log::warning('Albaraka callback: Bağış bulunamadı.', ['orderId' => $orderId, 'bagisNo' => $bagisNo]);
+            Log::channel('odeme')->warning('Albaraka callback: Bağış bulunamadı.', ['orderId' => $orderId, 'bagisNo' => $bagisNo]);
             return redirect($hataliUrl)->with('error', 'Ödeme bilgisi bulunamadı.');
         }
 
@@ -242,7 +242,7 @@ class BagisController extends Controller
         if (! $albarakaService->callbackDogrula($data)) {
             $mdStatus = (string) ($data['MdStatus'] ?? '?');
             $mdStatusHatasi = $mdStatus !== '1';
-            Log::warning('Albaraka callback: MAC doğrulama başarısız veya MdStatus!=1.', [
+            Log::channel('odeme')->warning('Albaraka callback: MAC doğrulama başarısız veya MdStatus!=1.', [
                 'orderId'  => $orderId,
                 'mdStatus' => $mdStatus,
             ]);
@@ -266,7 +266,7 @@ class BagisController extends Controller
         $beklenenTutar = (int) round($bagis->toplam_tutar * 100);
 
         if ($callbackTutar !== $beklenenTutar) {
-            Log::error('Albaraka callback: Tutar uyuşmazlığı.', [
+            Log::channel('odeme')->error('Albaraka callback: Tutar uyuşmazlığı.', [
                 'orderId'         => $orderId,
                 'callbackTutar'   => $callbackTutar,
                 'beklenenTutar'   => $beklenenTutar,

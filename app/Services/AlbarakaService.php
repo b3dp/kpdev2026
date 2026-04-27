@@ -54,11 +54,11 @@ class AlbarakaService
             $openNewWindow = (string) config('services.albaraka.open_new_window', 0);
             $useOosValue = $useOos ? '1' : '0';
             $txnState = (string) config('services.albaraka.txn_state', 'INITIAL');
-            $useJokerVadaa = '1';
+            $useJokerVadaa = (string) config('services.albaraka.use_joker_vadaa', 0);
 
             $cardNo = '';
             $cvv = '';
-            $expireDate = '';
+            $expiredDate = '';
             $cardHolderName = '';
 
             if (! $useOos) {
@@ -67,10 +67,11 @@ class AlbarakaService
                 $ay = str_pad(substr((string) ($kartBilgileri['son_kullanma_ay'] ?? ''), 0, 2), 2, '0', STR_PAD_LEFT);
                 $yil = substr(preg_replace('/\D+/', '', (string) ($kartBilgileri['son_kullanma_yil'] ?? '')) ?: '', -2);
                 // Dokümana göre son kullanma formatı YYAA (örn: 2001)
-                $expireDate = $yil.$ay;
+                $expiredDate = $yil.$ay;
                 $cardHolderName = trim((string) ($kartBilgileri['kart_sahibi'] ?? ''));
             }
 
+            // MacNew, bankaya post edilen gizli alanların sırasıyla ';' ile birleştirilmesiyle hesaplanır.
             $macNewPayload = [
                 $this->eposNo,
                 $this->merchantNo,
@@ -78,7 +79,7 @@ class AlbarakaService
                 $albarakaOrderId,
                 $transactionType,
                 $cardNo,
-                $expireDate,
+                $expiredDate,
                 $cvv,
                 $cardHolderName,
                 (string) $tutarKurus,
@@ -93,13 +94,19 @@ class AlbarakaService
             ];
             $macNew = $this->formMacNewHesapla($macNewPayload);
 
-            Log::info('Albaraka 3D form MAC hazırlandı.', [
+            Log::channel('odeme')->info('Albaraka 3D form MAC hazırlandı.', [
                 'orderId' => $albarakaOrderId,
                 'useOos' => $useOos,
                 'amount' => $tutarKurus,
                 'card_len' => strlen($cardNo),
-                'expire_len' => strlen($expireDate),
+                'expire_len' => strlen($expiredDate),
                 'mac_new_len' => strlen($macNew),
+                'payload_fields' => [
+                    'PosnetID', 'MerchantNo', 'TerminalNo', 'OrderId', 'TransactionType',
+                    'CardNo', 'ExpiredDate', 'Cvv', 'CardHolderName', 'Amount',
+                    'InstallmentCount', 'MerchantReturnURL', 'Language', 'CurrencyCode',
+                    'UseJokerVadaa', 'OpenNewWindow', 'UseOOS', 'TxnState',
+                ],
             ]);
 
             $alan = fn (string $name, string $value): string =>
@@ -113,9 +120,7 @@ class AlbarakaService
             $html .= $alan('OrderId',           $albarakaOrderId);
             $html .= $alan('TransactionType',   $transactionType);
             $html .= $alan('CardNo',            $cardNo);
-            $html .= $alan('ExpireDate',        $expireDate);
-            $html .= $alan('ExpiredDate',       $expireDate);
-            $html .= $alan('Cvc2',              $cvv);
+            $html .= $alan('ExpiredDate',       $expiredDate);
             $html .= $alan('Cvv',               $cvv);
             $html .= $alan('CardHolderName',    $cardHolderName);
             $html .= $alan('Amount',            (string) $tutarKurus);
@@ -125,17 +130,16 @@ class AlbarakaService
             $html .= $alan('CurrencyCode',      $currencyCode);
             $html .= $alan('MacNew',            $macNew);
             $html .= $alan('UseJokerVadaa',     $useJokerVadaa);
-            $html .= $alan('TxnState',          $txnState);
-            $html .= $alan('IsTDSecureMerchant','Y');
-            $html .= $alan('UseOOS',            $useOosValue);
             $html .= $alan('OpenNewWindow',     $openNewWindow);
+            $html .= $alan('UseOOS',            $useOosValue);
+            $html .= $alan('TxnState',          $txnState);
             $html .= '</form>';
             $html .= '<script>document.getElementById("albaraka3dForm").submit();</script>';
             $html .= '</body></html>';
 
             return $html;
         } catch (Throwable $e) {
-            Log::error('Albaraka 3D form oluşturulamadı.', [
+            Log::channel('odeme')->error('Albaraka 3D form oluşturulamadı.', [
                 'hata'     => $e->getMessage(),
                 'orderId'  => $orderId,
                 'tutar'    => $tutarKurus,
@@ -192,7 +196,7 @@ class AlbarakaService
                 return true;
             }
 
-            Log::warning('Albaraka callback MAC eşleşmedi.', [
+            Log::channel('odeme')->warning('Albaraka callback MAC eşleşmedi.', [
                 'secureTransactionId_var' => $secureTransactionId !== '',
                 'cavv_var' => $cavv !== '',
                 'eci_var' => $eci !== '',
@@ -205,7 +209,7 @@ class AlbarakaService
 
             return false;
         } catch (Throwable $e) {
-            Log::error('Albaraka callback MAC doğrulama hatası.', ['hata' => $e->getMessage()]);
+            Log::channel('odeme')->error('Albaraka callback MAC doğrulama hatası.', ['hata' => $e->getMessage()]);
             return false;
         }
     }
@@ -293,7 +297,7 @@ class AlbarakaService
                 ];
             }
 
-            Log::warning('Albaraka Sale başarısız.', [
+            Log::channel('odeme')->warning('Albaraka Sale başarısız.', [
                 'orderId'       => $orderId,
                 'responseCode'  => $responseCode,
                 'responseDesc'  => $responseDesc,
@@ -306,7 +310,7 @@ class AlbarakaService
                 'hata_mesaji'  => $responseDesc,
             ];
         } catch (Throwable $e) {
-            Log::error('Albaraka Sale çağrısı başarısız.', [
+            Log::channel('odeme')->error('Albaraka Sale çağrısı başarısız.', [
                 'hata'     => $e->getMessage(),
                 'orderId'  => $orderId,
                 'tutar'    => $tutarKurus,
@@ -344,7 +348,7 @@ class AlbarakaService
     private function formMacNewHesapla(array $payloadValues): string
     {
         $str = implode(';', $payloadValues);
-        return base64_encode(hash_hmac('sha256', $str, $this->encKey, true));
+        return base64_encode(hash_hmac('sha256', $str, $this->hmacAnahtari(), true));
     }
 
     /**
@@ -398,5 +402,25 @@ class AlbarakaService
         }
 
         return '';
+    }
+
+    /**
+     * ENCKEY bazı kurulumlarda "10,10,10,..." byte listesi olarak gelebilir.
+     */
+    private function hmacAnahtari(): string
+    {
+        $hamAnahtar = trim($this->encKey);
+
+        if ($hamAnahtar !== '' && preg_match('/^\d+(\s*,\s*\d+)+$/', $hamAnahtar) === 1) {
+            $binary = '';
+
+            foreach (explode(',', $hamAnahtar) as $parca) {
+                $binary .= chr((int) trim($parca));
+            }
+
+            return $binary;
+        }
+
+        return $hamAnahtar;
     }
 }

@@ -112,6 +112,7 @@ return [
         'installment_count'  => (int) env('ALBARAKA_INSTALLMENT_COUNT', 0),
         'txn_type'           => env('ALBARAKA_TXN_TYPE', 'Sale'),
         'txn_state'          => env('ALBARAKA_TXN_STATE', 'INITIAL'),
+        'use_joker_vadaa'    => (int) env('ALBARAKA_USE_JOKER_VADAA', 0),
         'timeout_sn'         => (int) env('ALBARAKA_TIMEOUT_SN', 30),
         'verify_ssl'         => (bool) env('ALBARAKA_VERIFY_SSL', true),
     ],

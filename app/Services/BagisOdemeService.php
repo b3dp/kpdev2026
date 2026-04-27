@@ -25,7 +25,7 @@ class BagisOdemeService
         try {
             return (bool) config('services.bagis.test_mode', true);
         } catch (Throwable $exception) {
-            Log::error('Bağış test modu kontrolü başarısız.', [
+            Log::channel('odeme')->error('Bağış test modu kontrolü başarısız.', [
                 'hata' => $exception->getMessage(),
             ]);
 
@@ -63,7 +63,7 @@ class BagisOdemeService
                 ],
             ]);
         } catch (Throwable $exception) {
-            Log::error('Bağış test kartları okunamadı.', [
+            Log::channel('odeme')->error('Bağış test kartları okunamadı.', [
                 'hata' => $exception->getMessage(),
             ]);
 
@@ -95,7 +95,7 @@ class BagisOdemeService
         } catch (ValidationException $exception) {
             throw $exception;
         } catch (Throwable $exception) {
-            Log::error('Bağış test ödeme işlemi başarısız.', [
+            Log::channel('odeme')->error('Bağış test ödeme işlemi başarısız.', [
                 'hata' => $exception->getMessage(),
                 'slug' => $veri['slug'] ?? null,
             ]);
@@ -218,7 +218,7 @@ class BagisOdemeService
         } catch (ValidationException $exception) {
             throw $exception;
         } catch (Throwable $exception) {
-            Log::error('Bağış kaydedilemedi.', [
+            Log::channel('odeme')->error('Bağış kaydedilemedi.', [
                 'hata' => $exception->getMessage(),
                 'slug' => $veri['slug'] ?? null,
             ]);
@@ -366,7 +366,7 @@ class BagisOdemeService
                 'tip' => ['sahip'],
             ]));
         } catch (Throwable $exception) {
-            Log::error('Bağış kişi kayıtları oluşturulamadı.', [
+            Log::channel('odeme')->error('Bağış kişi kayıtları oluşturulamadı.', [
                 'bagis_id' => $bagis->id,
                 'hata' => $exception->getMessage(),
             ]);

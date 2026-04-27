@@ -65,6 +65,14 @@ return [
             'replace_placeholders' => true,
         ],
 
+        'odeme' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/odeme.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'days' => env('LOG_DAILY_DAYS', 14),
+            'replace_placeholders' => true,
+        ],
+
         'daily' => [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),
