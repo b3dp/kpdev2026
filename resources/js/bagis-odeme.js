@@ -50,6 +50,78 @@ function odemeMesajiGoster(mesaj, tip = 'error') {
     }
 }
 
+function formVerisiOku(form) {
+    try {
+        return JSON.parse(form?.dataset?.formVerisi || '{}');
+    } catch (error) {
+        return {};
+    }
+}
+
+function sahipBilgisiniBul(formVerisi = {}) {
+    const kucukbasAd = String(formVerisi.kucukbas_ad_soyad || '').trim();
+
+    if (kucukbasAd) {
+        return {
+            ad: kucukbasAd,
+            tc: String(formVerisi.kucukbas_tc || '').trim(),
+            email: String(formVerisi.kucukbas_eposta || '').trim(),
+            telefon: String(formVerisi.kucukbas_telefon || '').trim(),
+        };
+    }
+
+    const hissedarAd = String(formVerisi['hissedarlar[0][ad_soyad]'] || '').trim();
+
+    if (hissedarAd) {
+        return {
+            ad: hissedarAd,
+            tc: String(formVerisi['hissedarlar[0][tc_kimlik]'] || '').trim(),
+            email: String(formVerisi['hissedarlar[0][eposta]'] || '').trim(),
+            telefon: String(formVerisi['hissedarlar[0][telefon]'] || '').trim(),
+        };
+    }
+
+    const sahipAd = String(formVerisi.sahip_ad_soyad || '').trim();
+
+    if (sahipAd) {
+        return {
+            ad: sahipAd,
+            tc: '',
+            email: '',
+            telefon: String(formVerisi.sahip_telefon || '').trim(),
+        };
+    }
+
+    return null;
+}
+
+function odemeAlanlariniDoldur(kaynak) {
+    if (!kaynak) {
+        return;
+    }
+
+    const odeyenAd = document.getElementById('odeyen-ad');
+    const odeyenTc = document.getElementById('odeyen-tc');
+    const odeyenEmail = document.getElementById('odeyen-email');
+    const odeyenTel = document.getElementById('odeyen-tel');
+
+    if (odeyenAd && kaynak.ad) {
+        odeyenAd.value = kaynak.ad;
+    }
+
+    if (odeyenTc && kaynak.tc) {
+        odeyenTc.value = kaynak.tc;
+    }
+
+    if (odeyenEmail && kaynak.email) {
+        odeyenEmail.value = kaynak.email;
+    }
+
+    if (odeyenTel && kaynak.telefon) {
+        odeyenTel.value = kaynak.telefon;
+    }
+}
+
 async function odemeyiTamamlaOdemeSayfasinda() {
     const form = document.getElementById('bagis-odeme-form');
 
@@ -156,6 +228,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const sonKullanmaAlani = document.getElementById('kart-son-kullanma');
     const cvvAlani = document.getElementById('kart-cvv');
     const odemeButonu = document.getElementById('odeme-tamamla-btn');
+    const kopyalaToggle = document.getElementById('kopyala-odeme-toggle');
+    const sahipBilgisi = sahipBilgisiniBul(formVerisiOku(form));
+
+    if (kopyalaToggle) {
+        kopyalaToggle.disabled = !sahipBilgisi;
+        if (!sahipBilgisi) {
+            kopyalaToggle.checked = false;
+        }
+
+        kopyalaToggle.addEventListener('change', () => {
+            if (kopyalaToggle.checked) {
+                odemeAlanlariniDoldur(sahipBilgisi);
+            }
+        });
+    }
 
     if (kartNoAlani) {
         kartNoAlani.addEventListener('input', () => {

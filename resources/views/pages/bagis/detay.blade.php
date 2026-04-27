@@ -261,40 +261,6 @@
           <div class="section-divider"></div>
 
           <div>
-            <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;color:#162E4B;margin-bottom:4px;display:flex;align-items:center;gap:8px;">
-              <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#B27829" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
-              Ödeme Bilgileri
-            </p>
-            <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;color:#62868D;margin-bottom:16px;">Makbuz ve bildirimler bu bilgilere gönderilecektir.</p>
-            <div id="kopyala-toggle-wrap" style="background:#F7F5F0;border:1px solid rgba(22,46,75,.1);border-radius:10px;padding:12px 14px;margin-bottom:16px;display:{{ $aktifTurKey === 'kucukbas' || $aktifTurKey === 'buyukbas' ? 'block' : 'none' }};">
-              <div class="toggle-wrap" onclick="toggleKopyala()">
-                <div class="toggle-track" id="kopyala-track"><div class="toggle-thumb"></div></div>
-                <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;font-weight:500;color:#162E4B;">Sahip bilgilerimi ödeme bilgisi olarak kullan</span>
-              </div>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-              <div class="form-group">
-                <label class="form-label">Ad Soyad <span>*</span></label>
-                <input type="text" id="odeyen-ad" name="odeyen_ad_soyad" class="form-input" autocomplete="name" placeholder="Ad Soyad" />
-              </div>
-              <div class="form-group">
-                <label class="form-label">TC Kimlik</label>
-                <input type="text" id="odeyen-tc" name="odeyen_tc" class="form-input" inputmode="numeric" maxlength="11" placeholder="XXXXXXXXXXX" />
-              </div>
-              <div class="form-group">
-                <label class="form-label">E-posta <span>*</span></label>
-                <input type="email" id="odeyen-email" name="odeyen_eposta" class="form-input" autocomplete="email" placeholder="ornek@mail.com" />
-              </div>
-              <div class="form-group">
-                <label class="form-label">Telefon <span>*</span></label>
-                <input type="tel" id="odeyen-tel" name="odeyen_telefon" class="form-input" autocomplete="tel" inputmode="numeric" pattern="[0-9]*" placeholder="05XX XXX XX XX" />
-              </div>
-            </div>
-          </div>
-
-          <div class="section-divider"></div>
-
-          <div>
             <div style="border:1px dashed rgba(22,46,75,.14);border-radius:12px;padding:12px 14px;background:#F8FAFB;">
               <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:#162E4B;">Kart bilgileri ayrı ödeme adımında alınır.</p>
               <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;line-height:1.6;color:#62868D;margin-top:4px;">Bu sayfada yalnızca bağış kalemlerinizi ve kişi bilgilerini düzenleyip sepete ekleyin. Güvenli ödeme ekranına sonraki adımda geçeceksiniz.</p>
