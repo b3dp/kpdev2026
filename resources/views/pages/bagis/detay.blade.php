@@ -439,9 +439,7 @@
           <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;font-weight:600;color:#162E4B;margin-bottom:12px;">Neden Kestanepazarı?</p>
           <div style="display:flex;flex-direction:column;gap:10px;">
             @foreach([
-              '58 yıllık köklü dernek güvencesi',
               'Anında dijital makbuz (e-posta + SMS)',
-              '%100 şeffaf harcama raporu',
               'Albaraka Türk güvenceli ödeme altyapısı',
             ] as $madde)
               <div style="display:flex;align-items:flex-start;gap:8px;">

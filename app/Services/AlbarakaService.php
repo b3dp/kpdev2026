@@ -72,6 +72,7 @@ class AlbarakaService
             }
 
             // MacNew, bankaya post edilen gizli alanların sırasıyla ';' ile birleştirilmesiyle hesaplanır.
+            // Yalnızca 14 temel alan (UseJokerVadaa, OpenNewWindow, UseOOS, TxnState hariç)
             $macNewPayload = [
                 $this->eposNo,
                 $this->merchantNo,
@@ -87,10 +88,6 @@ class AlbarakaService
                 $merchantReturnUrl,
                 $language,
                 $currencyCode,
-                $useJokerVadaa,
-                $openNewWindow,
-                $useOosValue,
-                $txnState,
             ];
             $macNew = $this->formMacNewHesapla($macNewPayload);
 
@@ -101,11 +98,11 @@ class AlbarakaService
                 'card_len' => strlen($cardNo),
                 'expire_len' => strlen($expiredDate),
                 'mac_new_len' => strlen($macNew),
+                'macnew_payload_fields_count' => count($macNewPayload),
                 'payload_fields' => [
                     'PosnetID', 'MerchantNo', 'TerminalNo', 'OrderId', 'TransactionType',
                     'CardNo', 'ExpiredDate', 'Cvv', 'CardHolderName', 'Amount',
                     'InstallmentCount', 'MerchantReturnURL', 'Language', 'CurrencyCode',
-                    'UseJokerVadaa', 'OpenNewWindow', 'UseOOS', 'TxnState',
                 ],
             ]);
 
