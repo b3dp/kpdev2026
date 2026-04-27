@@ -649,27 +649,83 @@ function kartAlaniDegeriniAl(id) {
     return document.getElementById(id)?.value?.trim() || '';
 }
 
-function testKartiniDoldur(kartNo) {
+function sadeceRakam(deger) {
+    return String(deger || '').replace(/\D+/g, '');
+}
+
+function kartNumarasiniMaskele(deger) {
+    const rakamlar = sadeceRakam(deger).slice(0, 19);
+    return rakamlar.replace(/(\d{4})(?=\d)/g, '$1 ').trim();
+}
+
+function sonKullanmayiMaskele(deger) {
+    const rakamlar = sadeceRakam(deger).slice(0, 6);
+
+    if (rakamlar.length <= 2) {
+        return rakamlar;
+    }
+
+    let ay = rakamlar.slice(0, 2);
+    const aySayi = parseInt(ay, 10);
+
+    if (!Number.isNaN(aySayi)) {
+        if (aySayi <= 0) {
+            ay = '01';
+        } else if (aySayi > 12) {
+            ay = '12';
+        }
+    }
+
+    if (rakamlar.length <= 4) {
+        return `${ay}/${rakamlar.slice(2, 4)}`;
+    }
+
+    return `${ay}/${rakamlar.slice(2, 6)}`;
+}
+
+function kartAlanlariniHazirla() {
     const kartNoAlani = document.getElementById('kart-no');
-    const kartSahibi = document.getElementById('kart-sahibi');
-    const ayAlani = document.getElementById('kart-ay');
-    const yilAlani = document.getElementById('kart-yil');
+    const sonKullanmaAlani = document.getElementById('kart-son-kullanma');
     const cvvAlani = document.getElementById('kart-cvv');
 
     if (kartNoAlani) {
-        kartNoAlani.value = kartNo;
+        kartNoAlani.addEventListener('input', () => {
+            kartNoAlani.value = kartNumarasiniMaskele(kartNoAlani.value);
+        });
+        kartNoAlani.value = kartNumarasiniMaskele(kartNoAlani.value);
+    }
+
+    if (sonKullanmaAlani) {
+        sonKullanmaAlani.addEventListener('input', () => {
+            sonKullanmaAlani.value = sonKullanmayiMaskele(sonKullanmaAlani.value);
+        });
+        sonKullanmaAlani.value = sonKullanmayiMaskele(sonKullanmaAlani.value);
+    }
+
+    if (cvvAlani) {
+        cvvAlani.addEventListener('input', () => {
+            cvvAlani.value = sadeceRakam(cvvAlani.value).slice(0, 4);
+        });
+        cvvAlani.value = sadeceRakam(cvvAlani.value).slice(0, 4);
+    }
+}
+
+function testKartiniDoldur(kartNo) {
+    const kartNoAlani = document.getElementById('kart-no');
+    const kartSahibi = document.getElementById('kart-sahibi');
+    const sonKullanmaAlani = document.getElementById('kart-son-kullanma');
+    const cvvAlani = document.getElementById('kart-cvv');
+
+    if (kartNoAlani) {
+        kartNoAlani.value = kartNumarasiniMaskele(kartNo);
     }
 
     if (kartSahibi && !kartSahibi.value) {
         kartSahibi.value = kartAlaniDegeriniAl('odeyen-ad') || 'Test Bağışçı';
     }
 
-    if (ayAlani && !ayAlani.value) {
-        ayAlani.value = '12';
-    }
-
-    if (yilAlani && !yilAlani.value) {
-        yilAlani.value = String(new Date().getFullYear() + 1);
+    if (sonKullanmaAlani && !sonKullanmaAlani.value) {
+        sonKullanmaAlani.value = sonKullanmayiMaskele(`12${String(new Date().getFullYear() + 1).slice(-2)}`);
     }
 
     if (cvvAlani && !cvvAlani.value) {
@@ -713,8 +769,7 @@ async function odemeyiTamamla() {
                 odeme_yontemi: document.getElementById('odeme-paytr')?.classList.contains('selected') ? 'paytr' : 'albaraka',
                 kart_no: kartAlaniDegeriniAl('kart-no'),
                 kart_sahibi: kartAlaniDegeriniAl('kart-sahibi'),
-                son_kullanma_ay: kartAlaniDegeriniAl('kart-ay'),
-                son_kullanma_yil: kartAlaniDegeriniAl('kart-yil'),
+                son_kullanma: kartAlaniDegeriniAl('kart-son-kullanma'),
                 cvv: kartAlaniDegeriniAl('kart-cvv'),
                 form_verisi: formVerisiniTopla(),
             }),
@@ -780,6 +835,7 @@ document.addEventListener('kp:sepet-guncellendi', (event) => {
 
 document.addEventListener('DOMContentLoaded', () => {
     bagisSayfaGoruntulemesiniGonder();
+    kartAlanlariniHazirla();
 
     document.querySelectorAll('.tutar-btn[data-tutar], .tutar-btn[data-adet]').forEach((buton) => {
         buton.addEventListener('click', () => {

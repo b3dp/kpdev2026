@@ -338,23 +338,19 @@
             <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-top:14px;">
               <div class="form-group">
                 <label class="form-label">Kart Üzerindeki İsim <span>*</span></label>
-                <input type="text" id="kart-sahibi" class="form-input" autocomplete="cc-name" placeholder="Ad Soyad" />
+                <input type="text" id="kart-sahibi" name="cc-name" class="form-input" autocomplete="cc-name" placeholder="Ad Soyad" />
               </div>
               <div class="form-group">
-                <label class="form-label">Son Kullanma Ay <span>*</span></label>
-                <input type="text" id="kart-ay" class="form-input" inputmode="numeric" maxlength="2" placeholder="12" />
-              </div>
-              <div class="form-group">
-                <label class="form-label">Son Kullanma Yıl <span>*</span></label>
-                <input type="text" id="kart-yil" class="form-input" inputmode="numeric" maxlength="4" placeholder="2030" />
+                <label class="form-label">Son Kullanma Tarihi <span>*</span></label>
+                <input type="text" id="kart-son-kullanma" name="cc-exp" class="form-input" inputmode="numeric" maxlength="7" autocomplete="cc-exp" placeholder="AA/YY" />
               </div>
               <div class="form-group" style="grid-column:span 2;">
                 <label class="form-label">Kart Numarası <span>*</span></label>
-                <input type="text" id="kart-no" class="form-input" inputmode="numeric" autocomplete="cc-number" placeholder="0000 0000 0000 0000" />
+                <input type="text" id="kart-no" name="cc-number" class="form-input" inputmode="numeric" autocomplete="cc-number" placeholder="0000 0000 0000 0000" />
               </div>
               <div class="form-group">
                 <label class="form-label">CVV <span>*</span></label>
-                <input type="text" id="kart-cvv" class="form-input" inputmode="numeric" maxlength="4" autocomplete="cc-csc" placeholder="123" />
+                <input type="text" id="kart-cvv" name="cc-csc" class="form-input" inputmode="numeric" maxlength="4" autocomplete="cc-csc" placeholder="123" />
               </div>
             </div>
           </div>

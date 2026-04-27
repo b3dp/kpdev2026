@@ -122,8 +122,8 @@ class BagisController extends Controller
 
     public function odemeYap(Request $request): JsonResponse|Response
     {
-        // Albaraka aktifse kart alanları sunucu tarafında toplanmaz; banka kendi sayfasında toplar.
         $albarakaAktif = (bool) config('services.albaraka.aktif', false);
+        $albarakaUseOos = (int) config('services.albaraka.use_oos', 1) === 1;
 
         $kurallar = [
             'slug' => ['required', 'string', 'exists:bagis_turleri,slug'],
@@ -134,18 +134,33 @@ class BagisController extends Controller
             'form_verisi' => ['nullable', 'array'],
         ];
 
-        if (! $albarakaAktif) {
+        if ($albarakaAktif && ! $albarakaUseOos) {
+            // UseOOS=0: kart bilgisi bizim formdan alınır.
+            $kurallar += [
+                'kart_no' => ['required', 'string', 'min:12'],
+                'kart_sahibi' => ['required', 'string', 'max:255'],
+                'son_kullanma' => ['required', 'string', 'regex:/^(0[1-9]|1[0-2])\s*\/\s*(\d{2}|\d{4})$/'],
+                'cvv' => ['required', 'string', 'regex:/^\d{3,4}$/'],
+            ];
+        } elseif (! $albarakaAktif) {
             // Test modunda kart alanları zorunlu
             $kurallar += [
                 'kart_no' => ['required', 'string', 'min:12'],
                 'kart_sahibi' => ['required', 'string', 'max:255'],
-                'son_kullanma_ay' => ['required', 'string', 'min:2', 'max:2'],
-                'son_kullanma_yil' => ['required', 'string', 'min:2', 'max:4'],
+                'son_kullanma' => ['nullable', 'string', 'regex:/^(0[1-9]|1[0-2])\s*\/\s*(\d{2}|\d{4})$/'],
+                'son_kullanma_ay' => ['required_without:son_kullanma', 'string', 'min:2', 'max:2'],
+                'son_kullanma_yil' => ['required_without:son_kullanma', 'string', 'min:2', 'max:4'],
                 'cvv' => ['required', 'string', 'min:3', 'max:4'],
             ];
         }
 
         $veri = $request->validate($kurallar);
+
+        if (filled($veri['son_kullanma'] ?? null)) {
+            [$ay, $yil] = $this->sonKullanmaParcala((string) $veri['son_kullanma']);
+            $veri['son_kullanma_ay'] = $ay;
+            $veri['son_kullanma_yil'] = $yil;
+        }
 
         if ($albarakaAktif) {
             // 3D Secure yönlendirme: bagis oluştur, banka formunu döndür
@@ -155,7 +170,13 @@ class BagisController extends Controller
 
             // Tutar kuruşa çevir (1 TL = 100)
             $tutarKurus = (int) round($bagis->toplam_tutar * 100);
-            $html = app(AlbarakaService::class)->ucBoyutluFormOlustur($bagis->bagis_no, $tutarKurus);
+            $html = app(AlbarakaService::class)->ucBoyutluFormOlustur($bagis->bagis_no, $tutarKurus, [
+                'kart_no' => $veri['kart_no'] ?? '',
+                'kart_sahibi' => $veri['kart_sahibi'] ?? '',
+                'son_kullanma_ay' => $veri['son_kullanma_ay'] ?? '',
+                'son_kullanma_yil' => $veri['son_kullanma_yil'] ?? '',
+                'cvv' => $veri['cvv'] ?? '',
+            ]);
 
             return response($html, 200)->header('Content-Type', 'text/html');
         }
@@ -323,5 +344,21 @@ class BagisController extends Controller
     private function sepetToplaminiHesapla(array $sepet): float
     {
         return (float) collect($sepet)->sum(fn (array $satir) => (float) ($satir['toplam'] ?? 0));
+    }
+
+    private function sonKullanmaParcala(string $deger): array
+    {
+        $parcalar = preg_split('/\s*\/\s*/', trim($deger)) ?: [];
+        $ay = preg_replace('/\D+/', '', (string) ($parcalar[0] ?? '')) ?: '';
+        $yil = preg_replace('/\D+/', '', (string) ($parcalar[1] ?? '')) ?: '';
+
+        $ay = str_pad(substr($ay, 0, 2), 2, '0', STR_PAD_LEFT);
+        if (strlen($yil) === 4) {
+            $yil = substr($yil, 2, 2);
+        } else {
+            $yil = str_pad(substr($yil, 0, 2), 2, '0', STR_PAD_LEFT);
+        }
+
+        return [$ay, $yil];
     }
 }

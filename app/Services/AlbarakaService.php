@@ -33,20 +33,35 @@ class AlbarakaService
 
     /**
      * 3D Secure doğrulama HTML formu üretir.
-     * UseOOS=1 olduğu için kart alanları boş gönderilir; banka kendi sayfasında toplar.
+     * UseOOS=0 ise kart alanları merchant formundan gönderilir.
      *
      * @param  string $orderId   Bağış no (bagis_no); Albaraka için 20 karaktere pad edilir
      * @param  int    $tutarKurus Tutar kuruş olarak (1 TL = 100)
+     * @param  array  $kartBilgileri kart_no, kart_sahibi, son_kullanma_ay, son_kullanma_yil, cvv
      * @return string            Otomatik submit eden HTML
      */
-    public function ucBoyutluFormOlustur(string $orderId, int $tutarKurus): string
+    public function ucBoyutluFormOlustur(string $orderId, int $tutarKurus, array $kartBilgileri = []): string
     {
         try {
             // Albaraka OrderId tam olarak 20 karakter olmalı; sol-sıfır pad uygula
             $albarakaOrderId = $this->albarakaOrderId($orderId);
+            $useOos = (int) config('services.albaraka.use_oos', 1) === 1;
 
-            // UseOOS=1 olduğunda kart alanları boş olur → MAC parametrelerinde CardNo/Cvc2/ExpireDate boş string
-            $mac = $this->formMacHesapla('', '', '', $tutarKurus);
+            $cardNo = '';
+            $cvv = '';
+            $expireDate = '';
+            $cardHolderName = '';
+
+            if (! $useOos) {
+                $cardNo = preg_replace('/\D+/', '', (string) ($kartBilgileri['kart_no'] ?? '')) ?: '';
+                $cvv = preg_replace('/\D+/', '', (string) ($kartBilgileri['cvv'] ?? '')) ?: '';
+                $ay = str_pad(substr((string) ($kartBilgileri['son_kullanma_ay'] ?? ''), 0, 2), 2, '0', STR_PAD_LEFT);
+                $yil = substr(preg_replace('/\D+/', '', (string) ($kartBilgileri['son_kullanma_yil'] ?? '')) ?: '', -2);
+                $expireDate = $ay.$yil;
+                $cardHolderName = trim((string) ($kartBilgileri['kart_sahibi'] ?? ''));
+            }
+
+            $mac = $this->formMacHesapla($cardNo, $cvv, $expireDate, $tutarKurus);
 
             $alan = fn (string $name, string $value): string =>
                 '<input type="hidden" name="'.htmlspecialchars($name, ENT_QUOTES).'" value="'.htmlspecialchars($value, ENT_QUOTES).'" />';
@@ -58,10 +73,10 @@ class AlbarakaService
             $html .= $alan('TerminalNo',        $this->terminalNo);
             $html .= $alan('OrderId',           $albarakaOrderId);
             $html .= $alan('TransactionType',   config('services.albaraka.txn_type', 'Sale'));
-            $html .= $alan('CardNo',            '');
-            $html .= $alan('ExpiredDate',       '');
-            $html .= $alan('Cvv',               '');
-            $html .= $alan('CardHolderName',    '');
+            $html .= $alan('CardNo',            $cardNo);
+            $html .= $alan('ExpiredDate',       $expireDate);
+            $html .= $alan('Cvv',               $cvv);
+            $html .= $alan('CardHolderName',    $cardHolderName);
             $html .= $alan('Amount',            (string) $tutarKurus);
             $html .= $alan('InstallmentCount',  (string) config('services.albaraka.installment_count', 0));
             $html .= $alan('MerchantReturnURL', $this->returnUrl);
@@ -71,7 +86,7 @@ class AlbarakaService
             $html .= $alan('Mac',               $mac);
             $html .= $alan('TxnState',          config('services.albaraka.txn_state', 'INITIAL'));
             $html .= $alan('IsTDSecureMerchant','Y');
-            $html .= $alan('UseOOS',            (string) config('services.albaraka.use_oos', 1));
+            $html .= $alan('UseOOS',            $useOos ? '1' : '0');
             $html .= $alan('OpenNewWindow',     (string) config('services.albaraka.open_new_window', 0));
             $html .= '</form>';
             $html .= '<script>document.getElementById("albaraka3dForm").submit();</script>';
@@ -232,7 +247,7 @@ class AlbarakaService
     }
 
     /**
-     * 3D formu için MAC hesaplama (UseOOS=1 → kart alanları boş string)
+     * 3D formu için MAC hesaplama
      */
     private function formMacHesapla(string $cardNo, string $cvc2, string $expireDate, int $tutarKurus): string
     {
