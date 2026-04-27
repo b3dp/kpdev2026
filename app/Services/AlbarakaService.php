@@ -91,23 +91,18 @@ class AlbarakaService
             ];
             $macNew = $this->formMacNewHesapla($macNewPayload);
 
-            // Payload'un tam stringini logla (debug)
+            // Payload tam string (debug)
             $payloadJoined = implode(';', $macNewPayload);
 
             Log::channel('odeme')->info('Albaraka 3D form MAC hazırlandı.', [
-                'orderId' => $albarakaOrderId,
-                'useOos' => $useOos,
-                'amount' => $tutarKurus,
-                'card_len' => strlen($cardNo),
-                'expire_len' => strlen($expiredDate),
-                'mac_new_len' => strlen($macNew),
-                'macnew_payload_fields_count' => count($macNewPayload),
-                'payload_joined_preview' => substr($payloadJoined, 0, 150),
-                'payload_fields' => [
-                    'PosnetID', 'MerchantNo', 'TerminalNo', 'OrderId', 'TransactionType',
-                    'CardNo', 'ExpiredDate', 'Cvv', 'CardHolderName', 'Amount',
-                    'InstallmentCount', 'MerchantReturnURL', 'Language', 'CurrencyCode',
-                ],
+                'orderId'       => $albarakaOrderId,
+                'useOos'        => $useOos,
+                'amount'        => $tutarKurus,
+                'expire'        => $expiredDate,
+                'card_len'      => strlen($cardNo),
+                'mac_new'       => $macNew,
+                'payload_bytes' => strlen($payloadJoined),
+                'payload_full'  => $payloadJoined,
             ]);
 
             $alan = fn (string $name, string $value): string =>
