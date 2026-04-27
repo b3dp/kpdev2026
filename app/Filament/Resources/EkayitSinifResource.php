@@ -60,6 +60,7 @@ class EkayitSinifResource extends Resource
                     ->maxLength(20)->placeholder('2025-2026'),
                 Select::make('donem_id')->label('Dönem')->required()
                     ->options(fn () => EkayitDonem::orderByDesc('baslangic')->pluck('ad', 'id')->all())
+                    ->default(fn () => EkayitDonem::aktifDonem()?->id)
                     ->searchable(),
                 Select::make('kurum_id')->label('Kurum')->required()
                     ->options(fn () => Kurum::whereNotNull('kurumsal_sayfa_id')
