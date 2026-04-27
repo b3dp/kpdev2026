@@ -62,6 +62,7 @@ class AlbarakaService
             }
 
             $mac = $this->formMacHesapla($cardNo, $cvv, $expireDate, $tutarKurus);
+            $macNew = $this->formMacNewHesapla($cardNo, $cvv, $expireDate, $tutarKurus, $albarakaOrderId);
 
             $alan = fn (string $name, string $value): string =>
                 '<input type="hidden" name="'.htmlspecialchars($name, ENT_QUOTES).'" value="'.htmlspecialchars($value, ENT_QUOTES).'" />';
@@ -84,6 +85,8 @@ class AlbarakaService
             $html .= $alan('CurrencyCode',      config('services.albaraka.currency_code', 'TL'));
             $html .= $alan('MacParams',         'MerchantNo:TerminalNo:CardNo:Cvc2:ExpireDate:Amount');
             $html .= $alan('Mac',               $mac);
+            $html .= $alan('MacNewParams',      'MerchantNo:TerminalNo:CardNo:Cvc2:ExpireDate:Amount:OrderId');
+            $html .= $alan('MacNew',            $macNew);
             $html .= $alan('TxnState',          config('services.albaraka.txn_state', 'INITIAL'));
             $html .= $alan('IsTDSecureMerchant','Y');
             $html .= $alan('UseOOS',            $useOos ? '1' : '0');
@@ -123,27 +126,42 @@ class AlbarakaService
             $cavv = $this->callbackDegeriAl($data, ['CAVV', 'CavvData', 'Cavv', 'cavvData', 'cavv']);
             $eci = $this->callbackDegeriAl($data, ['ECI', 'Eci', 'eci']);
             $gelenMac = $this->callbackDegeriAl($data, ['Mac', 'MAC', 'mac']);
+            $gelenMacNew = $this->callbackDegeriAl($data, ['MacNew', 'MACNEW', 'macnew', 'Macnew']);
+            $orderId = $this->callbackDegeriAl($data, ['OrderId', 'ORDERID', 'orderid']);
+            $md = $this->callbackDegeriAl($data, ['MD', 'Md', 'md']);
 
             $mac = $this->callbackMacHesapla($secureTransactionId, $cavv, $eci, $mdStatus);
+            $macMdFallback = $md !== ''
+                ? $this->callbackMacHesapla($secureTransactionId, $md, $eci, $mdStatus)
+                : '';
+
+            $macNew = $this->callbackMacNewHesapla($secureTransactionId, $cavv, $eci, $mdStatus, $orderId);
+            $macNewMdFallback = $md !== ''
+                ? $this->callbackMacNewHesapla($secureTransactionId, $md, $eci, $mdStatus, $orderId)
+                : '';
+
+            if ($gelenMacNew !== '') {
+                if (hash_equals($macNew, $gelenMacNew) || ($macNewMdFallback !== '' && hash_equals($macNewMdFallback, $gelenMacNew))) {
+                    return true;
+                }
+            }
 
             if ($gelenMac !== '' && hash_equals($mac, $gelenMac)) {
                 return true;
             }
 
-            // Bazı bankacılık dönüşlerinde CAVV yerine MD değeri MAC'e girilebiliyor; ikincil doğrulama
-            $md = $this->callbackDegeriAl($data, ['MD', 'Md', 'md']);
-            if ($md !== '') {
-                $yedekMac = $this->callbackMacHesapla($secureTransactionId, $md, $eci, $mdStatus);
-                if ($gelenMac !== '' && hash_equals($yedekMac, $gelenMac)) {
-                    return true;
-                }
+            if ($gelenMac !== '' && $macMdFallback !== '' && hash_equals($macMdFallback, $gelenMac)) {
+                return true;
             }
 
             Log::warning('Albaraka callback MAC eşleşmedi.', [
                 'secureTransactionId_var' => $secureTransactionId !== '',
                 'cavv_var' => $cavv !== '',
                 'eci_var' => $eci !== '',
-                'md_var' => ($md ?? '') !== '',
+                'md_var' => $md !== '',
+                'orderId_var' => $orderId !== '',
+                'gelen_mac_var' => $gelenMac !== '',
+                'gelen_mac_new_var' => $gelenMacNew !== '',
                 'mdStatus' => $mdStatus,
             ]);
 
@@ -176,6 +194,13 @@ class AlbarakaService
             }
 
             $mac = $this->callbackMacHesapla($secureTransactionId, $cavv, $eci, $mdStatus);
+            $macNew = $this->callbackMacNewHesapla(
+                $secureTransactionId,
+                $cavv,
+                $eci,
+                $mdStatus,
+                $this->albarakaOrderId($orderId)
+            );
 
             $params = [
                 'ApiType'                => 'JSON',
@@ -195,6 +220,8 @@ class AlbarakaService
                 ],
                 'MAC'                    => $mac,
                 'MACParams'              => 'MerchantNo:TerminalNo:SecureTransactionId:CavvData:Eci:MdStatus',
+                'MACNew'                 => $macNew,
+                'MACNewParams'           => 'MerchantNo:TerminalNo:SecureTransactionId:CavvData:Eci:MdStatus:OrderId',
                 'Amount'                 => $tutarKurus,
                 'CurrencyCode'           => config('services.albaraka.currency_code', 'TL'),
                 'PointAmount'            => 0,
@@ -283,6 +310,20 @@ class AlbarakaService
     }
 
     /**
+     * Yeni düzenleme: MAC hesaplamasına OrderId dahil edilir (MacNew).
+     */
+    private function formMacNewHesapla(
+        string $cardNo,
+        string $cvc2,
+        string $expireDate,
+        int $tutarKurus,
+        string $orderId
+    ): string {
+        $str = $this->merchantNo.$this->terminalNo.$cardNo.$cvc2.$expireDate.$tutarKurus.$orderId;
+        return base64_encode(hash('sha256', $str.$this->encKey, true));
+    }
+
+    /**
      * Callback ve Sale için MAC hesaplama
      */
     private function callbackMacHesapla(
@@ -292,6 +333,20 @@ class AlbarakaService
         string $mdStatus
     ): string {
         $str = $this->merchantNo.$this->terminalNo.$secureTransactionId.$cavv.$eci.$mdStatus;
+        return base64_encode(hash('sha256', $str.$this->encKey, true));
+    }
+
+    /**
+     * Yeni düzenleme: callback/sale MAC hesaplamasına OrderId dahil edilir (MacNew).
+     */
+    private function callbackMacNewHesapla(
+        string $secureTransactionId,
+        string $cavv,
+        string $eci,
+        string $mdStatus,
+        string $orderId
+    ): string {
+        $str = $this->merchantNo.$this->terminalNo.$secureTransactionId.$cavv.$eci.$mdStatus.$orderId;
         return base64_encode(hash('sha256', $str.$this->encKey, true));
     }
 

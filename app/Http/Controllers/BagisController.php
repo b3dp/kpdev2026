@@ -207,6 +207,7 @@ class BagisController extends Controller
         Log::info('Albaraka callback alındı.', [
             'MdStatus' => $data['MdStatus'] ?? 'yok',
             'OrderId'  => $data['OrderId'] ?? 'yok',
+            'keys'     => array_keys($data),
         ]);
 
         $orderId = (string) ($data['OrderId'] ?? '');
