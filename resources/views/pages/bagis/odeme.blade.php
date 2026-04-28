@@ -24,7 +24,7 @@
             <a href="{{ route('bagis.sepet') }}" class="inline-flex items-center justify-center rounded-[10px] border border-primary/10 bg-white px-4 py-2 font-jakarta text-sm font-semibold text-primary transition-colors hover:bg-bg-soft">Sepete dön</a>
         </div>
 
-        <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr),360px] lg:items-start">
+        <div class="grid gap-6 lg:grid-cols-[minmax(0,_1fr)_360px] lg:items-start">
             <section class="rounded-2xl border border-primary/10 bg-white p-4 shadow-sm sm:p-5">
                 <p class="font-jakarta text-sm font-bold uppercase tracking-[0.08em] text-teal-muted">Ödeyen Bilgileri</p>
                 <p class="mt-1 font-jakarta text-xs text-teal-muted">Makbuz ve ödeme bildirimleri bu kişiye gönderilir.</p>
@@ -80,7 +80,7 @@
                     </div>
                 </div>
 
-                <div class="mt-3 grid gap-3 sm:grid-cols-[2fr,1fr,1fr]">
+                <div class="mt-3 grid gap-3 sm:grid-cols-[2fr_1fr_1fr]">
                     <div>
                         <label class="mb-1 block font-jakarta text-xs font-semibold text-primary">Kart Numarası <span class="text-orange-cta">*</span></label>
                         <input type="text" id="kart-no" class="w-full rounded-xl border border-primary/15 bg-white px-3 py-2.5 font-jakarta text-sm text-primary outline-none ring-0 transition-colors focus:border-accent" placeholder="0000 0000 0000 0000">
