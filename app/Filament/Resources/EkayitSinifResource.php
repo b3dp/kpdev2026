@@ -8,6 +8,7 @@ use App\Models\EkayitSinif;
 use App\Models\Kurum;
 use App\Services\SinifRenkService;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -86,6 +87,19 @@ class EkayitSinifResource extends Resource
             ]),
 
             Section::make('Görseller')->schema([
+                Placeholder::make('gorsel_kare_mevcut')
+                    ->label('Mevcut Görsel 1:1 (Kare)')
+                    ->content(function (?EkayitSinif $record): \Illuminate\Support\HtmlString {
+                        $url = $record?->gorselKareUrl();
+
+                        if (! filled($url)) {
+                            return new \Illuminate\Support\HtmlString('—');
+                        }
+
+                        return new \Illuminate\Support\HtmlString('<a href="' . e($url) . '" target="_blank" rel="noopener"><img src="' . e($url) . '" alt="Görsel 1:1" style="width:100%;max-height:200px;object-fit:cover;border-radius:10px;border:1px solid #e2e8f0;"></a>');
+                    })
+                    ->visible(fn (?EkayitSinif $record): bool => filled($record?->gorselKareUrl())),
+
                 FileUpload::make('gorsel_kare_gecici')
                     ->label('Görsel 1:1 (Kare)')
                     ->disk('local')
@@ -98,6 +112,19 @@ class EkayitSinifResource extends Resource
                     ->imagePreviewHeight('160')
                     ->helperText('Yükleme sonrası ori/opt olarak DO Spaces\'a taşınır. Önerilen boyut: 1080x1080.')
                     ->dehydrated(false),
+
+                Placeholder::make('gorsel_dikey_mevcut')
+                    ->label('Mevcut Görsel 9:16 (Dikey)')
+                    ->content(function (?EkayitSinif $record): \Illuminate\Support\HtmlString {
+                        $url = $record?->gorselDikeyUrl();
+
+                        if (! filled($url)) {
+                            return new \Illuminate\Support\HtmlString('—');
+                        }
+
+                        return new \Illuminate\Support\HtmlString('<a href="' . e($url) . '" target="_blank" rel="noopener"><img src="' . e($url) . '" alt="Görsel 9:16" style="width:100%;max-height:200px;object-fit:cover;border-radius:10px;border:1px solid #e2e8f0;"></a>');
+                    })
+                    ->visible(fn (?EkayitSinif $record): bool => filled($record?->gorselDikeyUrl())),
 
                 FileUpload::make('gorsel_dikey_gecici')
                     ->label('Görsel 9:16 (Dikey)')
@@ -112,6 +139,19 @@ class EkayitSinifResource extends Resource
                     ->helperText('Yükleme sonrası ori/opt olarak DO Spaces\'a taşınır. Önerilen boyut: 1080x1920.')
                     ->dehydrated(false),
 
+                Placeholder::make('gorsel_yatay_mevcut')
+                    ->label('Mevcut Görsel 16:9 (Yatay)')
+                    ->content(function (?EkayitSinif $record): \Illuminate\Support\HtmlString {
+                        $url = $record?->gorselYatayUrl();
+
+                        if (! filled($url)) {
+                            return new \Illuminate\Support\HtmlString('—');
+                        }
+
+                        return new \Illuminate\Support\HtmlString('<a href="' . e($url) . '" target="_blank" rel="noopener"><img src="' . e($url) . '" alt="Görsel 16:9" style="width:100%;max-height:200px;object-fit:cover;border-radius:10px;border:1px solid #e2e8f0;"></a>');
+                    })
+                    ->visible(fn (?EkayitSinif $record): bool => filled($record?->gorselYatayUrl())),
+
                 FileUpload::make('gorsel_yatay_gecici')
                     ->label('Görsel 16:9 (Yatay)')
                     ->disk('local')
@@ -124,6 +164,19 @@ class EkayitSinifResource extends Resource
                     ->imagePreviewHeight('160')
                     ->helperText('Yükleme sonrası ori/opt olarak DO Spaces\'a taşınır. Önerilen boyut: 1920x1080.')
                     ->dehydrated(false),
+
+                Placeholder::make('gorsel_orijinal_mevcut')
+                    ->label('Mevcut Görsel Orijinal')
+                    ->content(function (?EkayitSinif $record): \Illuminate\Support\HtmlString {
+                        $url = $record?->gorselOrijinalUrl();
+
+                        if (! filled($url)) {
+                            return new \Illuminate\Support\HtmlString('—');
+                        }
+
+                        return new \Illuminate\Support\HtmlString('<a href="' . e($url) . '" target="_blank" rel="noopener"><img src="' . e($url) . '" alt="Görsel Orijinal" style="width:100%;max-height:200px;object-fit:cover;border-radius:10px;border:1px solid #e2e8f0;"></a>');
+                    })
+                    ->visible(fn (?EkayitSinif $record): bool => filled($record?->gorselOrijinalUrl())),
 
                 FileUpload::make('gorsel_orijinal_gecici')
                     ->label('Görsel Orijinal')
