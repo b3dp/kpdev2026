@@ -368,7 +368,10 @@ document.addEventListener('DOMContentLoaded', () => {
       ozetTablosunuDoldur();
     }
 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const hedef = document.getElementById('adim-gostergesi');
+    if (hedef) {
+      hedef.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   window.oncekiAdim = function (mevcutAdim) {
@@ -376,7 +379,11 @@ document.addEventListener('DOMContentLoaded', () => {
     aktifAdim = mevcutAdim - 1;
     document.getElementById(`adim-panel-${aktifAdim}`)?.classList.remove('hidden');
     adimGostergesiniGuncelle(aktifAdim);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    const hedef = document.getElementById('adim-gostergesi');
+    if (hedef) {
+      hedef.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   form.addEventListener('submit', (event) => {

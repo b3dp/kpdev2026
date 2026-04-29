@@ -429,8 +429,8 @@
             </label>
 
             <label class="flex items-start gap-3 cursor-pointer">
-              <input type="checkbox" name="onay_tuzuk" id="onay_tuzuk" class="onay-cb mt-0.5 h-4 w-4 cursor-pointer" required {{ old('onay_tuzuk') ? 'checked' : '' }}>
-              <span class="font-jakarta text-[13px] leading-relaxed text-primary/80"><a href="{{ route('kurumsal.show', 'tuzuk') }}" target="_blank" class="text-accent underline hover:text-orange-cta">Dernek Tüzüğü</a>'nü ve kayıt koşullarını okudum, kabul ediyorum.</span>
+              <input type="checkbox" name="onay_tuzuk" id="onay_tuzuk" class="onay-cb mt-1 h-5 w-5 cursor-pointer" required {{ old('onay_tuzuk') ? 'checked' : '' }}>
+              <span class="font-jakarta text-[15px] font-bold leading-relaxed text-orange-cta">{{ $sinif?->ad ? mb_strtoupper($sinif->ad, 'UTF-8') . ' PROGRAMINA KAYDIMI ONAYLIYORUM' : 'KAYIT PROGRAMINA KAYDIMI ONAYLIYORUM' }}</span>
             </label>
           </div>
 
