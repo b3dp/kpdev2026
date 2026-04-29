@@ -35,89 +35,41 @@
                 </div>
             </x-filament::section>
         @else
-            @php
-                $listUrl = \App\Filament\Resources\EkayitKayitResource::getUrl('index');
-                $renkHarita = [
-                    'blue'   => 'border-t-blue-500',
-                    'green'  => 'border-t-green-500',
-                    'red'    => 'border-t-red-500',
-                    'orange' => 'border-t-orange-500',
-                    'purple' => 'border-t-purple-500',
-                    'amber'  => 'border-t-amber-500',
-                    'teal'   => 'border-t-teal-500',
-                    'lime'   => 'border-t-lime-500',
-                    'pink'   => 'border-t-pink-500',
-                    'yellow' => 'border-t-yellow-500',
-                ];
-            @endphp
+            @php($listUrl = \App\Filament\Resources\EkayitKayitResource::getUrl('index'))
 
             <div class="grid grid-cols-1 gap-5 md:grid-cols-3">
                 @foreach ($sinifler as $item)
-                    @php
-                        $sinif  = $item['sinif'];
-                        $renk   = $sinif->renk ?? 'blue';
-                        $topCls = $renkHarita[$renk] ?? $renkHarita['blue'];
-                    @endphp
+                    @php($sinif = $item['sinif'])
 
                     <a href="{{ $listUrl }}?tableFilters[sinif_id][values][0]={{ $sinif->id }}"
-                       class="group block rounded-2xl border border-gray-200 bg-white shadow-sm ring-0 transition hover:shadow-md dark:border-gray-700 dark:bg-gray-900 border-t-4 {{ $topCls }}">
-
-                        {{-- Başlık --}}
-                        <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
-                            <p class="text-base font-semibold text-gray-950 dark:text-white leading-tight">{{ $sinif->ad }}</p>
-                            <p class="mt-0.5 text-xs text-gray-400 dark:text-gray-500 truncate">{{ $sinif->kurum?->ad ?? '—' }}</p>
+                       class="group block rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+                        <div class="flex items-start justify-between">
+                            <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">{{ $sinif->ad }}</h3>
                         </div>
 
-                        {{-- Stat Satırları --}}
-                        <div class="divide-y divide-gray-100 dark:divide-gray-800 px-5">
-                            <div class="flex items-center justify-between py-3">
-                                <span class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                                    <span class="inline-block h-2 w-2 rounded-full bg-orange-400"></span>
-                                    Bekleyen
-                                </span>
-                                <span class="rounded-full bg-orange-50 px-2.5 py-0.5 text-sm font-semibold text-orange-600 dark:bg-orange-500/10 dark:text-orange-400">
-                                    {{ $item['bekleyen'] }}
-                                </span>
+                        <div class="my-6">
+                            <div class="flex items-center justify-between border-b border-gray-100 py-3 dark:border-gray-800">
+                                <span class="text-sm text-orange-400">Bekleyen</span>
+                                <span class="text-right text-sm text-orange-500">{{ $item['bekleyen'] }}</span>
                             </div>
 
-                            <div class="flex items-center justify-between py-3">
-                                <span class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                                    <span class="inline-block h-2 w-2 rounded-full bg-green-500"></span>
-                                    Onaylanan
-                                </span>
-                                <span class="rounded-full bg-green-50 px-2.5 py-0.5 text-sm font-semibold text-green-600 dark:bg-green-500/10 dark:text-green-400">
-                                    {{ $item['onaylanan'] }}
-                                </span>
+                            <div class="flex items-center justify-between border-b border-gray-100 py-3 dark:border-gray-800">
+                                <span class="text-sm text-green-600">Onay</span>
+                                <span class="text-right text-sm text-green-600">{{ $item['onaylanan'] }}</span>
                             </div>
 
-                            <div class="flex items-center justify-between py-3">
-                                <span class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                                    <span class="inline-block h-2 w-2 rounded-full bg-red-400"></span>
-                                    Reddedilen
-                                </span>
-                                <span class="rounded-full bg-red-50 px-2.5 py-0.5 text-sm font-semibold text-red-600 dark:bg-red-500/10 dark:text-red-400">
-                                    {{ $item['reddedilen'] }}
-                                </span>
+                            <div class="flex items-center justify-between border-b border-gray-100 py-3 dark:border-gray-800">
+                                <span class="text-sm text-red-600">Red</span>
+                                <span class="text-right text-sm text-red-600">{{ $item['reddedilen'] }}</span>
                             </div>
 
-                            <div class="flex items-center justify-between py-3">
-                                <span class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                                    <span class="inline-block h-2 w-2 rounded-full bg-blue-400"></span>
-                                    Yedek
-                                </span>
-                                <span class="rounded-full bg-blue-50 px-2.5 py-0.5 text-sm font-semibold text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
-                                    {{ $item['yedek'] }}
-                                </span>
+                            <div class="flex items-center justify-between border-b border-gray-100 py-3 dark:border-gray-800">
+                                <span class="text-sm text-blue-500">Yedek</span>
+                                <span class="text-right text-sm text-blue-500">{{ $item['yedek'] }}</span>
                             </div>
                         </div>
 
-                        {{-- Toplam --}}
-                        <div class="px-5 py-3 border-t border-gray-100 dark:border-gray-800">
-                            <div class="flex items-center justify-between">
-                                <span class="text-xs font-medium text-gray-400 dark:text-gray-500">Toplam</span>
-                                <span class="text-sm font-bold text-gray-800 dark:text-white">{{ $item['toplam'] }} kayıt</span>
-                            </div>
-                        </div>
+                        <div class="text-xs text-gray-400 dark:text-gray-500">Toplam: {{ $item['toplam'] }} kayıt</div>
                     </a>
                 @endforeach
             </div>
