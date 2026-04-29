@@ -23,16 +23,17 @@
       @if($sinif)
         <div class="rounded-[22px] border border-accent/20 bg-[linear-gradient(135deg,#fff,#f7f5f0)] px-5 py-4 shadow-sm">
           <p class="font-jakarta text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">Seçilen Sınıf</p>
-          <p class="mt-1 font-baskerville text-[clamp(24px,3vw,30px)] font-bold text-primary">{{ $sinif->ad }}</p>
+          <p class="mt-1 font-baskerville text-[clamp(24px,3vw,30px)] font-bold text-primary">{{ $sinif->ad }} E-Kayıt Başvuru Formu</p>
           <p class="mt-1 font-jakarta text-sm text-teal-muted">Başvurunuz bu sınıf için oluşturulacaktır.</p>
+
+          @if(filled($sinif->kurallar))
+            <div class="mt-3 rounded-xl border border-primary/10 bg-white/80 px-4 py-3">
+              <p class="font-jakarta text-[11px] font-semibold uppercase tracking-[0.16em] text-primary/70">Sınıfın Kayıt Kabul Kuralları</p>
+              <p class="mt-2 whitespace-pre-line font-jakarta text-sm leading-6 text-teal-muted">{{ trim(strip_tags((string) $sinif->kurallar)) }}</p>
+            </div>
+          @endif
         </div>
       @endif
-
-      <div>
-        <p class="mb-1.5 font-jakarta text-[12.5px] font-semibold uppercase tracking-[0.18em] text-accent">Online Başvuru</p>
-        <h1 class="font-baskerville text-[clamp(24px,3vw,34px)] font-bold text-primary">E-Kayıt Başvuru Formu</h1>
-        <p class="mt-2 font-jakarta text-sm text-teal-muted">Öğrenci, veli ve okul bilgilerini eksiksiz doldurup başvurunuzu tamamlayın.</p>
-      </div>
     </div>
 
     @if(session('error'))
