@@ -25,67 +25,72 @@
                 Bu döneme ait aktif sınıf bulunamadı.
             </div>
         @else
-            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            @php
+                // Tailwind'in purge etmemesi için sabit sınıf listesi her renk için bir kez tanımlanıyor:
+                // text-blue-800 text-green-800 text-red-800 text-orange-800 text-purple-800 text-amber-800 text-teal-800 text-lime-800 text-pink-800 text-yellow-800
+                $renkHarita = [
+                    'blue'   => ['rgb' => '59,130,246',  'text' => 'text-blue-800'],
+                    'green'  => ['rgb' => '34,197,94',   'text' => 'text-green-800'],
+                    'red'    => ['rgb' => '239,68,68',   'text' => 'text-red-800'],
+                    'orange' => ['rgb' => '249,115,22',  'text' => 'text-orange-800'],
+                    'purple' => ['rgb' => '168,85,247',  'text' => 'text-purple-800'],
+                    'amber'  => ['rgb' => '245,158,11',  'text' => 'text-amber-800'],
+                    'teal'   => ['rgb' => '20,184,166',  'text' => 'text-teal-800'],
+                    'lime'   => ['rgb' => '132,204,22',  'text' => 'text-lime-800'],
+                    'pink'   => ['rgb' => '236,72,153',  'text' => 'text-pink-800'],
+                    'yellow' => ['rgb' => '234,179,8',   'text' => 'text-yellow-800'],
+                ];
+            @endphp
+
+            <div class="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
                 @foreach ($sinifler as $item)
                     @php
-                        $sinif = $item['sinif'];
-                        $renk  = $sinif->renk ?? 'blue';
-
-                        $renkler = [
-                            'blue'   => ['border' => 'border-blue-500',   'bg' => 'bg-blue-50   dark:bg-blue-950',   'text' => 'text-blue-700   dark:text-blue-300',   'badge' => 'bg-blue-100   text-blue-800'],
-                            'green'  => ['border' => 'border-green-500',  'bg' => 'bg-green-50  dark:bg-green-950',  'text' => 'text-green-700  dark:text-green-300',  'badge' => 'bg-green-100  text-green-800'],
-                            'orange' => ['border' => 'border-orange-500', 'bg' => 'bg-orange-50 dark:bg-orange-950', 'text' => 'text-orange-700 dark:text-orange-300', 'badge' => 'bg-orange-100 text-orange-800'],
-                            'purple' => ['border' => 'border-purple-500', 'bg' => 'bg-purple-50 dark:bg-purple-950', 'text' => 'text-purple-700 dark:text-purple-300', 'badge' => 'bg-purple-100 text-purple-800'],
-                            'red'    => ['border' => 'border-red-500',    'bg' => 'bg-red-50    dark:bg-red-950',    'text' => 'text-red-700    dark:text-red-300',    'badge' => 'bg-red-100    text-red-800'],
-                            'amber'  => ['border' => 'border-amber-500',  'bg' => 'bg-amber-50  dark:bg-amber-950',  'text' => 'text-amber-700  dark:text-amber-300',  'badge' => 'bg-amber-100  text-amber-800'],
-                            'teal'   => ['border' => 'border-teal-500',   'bg' => 'bg-teal-50   dark:bg-teal-950',   'text' => 'text-teal-700   dark:text-teal-300',   'badge' => 'bg-teal-100   text-teal-800'],
-                            'lime'   => ['border' => 'border-lime-500',   'bg' => 'bg-lime-50   dark:bg-lime-950',   'text' => 'text-lime-700   dark:text-lime-300',   'badge' => 'bg-lime-100   text-lime-800'],
-                            'pink'   => ['border' => 'border-pink-500',   'bg' => 'bg-pink-50   dark:bg-pink-950',   'text' => 'text-pink-700   dark:text-pink-300',   'badge' => 'bg-pink-100   text-pink-800'],
-                            'yellow' => ['border' => 'border-yellow-500', 'bg' => 'bg-yellow-50 dark:bg-yellow-950', 'text' => 'text-yellow-700 dark:text-yellow-300', 'badge' => 'bg-yellow-100 text-yellow-800'],
-                        ];
-
-                        $cls = $renkler[$renk] ?? $renkler['blue'];
+                        $sinif   = $item['sinif'];
+                        $renk    = $sinif->renk ?? 'blue';
+                        $cls     = $renkHarita[$renk] ?? $renkHarita['blue'];
+                        $rgb     = $cls['rgb'];
                         $listUrl = \App\Filament\Resources\EkayitKayitResource::getUrl('index');
+
+                        $bgStyle     = "background-color: rgba({$rgb}, 0.10);";
+                        $borderStyle = "border-color: rgba({$rgb}, 0.35);";
+                        $headerStyle = "background-color: rgba({$rgb}, 0.18); border-bottom: 1px solid rgba({$rgb}, 0.25);";
+                        $totalStyle  = "background-color: rgba({$rgb}, 0.18); color: rgba({$rgb}, 1); border-top: 1px solid rgba({$rgb}, 0.2);";
                     @endphp
 
-                    <div class="overflow-hidden rounded-xl border-l-4 bg-white shadow-sm dark:bg-gray-800 {{ $cls['border'] }}">
-                        <div class="p-5">
-                            {{-- Başlık --}}
-                            <div class="mb-1 text-base font-bold text-gray-900 dark:text-white">
-                                {{ $sinif->ad }}
-                            </div>
-                            <div class="mb-4 text-xs text-gray-500 dark:text-gray-400">
-                                {{ $sinif->kurum?->ad ?? '—' }}
-                            </div>
+                    <div class="overflow-hidden rounded-2xl border shadow-sm" style="{{ $bgStyle }} {{ $borderStyle }}">
 
-                            <div class="border-t border-gray-100 dark:border-gray-700"></div>
-
-                            {{-- Sayılar --}}
-                            <div class="mt-4 space-y-1.5 text-sm">
-                                <a href="{{ $listUrl }}?tableFilters[durum][values][0]=beklemede&tableFilters[sinif_id][values][0]={{ $sinif->id }}"
-                                   class="flex items-center justify-between rounded-md px-2 py-1 transition hover:bg-yellow-50 dark:hover:bg-yellow-900/30">
-                                    <span class="text-gray-600 dark:text-gray-300">Bekleyen</span>
-                                    <span class="rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-semibold text-yellow-800">{{ $item['bekleyen'] }}</span>
-                                </a>
-                                <a href="{{ $listUrl }}?tableFilters[durum][values][0]=onaylandi&tableFilters[sinif_id][values][0]={{ $sinif->id }}"
-                                   class="flex items-center justify-between rounded-md px-2 py-1 transition hover:bg-green-50 dark:hover:bg-green-900/30">
-                                    <span class="text-gray-600 dark:text-gray-300">Onaylanan</span>
-                                    <span class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-800">{{ $item['onaylanan'] }}</span>
-                                </a>
-                                <a href="{{ $listUrl }}?tableFilters[durum][values][0]=yedek&tableFilters[sinif_id][values][0]={{ $sinif->id }}"
-                                   class="flex items-center justify-between rounded-md px-2 py-1 transition hover:bg-blue-50 dark:hover:bg-blue-900/30">
-                                    <span class="text-gray-600 dark:text-gray-300">Yedek</span>
-                                    <span class="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-800">{{ $item['yedek'] }}</span>
-                                </a>
-
-                                <div class="border-t border-gray-100 dark:border-gray-700"></div>
-
-                                <div class="flex items-center justify-between px-2 py-1">
-                                    <span class="font-medium text-gray-700 dark:text-gray-200">Toplam</span>
-                                    <span class="font-bold {{ $cls['text'] }}">{{ $item['toplam'] }} kayıt</span>
-                                </div>
-                            </div>
+                        {{-- Kart Başlığı --}}
+                        <div class="px-4 py-3" style="{{ $headerStyle }}">
+                            <div class="text-[13px] font-bold leading-snug {{ $cls['text'] }}">{{ $sinif->ad }}</div>
+                            <div class="mt-0.5 truncate text-[11px] text-gray-500">{{ $sinif->kurum?->ad ?? '—' }}</div>
                         </div>
+
+                        {{-- İstatistikler --}}
+                        <div class="divide-y divide-black/5 px-3 py-2">
+                            <a href="{{ $listUrl }}?tableFilters[durum][values][0]=beklemede&tableFilters[sinif_id][values][0]={{ $sinif->id }}"
+                               class="flex items-center justify-between py-1.5 text-xs transition hover:opacity-70">
+                                <span class="text-gray-600">Bekleyen</span>
+                                <span class="min-w-[22px] rounded-full bg-yellow-200 px-1.5 py-0.5 text-center text-[11px] font-bold text-yellow-800">{{ $item['bekleyen'] }}</span>
+                            </a>
+                            <a href="{{ $listUrl }}?tableFilters[durum][values][0]=onaylandi&tableFilters[sinif_id][values][0]={{ $sinif->id }}"
+                               class="flex items-center justify-between py-1.5 text-xs transition hover:opacity-70">
+                                <span class="text-gray-600">Onaylanan</span>
+                                <span class="min-w-[22px] rounded-full bg-green-200 px-1.5 py-0.5 text-center text-[11px] font-bold text-green-800">{{ $item['onaylanan'] }}</span>
+                            </a>
+                            <a href="{{ $listUrl }}?tableFilters[durum][values][0]=yedek&tableFilters[sinif_id][values][0]={{ $sinif->id }}"
+                               class="flex items-center justify-between py-1.5 text-xs transition hover:opacity-70">
+                                <span class="text-gray-600">Yedek</span>
+                                <span class="min-w-[22px] rounded-full bg-sky-200 px-1.5 py-0.5 text-center text-[11px] font-bold text-sky-800">{{ $item['yedek'] }}</span>
+                            </a>
+                        </div>
+
+                        {{-- Toplam --}}
+                        <a href="{{ $listUrl }}?tableFilters[sinif_id][values][0]={{ $sinif->id }}"
+                           class="flex items-center justify-between px-4 py-2 text-xs font-bold transition hover:opacity-80"
+                           style="{{ $totalStyle }}">
+                            <span>Toplam</span>
+                            <span class="text-sm">{{ $item['toplam'] }} kayıt</span>
+                        </a>
                     </div>
                 @endforeach
             </div>
