@@ -655,6 +655,9 @@ class ViewEkayitKayit extends ViewRecord
                     if ($durum === EkayitDurumu::Onaylandi) {
                         app(\App\Services\KisiEslestirmeService::class)->ekayitEslestir($this->record);
                     }
+                } else {
+                    // Durum güncellenmese bile durum_notu'nun taze olması için refresh et
+                    $this->record->refresh();
                 }
 
                 $mesaj = $this->mesajMetniHazirla($durum);
@@ -732,6 +735,9 @@ class ViewEkayitKayit extends ViewRecord
                     if ($tip === 'onaylandi') {
                         app(\App\Services\KisiEslestirmeService::class)->ekayitEslestir($this->record);
                     }
+                } else {
+                    // Durum güncellenmese bile durum_notu'nun taze olması için refresh et
+                    $this->record->refresh();
                 }
 
                 // SMS gönder

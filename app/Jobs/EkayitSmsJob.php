@@ -45,18 +45,26 @@ class EkayitSmsJob implements ShouldQueue
                 throw new \RuntimeException('E-Kayıt kaydı bulunamadı.');
             }
 
-            $mesajlar = [
-                'basvuru_alindi' => "Kestanepazarı Hatay Kur'an Kursu'na {AD_SOYAD} öğrencinizin başvurusu alınmıştır. Onay/Red durumu hakkında size bilgilendirme yapılacaktır.",
-                'onaylandi' => 'Sayın Veli, {AD_SOYAD} öğrencinizin kaydı onaylanmıştır. Kestanepazarı',
-                'reddedildi' => 'Sayın Veli, {AD_SOYAD} öğrencinizin başvurusu değerlendirme sonucunda kabul edilememiştir. Kestanepazarı',
-                'yedek' => 'Sayın Veli, {AD_SOYAD} öğrenciniz yedek listeye alınmıştır. Sıra geldiğinde bilgilendirileceksiniz. Kestanepazarı',
-            ];
+            // Önce kayıttaki durum_notu'nu kullan; yoksa hazır mesaj tablosundan,
+            // o da yoksa son çare hardcoded şablona düş
+            $durumNotu = trim((string) ($kayit->durum_notu ?? ''));
 
-            $mesajSablonu = $mesajlar[$this->tip] ?? $mesajlar['basvuru_alindi'];
-            $mesaj = strtr($mesajSablonu, [
-                '{AD_SOYAD}' => (string) ($kayit->ogrenciBilgisi?->ad_soyad ?? ''),
-                '{SINIF}' => (string) ($kayit->sinif?->ad ?? ''),
-            ]);
+            if ($durumNotu !== '') {
+                $mesaj = $kayit->durumNotunuFormatla($durumNotu) ?? $durumNotu;
+            } else {
+                $mesajlar = [
+                    'basvuru_alindi' => "Kestanepazarı Hatay Kur'an Kursu'na {AD_SOYAD} öğrencinizin başvurusu alınmıştır. Onay/Red durumu hakkında size bilgilendirme yapılacaktır.",
+                    'onaylandi' => 'Sayın Veli, {AD_SOYAD} öğrencinizin kaydı onaylanmıştır. Kestanepazarı',
+                    'reddedildi' => 'Sayın Veli, {AD_SOYAD} öğrencinizin başvurusu değerlendirme sonucunda kabul edilememiştir. Kestanepazarı',
+                    'yedek' => 'Sayın Veli, {AD_SOYAD} öğrenciniz yedek listeye alınmıştır. Sıra geldiğinde bilgilendirileceksiniz. Kestanepazarı',
+                ];
+
+                $mesajSablonu = $mesajlar[$this->tip] ?? $mesajlar['basvuru_alindi'];
+                $mesaj = strtr($mesajSablonu, [
+                    '{AD_SOYAD}' => (string) ($kayit->ogrenciBilgisi?->ad_soyad ?? ''),
+                    '{SINIF}' => (string) ($kayit->sinif?->ad ?? ''),
+                ]);
+            }
 
             $sonuc = app(HermesService::class)->sendSMS([$telefon], $mesaj);
 
