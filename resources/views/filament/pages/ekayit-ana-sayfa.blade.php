@@ -51,7 +51,7 @@
                 ];
             @endphp
 
-            <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+            <div class="grid grid-cols-1 gap-5 md:grid-cols-3">
                 @foreach ($sinifler as $item)
                     @php
                         $sinif  = $item['sinif'];
