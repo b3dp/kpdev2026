@@ -107,18 +107,26 @@
         </div>
       </div>
 
+      @php($varsayilanGorsel = 'https://cdn.kestanepazari.org.tr/logo.png')
+
       @foreach($gruplar as $grup)
         <p class="grup-baslik">{{ $grup['ad'] }}</p>
-        <div class="mb-10 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
+        <div class="mb-10 grid grid-cols-2 gap-5 md:grid-cols-4">
           @foreach($grup['siniflar'] as $sinif)
-            <a href="{{ route('ekayit.form', ['sinif_id' => $sinif['id']]) }}" class="sinif-kart">
-              <span class="sk-num">{{ $sinif['kart_baslik'] }}</span>
-              <span class="sk-label">{{ $sinif['kart_alt_baslik'] }}</span>
-              <span class="sk-badge">{{ $sinif['kart_rozet'] }}</span>
-              <span class="sk-name">{{ $sinif['kart_ad'] }}</span>
-              <svg class="sk-arrow" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" d="M9 5l7 7-7 7"/>
-              </svg>
+            <a href="{{ route('ekayit.form', ['sinif_id' => $sinif['id']]) }}"
+               class="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+              <div style="position:relative;width:100%;padding-top:100%;background:#f8fafc;">
+                <img
+                  src="{{ $sinif['kart_gorsel'] ?: $varsayilanGorsel }}"
+                  alt="{{ $sinif['kart_ad'] }}"
+                  loading="lazy"
+                  style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"
+                >
+              </div>
+
+              <div class="bg-white px-4 py-3 text-center">
+                <span class="block font-jakarta text-sm font-bold leading-6 text-primary">{{ $sinif['kart_ad'] }}</span>
+              </div>
             </a>
           @endforeach
         </div>

@@ -77,10 +77,8 @@ class EkayitController extends Controller
 
                 return [
                     'id' => $sinif->id,
-                    'kart_baslik' => $sinifNo ?: Str::upper(Str::substr((string) $sinif->ad, 0, 10)),
-                    'kart_alt_baslik' => $sinifNo ? 'Sınıf' : 'Başvuru',
-                    'kart_rozet' => $sinif->tur_etiket ?? ($turSirasi[$grupKey] ?? 'Sınıf'),
                     'kart_ad' => $sinif->ad,
+                    'kart_gorsel' => $sinif->gorselKareUrl(),
                     'grup_key' => $grupKey,
                     'siralama' => $sinifNo ? (int) $sinifNo : PHP_INT_MAX,
                 ];
