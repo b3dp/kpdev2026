@@ -68,4 +68,43 @@ class EkayitSinif extends Model
     {
         return $this->hasMany(EkayitKayit::class, 'sinif_id');
     }
+
+    public function gorselKareUrl(): ?string
+    {
+        return $this->gorselUrlOlustur($this->gorsel_kare);
+    }
+
+    public function gorselDikeyUrl(): ?string
+    {
+        return $this->gorselUrlOlustur($this->gorsel_dikey);
+    }
+
+    public function gorselYatayUrl(): ?string
+    {
+        return $this->gorselUrlOlustur($this->gorsel_yatay);
+    }
+
+    public function gorselOrijinalUrl(): ?string
+    {
+        return $this->gorselUrlOlustur($this->gorsel_orijinal);
+    }
+
+    private function gorselUrlOlustur(?string $deger): ?string
+    {
+        if (! filled($deger)) {
+            return null;
+        }
+
+        if (str_starts_with($deger, 'http://') || str_starts_with($deger, 'https://')) {
+            return $deger;
+        }
+
+        $cdn = rtrim((string) config('filesystems.disks.spaces.cdn_url', ''), '/');
+
+        if ($cdn === '') {
+            return ltrim($deger, '/');
+        }
+
+        return $cdn . '/' . ltrim($deger, '/');
+    }
 }

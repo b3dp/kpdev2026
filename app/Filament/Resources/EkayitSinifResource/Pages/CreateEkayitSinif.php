@@ -4,6 +4,7 @@ namespace App\Filament\Resources\EkayitSinifResource\Pages;
 
 use App\Filament\Resources\EkayitSinifResource;
 use App\Models\EkayitDonem;
+use App\Services\EkayitSinifGorselService;
 use App\Services\SinifRenkService;
 use Filament\Resources\Pages\CreateRecord;
 
@@ -21,5 +22,10 @@ class CreateEkayitSinif extends CreateRecord
             }
         }
         return $data;
+    }
+
+    protected function afterCreate(): void
+    {
+        app(EkayitSinifGorselService::class)->gorselleriIsleVeKaydet($this->record, $this->data);
     }
 }

@@ -7,6 +7,7 @@ use App\Models\EkayitDonem;
 use App\Models\EkayitSinif;
 use App\Models\Kurum;
 use App\Services\SinifRenkService;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -85,10 +86,57 @@ class EkayitSinifResource extends Resource
             ]),
 
             Section::make('Görseller')->schema([
-                TextInput::make('gorsel_kare')->label('Görsel 1:1 (Kare)')->nullable()->maxLength(500),
-                TextInput::make('gorsel_dikey')->label('Görsel 9:16 (Dikey)')->nullable()->maxLength(500),
-                TextInput::make('gorsel_yatay')->label('Görsel 16:9 (Yatay)')->nullable()->maxLength(500),
-                TextInput::make('gorsel_orijinal')->label('Görsel Orijinal')->nullable()->maxLength(500),
+                FileUpload::make('gorsel_kare_gecici')
+                    ->label('Görsel 1:1 (Kare)')
+                    ->disk('local')
+                    ->directory('tmp/ekayit/sinif')
+                    ->image()
+                    ->maxFiles(1)
+                    ->preserveFilenames(false)
+                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                    ->maxSize(20480)
+                    ->imagePreviewHeight('160')
+                    ->helperText('Yükleme sonrası ori/opt olarak DO Spaces\'a taşınır. Önerilen boyut: 1080x1080.')
+                    ->dehydrated(false),
+
+                FileUpload::make('gorsel_dikey_gecici')
+                    ->label('Görsel 9:16 (Dikey)')
+                    ->disk('local')
+                    ->directory('tmp/ekayit/sinif')
+                    ->image()
+                    ->maxFiles(1)
+                    ->preserveFilenames(false)
+                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                    ->maxSize(20480)
+                    ->imagePreviewHeight('160')
+                    ->helperText('Yükleme sonrası ori/opt olarak DO Spaces\'a taşınır. Önerilen boyut: 1080x1920.')
+                    ->dehydrated(false),
+
+                FileUpload::make('gorsel_yatay_gecici')
+                    ->label('Görsel 16:9 (Yatay)')
+                    ->disk('local')
+                    ->directory('tmp/ekayit/sinif')
+                    ->image()
+                    ->maxFiles(1)
+                    ->preserveFilenames(false)
+                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                    ->maxSize(20480)
+                    ->imagePreviewHeight('160')
+                    ->helperText('Yükleme sonrası ori/opt olarak DO Spaces\'a taşınır. Önerilen boyut: 1920x1080.')
+                    ->dehydrated(false),
+
+                FileUpload::make('gorsel_orijinal_gecici')
+                    ->label('Görsel Orijinal')
+                    ->disk('local')
+                    ->directory('tmp/ekayit/sinif')
+                    ->image()
+                    ->maxFiles(1)
+                    ->preserveFilenames(false)
+                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                    ->maxSize(20480)
+                    ->imagePreviewHeight('160')
+                    ->helperText('Kaynak görsel ori klasörüne, optimize kopyası opt klasörüne yüklenir.')
+                    ->dehydrated(false),
             ])->columns(2),
         ]);
     }
