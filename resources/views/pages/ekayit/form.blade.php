@@ -29,7 +29,9 @@
           @if(filled($sinif->kurallar))
             <div class="mt-3 rounded-xl border border-primary/10 bg-white/80 px-4 py-3">
               <p class="font-jakarta text-[11px] font-semibold uppercase tracking-[0.16em] text-primary/70">Sınıfın Kayıt Kabul Kuralları</p>
-              <p class="mt-2 whitespace-pre-line font-jakarta text-sm leading-6 text-teal-muted">{{ trim(strip_tags((string) $sinif->kurallar)) }}</p>
+              <div class="mt-2 font-jakarta text-sm leading-6 text-teal-muted [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:mb-1">
+                {{ new \Illuminate\Support\HtmlString((string) $sinif->kurallar) }}
+              </div>
             </div>
           @endif
         </div>
