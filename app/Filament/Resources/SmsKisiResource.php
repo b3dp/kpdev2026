@@ -70,6 +70,12 @@ class SmsKisiResource extends Resource
                     ->searchable()
                     ->sortable(),
 
+                TextColumn::make('telefon_2')
+                    ->label('Telefon 2')
+                    ->searchable()
+                    ->sortable()
+                    ->formatStateUsing(fn (?string $state): string => $state ?: '-'),
+
                 TextColumn::make('ad_soyad')
                     ->label('Ad Soyad')
                     ->searchable()
@@ -132,7 +138,26 @@ class SmsKisiResource extends Resource
                 ->live(onBlur: true)
                 ->afterStateUpdated(function ($set, ?string $state): void {
                     $set('telefon', self::telefonNormalize($state));
-                }),
+                })
+                ->rule('regex:/^5\d{9}$/')
+                ->validationMessages([
+                    'regex' => 'Telefon numarasını 5321234567 formatında giriniz.',
+                ]),
+
+            TextInput::make('telefon_2')
+                ->label('Telefon 2')
+                ->maxLength(20)
+                ->nullable()
+                ->live(onBlur: true)
+                ->afterStateUpdated(function ($set, ?string $state): void {
+                    $set('telefon_2', self::telefonNormalize($state));
+                })
+                ->rule('nullable|regex:/^5\d{9}$/')
+                ->different('telefon')
+                ->validationMessages([
+                    'regex' => 'Telefon 2 numarasını 5321234567 formatında giriniz.',
+                    'different' => 'Telefon 2 numarası Telefon 1 ile aynı olamaz.',
+                ]),
 
             TextInput::make('ad_soyad')
                 ->label('Ad Soyad')
@@ -204,6 +229,20 @@ class SmsKisiResource extends Resource
         }
 
         return (int) $record->created_by === (int) auth()->id();
+    }
+
+    public static function telefonKaydiVarMi(string $telefon, ?int $haricKisiId = null): bool
+    {
+        $query = SmsKisi::query()->where(function (Builder $builder) use ($telefon): void {
+            $builder->where('telefon', $telefon)
+                ->orWhere('telefon_2', $telefon);
+        });
+
+        if ($haricKisiId !== null) {
+            $query->whereKeyNot($haricKisiId);
+        }
+
+        return $query->exists();
     }
 
     public static function getPages(): array

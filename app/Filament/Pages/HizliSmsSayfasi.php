@@ -64,19 +64,20 @@ class HizliSmsSayfasi extends Page implements \Filament\Forms\Contracts\HasForms
                         ->limit(50)
                         ->get()
                         ->mapWithKeys(fn (SmsKisi $kisi): array => [
-                            $kisi->id => trim(($kisi->ad_soyad ?: 'İsimsiz').' - '.$kisi->telefon),
+                            $kisi->id => trim(($kisi->ad_soyad ?: 'İsimsiz').' - '.$kisi->telefon.($kisi->telefon_2 ? ' / '.$kisi->telefon_2 : '')),
                         ])->toArray())
                     ->getSearchResultsUsing(function (string $search): array {
                         return $this->erisebilirKisiSorgu()
                             ->where(function (Builder $builder) use ($search): void {
                                 $builder
                                     ->where('telefon', 'like', "%{$search}%")
+                                    ->orWhere('telefon_2', 'like', "%{$search}%")
                                     ->orWhere('ad_soyad', 'like', "%{$search}%");
                             })
                             ->limit(50)
                             ->get()
                             ->mapWithKeys(fn (SmsKisi $kisi): array => [
-                                $kisi->id => trim(($kisi->ad_soyad ?: 'İsimsiz').' - '.$kisi->telefon),
+                                $kisi->id => trim(($kisi->ad_soyad ?: 'İsimsiz').' - '.$kisi->telefon.($kisi->telefon_2 ? ' / '.$kisi->telefon_2 : '')),
                             ])->toArray();
                     }),
 
@@ -212,13 +213,14 @@ class HizliSmsSayfasi extends Page implements \Filament\Forms\Contracts\HasForms
 
         $kisiIdler = $state['kisi_idler'] ?? [];
         if ($kisiIdler !== []) {
-            $rehberTelefonlari = $this->erisebilirKisiSorgu()
+            $rehberKisiler = $this->erisebilirKisiSorgu()
                 ->whereIn('id', $kisiIdler)
-                ->pluck('telefon')
+                ->get(['telefon', 'telefon_2'])
                 ->all();
 
-            foreach ($rehberTelefonlari as $telefon) {
-                $telefonlar[] = self::telefonNormalize((string) $telefon);
+            foreach ($rehberKisiler as $kisi) {
+                $telefonlar[] = self::telefonNormalize((string) ($kisi->telefon ?? ''));
+                $telefonlar[] = self::telefonNormalize((string) ($kisi->telefon_2 ?? ''));
             }
         }
 

@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\SmsKisiResource\Pages;
 
 use App\Filament\Resources\SmsKisiResource;
-use App\Models\SmsKisi;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 
@@ -20,6 +19,10 @@ class CreateSmsKisi extends CreateRecord
         unset($data['liste_idler']);
 
         $data['telefon'] = SmsKisiResource::telefonNormalize((string) ($data['telefon'] ?? ''));
+        $data['telefon_2'] = SmsKisiResource::telefonNormalize((string) ($data['telefon_2'] ?? ''));
+        if ($data['telefon_2'] === '') {
+            $data['telefon_2'] = null;
+        }
         $data['created_by'] = auth()->id();
 
         return $data;
@@ -28,10 +31,20 @@ class CreateSmsKisi extends CreateRecord
     protected function beforeCreate(): void
     {
         $telefon = SmsKisiResource::telefonNormalize((string) ($this->data['telefon'] ?? ''));
+        $telefon2 = SmsKisiResource::telefonNormalize((string) ($this->data['telefon_2'] ?? ''));
 
-        if (SmsKisi::query()->where('telefon', $telefon)->exists()) {
+        if (SmsKisiResource::telefonKaydiVarMi($telefon)) {
             Notification::make()
                 ->title('Bu numara zaten kayıtlı. Mevcut kayıt üzerinden listeye ekleyebilirsiniz.')
+                ->danger()
+                ->send();
+
+            $this->halt();
+        }
+
+        if ($telefon2 !== '' && SmsKisiResource::telefonKaydiVarMi($telefon2)) {
+            Notification::make()
+                ->title('Telefon 2 numarası zaten kayıtlı. Mevcut kayıt üzerinden listeye ekleyebilirsiniz.')
                 ->danger()
                 ->send();
 

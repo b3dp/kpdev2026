@@ -216,9 +216,16 @@ class TopluSmsSayfasi extends Page implements \Filament\Forms\Contracts\HasForms
 
         $telefonlar = $this->erisebilirListeSorgu()
             ->whereIn('sms_listeler.id', $listeIdler)
-            ->with('kisiler:id,telefon')
+            ->with('kisiler:id,telefon,telefon_2')
             ->get()
-            ->flatMap(fn (SmsListe $liste) => $liste->kisiler->pluck('telefon'))
+            ->flatMap(function (SmsListe $liste) {
+                return $liste->kisiler->flatMap(function ($kisi): array {
+                    return [
+                        (string) ($kisi->telefon ?? ''),
+                        (string) ($kisi->telefon_2 ?? ''),
+                    ];
+                });
+            })
             ->map(fn (string $telefon): string => self::telefonNormalize($telefon))
             ->filter()
             ->unique()

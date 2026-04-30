@@ -115,7 +115,10 @@ class HermesAktarimJob implements ShouldQueue
                     $exceldeGorulenler[$telefon] = true;
 
                     // DB mükerrer kontrol
-                    $mevcutKisi = SmsKisi::where('telefon', $telefon)->first();
+                    $mevcutKisi = SmsKisi::query()
+                        ->where('telefon', $telefon)
+                        ->orWhere('telefon_2', $telefon)
+                        ->first();
 
                     if ($mevcutKisi) {
                         // Farklı kullanıcıya ait rehber kaydı paylaşılmaz.

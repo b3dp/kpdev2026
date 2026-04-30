@@ -15,6 +15,7 @@ class SmsKisi extends Model
 
     protected $fillable = [
         'telefon',
+        'telefon_2',
         'ad_soyad',
         'notlar',
         'created_by',
