@@ -7,6 +7,8 @@ use App\Models\Bagis;
 use App\Models\EkayitKayit;
 use App\Models\Kisi;
 use App\Models\MezunProfil;
+use App\Models\SmsKisi;
+use App\Models\SmsListe;
 use App\Models\Uye;
 use App\Models\UyeRozet;
 use Illuminate\Support\Facades\Log;
@@ -160,6 +162,10 @@ class KisiEslestirmeService
 
             $bagis->update(['kisi_id' => $kisi->id]);
 
+            if (filled($bagisKisi->telefon)) {
+                $this->smsListeyeEkle($bagisKisi->telefon, $bagisKisi->ad_soyad);
+            }
+
             if ($bagis->uye) {
                 $this->uyeEslestir($bagis->uye);
                 $this->rozetEkle($bagis->uye, 'bagisci', 'bagis', (int) $bagis->id);
@@ -224,6 +230,56 @@ class KisiEslestirmeService
         } catch (Throwable $e) {
             Log::error('KisiEslestirmeService@mezunEslestir hatasi', [
                 'mezun_profil_id' => $mezun->id,
+                'mesaj' => $e->getMessage(),
+                'dosya' => $e->getFile(),
+                'satir' => $e->getLine(),
+            ]);
+        }
+    }
+
+    public function smsListeyeEkle(string $telefon, ?string $adSoyad = null): void
+    {
+        try {
+            $listeId = (int) env('BAGISCI_SMS_LISTE_ID', 0);
+
+            if ($listeId === 0) {
+                return;
+            }
+
+            $liste = SmsListe::query()->find($listeId);
+
+            if (! $liste) {
+                Log::warning('KisiEslestirmeService@smsListeyeEkle: Liste bulunamadi', ['liste_id' => $listeId]);
+
+                return;
+            }
+
+            $temizTelefon = $this->telefonTemizle($telefon);
+
+            if ($temizTelefon === null) {
+                return;
+            }
+
+            $smsKisi = SmsKisi::withTrashed()->where('telefon', $temizTelefon)->first();
+
+            if ($smsKisi && $smsKisi->trashed()) {
+                $smsKisi->restore();
+            }
+
+            if (! $smsKisi) {
+                $temizAdSoyad = $this->metinTemizle($adSoyad);
+                $smsKisi = SmsKisi::create([
+                    'telefon' => $temizTelefon,
+                    'ad_soyad' => $temizAdSoyad,
+                ]);
+            }
+
+            if (! $smsKisi->listeler()->where('sms_listeler.id', $listeId)->exists()) {
+                $smsKisi->listeler()->attach($listeId, ['created_at' => now()]);
+            }
+        } catch (Throwable $e) {
+            Log::error('KisiEslestirmeService@smsListeyeEkle hatasi', [
+                'telefon' => $telefon,
                 'mesaj' => $e->getMessage(),
                 'dosya' => $e->getFile(),
                 'satir' => $e->getLine(),
