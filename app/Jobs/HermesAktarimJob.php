@@ -104,55 +104,56 @@ class HermesAktarimJob implements ShouldQueue
             $reader = new Reader();
             $reader->open($gercekYol);
 
-            $satirNo = 0;
+            foreach ($reader->getSheetIterator() as $sheetIndex => $sheet) {
+                $sheetSatirNo = 0;
+                $telefonKolonIndex = 0;
 
-            foreach ($reader->getSheetIterator() as $sheet) {
                 foreach ($sheet->getRowIterator() as $row) {
-                    $satirNo++;
-
-                    // İlk satır (header) atla
-                    if ($satirNo === 1) {
-                        continue;
-                    }
-
+                    $sheetSatirNo++;
                     $cells = $row->getCells();
 
-                    // Kolon 1: Cep Telefonu
-                    $hamTelefon = trim((string) ($cells[0]?->getValue() ?? ''));
+                    if ($sheetSatirNo === 1) {
+                        $telefonKolonIndex = $this->telefonKolonunuBul($cells);
 
-                    // Boş satır kontrol
-                    if (empty($hamTelefon)) {
+                        if ($this->satirHeaderMi($cells)) {
+                            continue;
+                        }
+                    }
+
+                    $hamTelefon = $this->hucreDegeriniStringeCevir($cells[$telefonKolonIndex]?->getValue() ?? null);
+
+                    if ($hamTelefon === '') {
                         $sayaclar['bos']++;
                         continue;
                     }
 
                     $sayaclar['toplam']++;
 
-                    // Telefon normalize et
                     $telefon = $this->telefonNormalize($hamTelefon);
 
-                    // Hatalı format
                     if ($telefon === null) {
                         $sayaclar['hatali_format']++;
-                        Log::info('[HermesAktarim] Hatalı format atlandı', ['ham' => $hamTelefon, 'satir' => $satirNo]);
+                        Log::info('[HermesAktarim] Hatalı format atlandı', [
+                            'ham' => $hamTelefon,
+                            'sheet' => $sheetIndex + 1,
+                            'satir' => $sheetSatirNo,
+                            'kolon' => $telefonKolonIndex + 1,
+                        ]);
                         continue;
                     }
 
-                    // Excel içi mükerrer kontrol
                     if (isset($exceldeGorulenler[$telefon])) {
                         $sayaclar['mukerrer_excel']++;
                         continue;
                     }
                     $exceldeGorulenler[$telefon] = true;
 
-                    // DB mükerrer kontrol
                     $mevcutKisi = SmsKisi::query()
                         ->where('telefon', $telefon)
                         ->orWhere('telefon_2', $telefon)
                         ->first();
 
                     if ($mevcutKisi) {
-                        // Farklı kullanıcıya ait rehber kaydı paylaşılmaz.
                         if ((int) $mevcutKisi->created_by === $this->yoneticiId) {
                             if (! $mevcutKisi->listeler()->where('sms_listeler.id', $liste->id)->exists()) {
                                 $mevcutKisi->listeler()->attach($liste->id);
@@ -163,7 +164,6 @@ class HermesAktarimJob implements ShouldQueue
                         continue;
                     }
 
-                    // Yeni kişi oluştur ve listeye ekle
                     $yeniKisi = SmsKisi::create([
                         'telefon' => $telefon,
                         'ad_soyad' => null,
@@ -218,35 +218,99 @@ class HermesAktarimJob implements ShouldQueue
     {
         // ="12345" formatını temizle (Hermes Excel export formatı)
         $telefon = trim($telefon);
-        $telefon = preg_replace('/^="(.+)"$/', '$1', $telefon);
+        $telefon = preg_replace('/^="(.+)"$/', '$1', $telefon) ?? $telefon;
+
+        // Excel kaynaklı bilimsel gösterimi düz metne çevir
+        $telefon = str_replace(',', '.', $telefon);
+        if (preg_match('/^[+-]?\d+(\.\d+)?[eE][+-]?\d+$/', $telefon) === 1) {
+            $telefon = number_format((float) $telefon, 0, '', '');
+        }
+
+        // 5321234567.0 gibi formatları sadeleştir
+        if (preg_match('/^\d+\.0+$/', $telefon) === 1) {
+            $telefon = strstr($telefon, '.', true) ?: $telefon;
+        }
 
         // Sadece rakam bırak
-        $temiz = preg_replace('/\D/', '', $telefon);
+        $temiz = preg_replace('/\D+/', '', $telefon) ?? '';
 
-        // 0090 prefix kaldır
         if (str_starts_with($temiz, '0090')) {
             $temiz = substr($temiz, 4);
-        }
-        // 90 prefix kaldır (10 haneden fazlaysa)
-        elseif (str_starts_with($temiz, '90') && strlen($temiz) === 12) {
+        } elseif (str_starts_with($temiz, '90') && strlen($temiz) === 12) {
             $temiz = substr($temiz, 2);
-        }
-        // 0 prefix kaldır
-        elseif (str_starts_with($temiz, '0') && strlen($temiz) === 11) {
+        } elseif (str_starts_with($temiz, '0') && strlen($temiz) === 11) {
             $temiz = substr($temiz, 1);
         }
 
-        // 11 hane ve 5 ile başlıyorsa son haneyi at
+        // Bazı exportlarda sona ekstra 0 eklenebiliyor (11 hane ve 5 ile başlıyorsa)
         if (strlen($temiz) === 11 && str_starts_with($temiz, '5')) {
             $temiz = substr($temiz, 0, 10);
         }
 
-        // Geçerlilik: tam 10 hane ve 5 ile başlamalı
         if (strlen($temiz) !== 10 || ! str_starts_with($temiz, '5')) {
             return null;
         }
 
         return $temiz;
+    }
+
+    /**
+     * Başlık satırından telefon kolonunu bulur. Bulamazsa 1. kolona düşer.
+     */
+    private function telefonKolonunuBul(array $cells): int
+    {
+        foreach ($cells as $index => $cell) {
+            $deger = mb_strtolower($this->hucreDegeriniStringeCevir($cell?->getValue() ?? null), 'UTF-8');
+            if ($deger === '') {
+                continue;
+            }
+
+            if (str_contains($deger, 'telefon') || str_contains($deger, 'gsm') || str_contains($deger, 'cep')) {
+                return (int) $index;
+            }
+        }
+
+        return 0;
+    }
+
+    /**
+     * İlk satırın başlık olup olmadığını kaba olarak tespit eder.
+     */
+    private function satirHeaderMi(array $cells): bool
+    {
+        foreach ($cells as $cell) {
+            $deger = mb_strtolower($this->hucreDegeriniStringeCevir($cell?->getValue() ?? null), 'UTF-8');
+            if ($deger === '') {
+                continue;
+            }
+
+            if (str_contains($deger, 'telefon') || str_contains($deger, 'gsm') || str_contains($deger, 'cep') || str_contains($deger, 'ad') || str_contains($deger, 'soyad')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function hucreDegeriniStringeCevir(mixed $deger): string
+    {
+        if ($deger === null) {
+            return '';
+        }
+
+        if (is_int($deger)) {
+            return (string) $deger;
+        }
+
+        if (is_float($deger)) {
+            return number_format($deger, 0, '', '');
+        }
+
+        if (is_bool($deger)) {
+            return $deger ? '1' : '0';
+        }
+
+        return trim((string) $deger);
     }
 
     public function failed(Throwable $exception): void
