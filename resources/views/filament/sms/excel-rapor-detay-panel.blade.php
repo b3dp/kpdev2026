@@ -1,6 +1,9 @@
 @php
     /** @var \App\Models\SmsExcelGonderim $record */
-    $record = $getRecord();
+    // ViewColumn'dan ($getRecord) veya modal action'dan (compact) gelebilir
+    if (!isset($record) && isset($getRecord)) {
+        $record = $getRecord();
+    }
     $hataliNumaralar = $record->hatali_numaralar ?? [];
     $gonderilenNumaralar = $record->gonderilen_numaralar ?? [];
 @endphp

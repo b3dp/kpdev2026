@@ -7,7 +7,6 @@ use App\Models\SmsExcelGonderim;
 use Carbon\Carbon;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Columns\Layout\Panel;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -55,60 +54,36 @@ class SmsExcelGonderimResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\Layout\Split::make([
-                    TextColumn::make('durum')
-                        ->label('Durum')
-                        ->badge()
-                        ->color(fn (string $state): string => match ($state) {
-                            'bekliyor' => 'gray',
-                            'isleniyor' => 'warning',
-                            'tamamlandi' => 'success',
-                            'hatali' => 'danger',
-                            default => 'gray',
-                        })
-                        ->grow(false),
+                TextColumn::make('durum')
+                    ->label('Durum')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'bekliyor' => 'gray',
+                        'isleniyor' => 'warning',
+                        'tamamlandi' => 'success',
+                        'hatali' => 'danger',
+                        default => 'gray',
+                    })
+                    ->sortable(),
 
-                    TextColumn::make('alici_sayisi')
-                        ->label('Alıcı')
-                        ->grow(false),
+                TextColumn::make('alici_sayisi')
+                    ->label('Alıcı')
+                    ->sortable(),
 
-                    TextColumn::make('basarili')
-                        ->label('Başarılı')
-                        ->color('success')
-                        ->grow(false),
+                TextColumn::make('basarili')
+                    ->label('Başarılı')
+                    ->color('success')
+                    ->sortable(),
 
-                    TextColumn::make('basarisiz')
-                        ->label('Başarısız')
-                        ->color('danger')
-                        ->grow(false),
+                TextColumn::make('basarisiz')
+                    ->label('Başarısız')
+                    ->color('danger')
+                    ->sortable(),
 
-                    TextColumn::make('created_at')
-                        ->label('Kayıt')
-                        ->formatStateUsing(fn ($state): string => $state ? Carbon::parse($state)->format('d.m.Y H:i:s') : '-')
-                        ->grow(false),
-                ]),
-
-                Panel::make([
-                    Tables\Columns\Layout\Grid::make(5)
-                        ->schema([
-                            TextColumn::make('toplam_satir')
-                                ->label('Toplam Satır'),
-                            TextColumn::make('gecerli_satir')
-                                ->label('Geçerli'),
-                            TextColumn::make('mukerrer')
-                                ->label('Mükerrer'),
-                            TextColumn::make('hatali_format')
-                                ->label('Hatalı Format'),
-                            TextColumn::make('bos')
-                                ->label('Boş'),
-                        ]),
-                    TextColumn::make('hata_mesaji')
-                        ->label('Hata Mesajı')
-                        ->color('danger')
-                        ->hidden(fn ($record) => empty($record?->hata_mesaji)),
-                ])
-                    ->collapsible()
-                    ->collapsed(),
+                TextColumn::make('created_at')
+                    ->label('Kayıt')
+                    ->formatStateUsing(fn ($state): string => $state ? Carbon::parse($state)->format('d.m.Y H:i:s') : '-')
+                    ->sortable(),
             ])
             ->filters([
                 SelectFilter::make('durum')
@@ -122,6 +97,14 @@ class SmsExcelGonderimResource extends Resource
             ])
             ->defaultSort('id', 'desc')
             ->actions([
+                Tables\Actions\Action::make('detay')
+                    ->label('Detay')
+                    ->icon('heroicon-o-information-circle')
+                    ->color('gray')
+                    ->modalContent(fn ($record) => view('filament.sms.excel-rapor-detay-panel', compact('record')))
+                    ->modalHeading('Gönderim Detayı')
+                    ->modalSubmitAction(false),
+
                 Tables\Actions\Action::make('hatali_numaralar')
                     ->label('Hatalı Numaralar')
                     ->icon('heroicon-o-x-circle')
