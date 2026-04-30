@@ -22,7 +22,13 @@
     <div
         x-show="acik"
         x-cloak
-        class="fixed inset-0 z-50 flex items-start justify-center pt-16 px-4"
+        x-transition:enter="transition ease-out duration-180"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-120"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        class="fixed inset-0 z-50 flex items-start justify-center px-4 pt-14"
         style="display: none;"
     >
         {{-- Arka plan --}}
@@ -33,18 +39,24 @@
 
         {{-- Modal kutu --}}
         <div
-            class="relative z-10 w-full max-w-2xl rounded-2xl bg-white shadow-2xl"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 -translate-y-2 scale-[0.985]"
+            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+            x-transition:leave="transition ease-in duration-130"
+            x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+            x-transition:leave-end="opacity-0 -translate-y-1 scale-[0.99]"
+            class="relative z-10 w-full max-w-3xl overflow-hidden rounded-3xl border border-slate-200/80 bg-white/95 shadow-[0_30px_90px_-28px_rgba(15,23,42,0.55)] backdrop-blur-md"
             x-on:click.stop
         >
             {{-- Arama inputu --}}
-            <div class="flex items-center border-b border-gray-100 bg-gradient-to-r from-slate-50 via-white to-sky-50 px-4">
+            <div class="flex items-center border-b border-slate-200/70 bg-gradient-to-r from-slate-50 via-white to-sky-50 px-5">
                 <x-heroicon-o-magnifying-glass class="h-5 w-5 flex-shrink-0 text-gray-400" />
                 <input
                     x-ref="aramaInput"
                     type="text"
                     wire:model.live.debounce.300ms="arama"
                     placeholder="Haber, etkinlik, kişi, kurum, rehber, üye, mezun, kayıt ara..."
-                    class="w-full border-0 bg-transparent px-3 py-4 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-0"
+                    class="w-full border-0 bg-transparent px-3 py-4 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-0"
                     autocomplete="off"
                 />
                 @if($arama)
@@ -60,7 +72,7 @@
             </div>
 
             {{-- Filtreler --}}
-            <div class="flex flex-wrap gap-2 border-b border-gray-100 bg-gray-50/70 px-4 py-3">
+            <div class="flex flex-wrap gap-2 border-b border-slate-200/70 bg-slate-50/85 px-5 py-3">
                 @php
                     $filtreler = [
                         'tum' => 'Tümü',
@@ -87,7 +99,7 @@
             </div>
 
             {{-- Sonuçlar --}}
-            <div class="max-h-[60vh] overflow-y-auto p-3">
+            <div class="max-h-[62vh] overflow-y-auto bg-white p-3 sm:p-4">
                 @if(mb_strlen(trim($arama), 'UTF-8') < 2)
                     <p class="px-3 py-8 text-center text-sm text-gray-400">En az 2 karakter girin...</p>
                 @elseif($toplamSonuc === 0)
