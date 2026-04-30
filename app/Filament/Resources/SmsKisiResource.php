@@ -5,8 +5,11 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\SmsKisiResource\Pages;
 use App\Jobs\HermesAktarimJob;
 use App\Models\SmsAktarim;
+use App\Models\SmsGonderim;
+use App\Models\SmsGonderimAlici;
 use App\Models\SmsKisi;
 use App\Models\SmsListe;
+use App\Services\HermesService;
 use Carbon\Carbon;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\FileUpload;
@@ -142,6 +145,90 @@ class SmsKisiResource extends Resource
                         ->visible(fn (): bool => static::izinVarMi('pazarlama_sms.kaydet')),
             ])
             ->actions([
+                Action::make('kisi_sms_gonder')
+                    ->label('SMS')
+                    ->icon('heroicon-o-chat-bubble-left-right')
+                    ->color('success')
+                    ->form([
+                        Textarea::make('mesaj')
+                            ->label('Mesaj')
+                            ->required()
+                            ->rows(5)
+                            ->maxLength(1000),
+                    ])
+                    ->action(function (SmsKisi $record, array $data): void {
+                        $telefonlar = collect([
+                            self::telefonNormalize((string) ($record->telefon ?? '')),
+                            self::telefonNormalize((string) ($record->telefon_2 ?? '')),
+                        ])
+                            ->filter(fn (string $telefon): bool => preg_match('/^5\d{9}$/', $telefon) === 1)
+                            ->unique()
+                            ->values()
+                            ->all();
+
+                        if ($telefonlar === []) {
+                            Notification::make()
+                                ->title('Bu kişi için geçerli telefon bulunamadı.')
+                                ->danger()
+                                ->send();
+
+                            return;
+                        }
+
+                        $mesaj = trim((string) ($data['mesaj'] ?? ''));
+
+                        if ($mesaj === '') {
+                            Notification::make()
+                                ->title('Mesaj alanı zorunludur.')
+                                ->warning()
+                                ->send();
+
+                            return;
+                        }
+
+                        try {
+                            $sonuc = app(HermesService::class)->akilliGonder($telefonlar, $mesaj);
+                            $async = (bool) ($sonuc['async'] ?? false);
+                            $basariliMi = (bool) ($sonuc['basarili'] ?? false);
+
+                            $gonderim = SmsGonderim::query()->create([
+                                'yonetici_id' => auth()->id(),
+                                'tip' => 'hizli',
+                                'mesaj' => $mesaj,
+                                'liste_idler' => null,
+                                'alici_sayisi' => count($telefonlar),
+                                'basarili' => $async ? 0 : (int) ($sonuc['gecerli'] ?? 0),
+                                'basarisiz' => $async ? 0 : (int) ($sonuc['gecersiz'] ?? 0),
+                                'bekleyen' => $async ? count($telefonlar) : 0,
+                                'durum' => $async ? 'gonderiliyor' : ($basariliMi ? 'tamamlandi' : 'basarisiz'),
+                                'hermes_transaction_id' => isset($sonuc['transaction_id']) ? (string) $sonuc['transaction_id'] : null,
+                                'hermes_async_req_id' => isset($sonuc['req_log_id']) ? (string) $sonuc['req_log_id'] : null,
+                                'planli_tarih' => null,
+                            ]);
+
+                            foreach ($telefonlar as $telefon) {
+                                SmsGonderimAlici::query()->create([
+                                    'gonderim_id' => $gonderim->id,
+                                    'telefon' => $telefon,
+                                    'durum' => $async ? 'beklemede' : ($basariliMi ? 'basarili' : 'basarisiz'),
+                                    'created_at' => now(),
+                                ]);
+                            }
+
+                            Notification::make()
+                                ->title('SMS gönderildi')
+                                ->body('Kişi için '.count($telefonlar).' numaraya gönderim başlatıldı.')
+                                ->success()
+                                ->send();
+                        } catch (\Throwable $exception) {
+                            Notification::make()
+                                ->title('Gönderim başarısız: '.$exception->getMessage())
+                                ->danger()
+                                ->send();
+                        }
+                    })
+                    ->visible(fn (): bool => static::tumKayitlariGorebilirMi() && static::izinVarMi('pazarlama_sms.gonder')),
+
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([]);
