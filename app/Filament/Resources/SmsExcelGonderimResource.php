@@ -11,6 +11,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\HtmlString;
 
 class SmsExcelGonderimResource extends Resource
 {
@@ -55,11 +56,13 @@ class SmsExcelGonderimResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('id')
-                    ->label('No')
+                    ->label(static::cokSatirliBaslik('No'))
+                    ->extraHeaderAttributes(['class' => 'whitespace-normal'])
                     ->sortable(),
 
                 TextColumn::make('durum')
-                    ->label('Durum')
+                    ->label(static::cokSatirliBaslik('Durum'))
+                    ->extraHeaderAttributes(['class' => 'whitespace-normal'])
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'bekliyor' => 'gray',
@@ -71,65 +74,87 @@ class SmsExcelGonderimResource extends Resource
                     ->sortable(),
 
                 TextColumn::make('rapor_dosya_yolu')
-                    ->label('Excel Rapor')
+                    ->label(static::cokSatirliBaslik('Excel', 'Rapor'))
+                    ->extraHeaderAttributes(['class' => 'whitespace-normal'])
                     ->formatStateUsing(fn ($state): string => filled($state) ? 'Hazir' : '-')
                     ->badge()
                     ->color(fn ($state): string => filled($state) ? 'success' : 'gray'),
 
+                TextColumn::make('created_at')
+                    ->label(static::cokSatirliBaslik('Kayit'))
+                    ->extraHeaderAttributes(['class' => 'whitespace-normal'])
+                    ->formatStateUsing(fn ($state): string => $state ? Carbon::parse($state)->format('d.m.Y H:i:s') : '-')
+                    ->sortable(),
+
+                TextColumn::make('raporu_indir')
+                    ->label(static::cokSatirliBaslik('Raporu', 'Indir'))
+                    ->extraHeaderAttributes(['class' => 'whitespace-normal'])
+                    ->state(fn (SmsExcelGonderim $record): string => filled($record->rapor_dosya_yolu) ? 'Indir' : '-')
+                    ->color(fn (SmsExcelGonderim $record): string => filled($record->rapor_dosya_yolu) ? 'success' : 'gray')
+                    ->url(fn (SmsExcelGonderim $record): ?string => $record->rapor_url)
+                    ->openUrlInNewTab(),
+
                 TextColumn::make('toplam_satir')
-                    ->label('Toplam Satır')
+                    ->label(static::cokSatirliBaslik('Excel Toplam', 'Satir'))
+                    ->extraHeaderAttributes(['class' => 'whitespace-normal'])
                     ->sortable(),
 
                 TextColumn::make('gecerli_satir')
-                    ->label('Geçerli')
+                    ->label(static::cokSatirliBaslik('Gecerli', 'Numara'))
+                    ->extraHeaderAttributes(['class' => 'whitespace-normal'])
                     ->sortable(),
 
                 TextColumn::make('mukerrer')
-                    ->label('Mükerrer')
+                    ->label(static::cokSatirliBaslik('Mukerrer', 'Numara'))
+                    ->extraHeaderAttributes(['class' => 'whitespace-normal'])
                     ->sortable(),
 
                 TextColumn::make('hatali_format')
-                    ->label('Hatalı Format')
+                    ->label(static::cokSatirliBaslik('Hatali', 'Format'))
+                    ->extraHeaderAttributes(['class' => 'whitespace-normal'])
                     ->sortable(),
 
                 TextColumn::make('hatali_numaralar')
-                    ->label('Hatalı No')
+                    ->label(static::cokSatirliBaslik('Hatali', 'Numara'))
+                    ->extraHeaderAttributes(['class' => 'whitespace-normal'])
                     ->formatStateUsing(fn ($state): string => is_array($state) ? (string) count($state) : '0')
                     ->alignCenter(),
 
                 TextColumn::make('bos')
-                    ->label('Boş')
+                    ->label(static::cokSatirliBaslik('Bos', 'Satir'))
+                    ->extraHeaderAttributes(['class' => 'whitespace-normal'])
                     ->sortable(),
 
                 TextColumn::make('alici_sayisi')
-                    ->label('Alıcı')
+                    ->label(static::cokSatirliBaslik('Toplam', 'Alici'))
+                    ->extraHeaderAttributes(['class' => 'whitespace-normal'])
                     ->sortable(),
 
                 TextColumn::make('basarili')
-                    ->label('Başarılı')
+                    ->label(static::cokSatirliBaslik('Toplam Basarili', 'SMS'))
+                    ->extraHeaderAttributes(['class' => 'whitespace-normal'])
                     ->sortable(),
 
                 TextColumn::make('basarisiz')
-                    ->label('Başarısız')
+                    ->label(static::cokSatirliBaslik('Toplam Basarisiz', 'SMS'))
+                    ->extraHeaderAttributes(['class' => 'whitespace-normal'])
                     ->sortable(),
 
                 TextColumn::make('bekleyen')
-                    ->label('Bekleyen')
+                    ->label(static::cokSatirliBaslik('Bekleyen', 'SMS'))
+                    ->extraHeaderAttributes(['class' => 'whitespace-normal'])
                     ->sortable(),
 
                 TextColumn::make('yonetici.ad_soyad')
-                    ->label('Yönetici')
+                    ->label(static::cokSatirliBaslik('Gonderen'))
+                    ->extraHeaderAttributes(['class' => 'whitespace-normal'])
                     ->sortable(),
 
                 TextColumn::make('hata_mesaji')
-                    ->label('Hata')
+                    ->label(static::cokSatirliBaslik('Hata'))
+                    ->extraHeaderAttributes(['class' => 'whitespace-normal'])
                     ->limit(80)
                     ->toggleable(),
-
-                TextColumn::make('created_at')
-                    ->label('Kayıt')
-                    ->formatStateUsing(fn ($state): string => $state ? Carbon::parse($state)->format('d.m.Y H:i:s') : '-')
-                    ->sortable(),
             ])
             ->filters([
                 SelectFilter::make('durum')
@@ -162,6 +187,15 @@ class SmsExcelGonderimResource extends Resource
                     ->url(fn (SmsExcelGonderim $record): ?string => $record->rapor_url, shouldOpenInNewTab: true),
             ])
             ->bulkActions([]);
+    }
+
+    private static function cokSatirliBaslik(string $ilkSatir, ?string $ikinciSatir = null): HtmlString
+    {
+        if ($ikinciSatir === null) {
+            return new HtmlString(e($ilkSatir));
+        }
+
+        return new HtmlString(e($ilkSatir).'<br>'.e($ikinciSatir));
     }
 
     public static function getEloquentQuery(): Builder
