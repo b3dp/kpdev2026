@@ -127,12 +127,19 @@ class TopbarArama extends Component
         }
 
         if ($this->kaynakGorunurMu(SmsKisiResource::class)) {
-            $rehberKayitlari = SmsKisi::query()
+            $rehberSorgu = SmsKisi::query()
                 ->where(function (Builder $query) use ($kelime): void {
                     $query->where('ad_soyad', 'like', "%{$kelime}%")
                         ->orWhere('telefon', 'like', "%{$kelime}%")
                         ->orWhere('telefon_2', 'like', "%{$kelime}%");
-                })
+                });
+
+            // Rehber resource davranışıyla uyumlu: Admin dışı kullanıcı sadece kendi kayıtlarını görsün.
+            if (! auth()->user()?->hasRole('Admin')) {
+                $rehberSorgu->where('created_by', auth()->id());
+            }
+
+            $rehberKayitlari = $rehberSorgu
                 ->orderByDesc('id')
                 ->limit(5)
                 ->get();
