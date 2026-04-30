@@ -68,6 +68,7 @@ class SmsGonderimResource extends Resource
                         'bildirim_uyelik' => 'Üyelik',
                         'bildirim_etkinlik' => 'Etkinlik',
                         'bildirim_veli' => 'Veli',
+                        'excel_sms' => 'Excel SMS',
                         default => $state,
                     })
                     ->color(fn (string $state): string => match ($state) {
@@ -78,6 +79,7 @@ class SmsGonderimResource extends Resource
                         'bildirim_uyelik' => 'gray',
                         'bildirim_etkinlik' => 'purple',
                         'bildirim_veli' => 'orange',
+                        'excel_sms' => 'success',
                         default => 'gray',
                     })
                     ->sortable(),
@@ -137,6 +139,7 @@ class SmsGonderimResource extends Resource
                         'bildirim_uyelik' => 'Bildirim - Üyelik',
                         'bildirim_etkinlik' => 'Bildirim - Etkinlik',
                         'bildirim_veli' => 'Bildirim - Veli/Öğrenci',
+                        'excel_sms' => 'Excel SMS',
                     ]),
                 SelectFilter::make('durum')
                     ->label('Durum')
