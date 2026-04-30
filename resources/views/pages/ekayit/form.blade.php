@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.ekayit-landing')
 
 @section('title', 'E-Kayıt Başvuru Formu')
 @section('meta_description', 'Kestanepazarı öğrenci e-kayıt başvuru formu.')

@@ -88,7 +88,7 @@
         </p>
       @endif
 
-      <div class="grid grid-cols-1 sm:grid-cols-2" style="gap: 16px; margin-bottom: 36px;">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3" style="gap: 16px; margin-bottom: 36px;">
         @foreach($grup['siniflar'] as $sinif)
           <a href="{{ route('ekayit.form', ['sinif_id' => $sinif['id']]) }}"
              style="border-radius: 16px; border: 1px solid #e5e7eb; background: #fff; overflow: hidden; text-decoration: none; display: block; box-shadow: 0 1px 3px rgba(16,24,40,0.06); transition: transform 0.15s, box-shadow 0.15s;"
