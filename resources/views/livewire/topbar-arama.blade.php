@@ -37,14 +37,14 @@
             x-on:click.stop
         >
             {{-- Arama inputu --}}
-            <div class="flex items-center border-b border-gray-200 px-4">
+            <div class="flex items-center border-b border-gray-100 bg-gradient-to-r from-slate-50 via-white to-sky-50 px-4">
                 <x-heroicon-o-magnifying-glass class="h-5 w-5 flex-shrink-0 text-gray-400" />
                 <input
                     x-ref="aramaInput"
                     type="text"
                     wire:model.live.debounce.300ms="arama"
-                    placeholder="Haber, etkinlik, kişi, kurum ara..."
-                    class="w-full border-0 bg-transparent px-3 py-4 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-0"
+                    placeholder="Haber, etkinlik, kişi, kurum, rehber, üye, mezun, kayıt ara..."
+                    class="w-full border-0 bg-transparent px-3 py-4 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-0"
                     autocomplete="off"
                 />
                 @if($arama)
@@ -57,6 +57,33 @@
                     </button>
                 @endif
                 <kbd class="ml-2 hidden rounded border border-gray-200 px-1.5 py-0.5 text-xs text-gray-400 sm:inline">ESC</kbd>
+            </div>
+
+            {{-- Filtreler --}}
+            <div class="flex flex-wrap gap-2 border-b border-gray-100 bg-gray-50/70 px-4 py-3">
+                @php
+                    $filtreler = [
+                        'tum' => 'Tümü',
+                        'haberler' => 'Haber',
+                        'etkinlikler' => 'Etkinlik',
+                        'kisiler' => 'Kişi',
+                        'kurumlar' => 'Kurum',
+                        'rehber' => 'Rehber',
+                        'uyeler' => 'Üye',
+                        'mezunlar' => 'Mezun',
+                        'kayitlar' => 'E-Kayıt',
+                    ];
+                @endphp
+
+                @foreach($filtreler as $anahtar => $etiket)
+                    <button
+                        type="button"
+                        wire:click="setFiltre('{{ $anahtar }}')"
+                        class="rounded-full border px-3 py-1 text-xs font-medium transition {{ $aktifFiltre === $anahtar ? 'border-primary-600 bg-primary-600 text-white' : 'border-gray-200 bg-white text-gray-600 hover:border-primary-300 hover:text-primary-700' }}"
+                    >
+                        {{ $etiket }}
+                    </button>
+                @endforeach
             </div>
 
             {{-- Sonuçlar --}}
@@ -73,11 +100,23 @@
                             'kurumsal_sayfalar'=> ['baslik' => 'Kurumsal Sayfalar','ikon' => 'heroicon-o-document-text'],
                             'kisiler'          => ['baslik' => 'Kişiler',          'ikon' => 'heroicon-o-user'],
                             'kurumlar'         => ['baslik' => 'Kurumlar',         'ikon' => 'heroicon-o-building-office'],
+                            'rehber'           => ['baslik' => 'Rehber',           'ikon' => 'heroicon-o-user-group'],
+                            'uyeler'           => ['baslik' => 'Üyeler',           'ikon' => 'heroicon-o-identification'],
+                            'mezunlar'         => ['baslik' => 'Mezunlar',         'ikon' => 'heroicon-o-academic-cap'],
+                            'kayitlar'         => ['baslik' => 'E-Kayıt',          'ikon' => 'heroicon-o-clipboard-document-list'],
                         ];
+
+                        $gorunenToplam = 0;
+                        foreach ($gruplar as $anahtar => $meta) {
+                            if ($aktifFiltre !== 'tum' && $aktifFiltre !== $anahtar) {
+                                continue;
+                            }
+                            $gorunenToplam += count($sonuclar[$anahtar] ?? []);
+                        }
                     @endphp
 
                     @foreach($gruplar as $anahtar => $meta)
-                        @if(!empty($sonuclar[$anahtar]))
+                        @if(($aktifFiltre === 'tum' || $aktifFiltre === $anahtar) && !empty($sonuclar[$anahtar]))
                             <div class="mb-3">
                                 <p class="mb-1 px-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
                                     {{ $meta['baslik'] }} ({{ count($sonuclar[$anahtar]) }})
@@ -85,7 +124,7 @@
                                 @foreach($sonuclar[$anahtar] as $sonuc)
                                     <a
                                         href="{{ $sonuc['link'] }}"
-                                        class="flex items-start gap-3 rounded-lg px-3 py-2.5 hover:bg-primary-50 group"
+                                        class="group flex items-start gap-3 rounded-xl border border-transparent px-3 py-2.5 hover:border-primary-100 hover:bg-primary-50"
                                         x-on:click="acik = false"
                                     >
                                         <div class="mt-0.5 flex-shrink-0 text-gray-400 group-hover:text-primary-600">
@@ -108,7 +147,7 @@
                     @endforeach
 
                     <p class="mt-2 border-t border-gray-100 pt-2 text-center text-xs text-gray-400">
-                        Toplam {{ $toplamSonuc }} sonuç
+                        Gösterilen {{ $gorunenToplam }} / Toplam {{ $toplamSonuc }} sonuç
                     </p>
                 @endif
             </div>
