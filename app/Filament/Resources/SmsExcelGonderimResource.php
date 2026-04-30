@@ -73,18 +73,18 @@ class SmsExcelGonderimResource extends Resource
                     })
                     ->sortable(),
 
+                TextColumn::make('created_at')
+                    ->label(static::cokSatirliBaslik('Kayit'))
+                    ->extraHeaderAttributes(['class' => 'whitespace-normal'])
+                    ->formatStateUsing(fn ($state): string => $state ? Carbon::parse($state)->format('d.m.Y H:i:s') : '-')
+                    ->sortable(),
+
                 TextColumn::make('rapor_dosya_yolu')
                     ->label(static::cokSatirliBaslik('Excel', 'Rapor'))
                     ->extraHeaderAttributes(['class' => 'whitespace-normal'])
                     ->formatStateUsing(fn ($state): string => filled($state) ? 'Hazir' : '-')
                     ->badge()
                     ->color(fn ($state): string => filled($state) ? 'success' : 'gray'),
-
-                TextColumn::make('created_at')
-                    ->label(static::cokSatirliBaslik('Kayit'))
-                    ->extraHeaderAttributes(['class' => 'whitespace-normal'])
-                    ->formatStateUsing(fn ($state): string => $state ? Carbon::parse($state)->format('d.m.Y H:i:s') : '-')
-                    ->sortable(),
 
                 TextColumn::make('raporu_indir')
                     ->label(static::cokSatirliBaslik('Raporu', 'Indir'))
@@ -93,6 +93,16 @@ class SmsExcelGonderimResource extends Resource
                     ->color(fn (SmsExcelGonderim $record): string => filled($record->rapor_dosya_yolu) ? 'success' : 'gray')
                     ->url(fn (SmsExcelGonderim $record): ?string => $record->rapor_url)
                     ->openUrlInNewTab(),
+
+                TextColumn::make('basarili')
+                    ->label(static::cokSatirliBaslik('Toplam Basarili', 'SMS'))
+                    ->extraHeaderAttributes(['class' => 'whitespace-normal'])
+                    ->sortable(),
+
+                TextColumn::make('basarisiz')
+                    ->label(static::cokSatirliBaslik('Toplam Basarisiz', 'SMS'))
+                    ->extraHeaderAttributes(['class' => 'whitespace-normal'])
+                    ->sortable(),
 
                 TextColumn::make('toplam_satir')
                     ->label(static::cokSatirliBaslik('Excel Toplam', 'Satir'))
@@ -127,16 +137,6 @@ class SmsExcelGonderimResource extends Resource
 
                 TextColumn::make('alici_sayisi')
                     ->label(static::cokSatirliBaslik('Toplam', 'Alici'))
-                    ->extraHeaderAttributes(['class' => 'whitespace-normal'])
-                    ->sortable(),
-
-                TextColumn::make('basarili')
-                    ->label(static::cokSatirliBaslik('Toplam Basarili', 'SMS'))
-                    ->extraHeaderAttributes(['class' => 'whitespace-normal'])
-                    ->sortable(),
-
-                TextColumn::make('basarisiz')
-                    ->label(static::cokSatirliBaslik('Toplam Basarisiz', 'SMS'))
                     ->extraHeaderAttributes(['class' => 'whitespace-normal'])
                     ->sortable(),
 
