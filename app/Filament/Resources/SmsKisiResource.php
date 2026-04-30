@@ -9,6 +9,7 @@ use App\Models\SmsListe;
 use Carbon\Carbon;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -101,6 +102,12 @@ class SmsKisiResource extends Resource
                     ->icon('heroicon-o-arrow-up-tray')
                     ->color('warning')
                     ->form([
+                        Select::make('liste_id')
+                            ->label('Hedef Liste')
+                            ->required()
+                            ->searchable()
+                            ->options(fn (): array => self::erisebilirListeSecenekleri()),
+
                         FileUpload::make('dosya')
                             ->label('Excel Dosyası')
                             ->acceptedFileTypes([
@@ -112,7 +119,11 @@ class SmsKisiResource extends Resource
                     ])
                     ->action(function (array $data): void {
                         // Import job'ı dispatch et
-                        HermesAktarimJob::dispatch($data['dosya'], auth()->id());
+                        HermesAktarimJob::dispatch(
+                            $data['dosya'],
+                            auth()->id(),
+                            (int) $data['liste_id']
+                        );
 
                         Notification::make()
                             ->title('Aktarım başlatıldı')

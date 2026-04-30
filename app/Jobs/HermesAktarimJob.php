@@ -22,6 +22,7 @@ class HermesAktarimJob implements ShouldQueue
     public function __construct(
         private string $dosyaYolu,
         private int $yoneticiId,
+        private ?int $listeId = null,
     ) {
         $this->onQueue('default');
     }
@@ -29,6 +30,15 @@ class HermesAktarimJob implements ShouldQueue
     public function handle(): void
     {
         try {
+            $yonetici = Yonetici::find($this->yoneticiId);
+            if (! $yonetici) {
+                Log::error('[HermesAktarim] Yönetici bulunamadı', [
+                    'yonetici_id' => $this->yoneticiId,
+                ]);
+
+                return;
+            }
+
             $sayaclar = [
                 'toplam' => 0,
                 'eklenen' => 0,
@@ -40,13 +50,34 @@ class HermesAktarimJob implements ShouldQueue
 
             $exceldeGorulenler = [];
 
-            // 2026NisanOncesi listesi oluştur veya bul
-            $liste = SmsListe::firstOrCreate(
-                [
+            // Formdan liste seçildiyse onu kullan, aksi halde geriye dönük varsayılan listeyi aç.
+            if ($this->listeId) {
+                $liste = SmsListe::query()->find($this->listeId);
+
+                if (! $liste) {
+                    Log::warning('[HermesAktarim] Seçilen liste bulunamadı', [
+                        'liste_id' => $this->listeId,
+                        'yonetici_id' => $this->yoneticiId,
+                    ]);
+
+                    return;
+                }
+
+                $listeBuYoneticiyeAit = (int) $liste->sahip_yonetici_id === $this->yoneticiId;
+                if (! $listeBuYoneticiyeAit && ! $yonetici->hasRole('Admin')) {
+                    Log::warning('[HermesAktarim] Liste erişim yetkisi yok', [
+                        'liste_id' => $this->listeId,
+                        'yonetici_id' => $this->yoneticiId,
+                    ]);
+
+                    return;
+                }
+            } else {
+                $liste = SmsListe::firstOrCreate([
                     'ad' => '2026NisanOncesi',
                     'sahip_yonetici_id' => $this->yoneticiId,
-                ]
-            );
+                ]);
+            }
 
             // Excel oku — Filament FileUpload disk-relative yolunu çöz
             $gercekYol = null;
@@ -148,7 +179,7 @@ class HermesAktarimJob implements ShouldQueue
 
             // Activity log kaydet
             activity('hermes_aktarim')
-                ->causedBy(Yonetici::find($this->yoneticiId))
+                ->causedBy($yonetici)
                 ->withProperties($sayaclar)
                 ->log('Hermes numara aktarımı tamamlandı');
 
@@ -172,7 +203,7 @@ class HermesAktarimJob implements ShouldQueue
             ]);
 
             activity('hermes_aktarim_hata')
-                ->causedBy(Yonetici::find($this->yoneticiId))
+                ->causedBy($yonetici ?? null)
                 ->withProperties(['hata' => $e->getMessage()])
                 ->log('Hermes aktarımında hata oluştu');
 
