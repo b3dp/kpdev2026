@@ -8,7 +8,6 @@ use App\Services\EkayitPdfService;
 use App\Services\ZeptomailService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Facades\URL;
 
 class EkayitDurumEpostasiJob implements ShouldQueue
 {
@@ -41,25 +40,24 @@ class EkayitDurumEpostasiJob implements ShouldQueue
         }
 
         $durumEnum = EkayitDurumu::tryFrom($this->durum);
-        $evrakUrl = null;
 
         if ($durumEnum === EkayitDurumu::Onaylandi) {
             app(EkayitPdfService::class)->olustur($kayit);
-
-            $evrakUrl = URL::temporarySignedRoute('ekayit.evrak.indir', now()->addDays(7), [
-                'kayit' => $kayit->id,
-            ]);
         }
+
+        $ogrenciAdi = (string) ($kayit->ogrenciBilgisi?->ad_soyad ?? '');
+        $durumNotu = $kayit->durum_notu
+            ? str_replace('{AD_SOYAD}', $ogrenciAdi, $kayit->durum_notu)
+            : null;
 
         $zeptomailService->ekayitDurumGonder(
             eposta: (string) $kayit->veliBilgisi->eposta,
             ad: (string) ($kayit->veliBilgisi->ad_soyad ?? 'Veli'),
-            ogrenciAdSoyad: (string) ($kayit->ogrenciBilgisi?->ad_soyad ?? ''),
+            ogrenciAdSoyad: $ogrenciAdi,
             sinif: (string) ($kayit->sinif?->ad ?? ''),
             kurum: (string) ($kayit->sinif?->kurum?->ad ?? ''),
             durum: $durumEnum?->label() ?? (string) $this->durum,
-            durumNotu: $kayit->durum_notu,
-            evrakUrl: $evrakUrl,
+            durumNotu: $durumNotu,
         );
     }
 }

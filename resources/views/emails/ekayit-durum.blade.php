@@ -35,18 +35,6 @@
     </tr>
 </table>
 
-@if(filled($evrakUrl))
-<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:24px;">
-    <tr>
-        <td align="center">
-            <a href="{{ $evrakUrl }}"
-               style="background-color:#f97316;color:#ffffff;font-family:Arial,sans-serif;font-size:15px;font-weight:700;text-decoration:none;padding:14px 36px;border-radius:6px;display:inline-block;min-width:220px;text-align:center;">
-                📄 PDF Evrakını İndir
-            </a>
-        </td>
-    </tr>
-</table>
-@endif
 
 @if(filled($durumNotu))
 <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
