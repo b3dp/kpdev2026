@@ -107,6 +107,8 @@ class HermesAktarimJob implements ShouldQueue
             foreach ($reader->getSheetIterator() as $sheetIndex => $sheet) {
                 $sheetSatirNo = 0;
                 $telefonKolonIndex = 0;
+                $telefon2KolonIndex = null;
+                $adSoyadKolonIndex = null;
 
                 foreach ($sheet->getRowIterator() as $row) {
                     $sheetSatirNo++;
@@ -114,6 +116,8 @@ class HermesAktarimJob implements ShouldQueue
 
                     if ($sheetSatirNo === 1) {
                         $telefonKolonIndex = $this->telefonKolonunuBul($cells);
+                        $telefon2KolonIndex = $this->telefon2KolonunuBul($cells, $telefonKolonIndex);
+                        $adSoyadKolonIndex = $this->adSoyadKolonunuBul($cells);
 
                         if ($this->satirHeaderMi($cells)) {
                             continue;
@@ -164,9 +168,30 @@ class HermesAktarimJob implements ShouldQueue
                         continue;
                     }
 
+                    // Ad Soyad kolonunu oku
+                    $adSoyad = null;
+                    if ($adSoyadKolonIndex !== null && isset($cells[$adSoyadKolonIndex])) {
+                        $adSoyad = $this->hucreDegeriniStringeCevir($cells[$adSoyadKolonIndex]->getValue() ?? null);
+                        $adSoyad = $adSoyad !== '' ? mb_convert_case(mb_strtolower($adSoyad, 'UTF-8'), MB_CASE_TITLE, 'UTF-8') : null;
+                    }
+
+                    // Telefon 2 kolonunu oku ve normalize et
+                    $telefon2 = null;
+                    if ($telefon2KolonIndex !== null && isset($cells[$telefon2KolonIndex])) {
+                        $hamTelefon2 = $this->hucreDegeriniStringeCevir($cells[$telefon2KolonIndex]->getValue() ?? null);
+                        if ($hamTelefon2 !== '') {
+                            $telefon2 = $this->telefonNormalize($hamTelefon2);
+                        }
+                    }
+                    // telefon ile aynıysa alma
+                    if ($telefon2 === $telefon) {
+                        $telefon2 = null;
+                    }
+
                     $yeniKisi = SmsKisi::create([
                         'telefon' => $telefon,
-                        'ad_soyad' => null,
+                        'telefon_2' => $telefon2,
+                        'ad_soyad' => $adSoyad,
                         'notlar' => null,
                         'created_by' => $this->yoneticiId,
                     ]);
@@ -255,7 +280,7 @@ class HermesAktarimJob implements ShouldQueue
     }
 
     /**
-     * Başlık satırından telefon kolonunu bulur. Bulamazsa 1. kolona düşer.
+     * Başlık satırından 1. telefon kolonunu bulur. Bulamazsa 1. kolona düşer.
      */
     private function telefonKolonunuBul(array $cells): int
     {
@@ -271,6 +296,53 @@ class HermesAktarimJob implements ShouldQueue
         }
 
         return 0;
+    }
+
+    /**
+     * Başlık satırından 2. telefon kolonunu bulur (1. telefondan farklı olan).
+     */
+    private function telefon2KolonunuBul(array $cells, int $ilkTelefonIndex): ?int
+    {
+        foreach ($cells as $index => $cell) {
+            if ((int) $index === $ilkTelefonIndex) {
+                continue;
+            }
+            $deger = mb_strtolower($this->hucreDegeriniStringeCevir($cell?->getValue() ?? null), 'UTF-8');
+            if ($deger === '') {
+                continue;
+            }
+
+            if (str_contains($deger, 'telefon') || str_contains($deger, 'gsm') || str_contains($deger, 'cep')) {
+                return (int) $index;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Başlık satırından ad soyad kolonunu bulur.
+     */
+    private function adSoyadKolonunuBul(array $cells): ?int
+    {
+        foreach ($cells as $index => $cell) {
+            $deger = mb_strtolower($this->hucreDegeriniStringeCevir($cell?->getValue() ?? null), 'UTF-8');
+            if ($deger === '') {
+                continue;
+            }
+
+            if (
+                str_contains($deger, 'ad soyad') || str_contains($deger, 'adsoyad') ||
+                str_contains($deger, 'isim soyisim') || str_contains($deger, 'isim') ||
+                str_contains($deger, 'soyad') || str_contains($deger, 'öğrenci') ||
+                str_contains($deger, 'ogrenci') || str_contains($deger, 'veli') ||
+                $deger === 'ad'
+            ) {
+                return (int) $index;
+            }
+        }
+
+        return null;
     }
 
     /**
