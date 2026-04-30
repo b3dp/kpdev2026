@@ -1,4 +1,4 @@
-@extends('layouts.checkout')
+@extends('layouts.ekayit-landing')
 
 @section('title', 'Başvurunuz Alındı!')
 @section('meta_description', 'E-Kayıt başvurunuz başarıyla alınmıştır.')
