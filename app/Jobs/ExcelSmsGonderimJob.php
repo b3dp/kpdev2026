@@ -68,6 +68,7 @@ class ExcelSmsGonderimJob implements ShouldQueue
             ];
 
             $telefonlar = [];
+            $hataliNumaralar = [];
             $exceldeGorulenler = [];
 
             $reader = new Reader();
@@ -89,6 +90,7 @@ class ExcelSmsGonderimJob implements ShouldQueue
 
                     if (! preg_match('/^5\d{9}$/', $telefon)) {
                         $sayaclar['hatali_format']++;
+                        $this->hataliNumaraEkle($hataliNumaralar, $hamTelefon);
                         continue;
                     }
 
@@ -108,6 +110,7 @@ class ExcelSmsGonderimJob implements ShouldQueue
             if ($telefonlar === []) {
                 $rapor->update(array_merge($sayaclar, [
                     'durum' => 'tamamlandi',
+                    'hatali_numaralar' => $hataliNumaralar === [] ? null : array_values($hataliNumaralar),
                     'alici_sayisi' => 0,
                     'basarili' => 0,
                     'basarisiz' => 0,
@@ -148,6 +151,7 @@ class ExcelSmsGonderimJob implements ShouldQueue
 
             $rapor->update(array_merge($sayaclar, [
                 'durum' => 'tamamlandi',
+                'hatali_numaralar' => $hataliNumaralar === [] ? null : array_values($hataliNumaralar),
                 'alici_sayisi' => count($telefonlar),
                 'basarili' => $async ? 0 : (int) ($sonuc['gecerli'] ?? 0),
                 'basarisiz' => $async ? 0 : (int) ($sonuc['gecersiz'] ?? 0),
@@ -165,6 +169,7 @@ class ExcelSmsGonderimJob implements ShouldQueue
             $rapor->update([
                 'durum' => 'hatali',
                 'hata_mesaji' => $e->getMessage(),
+                'hatali_numaralar' => $hataliNumaralar ?? null,
                 'tamamlandi_at' => now(),
             ]);
 
@@ -172,6 +177,18 @@ class ExcelSmsGonderimJob implements ShouldQueue
         } finally {
             Storage::disk('public')->delete($this->dosyaYolu);
         }
+    }
+
+    private function hataliNumaraEkle(array &$hataliNumaralar, string $hamTelefon): void
+    {
+        $temiz = trim($hamTelefon);
+
+        if ($temiz === '') {
+            return;
+        }
+
+        // Listeyi panelde okunabilir tutmak için gereksiz tekrarları engelleriz.
+        $hataliNumaralar[$temiz] = $temiz;
     }
 
     private function dosyaYolunuBul(): ?string

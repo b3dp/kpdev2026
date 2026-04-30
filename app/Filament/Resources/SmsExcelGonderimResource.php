@@ -86,6 +86,11 @@ class SmsExcelGonderimResource extends Resource
                     ->label('Hatalı Format')
                     ->sortable(),
 
+                TextColumn::make('hatali_numaralar')
+                    ->label('Hatalı No')
+                    ->formatStateUsing(fn ($state): string => is_array($state) ? (string) count($state) : '0')
+                    ->alignCenter(),
+
                 TextColumn::make('bos')
                     ->label('Boş')
                     ->sortable(),
@@ -131,7 +136,19 @@ class SmsExcelGonderimResource extends Resource
                     ]),
             ])
             ->defaultSort('id', 'desc')
-            ->actions([])
+            ->actions([
+                Tables\Actions\Action::make('hatali_numaralar')
+                    ->label('Hatalı Numaralar')
+                    ->icon('heroicon-o-exclamation-triangle')
+                    ->color('warning')
+                    ->visible(fn (SmsExcelGonderim $record): bool => filled($record->hatali_numaralar))
+                    ->modalHeading('Hatalı Numaralar')
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Kapat')
+                    ->modalContent(fn (SmsExcelGonderim $record) => view('filament.sms.hatali-numaralar-modal', [
+                        'numaralar' => $record->hatali_numaralar ?? [],
+                    ])),
+            ])
             ->bulkActions([]);
     }
 
