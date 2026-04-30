@@ -131,7 +131,7 @@ class SmsKisiResource extends Resource
                             ->success()
                             ->send();
                     })
-                        ->visible(fn (): bool => auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Halkla İlişkiler'])),
+                        ->visible(fn (): bool => static::izinVarMi('pazarlama_sms.kaydet')),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
