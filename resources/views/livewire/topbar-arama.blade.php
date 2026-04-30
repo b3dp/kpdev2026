@@ -28,12 +28,12 @@
         x-transition:leave="transition ease-in duration-120"
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
-        class="fixed inset-0 z-50 flex items-start justify-center px-4 pt-14"
+        class="fixed inset-0 z-[1000] flex items-start justify-center px-4 pt-16 sm:px-6 sm:pt-20"
         style="display: none;"
     >
         {{-- Arka plan --}}
         <div
-            class="fixed inset-0 bg-black/40 backdrop-blur-sm"
+            class="fixed inset-0 bg-slate-300/55 backdrop-blur-[2px]"
             x-on:click="acik = false; $wire.set('arama', '')"
         ></div>
 
@@ -45,18 +45,18 @@
             x-transition:leave="transition ease-in duration-130"
             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
             x-transition:leave-end="opacity-0 -translate-y-1 scale-[0.99]"
-            class="relative z-10 w-full max-w-3xl overflow-hidden rounded-3xl border border-slate-200/80 bg-white/95 shadow-[0_30px_90px_-28px_rgba(15,23,42,0.55)] backdrop-blur-md"
+            class="relative z-10 mx-auto w-full max-w-5xl overflow-hidden rounded-3xl border border-sky-200 bg-white shadow-[0_34px_90px_-30px_rgba(15,23,42,0.52)] ring-1 ring-sky-100"
             x-on:click.stop
         >
             {{-- Arama inputu --}}
-            <div class="flex items-center border-b border-slate-200/70 bg-gradient-to-r from-slate-50 via-white to-sky-50 px-5">
+            <div class="flex items-center border-b border-sky-100 bg-gradient-to-r from-white via-sky-50 to-white px-5 sm:px-8">
                 <x-heroicon-o-magnifying-glass class="h-5 w-5 flex-shrink-0 text-gray-400" />
                 <input
                     x-ref="aramaInput"
                     type="text"
                     wire:model.live.debounce.300ms="arama"
                     placeholder="Haber, etkinlik, kişi, kurum, rehber, üye, mezun, kayıt ara..."
-                    class="w-full border-0 bg-transparent px-3 py-4 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-0"
+                    class="w-full border-0 bg-transparent px-3 py-4 text-base text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-0"
                     autocomplete="off"
                 />
                 @if($arama)
@@ -68,11 +68,11 @@
                         <x-heroicon-o-x-mark class="h-4 w-4" />
                     </button>
                 @endif
-                <kbd class="ml-2 hidden rounded border border-gray-200 px-1.5 py-0.5 text-xs text-gray-400 sm:inline">ESC</kbd>
+                <kbd class="ml-2 hidden rounded border border-sky-200 bg-white px-1.5 py-0.5 text-xs text-slate-500 sm:inline">ESC</kbd>
             </div>
 
             {{-- Filtreler --}}
-            <div class="flex flex-wrap gap-2 border-b border-slate-200/70 bg-slate-50/85 px-5 py-3">
+            <div class="flex flex-wrap gap-2 border-b border-sky-100 bg-slate-50 px-5 py-3 sm:px-8">
                 @php
                     $filtreler = [
                         'tum' => 'Tümü',
@@ -91,7 +91,7 @@
                     <button
                         type="button"
                         wire:click="setFiltre('{{ $anahtar }}')"
-                        class="rounded-full border px-3 py-1 text-xs font-medium transition {{ $aktifFiltre === $anahtar ? 'border-primary-600 bg-primary-600 text-white' : 'border-gray-200 bg-white text-gray-600 hover:border-primary-300 hover:text-primary-700' }}"
+                        class="rounded-full border px-3 py-1 text-xs font-medium transition {{ $aktifFiltre === $anahtar ? 'border-sky-600 bg-sky-600 text-white shadow-sm' : 'border-slate-200 bg-white text-slate-700 hover:border-sky-300 hover:bg-sky-50 hover:text-sky-700' }}"
                     >
                         {{ $etiket }}
                     </button>
@@ -99,7 +99,7 @@
             </div>
 
             {{-- Sonuçlar --}}
-            <div class="max-h-[62vh] overflow-y-auto bg-white p-3 sm:p-4">
+            <div class="max-h-[64vh] overflow-y-auto bg-gradient-to-b from-white to-slate-50 p-3 sm:p-4 sm:px-6">
                 @if(mb_strlen(trim($arama), 'UTF-8') < 2)
                     <p class="px-3 py-8 text-center text-sm text-gray-400">En az 2 karakter girin...</p>
                 @elseif($toplamSonuc === 0)
@@ -136,18 +136,18 @@
                                 @foreach($sonuclar[$anahtar] as $sonuc)
                                     <a
                                         href="{{ $sonuc['link'] }}"
-                                        class="group flex items-start gap-3 rounded-xl border border-transparent px-3 py-2.5 hover:border-primary-100 hover:bg-primary-50"
+                                        class="group flex items-start gap-3 rounded-xl border border-transparent bg-white/70 px-3 py-2.5 transition hover:border-sky-200 hover:bg-sky-50"
                                         x-on:click="acik = false"
                                     >
-                                        <div class="mt-0.5 flex-shrink-0 text-gray-400 group-hover:text-primary-600">
+                                        <div class="mt-0.5 flex-shrink-0 text-slate-400 group-hover:text-sky-600">
                                             <x-dynamic-component :component="$meta['ikon']" class="h-4 w-4" />
                                         </div>
                                         <div class="min-w-0">
-                                            <p class="truncate text-sm font-medium text-gray-900 group-hover:text-primary-700">
+                                            <p class="truncate text-sm font-medium text-slate-900 group-hover:text-sky-700">
                                                 {{ $sonuc['baslik'] }}
                                             </p>
                                             @if(!empty($sonuc['ozet']))
-                                                <p class="mt-0.5 truncate text-xs text-gray-500">
+                                                <p class="mt-0.5 truncate text-xs text-slate-500">
                                                     {{ \Illuminate\Support\Str::limit(strip_tags((string) $sonuc['ozet']), 80) }}
                                                 </p>
                                             @endif
