@@ -98,7 +98,7 @@ class SmsKisiResource extends Resource
             ->headerActions([
                 Tables\Actions\CreateAction::make(),
                 Action::make('hermes_aktar')
-                    ->label('Hermes\'ten Aktar')
+                    ->label('Excel\'den Aktar')
                     ->icon('heroicon-o-arrow-up-tray')
                     ->color('warning')
                     ->form([
