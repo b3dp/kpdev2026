@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\SmsKisiResource\Pages;
 use App\Jobs\HermesAktarimJob;
+use App\Models\SmsAktarim;
 use App\Models\SmsKisi;
 use App\Models\SmsListe;
 use Carbon\Carbon;
@@ -118,16 +119,23 @@ class SmsKisiResource extends Resource
                             ->maxSize(10240), // 10MB
                     ])
                     ->action(function (array $data): void {
-                        // Import job'ı dispatch et
+                        $aktarim = SmsAktarim::create([
+                            'yonetici_id' => (int) auth()->id(),
+                            'liste_id' => (int) $data['liste_id'],
+                            'dosya' => (string) $data['dosya'],
+                            'durum' => 'bekliyor',
+                        ]);
+
                         HermesAktarimJob::dispatch(
                             $data['dosya'],
                             auth()->id(),
-                            (int) $data['liste_id']
+                            (int) $data['liste_id'],
+                            (int) $aktarim->id,
                         );
 
                         Notification::make()
                             ->title('Aktarım başlatıldı')
-                            ->body('İşlem arka planda devam ediyor. Tamamlandığında log kayıtlarından sonucu görebilirsiniz.')
+                            ->body('İşlem arka planda devam ediyor. Sonucu SMS Yönetimi > Aktarım Geçmişi ekranından takip edebilirsiniz.')
                             ->success()
                             ->send();
                     })
@@ -163,7 +171,7 @@ class SmsKisiResource extends Resource
                 ->afterStateUpdated(function ($set, ?string $state): void {
                     $set('telefon_2', self::telefonNormalize($state));
                 })
-                ->rule('nullable|regex:/^5\d{9}$/')
+                ->rule('regex:/^5\d{9}$/')
                 ->different('telefon')
                 ->validationMessages([
                     'regex' => 'Telefon 2 numarasını 5321234567 formatında giriniz.',

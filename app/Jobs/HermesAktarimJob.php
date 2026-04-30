@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\SmsAktarim;
 use App\Models\SmsKisi;
 use App\Models\SmsListe;
 use App\Models\Yonetici;
@@ -23,12 +24,15 @@ class HermesAktarimJob implements ShouldQueue
         private string $dosyaYolu,
         private int $yoneticiId,
         private ?int $listeId = null,
+        private ?int $aktarimId = null,
     ) {
         $this->onQueue('default');
     }
 
     public function handle(): void
     {
+        $aktarim = $this->aktarimId ? SmsAktarim::query()->find($this->aktarimId) : null;
+
         try {
             $yonetici = Yonetici::find($this->yoneticiId);
             if (! $yonetici) {
@@ -36,8 +40,20 @@ class HermesAktarimJob implements ShouldQueue
                     'yonetici_id' => $this->yoneticiId,
                 ]);
 
+                $this->aktarimDurumuGuncelle($aktarim, 'hatali', [
+                    'hata_mesaji' => 'Yönetici bulunamadı.',
+                    'tamamlandi_at' => now(),
+                ]);
+
                 return;
             }
+
+            $this->aktarimDurumuGuncelle($aktarim, 'isleniyor', [
+                'yonetici_id' => $this->yoneticiId,
+                'liste_id' => $this->listeId,
+                'basladi_at' => now(),
+                'hata_mesaji' => null,
+            ]);
 
             $sayaclar = [
                 'toplam' => 0,
@@ -60,6 +76,11 @@ class HermesAktarimJob implements ShouldQueue
                         'yonetici_id' => $this->yoneticiId,
                     ]);
 
+                    $this->aktarimDurumuGuncelle($aktarim, 'hatali', [
+                        'hata_mesaji' => 'Seçilen liste bulunamadı.',
+                        'tamamlandi_at' => now(),
+                    ]);
+
                     return;
                 }
 
@@ -68,6 +89,11 @@ class HermesAktarimJob implements ShouldQueue
                     Log::warning('[HermesAktarim] Liste erişim yetkisi yok', [
                         'liste_id' => $this->listeId,
                         'yonetici_id' => $this->yoneticiId,
+                    ]);
+
+                    $this->aktarimDurumuGuncelle($aktarim, 'hatali', [
+                        'hata_mesaji' => 'Seçilen liste için erişim yetkisi yok.',
+                        'tamamlandi_at' => now(),
                     ]);
 
                     return;
@@ -98,6 +124,12 @@ class HermesAktarimJob implements ShouldQueue
                     'dosya_yolu' => $this->dosyaYolu,
                     'denenen_yollar' => $adaylar,
                 ]);
+
+                $this->aktarimDurumuGuncelle($aktarim, 'hatali', [
+                    'hata_mesaji' => 'Excel dosyası bulunamadı.',
+                    'tamamlandi_at' => now(),
+                ]);
+
                 return;
             }
 
@@ -220,11 +252,27 @@ class HermesAktarimJob implements ShouldQueue
                 'yonetici_id' => $this->yoneticiId,
             ]);
 
+            $this->aktarimDurumuGuncelle($aktarim, 'tamamlandi', [
+                'liste_id' => $liste->id,
+                'toplam' => $sayaclar['toplam'],
+                'eklenen' => $sayaclar['eklenen'],
+                'mukerrer_db' => $sayaclar['mukerrer_db'],
+                'mukerrer_excel' => $sayaclar['mukerrer_excel'],
+                'hatali_format' => $sayaclar['hatali_format'],
+                'bos' => $sayaclar['bos'],
+                'tamamlandi_at' => now(),
+            ]);
+
         } catch (Throwable $e) {
             Log::error('[HermesAktarim] Hata oluştu', [
                 'hata' => $e->getMessage(),
                 'dosya' => $e->getFile(),
                 'satir' => $e->getLine(),
+            ]);
+
+            $this->aktarimDurumuGuncelle($aktarim, 'hatali', [
+                'hata_mesaji' => $e->getMessage(),
+                'tamamlandi_at' => now(),
             ]);
 
             activity('hermes_aktarim_hata')
@@ -387,6 +435,14 @@ class HermesAktarimJob implements ShouldQueue
 
     public function failed(Throwable $exception): void
     {
+        if ($this->aktarimId) {
+            $aktarim = SmsAktarim::query()->find($this->aktarimId);
+            $this->aktarimDurumuGuncelle($aktarim, 'hatali', [
+                'hata_mesaji' => $exception->getMessage(),
+                'tamamlandi_at' => now(),
+            ]);
+        }
+
         activity('job_hata')
             ->withProperties(['job' => static::class, 'hata' => $exception->getMessage()])
             ->log('HermesAktarimJob başarısız oldu');
@@ -394,5 +450,14 @@ class HermesAktarimJob implements ShouldQueue
         Log::error('[HermesAktarim] Job failed', [
             'hata' => $exception->getMessage(),
         ]);
+    }
+
+    private function aktarimDurumuGuncelle(?SmsAktarim $aktarim, string $durum, array $ekVeri = []): void
+    {
+        if (! $aktarim) {
+            return;
+        }
+
+        $aktarim->update(array_merge(['durum' => $durum], $ekVeri));
     }
 }
