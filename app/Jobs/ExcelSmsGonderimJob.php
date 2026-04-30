@@ -124,7 +124,7 @@ class ExcelSmsGonderimJob implements ShouldQueue
 
             $gonderim = SmsGonderim::query()->create([
                 'yonetici_id' => $this->yoneticiId,
-                'tip' => 'excel',
+                'tip' => 'excel_sms',
                 'mesaj' => (string) $rapor->mesaj,
                 'liste_idler' => null,
                 'alici_sayisi' => count($telefonlar),
