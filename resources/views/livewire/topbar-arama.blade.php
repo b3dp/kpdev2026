@@ -18,24 +18,25 @@
         x-on:keydown.slash.window="if (document.activeElement.tagName === 'BODY') { acik = true; $nextTick(() => $refs.aramaInput.focus()) }"
     ></div>
 
-    {{-- Modal overlay --}}
-    <div
-        x-show="acik"
-        x-cloak
-        x-transition:enter="transition ease-out duration-180"
-        x-transition:enter-start="opacity-0"
-        x-transition:enter-end="opacity-100"
-        x-transition:leave="transition ease-in duration-120"
-        x-transition:leave-start="opacity-100"
-        x-transition:leave-end="opacity-0"
-        class="fixed inset-0 z-[1000] flex items-start justify-center px-4 pt-14 sm:px-6 sm:pt-20"
-        style="display: none;"
-    >
-        {{-- Arka plan --}}
+    <template x-teleport="body">
+        {{-- Modal overlay --}}
         <div
-            class="fixed inset-0 bg-slate-700/30 backdrop-blur-sm"
-            x-on:click="acik = false; $wire.set('arama', '')"
-        ></div>
+            x-show="acik"
+            x-cloak
+            x-transition:enter="transition ease-out duration-180"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-120"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="fixed inset-0 z-[1000] flex items-start justify-center px-4 pt-14 sm:px-6 sm:pt-20"
+            style="display: none;"
+        >
+            {{-- Arka plan --}}
+            <div
+                class="fixed inset-0 bg-slate-700/30 backdrop-blur-sm"
+                x-on:click="acik = false; $wire.set('arama', '')"
+            ></div>
 
         {{-- Modal kutu --}}
         <div
@@ -52,7 +53,7 @@
             <div class="pointer-events-none absolute -right-16 top-10 h-44 w-44 rounded-full bg-cyan-100/60 blur-3xl"></div>
 
             <div class="relative border-b border-sky-100/80 px-5 pt-4 sm:px-8">
-                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700/80">Akıllı Arama</p>
+                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700/80">Akilli Arama</p>
             </div>
 
             {{-- Arama inputu --}}
@@ -171,5 +172,5 @@
                 @endif
             </div>
         </div>
-    </div>
+    </template>
 </div>
