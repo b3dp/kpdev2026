@@ -15,6 +15,7 @@ class SmsExcelGonderim extends Model
     protected $fillable = [
         'yonetici_id',
         'dosya',
+        'rapor_dosya_yolu',
         'mesaj',
         'durum',
         'toplam_satir',
@@ -22,7 +23,6 @@ class SmsExcelGonderim extends Model
         'mukerrer',
         'hatali_format',
         'hatali_numaralar',
-        'gonderilen_numaralar',
         'bos',
         'alici_sayisi',
         'basarili',
@@ -43,7 +43,6 @@ class SmsExcelGonderim extends Model
             'mukerrer' => 'integer',
             'hatali_format' => 'integer',
             'hatali_numaralar' => 'array',
-            'gonderilen_numaralar' => 'array',
             'bos' => 'integer',
             'alici_sayisi' => 'integer',
             'basarili' => 'integer',
@@ -52,6 +51,15 @@ class SmsExcelGonderim extends Model
             'basladi_at' => 'datetime',
             'tamamlandi_at' => 'datetime',
         ];
+    }
+
+    public function getRaporUrlAttribute(): ?string
+    {
+        if (! $this->rapor_dosya_yolu) {
+            return null;
+        }
+
+        return \Illuminate\Support\Facades\Storage::disk('spaces')->url($this->rapor_dosya_yolu);
     }
 
     public function yonetici(): BelongsTo

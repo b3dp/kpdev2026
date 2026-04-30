@@ -10,7 +10,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use OpenSpout\Common\Entity\Row;
 use OpenSpout\Reader\XLSX\Reader;
+use OpenSpout\Writer\XLSX\Writer;
 use Throwable;
 
 class ExcelSmsGonderimJob implements ShouldQueue
@@ -45,6 +47,7 @@ class ExcelSmsGonderimJob implements ShouldQueue
                 'durum' => 'isleniyor',
                 'basladi_at' => now(),
                 'hata_mesaji' => null,
+                'rapor_dosya_yolu' => null,
             ]);
 
             $gercekYol = $this->dosyaYolunuBul();
@@ -69,6 +72,7 @@ class ExcelSmsGonderimJob implements ShouldQueue
 
             $telefonlar = [];
             $hataliNumaralar = [];
+            $raporSatirlari = [];
             $exceldeGorulenler = [];
 
             $reader = new Reader();
@@ -81,6 +85,10 @@ class ExcelSmsGonderimJob implements ShouldQueue
 
                     if ($hamTelefon === '') {
                         $sayaclar['bos']++;
+                        $raporSatirlari[] = [
+                            'telefon' => '',
+                            'durum' => 'Bos',
+                        ];
                         continue;
                     }
 
@@ -91,27 +99,41 @@ class ExcelSmsGonderimJob implements ShouldQueue
                     if (! preg_match('/^5\d{9}$/', $telefon)) {
                         $sayaclar['hatali_format']++;
                         $this->hataliNumaraEkle($hataliNumaralar, $hamTelefon);
+                        $raporSatirlari[] = [
+                            'telefon' => $hamTelefon,
+                            'durum' => 'Hatali Numara',
+                        ];
                         continue;
                     }
 
                     if (isset($exceldeGorulenler[$telefon])) {
                         $sayaclar['mukerrer']++;
+                        $raporSatirlari[] = [
+                            'telefon' => $hamTelefon,
+                            'durum' => 'Mukerrer',
+                        ];
                         continue;
                     }
 
                     $exceldeGorulenler[$telefon] = true;
                     $telefonlar[] = $telefon;
                     $sayaclar['gecerli_satir']++;
+                    $raporSatirlari[] = [
+                        'telefon' => $hamTelefon,
+                        'durum' => 'Gonderildi',
+                    ];
                 }
             }
 
             $reader->close();
 
+            $raporDosyaYolu = $this->raporDosyasiOlusturVeYukle($raporSatirlari, $rapor->id);
+
             if ($telefonlar === []) {
                 $rapor->update(array_merge($sayaclar, [
                     'durum' => 'tamamlandi',
                     'hatali_numaralar' => $hataliNumaralar === [] ? null : array_values($hataliNumaralar),
-                    'gonderilen_numaralar' => null,
+                    'rapor_dosya_yolu' => $raporDosyaYolu,
                     'alici_sayisi' => 0,
                     'basarili' => 0,
                     'basarisiz' => 0,
@@ -153,7 +175,7 @@ class ExcelSmsGonderimJob implements ShouldQueue
             $rapor->update(array_merge($sayaclar, [
                 'durum' => 'tamamlandi',
                 'hatali_numaralar' => $hataliNumaralar === [] ? null : array_values($hataliNumaralar),
-                'gonderilen_numaralar' => array_values($telefonlar),
+                'rapor_dosya_yolu' => $raporDosyaYolu,
                 'alici_sayisi' => count($telefonlar),
                 'basarili' => $async ? 0 : (int) ($sonuc['gecerli'] ?? 0),
                 'basarisiz' => $async ? 0 : (int) ($sonuc['gecersiz'] ?? 0),
@@ -172,7 +194,6 @@ class ExcelSmsGonderimJob implements ShouldQueue
                 'durum' => 'hatali',
                 'hata_mesaji' => $e->getMessage(),
                 'hatali_numaralar' => $hataliNumaralar ?? null,
-                'gonderilen_numaralar' => null,
                 'tamamlandi_at' => now(),
             ]);
 
@@ -192,6 +213,41 @@ class ExcelSmsGonderimJob implements ShouldQueue
 
         // Listeyi panelde okunabilir tutmak için gereksiz tekrarları engelleriz.
         $hataliNumaralar[$temiz] = $temiz;
+    }
+
+    private function raporDosyasiOlusturVeYukle(array $raporSatirlari, int $raporId): ?string
+    {
+        if ($raporSatirlari === []) {
+            return null;
+        }
+
+        $geciciDosya = storage_path('app/tmp/excel-sms-rapor-'.$raporId.'-'.now()->format('YmdHis').'.xlsx');
+        $geciciDizin = dirname($geciciDosya);
+
+        if (! is_dir($geciciDizin)) {
+            mkdir($geciciDizin, 0755, true);
+        }
+
+        $writer = new Writer();
+        $writer->openToFile($geciciDosya);
+        $writer->addRow(Row::fromValues(['Telefon', 'Durum']));
+
+        foreach ($raporSatirlari as $satir) {
+            $writer->addRow(Row::fromValues([
+                (string) ($satir['telefon'] ?? ''),
+                (string) ($satir['durum'] ?? ''),
+            ]));
+        }
+
+        $writer->close();
+
+        $raporDosyaYolu = 'sms/excel-raporlari/'.now()->format('Y/m').'/excel-sms-rapor-'.$raporId.'.xlsx';
+
+        Storage::disk('spaces')->put($raporDosyaYolu, file_get_contents($geciciDosya), 'public');
+
+        @unlink($geciciDosya);
+
+        return $raporDosyaYolu;
     }
 
     private function dosyaYolunuBul(): ?string

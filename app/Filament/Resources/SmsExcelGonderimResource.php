@@ -54,6 +54,10 @@ class SmsExcelGonderimResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('id')
+                    ->label('No')
+                    ->sortable(),
+
                 TextColumn::make('durum')
                     ->label('Durum')
                     ->badge()
@@ -66,19 +70,61 @@ class SmsExcelGonderimResource extends Resource
                     })
                     ->sortable(),
 
+                TextColumn::make('rapor_dosya_yolu')
+                    ->label('Excel Rapor')
+                    ->formatStateUsing(fn ($state): string => filled($state) ? 'Hazir' : '-')
+                    ->badge()
+                    ->color(fn ($state): string => filled($state) ? 'success' : 'gray'),
+
+                TextColumn::make('toplam_satir')
+                    ->label('Toplam Satır')
+                    ->sortable(),
+
+                TextColumn::make('gecerli_satir')
+                    ->label('Geçerli')
+                    ->sortable(),
+
+                TextColumn::make('mukerrer')
+                    ->label('Mükerrer')
+                    ->sortable(),
+
+                TextColumn::make('hatali_format')
+                    ->label('Hatalı Format')
+                    ->sortable(),
+
+                TextColumn::make('hatali_numaralar')
+                    ->label('Hatalı No')
+                    ->formatStateUsing(fn ($state): string => is_array($state) ? (string) count($state) : '0')
+                    ->alignCenter(),
+
+                TextColumn::make('bos')
+                    ->label('Boş')
+                    ->sortable(),
+
                 TextColumn::make('alici_sayisi')
                     ->label('Alıcı')
                     ->sortable(),
 
                 TextColumn::make('basarili')
                     ->label('Başarılı')
-                    ->color('success')
                     ->sortable(),
 
                 TextColumn::make('basarisiz')
                     ->label('Başarısız')
-                    ->color('danger')
                     ->sortable(),
+
+                TextColumn::make('bekleyen')
+                    ->label('Bekleyen')
+                    ->sortable(),
+
+                TextColumn::make('yonetici.ad_soyad')
+                    ->label('Yönetici')
+                    ->sortable(),
+
+                TextColumn::make('hata_mesaji')
+                    ->label('Hata')
+                    ->limit(80)
+                    ->toggleable(),
 
                 TextColumn::make('created_at')
                     ->label('Kayıt')
@@ -97,31 +143,23 @@ class SmsExcelGonderimResource extends Resource
             ])
             ->defaultSort('id', 'desc')
             ->actions([
-                Tables\Actions\Action::make('detay')
-                    ->label('Detay')
-                    ->icon('heroicon-o-information-circle')
-                    ->color('gray')
-                    ->modalContent(fn ($record) => view('filament.sms.excel-rapor-detay-panel', compact('record')))
-                    ->modalHeading('Gönderim Detayı')
-                    ->modalSubmitAction(false),
-
                 Tables\Actions\Action::make('hatali_numaralar')
                     ->label('Hatalı Numaralar')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->modalContent(fn ($record) => view('filament.sms.hatali-numaralar-modal', compact('record')))
+                    ->icon('heroicon-o-exclamation-triangle')
+                    ->color('warning')
+                    ->visible(fn (SmsExcelGonderim $record): bool => filled($record->hatali_numaralar))
                     ->modalHeading('Hatalı Numaralar')
                     ->modalSubmitAction(false)
-                    ->visible(fn ($record) => !empty($record->hatali_numaralar)),
-
-                Tables\Actions\Action::make('gonderilen_numaralar')
-                    ->label('Gönderilen Numaralar')
-                    ->icon('heroicon-o-check-circle')
+                    ->modalCancelActionLabel('Kapat')
+                    ->modalContent(fn (SmsExcelGonderim $record) => view('filament.sms.hatali-numaralar-modal', [
+                        'numaralar' => $record->hatali_numaralar ?? [],
+                    ])),
+                Tables\Actions\Action::make('raporu_indir')
+                    ->label('Raporu İndir')
+                    ->icon('heroicon-o-arrow-down-tray')
                     ->color('success')
-                    ->modalContent(fn ($record) => view('filament.sms.gonderilen-numaralar-modal', compact('record')))
-                    ->modalHeading('Gönderilen Numaralar')
-                    ->modalSubmitAction(false)
-                    ->visible(fn ($record) => !empty($record->gonderilen_numaralar)),
+                    ->visible(fn (SmsExcelGonderim $record): bool => filled($record->rapor_dosya_yolu))
+                    ->url(fn (SmsExcelGonderim $record): ?string => $record->rapor_url, shouldOpenInNewTab: true),
             ])
             ->bulkActions([]);
     }
