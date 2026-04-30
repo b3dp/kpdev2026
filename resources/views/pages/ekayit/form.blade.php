@@ -98,7 +98,7 @@
 
             <div class="form-group">
               <label class="form-label">Cep Telefonu <span>*</span></label>
-              <input type="tel" name="ogrenci_telefon" lang="tr" class="form-input @error('ogrenci_telefon') border-red-400 @enderror" autocomplete="tel" inputmode="numeric" pattern="5[0-9]{9}" maxlength="10" placeholder="5326847101" required value="{{ old('ogrenci_telefon') }}">
+              <input type="tel" name="ogrenci_telefon" lang="tr" class="form-input @error('ogrenci_telefon') border-red-400 @enderror" autocomplete="tel" inputmode="numeric" pattern="5[0-9]{9}" maxlength="10" placeholder="5321234567" required value="{{ old('ogrenci_telefon') }}">
             </div>
 
             <div class="form-group">
@@ -277,7 +277,7 @@
 
             <div class="form-group md:col-span-2 {{ old('veli_telefon_sahibi_1') ? '' : 'hidden' }}" id="veli_telefon_1_alani" data-telefon-alani="1">
               <label class="form-label">Telefon <span>*</span></label>
-              <input type="tel" name="veli_telefon" lang="tr" class="form-input @error('veli_telefon') border-red-400 @enderror" autocomplete="tel" inputmode="numeric" pattern="5[0-9]{9}" maxlength="10" placeholder="5326847101" value="{{ old('veli_telefon') }}">
+              <input type="tel" name="veli_telefon" lang="tr" class="form-input @error('veli_telefon') border-red-400 @enderror" autocomplete="tel" inputmode="numeric" pattern="5[0-9]{9}" maxlength="10" placeholder="5321234567" value="{{ old('veli_telefon') }}">
             </div>
 
             <div class="form-group">
@@ -292,7 +292,7 @@
 
             <div class="form-group md:col-span-2 {{ old('veli_telefon_sahibi_2') ? '' : 'hidden' }}" id="veli_telefon_2_alani" data-telefon-alani="2">
               <label class="form-label">Telefon 2</label>
-              <input type="tel" name="veli_telefon_2" lang="tr" class="form-input @error('veli_telefon_2') border-red-400 @enderror" autocomplete="tel" inputmode="numeric" pattern="5[0-9]{9}" maxlength="10" placeholder="5326847101" value="{{ old('veli_telefon_2') }}">
+              <input type="tel" name="veli_telefon_2" lang="tr" class="form-input @error('veli_telefon_2') border-red-400 @enderror" autocomplete="tel" inputmode="numeric" pattern="5[0-9]{9}" maxlength="10" placeholder="5321234567" value="{{ old('veli_telefon_2') }}">
             </div>
 
             <div id="veli-telefon-ayni-hata" class="md:col-span-3 hidden rounded-xl border border-red-200 bg-red-50 px-4 py-3 font-jakarta text-sm font-semibold text-red-700" role="alert">
