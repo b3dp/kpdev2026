@@ -100,15 +100,11 @@
   </div>
 
   <div class="fade-up-5 flex flex-wrap justify-center gap-3">
-    <a href="{{ route('home') }}" class="inline-flex items-center gap-2 rounded-[11px] bg-primary px-7 py-[13px] font-jakarta text-sm font-bold text-cream no-underline transition-colors hover:bg-primary-dark">
+    <a href="https://www.kestanepazari.org.tr" class="inline-flex items-center gap-2 rounded-[11px] bg-primary px-7 py-[13px] font-jakarta text-sm font-bold text-cream no-underline transition-colors hover:bg-primary-dark">
       <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-      Ana Sayfaya Dön
+      Ana Sayfa
     </a>
-    <a href="{{ route('ekayit.index') }}" class="inline-flex items-center gap-2 rounded-[11px] border border-primary/15 bg-white px-6 py-[13px] font-jakarta text-sm font-semibold text-primary no-underline transition-all hover:border-primary/40 hover:bg-bg-soft">
-      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M12 4v16m8-8H4"/></svg>
-      Yeni Başvuru
-    </a>
-    <a href="{{ route('bagis.index') }}" class="inline-flex items-center gap-2 rounded-[11px] bg-orange-cta px-6 py-[13px] font-jakarta text-sm font-bold text-white no-underline transition-colors hover:bg-[#c94620]">
+    <a href="https://www.kestanepazari.org.tr/bagis" class="inline-flex items-center gap-2 rounded-[11px] bg-orange-cta px-6 py-[13px] font-jakarta text-sm font-bold text-white no-underline transition-colors hover:bg-[#c94620]">
       <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
       Bağış Yap
     </a>
