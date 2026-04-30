@@ -111,6 +111,7 @@ class ExcelSmsGonderimJob implements ShouldQueue
                 $rapor->update(array_merge($sayaclar, [
                     'durum' => 'tamamlandi',
                     'hatali_numaralar' => $hataliNumaralar === [] ? null : array_values($hataliNumaralar),
+                    'gonderilen_numaralar' => null,
                     'alici_sayisi' => 0,
                     'basarili' => 0,
                     'basarisiz' => 0,
@@ -152,6 +153,7 @@ class ExcelSmsGonderimJob implements ShouldQueue
             $rapor->update(array_merge($sayaclar, [
                 'durum' => 'tamamlandi',
                 'hatali_numaralar' => $hataliNumaralar === [] ? null : array_values($hataliNumaralar),
+                'gonderilen_numaralar' => array_values($telefonlar),
                 'alici_sayisi' => count($telefonlar),
                 'basarili' => $async ? 0 : (int) ($sonuc['gecerli'] ?? 0),
                 'basarisiz' => $async ? 0 : (int) ($sonuc['gecersiz'] ?? 0),
@@ -170,6 +172,7 @@ class ExcelSmsGonderimJob implements ShouldQueue
                 'durum' => 'hatali',
                 'hata_mesaji' => $e->getMessage(),
                 'hatali_numaralar' => $hataliNumaralar ?? null,
+                'gonderilen_numaralar' => null,
                 'tamamlandi_at' => now(),
             ]);
 

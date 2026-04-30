@@ -91,6 +91,11 @@ class SmsExcelGonderimResource extends Resource
                     ->formatStateUsing(fn ($state): string => is_array($state) ? (string) count($state) : '0')
                     ->alignCenter(),
 
+                TextColumn::make('gonderilen_numaralar')
+                    ->label('Gönderilen No')
+                    ->formatStateUsing(fn ($state): string => is_array($state) ? (string) count($state) : '0')
+                    ->alignCenter(),
+
                 TextColumn::make('bos')
                     ->label('Boş')
                     ->sortable(),
@@ -147,6 +152,17 @@ class SmsExcelGonderimResource extends Resource
                     ->modalCancelActionLabel('Kapat')
                     ->modalContent(fn (SmsExcelGonderim $record) => view('filament.sms.hatali-numaralar-modal', [
                         'numaralar' => $record->hatali_numaralar ?? [],
+                    ])),
+                Tables\Actions\Action::make('gonderilen_numaralar')
+                    ->label('Gönderilen Numaralar')
+                    ->icon('heroicon-o-paper-airplane')
+                    ->color('success')
+                    ->visible(fn (SmsExcelGonderim $record): bool => filled($record->gonderilen_numaralar))
+                    ->modalHeading('Gönderilen Numaralar')
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Kapat')
+                    ->modalContent(fn (SmsExcelGonderim $record) => view('filament.sms.gonderilen-numaralar-modal', [
+                        'numaralar' => $record->gonderilen_numaralar ?? [],
                     ])),
             ])
             ->bulkActions([]);
