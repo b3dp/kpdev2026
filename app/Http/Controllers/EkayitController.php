@@ -41,6 +41,19 @@ class EkayitController extends Controller
         return view('pages.ekayit.index', compact('aktifDonem', 'siniflar', 'gruplar'));
     }
 
+    public function landing()
+    {
+        $aktifDonem = EkayitDonem::where('aktif', 1)->first();
+
+        $siniflar = $aktifDonem
+            ? $this->getirDonemSiniflari((int) $aktifDonem->id)
+            : collect();
+
+        $gruplar = $this->hazirlaSinifGruplari($siniflar);
+
+        return view('pages.ekayit.landing', compact('aktifDonem', 'siniflar', 'gruplar'));
+    }
+
     protected function getirDonemSiniflari(int $donemId): Collection
     {
         $sorgu = EkayitSinif::query()
