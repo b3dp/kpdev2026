@@ -170,6 +170,7 @@ class BagisController extends Controller
             'adet' => ['nullable', 'integer', 'min:1', 'max:30'],
             'sahip_tipi' => ['nullable', 'in:kendi,baskasi'],
             'odeme_yontemi' => ['nullable', 'in:albaraka,paytr'],
+            'sms_kvkk_onay' => ['accepted'],
             'form_verisi' => ['nullable', 'array'],
         ];
 

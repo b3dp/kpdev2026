@@ -11,12 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (! Schema::hasTable('sms_excel_gonderimler')) {
-            return;
-        }
-
-        Schema::table('sms_excel_gonderimler', function (Blueprint $table): void {
-            $table->json('gonderilen_numaralar')->nullable()->after('hatali_numaralar');
+        Schema::table('sms_excel_gonderimler', function (Blueprint $table) {
+            //
         });
     }
 
@@ -25,12 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (! Schema::hasTable('sms_excel_gonderimler')) {
-            return;
-        }
-
-        Schema::table('sms_excel_gonderimler', function (Blueprint $table): void {
-            $table->dropColumn('gonderilen_numaralar');
+        Schema::table('sms_excel_gonderimler', function (Blueprint $table) {
+            //
         });
     }
 };

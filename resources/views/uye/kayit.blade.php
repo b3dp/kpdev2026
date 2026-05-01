@@ -219,7 +219,7 @@ document.getElementById('kayit-formu').addEventListener('submit', async function
         }
 
         const token = await grecaptcha.execute('{{ config('services.recaptcha.site_key') }}', {
-            action: 'kayit'
+            action: 'otp_kayit'
         });
 
         if (!token) {

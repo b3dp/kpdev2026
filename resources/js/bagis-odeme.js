@@ -151,12 +151,20 @@ async function odemeyiTamamlaOdemeSayfasinda() {
     formVerisi.odeyen_eposta = (document.getElementById('odeyen-email')?.value || '').trim();
     formVerisi.odeyen_telefon = (document.getElementById('odeyen-tel')?.value || '').trim();
 
+    const smsKvkkOnay = !!document.getElementById('sms-kvkk-onay')?.checked;
+
+    if (!smsKvkkOnay) {
+        odemeMesajiGoster('SMS bilgilendirmesi için KVKK onayını vermeniz gerekiyor.');
+        return;
+    }
+
     const payload = {
         slug: form.dataset.slug,
         tutar: Number(form.dataset.tutar || 0),
         adet: Number(form.dataset.adet || 1),
         sahip_tipi: form.dataset.sahipTipi || 'kendi',
         odeme_yontemi: 'albaraka',
+        sms_kvkk_onay: smsKvkkOnay,
         kart_no: (document.getElementById('kart-no')?.value || '').trim(),
         kart_sahibi: (document.getElementById('kart-sahibi')?.value || '').trim(),
         son_kullanma: (document.getElementById('kart-son-kullanma')?.value || '').trim(),

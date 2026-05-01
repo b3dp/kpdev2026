@@ -48,6 +48,11 @@ class UyeAuthSayfalariTest extends TestCase
 
     public function test_mevcut_uye_sifre_olsa_bile_otp_ile_giris_yapabilir(): void
     {
+        config([
+            'services.recaptcha.site_key' => null,
+            'services.recaptcha.secret_key' => null,
+        ]);
+
         Uye::query()->create([
             'ad_soyad' => 'Deneme Mezun',
             'telefon' => '05550000009',

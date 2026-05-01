@@ -33,7 +33,7 @@ class GirisController extends Controller
     public function giris(Request $request)
     {
         try {
-            $this->recaptchaKontrolEt($request);
+            $this->recaptchaKontrolEt($request, 'otp_giris');
 
             // Validasyon - e-posta ve telefon ayrı alanlar, en az biri zorunlu
             $request->validate([
@@ -280,7 +280,7 @@ class GirisController extends Controller
     /**
      * reCAPTCHA kontrolü
      */
-    private function recaptchaKontrolEt(Request $request): void
+    private function recaptchaKontrolEt(Request $request, string $beklenenAksiyon): void
     {
         if (app()->environment('local')) {
             return;
@@ -291,17 +291,22 @@ class GirisController extends Controller
         }
 
         $recaptchaResponse = $this->dogrulaRecaptcha($request->input('g-recaptcha-response'));
-        $esik = min((float) config('services.recaptcha.threshold', 0.5), 0.3);
+        $esik = (float) config('services.recaptcha.threshold', 0.5);
         $basarili = (bool) ($recaptchaResponse['success'] ?? false);
         $skor = (float) ($recaptchaResponse['score'] ?? 0);
+        $aksiyon = (string) ($recaptchaResponse['action'] ?? '');
 
-        if (! $basarili || ($skor > 0 && $skor < $esik)) {
-            Log::warning('Uye giris reCAPTCHA skoru dusuk veya dogrulanamadi; OTP ve rate limit ile devam edildi.', [
+        if (! $basarili || $aksiyon !== $beklenenAksiyon || $skor < $esik) {
+            Log::warning('Uye giris reCAPTCHA dogrulama basarisiz.', [
                 'ip' => $request->ip(),
                 'user_agent' => $request->userAgent(),
                 'score' => $recaptchaResponse['score'] ?? null,
                 'action' => $recaptchaResponse['action'] ?? null,
                 'errors' => $recaptchaResponse['error-codes'] ?? null,
+            ]);
+
+            throw ValidationException::withMessages([
+                'recaptcha' => 'reCAPTCHA doğrulaması başarısız. Lütfen tekrar deneyiniz.',
             ]);
         }
     }

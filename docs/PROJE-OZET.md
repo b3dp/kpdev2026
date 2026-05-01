@@ -149,7 +149,7 @@ Kalan isler:
 | Faz 10A | Pazarlama SMS (Hermes) | Etkinlik hatirlatma dahil |
 | Faz 10B | Pazarlama E-posta | Brevo/SES -- servis secilmedi |
 | Faz 5D | Dergiler | Sonraya birakildi |
-| Faz 11 | Frontend | Tum public sayfalar |
+| Faz 11 | Frontend | Tamamlandi |
 | Faz 12 | Test + Canli | -- |
 
 ---

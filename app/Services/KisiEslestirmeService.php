@@ -162,7 +162,7 @@ class KisiEslestirmeService
 
             $bagis->update(['kisi_id' => $kisi->id]);
 
-            if (filled($bagisKisi->telefon)) {
+            if ($bagis->sms_kvkk_onay && filled($bagisKisi->telefon)) {
                 $this->smsListeyeEkle($bagisKisi->telefon, $bagisKisi->ad_soyad);
             }
 

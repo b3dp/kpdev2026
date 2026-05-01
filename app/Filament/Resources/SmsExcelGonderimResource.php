@@ -5,12 +5,15 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\SmsExcelGonderimResource\Pages;
 use App\Models\SmsExcelGonderim;
 use Carbon\Carbon;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
 
 class SmsExcelGonderimResource extends Resource
@@ -185,6 +188,42 @@ class SmsExcelGonderimResource extends Resource
                     ->color('success')
                     ->visible(fn (SmsExcelGonderim $record): bool => filled($record->rapor_dosya_yolu))
                     ->url(fn (SmsExcelGonderim $record): ?string => $record->rapor_url, shouldOpenInNewTab: true),
+
+                Tables\Actions\Action::make('kalici_sil')
+                    ->label('Sil')
+                    ->icon('heroicon-o-trash')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('Kaydı Kalıcı Sil')
+                    ->modalDescription('Bu rapor ve ilişkili dosyalar kalıcı olarak silinecek. Bu işlem geri alınamaz.')
+                    ->modalSubmitActionLabel('Evet, Sil')
+                    ->action(function (SmsExcelGonderim $record): void {
+                        try {
+                            if (filled($record->dosya)) {
+                                Storage::disk('spaces')->delete($record->dosya);
+                            }
+                            if (filled($record->rapor_dosya_yolu)) {
+                                Storage::disk('spaces')->delete($record->rapor_dosya_yolu);
+                            }
+                            $record->forceDelete();
+
+                            Notification::make()
+                                ->title('Kayıt silindi')
+                                ->success()
+                                ->send();
+                        } catch (\Throwable $e) {
+                            Log::error('SmsExcelGonderim kalici sil hatasi', [
+                                'id' => $record->id,
+                                'error' => $e->getMessage(),
+                            ]);
+
+                            Notification::make()
+                                ->title('Silme hatası')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
+                    }),
             ])
             ->bulkActions([]);
     }

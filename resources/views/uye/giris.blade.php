@@ -235,7 +235,7 @@ document.getElementById('giriş-formu').addEventListener('submit', async functio
         }
 
         const token = await grecaptcha.execute('{{ config('services.recaptcha.site_key') }}', {
-            action: 'giris'
+            action: 'otp_giris'
         });
 
         if (!token) {

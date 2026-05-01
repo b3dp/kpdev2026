@@ -170,6 +170,7 @@ class BagisOdemeService
                 'durum' => BagisDurumu::Beklemede->value,
                 'toplam_tutar' => $toplamTutar,
                 'odeme_saglayici' => $this->odemeSaglayicisiniHazirla($veri['odeme_yontemi'] ?? null),
+                'sms_kvkk_onay' => (bool) ($veri['sms_kvkk_onay'] ?? false),
                 'makbuz_gonderildi' => false,
                 'kurban_aktarildi' => false,
             ]);

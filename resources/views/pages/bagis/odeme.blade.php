@@ -53,6 +53,13 @@
                     </div>
                 </div>
 
+                <label class="mt-4 flex items-start gap-2.5 rounded-xl border border-primary/10 bg-bg-soft px-3 py-2.5">
+                    <input type="checkbox" id="sms-kvkk-onay" class="mt-0.5 h-4 w-4 rounded border-primary/30 text-accent focus:ring-accent" value="1">
+                    <span class="font-jakarta text-[13px] leading-6 text-primary">
+                        <a href="{{ route('kurumsal.show', 'kvkk') }}" target="_blank" class="font-semibold text-accent underline hover:text-orange-cta">KVKK Aydınlatma Metni</a>'ni okudum. Telefon numarama bağış bilgilendirme ve hatırlatma SMS'i gönderilmesini onaylıyorum. <span class="text-orange-cta">*</span>
+                    </span>
+                </label>
+
                 <div class="my-5 h-px bg-slate-100"></div>
 
                 <p class="font-jakarta text-sm font-bold uppercase tracking-[0.08em] text-teal-muted">Kart Bilgileri</p>

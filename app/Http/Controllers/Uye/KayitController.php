@@ -33,17 +33,7 @@ class KayitController extends Controller
     public function kayit(Request $request)
     {
         try {
-            // Demo/local ortamda reCAPTCHA kontrolünü es geçiyoruz.
-            if (! app()->environment('local')) {
-                $recaptchaResponse = $this->dogrulaRecaptcha($request->input('g-recaptcha-response'));
-                $esik = (float) config('services.recaptcha.threshold', 0.5);
-
-                if (! $recaptchaResponse || ! ($recaptchaResponse['success'] ?? false) || ((float) ($recaptchaResponse['score'] ?? 0)) < $esik) {
-                    throw ValidationException::withMessages([
-                        'recaptcha' => 'reCAPTCHA doğrulaması başarısız. Lütfen tekrar deneyiniz.',
-                    ]);
-                }
-            }
+            $this->recaptchaKontrolEt($request, 'otp_kayit');
 
             $request->validate([
                 'ad_soyad' => ['required', 'string', 'max:255', 'regex:/^[\p{L}\s\-]+$/u'],
@@ -253,7 +243,7 @@ class KayitController extends Controller
         }
 
         try {
-            $response = Http::post('https://www.google.com/recaptcha/api/siteverify', [
+            $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
                 'secret' => config('services.recaptcha.secret_key'),
                 'response' => $token,
             ]);
@@ -261,6 +251,29 @@ class KayitController extends Controller
             return $response->json();
         } catch (\Exception $e) {
             return null;
+        }
+    }
+
+    private function recaptchaKontrolEt(Request $request, string $beklenenAksiyon): void
+    {
+        if (app()->environment('local')) {
+            return;
+        }
+
+        if (blank(config('services.recaptcha.site_key')) || blank(config('services.recaptcha.secret_key'))) {
+            return;
+        }
+
+        $recaptchaResponse = $this->dogrulaRecaptcha($request->input('g-recaptcha-response'));
+        $esik = (float) config('services.recaptcha.threshold', 0.5);
+        $basarili = (bool) ($recaptchaResponse['success'] ?? false);
+        $skor = (float) ($recaptchaResponse['score'] ?? 0);
+        $aksiyon = (string) ($recaptchaResponse['action'] ?? '');
+
+        if (! $basarili || $aksiyon !== $beklenenAksiyon || $skor < $esik) {
+            throw ValidationException::withMessages([
+                'recaptcha' => 'reCAPTCHA doğrulaması başarısız. Lütfen tekrar deneyiniz.',
+            ]);
         }
     }
 }
