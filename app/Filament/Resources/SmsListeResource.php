@@ -214,12 +214,33 @@ class SmsListeResource extends Resource
             return $query;
         }
 
-        return $query->where('sahip_yonetici_id', auth()->id());
+        $izinliIds = static::rolIzinliListeIds();
+
+        return $query->where(function (Builder $q) use ($izinliIds): void {
+            $q->where('sahip_yonetici_id', auth()->id());
+            if (! empty($izinliIds)) {
+                $q->orWhereIn('id', $izinliIds);
+            }
+        });
     }
 
     protected static function tumKayitlariGorebilirMi(): bool
     {
         return auth()->check() && auth()->user()->hasRole('Admin');
+    }
+
+    protected static function rolIzinliListeIds(): array
+    {
+        if (! auth()->check()) {
+            return [];
+        }
+
+        if (auth()->user()->hasRole('Kurs Yöneticisi')) {
+            $deger = config('sms.kurs_yon_liste_ids', env('KURS_YON_SMS_LISTE_IDS', ''));
+            return array_filter(array_map('intval', explode(',', (string) $deger)));
+        }
+
+        return [];
     }
 
     protected static function kaydaErisimVarMi($record): bool
@@ -229,6 +250,10 @@ class SmsListeResource extends Resource
         }
 
         if (static::tumKayitlariGorebilirMi()) {
+            return true;
+        }
+
+        if (in_array((int) $record->id, static::rolIzinliListeIds(), true)) {
             return true;
         }
 
