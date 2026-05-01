@@ -102,6 +102,18 @@ class SmsKisiResource extends Resource
                     ->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
+            ->filters([
+                Tables\Filters\SelectFilter::make('liste_id')
+                    ->label('Listeye Göre')
+                    ->options(fn (): array => self::erisebilirListeSecenekleri())
+                    ->query(function (Builder $query, array $data): Builder {
+                        if (empty($data['value'])) {
+                            return $query;
+                        }
+
+                        return $query->whereHas('listeler', fn (Builder $q) => $q->where('sms_listeler.id', $data['value']));
+                    }),
+            ])
             ->headerActions([
                 Tables\Actions\CreateAction::make(),
                 Action::make('hermes_aktar')
