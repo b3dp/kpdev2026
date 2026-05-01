@@ -8,9 +8,13 @@ use App\Filament\Resources\EkayitKayitResource\Pages;
 use App\Models\EkayitDonem;
 use App\Models\EkayitKayit;
 use App\Models\EkayitSinif;
+use App\Models\Kisi;
+use App\Models\UyeBildirim;
+use App\Models\UyeRozet;
 use Carbon\Carbon;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ViewAction;
@@ -20,6 +24,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class EkayitKayitResource extends Resource
@@ -177,6 +182,68 @@ class EkayitKayitResource extends Resource
             ->actions([
                 ViewAction::make(),
                 \Filament\Tables\Actions\EditAction::make(),
+
+                Action::make('kalici_sil')
+                    ->label('Sil')
+                    ->icon('heroicon-o-trash')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('Kaydı Kalıcı Sil')
+                    ->modalDescription('Bu kayıt, tüm bilgileri, bağlı üye hesabı ve kişi eşleştirmesi kalıcı olarak silinecek. Bu işlem geri alınamaz.')
+                    ->modalSubmitActionLabel('Evet, Kalıcı Sil')
+                    ->visible(fn () => static::izinVarMi('ekayit.sil'))
+                    ->action(function (EkayitKayit $record): void {
+                        try {
+                            $record->loadMissing(['ogrenciBilgisi', 'kimlikBilgisi', 'okulBilgisi', 'veliBilgisi', 'babaBilgisi', 'olusturulanEvraklar', 'uye']);
+
+                            // Alt kayıtları sil
+                            $record->olusturulanEvraklar()->delete();
+                            $record->ogrenciBilgisi?->delete();
+                            $record->kimlikBilgisi?->delete();
+                            $record->okulBilgisi?->delete();
+                            $record->veliBilgisi?->delete();
+                            $record->babaBilgisi?->delete();
+
+                            // Üye ve ilişkileri
+                            $uye = $record->uye;
+                            if ($uye) {
+                                $kisiId = $uye->kisi_id;
+
+                                UyeRozet::where('uye_id', $uye->id)->delete();
+                                UyeBildirim::where('uye_id', $uye->id)->delete();
+                                $uye->forceDelete();
+
+                                // Kişi kaydını başka üye kullanmıyorsa sil
+                                if ($kisiId) {
+                                    $baskaBagliUye = \App\Models\Uye::withTrashed()
+                                        ->where('kisi_id', $kisiId)
+                                        ->exists();
+
+                                    if (! $baskaBagliUye) {
+                                        Kisi::find($kisiId)?->delete();
+                                    }
+                                }
+                            }
+
+                            $record->forceDelete();
+
+                            Notification::make()
+                                ->title('Kayıt kalıcı olarak silindi')
+                                ->success()
+                                ->send();
+                        } catch (\Throwable $e) {
+                            Log::error('EkayitKayit kalici sil hatasi', [
+                                'id' => $record->id,
+                                'error' => $e->getMessage(),
+                            ]);
+
+                            Notification::make()
+                                ->title('Silme hatası')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
+                    }),
             ])
             ->bulkActions([]);
     }
