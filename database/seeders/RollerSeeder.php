@@ -110,5 +110,12 @@ class RollerSeeder extends Seeder
             'pazarlama_sms.listele', 'pazarlama_sms.goruntule', 'pazarlama_sms.gonder',
             'pazarlama_eposta.listele', 'pazarlama_eposta.goruntule', 'pazarlama_eposta.gonder',
         ]);
+
+        // Kurs Yöneticisi
+        $kursYoneticisiRol = Role::updateOrCreate(['name' => 'Kurs Yöneticisi', 'guard_name' => $guard], []);
+        $kursYoneticisiRol->syncPermissions([
+            'ekayit.listele', 'ekayit.goruntule', 'ekayit.durum_guncelle', 'ekayit.pdf_indir', 'ekayit.sil',
+            'pazarlama_sms.listele', 'pazarlama_sms.goruntule', 'pazarlama_sms.kaydet', 'pazarlama_sms.gonder',
+        ]);
     }
 }
