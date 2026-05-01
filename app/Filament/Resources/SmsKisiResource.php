@@ -21,9 +21,12 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\BulkAction;
+use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
 
 class SmsKisiResource extends Resource
@@ -263,7 +266,84 @@ class SmsKisiResource extends Resource
                         }
                     }),
             ])
-            ->bulkActions([]);
+            ->bulkActions([
+                BulkActionGroup::make([
+                    BulkAction::make('toplu_sil')
+                        ->label('Seçilenleri Sil')
+                        ->icon('heroicon-o-trash')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->modalHeading('Seçilen Kişileri Kalıcı Sil')
+                        ->modalDescription('Seçilen tüm kişiler ve liste bağlantıları kalıcı olarak silinecek. Bu işlem geri alınamaz.')
+                        ->modalSubmitActionLabel('Evet, Kalıcı Sil')
+                        ->visible(fn (): bool => static::izinVarMi('pazarlama_sms.sil'))
+                        ->deselectRecordsAfterCompletion()
+                        ->action(function (Collection $records): void {
+                            try {
+                                $records->each(fn (SmsKisi $kisi) => $kisi->forceDelete());
+
+                                Notification::make()
+                                    ->title($records->count().' kişi kalıcı olarak silindi')
+                                    ->success()
+                                    ->send();
+                            } catch (\Throwable $e) {
+                                \Illuminate\Support\Facades\Log::error('SmsKisi toplu sil hatasi', [
+                                    'error' => $e->getMessage(),
+                                ]);
+
+                                Notification::make()
+                                    ->title('Silme hatası: '.$e->getMessage())
+                                    ->danger()
+                                    ->send();
+                            }
+                        }),
+
+                    BulkAction::make('listeye_ekle')
+                        ->label('Listeye Ekle')
+                        ->icon('heroicon-o-rectangle-stack')
+                        ->color('primary')
+                        ->form([
+                            Select::make('liste_id')
+                                ->label('Hedef Liste')
+                                ->required()
+                                ->searchable()
+                                ->options(fn (): array => self::erisebilirListeSecenekleri()),
+                        ])
+                        ->visible(fn (): bool => static::izinVarMi('pazarlama_sms.kaydet'))
+                        ->deselectRecordsAfterCompletion()
+                        ->action(function (Collection $records, array $data): void {
+                            try {
+                                $listeId = (int) $data['liste_id'];
+                                $liste = SmsListe::find($listeId);
+
+                                if (! $liste) {
+                                    Notification::make()
+                                        ->title('Liste bulunamadı.')
+                                        ->danger()
+                                        ->send();
+
+                                    return;
+                                }
+
+                                $records->each(fn (SmsKisi $kisi) => $liste->kisiler()->syncWithoutDetaching([$kisi->id]));
+
+                                Notification::make()
+                                    ->title($records->count().' kişi "'.$liste->ad.'" listesine eklendi')
+                                    ->success()
+                                    ->send();
+                            } catch (\Throwable $e) {
+                                \Illuminate\Support\Facades\Log::error('SmsKisi listeye ekle hatasi', [
+                                    'error' => $e->getMessage(),
+                                ]);
+
+                                Notification::make()
+                                    ->title('Ekleme hatası: '.$e->getMessage())
+                                    ->danger()
+                                    ->send();
+                            }
+                        }),
+                ]),
+            ]);
     }
 
     public static function form(Form $form): Form
