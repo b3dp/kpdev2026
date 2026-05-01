@@ -25,6 +25,7 @@ class KursYoneticisiRolSeeder extends Seeder
                 'pazarlama_sms.listele',
                 'pazarlama_sms.goruntule',
                 'pazarlama_sms.kaydet',
+                'pazarlama_sms.sil',
                 'pazarlama_sms.gonder',
                 'ekayit.listele',
                 'ekayit.goruntule',
