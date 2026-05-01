@@ -26,6 +26,11 @@ class KisilerRelationManager extends RelationManager
         return true;
     }
 
+    public static function shouldSkipAuthorization(): bool
+    {
+        return true;
+    }
+
     public function isReadOnly(): bool
     {
         return true;

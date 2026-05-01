@@ -291,7 +291,7 @@ class SmsListeResource extends Resource
         return (int) $record->sahip_yonetici_id === (int) auth()->id();
     }
 
-    public static function getRelationManagers(): array
+    public static function getRelations(): array
     {
         return [
             \App\Filament\Resources\SmsListeResource\RelationManagers\KisilerRelationManager::class,
