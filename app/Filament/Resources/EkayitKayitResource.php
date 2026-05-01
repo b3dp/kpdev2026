@@ -74,13 +74,6 @@ class EkayitKayitResource extends Resource
                             ->orWhere('tc_kimlik', 'like', "%{$s}%"));
                     })->sortable(false),
 
-                TextColumn::make('ogrenciBilgisi.tc_kimlik')
-                    ->label('TC')
-                    ->formatStateUsing(function (?string $state): string {
-                        if (blank($state) || mb_strlen($state) < 6) return (string) $state;
-                        return mb_substr($state, 0, 3).'****'.mb_substr($state, -3);
-                    }),
-
                 TextColumn::make('sinif.ad')
                     ->label('Sınıf')
                     ->badge()
@@ -180,11 +173,12 @@ class EkayitKayitResource extends Resource
                     }),
             ])
             ->actions([
-                ViewAction::make(),
-                \Filament\Tables\Actions\EditAction::make(),
+                ViewAction::make()->label('')->tooltip('Görüntüle'),
+                \Filament\Tables\Actions\EditAction::make()->label('')->tooltip('Düzenle'),
 
                 Action::make('kalici_sil')
-                    ->label('Sil')
+                    ->label('')
+                    ->tooltip('Kalıcı Sil')
                     ->icon('heroicon-o-trash')
                     ->color('danger')
                     ->requiresConfirmation()
