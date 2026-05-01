@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\SmsKisiResource\Pages;
 
 use App\Filament\Resources\SmsKisiResource;
-use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 
 class EditSmsKisi extends EditRecord
@@ -32,30 +31,6 @@ class EditSmsKisi extends EditRecord
         }
 
         return $data;
-    }
-
-    protected function beforeSave(): void
-    {
-        $telefon = SmsKisiResource::telefonNormalize((string) ($this->data['telefon'] ?? ''));
-        $telefon2 = SmsKisiResource::telefonNormalize((string) ($this->data['telefon_2'] ?? ''));
-
-        if (SmsKisiResource::telefonKaydiVarMi($telefon, (int) $this->record->id)) {
-            Notification::make()
-                ->title('Bu numara zaten kayıtlı. Mevcut kayıt üzerinden listeye ekleyebilirsiniz.')
-                ->danger()
-                ->send();
-
-            $this->halt();
-        }
-
-        if ($telefon2 !== '' && SmsKisiResource::telefonKaydiVarMi($telefon2, (int) $this->record->id)) {
-            Notification::make()
-                ->title('Telefon 2 numarası zaten kayıtlı. Mevcut kayıt üzerinden listeye ekleyebilirsiniz.')
-                ->danger()
-                ->send();
-
-            $this->halt();
-        }
     }
 
     protected function afterSave(): void
