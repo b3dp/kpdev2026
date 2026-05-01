@@ -64,6 +64,8 @@ class HermesAktarimJob implements ShouldQueue
                 'bos' => 0,
             ];
 
+            $hataliNumaralar = []; // ['numara' => ..., 'sebep' => ...]
+
             $exceldeGorulenler = [];
 
             // Formdan liste seçildiyse onu kullan, aksi halde geriye dönük varsayılan listeyi aç.
@@ -169,6 +171,7 @@ class HermesAktarimJob implements ShouldQueue
 
                     if ($telefon === null) {
                         $sayaclar['hatali_format']++;
+                        $hataliNumaralar[] = ['numara' => $hamTelefon, 'sebep' => 'hatali_format'];
                         Log::info('[HermesAktarim] Hatalı format atlandı', [
                             'ham' => $hamTelefon,
                             'sheet' => $sheetIndex + 1,
@@ -180,6 +183,7 @@ class HermesAktarimJob implements ShouldQueue
 
                     if (isset($exceldeGorulenler[$telefon])) {
                         $sayaclar['mukerrer_excel']++;
+                        $hataliNumaralar[] = ['numara' => $telefon, 'sebep' => 'mukerrer_excel'];
                         continue;
                     }
                     $exceldeGorulenler[$telefon] = true;
@@ -197,6 +201,7 @@ class HermesAktarimJob implements ShouldQueue
                         }
 
                         $sayaclar['mukerrer_db']++;
+                        $hataliNumaralar[] = ['numara' => $telefon, 'sebep' => 'mukerrer_db'];
                         continue;
                     }
 
@@ -260,6 +265,7 @@ class HermesAktarimJob implements ShouldQueue
                 'mukerrer_excel' => $sayaclar['mukerrer_excel'],
                 'hatali_format' => $sayaclar['hatali_format'],
                 'bos' => $sayaclar['bos'],
+                'hatali_numaralar' => $hataliNumaralar ?: null,
                 'tamamlandi_at' => now(),
             ]);
 

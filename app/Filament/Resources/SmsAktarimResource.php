@@ -5,8 +5,12 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\SmsAktarimResource\Pages;
 use App\Models\SmsAktarim;
 use Carbon\Carbon;
+use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -139,7 +143,24 @@ class SmsAktarimResource extends Resource
                     ->relationship('liste', 'ad'),
             ])
             ->defaultSort('id', 'desc')
-            ->actions([])
+            ->actions([
+                Action::make('hatali_detay')
+                    ->label('Hatalı/Mükerrer')
+                    ->icon('heroicon-o-exclamation-triangle')
+                    ->color('warning')
+                    ->modalHeading('Hatalı ve Mükerrer Numaralar')
+                    ->modalContent(function (SmsAktarim $record): \Illuminate\Contracts\View\View {
+                        $numaralar = $record->hatali_numaralar ?? [];
+                        $hatali = array_filter($numaralar, fn ($n) => $n['sebep'] === 'hatali_format');
+                        $mukerrerExcel = array_filter($numaralar, fn ($n) => $n['sebep'] === 'mukerrer_excel');
+                        $mukerrerDb = array_filter($numaralar, fn ($n) => $n['sebep'] === 'mukerrer_db');
+
+                        return view('filament.modals.sms-aktarim-hatali-numaralar', compact('hatali', 'mukerrerExcel', 'mukerrerDb'));
+                    })
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Kapat')
+                    ->visible(fn (SmsAktarim $record): bool => ! empty($record->hatali_numaralar)),
+            ])
             ->bulkActions([]);
     }
 

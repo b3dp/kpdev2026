@@ -21,6 +21,7 @@ class SmsAktarim extends Model
         'hatali_format',
         'bos',
         'hata_mesaji',
+        'hatali_numaralar',
         'basladi_at',
         'tamamlandi_at',
     ];
@@ -34,6 +35,7 @@ class SmsAktarim extends Model
             'mukerrer_excel' => 'integer',
             'hatali_format' => 'integer',
             'bos' => 'integer',
+            'hatali_numaralar' => 'array',
             'basladi_at' => 'datetime',
             'tamamlandi_at' => 'datetime',
         ];
