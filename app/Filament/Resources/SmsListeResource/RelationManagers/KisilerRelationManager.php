@@ -21,6 +21,11 @@ class KisilerRelationManager extends RelationManager
 
     protected static ?string $pluralLabel = 'Kişiler';
 
+    public static function canViewAny(): bool
+    {
+        return true;
+    }
+
     public function isReadOnly(): bool
     {
         return true;
@@ -30,7 +35,7 @@ class KisilerRelationManager extends RelationManager
     {
         return $table
             ->recordTitleAttribute('telefon')
-            ->defaultSort('sms_kisiler.created_at', 'desc')
+            ->defaultSort('sms_kisiler.id', 'desc')
             ->columns([
                 TextColumn::make('telefon')
                     ->label('Telefon')
