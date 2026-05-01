@@ -53,30 +53,32 @@ class EkayitSmsJob implements ShouldQueue
             if ($durumNotu !== '') {
                 $mesaj = $kayit->durumNotunuFormatla($durumNotu) ?? $durumNotu;
             } else {
-                // Hazır mesaj tablosundan çek
+                // Hardcoded fallback şablonlar (basvuru_alindi dahil)
+                $mesajlar = [
+                    'basvuru_alindi' => "Kestanepazarı Hatay Kur'an Kursu'na {AD_SOYAD} öğrencinizin başvurusu alınmıştır. Onay/Red durumu hakkında size bilgilendirme yapılacaktır.",
+                    'onaylandi' => 'Sayın Veli, {AD_SOYAD} öğrencinizin kaydı onaylanmıştır. Kestanepazarı',
+                    'reddedildi' => 'Sayın Veli, {AD_SOYAD} öğrencinizin başvurusu değerlendirme sonucunda kabul edilememiştir. Kestanepazarı',
+                    'yedek' => 'Sayın Veli, {AD_SOYAD} öğrenciniz yedek listeye alınmıştır. Sıra geldiğinde bilgilendirileceksiniz. Kestanepazarı',
+                ];
+
+                // Sadece onay/red/yedek tipleri için hazır mesaj tablosuna bak
                 $tipKarsiligi = match ($this->tip) {
                     'onaylandi' => 'onay',
                     'reddedildi' => 'red',
                     'yedek' => 'yedek',
-                    default => 'onay',
+                    default => null,
                 };
 
-                $hazirMesajSablonu = EkayitHazirMesaj::where('tip', $tipKarsiligi)
-                    ->where('aktif', true)
-                    ->orderByDesc('id')
-                    ->value('metin');
-
-                if ($hazirMesajSablonu) {
-                    $mesajSablonu = $hazirMesajSablonu;
-                } else {
-                    $mesajlar = [
-                        'basvuru_alindi' => "Kestanepazarı Hatay Kur'an Kursu'na {AD_SOYAD} öğrencinizin başvurusu alınmıştır. Onay/Red durumu hakkında size bilgilendirme yapılacaktır.",
-                        'onaylandi' => 'Sayın Veli, {AD_SOYAD} öğrencinizin kaydı onaylanmıştır. Kestanepazarı',
-                        'reddedildi' => 'Sayın Veli, {AD_SOYAD} öğrencinizin başvurusu değerlendirme sonucunda kabul edilememiştir. Kestanepazarı',
-                        'yedek' => 'Sayın Veli, {AD_SOYAD} öğrenciniz yedek listeye alınmıştır. Sıra geldiğinde bilgilendirileceksiniz. Kestanepazarı',
-                    ];
-                    $mesajSablonu = $mesajlar[$this->tip] ?? $mesajlar['basvuru_alindi'];
+                $mesajSablonu = null;
+                if ($tipKarsiligi !== null) {
+                    $mesajSablonu = EkayitHazirMesaj::where('tip', $tipKarsiligi)
+                        ->where('aktif', true)
+                        ->orderByDesc('id')
+                        ->value('metin');
                 }
+
+                // DB'de yoksa hardcoded şablona düş
+                $mesajSablonu ??= $mesajlar[$this->tip] ?? $mesajlar['basvuru_alindi'];
 
                 $mesaj = strtr($mesajSablonu, [
                     '{AD_SOYAD}' => (string) ($kayit->ogrenciBilgisi?->ad_soyad ?? ''),
