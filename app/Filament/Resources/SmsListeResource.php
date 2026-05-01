@@ -197,11 +197,42 @@ class SmsListeResource extends Resource
                                 ->send();
                         }
                     })
-                    ->visible(fn (): bool => static::tumKayitlariGorebilirMi() && static::izinVarMi('pazarlama_sms.gonder')),
+                    ->visible(fn (): bool => static::izinVarMi('pazarlama_sms.gonder')),
 
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make()
+                Tables\Actions\ViewAction::make()->label('')->tooltip('Görüntüle'),
+                Tables\Actions\EditAction::make()->label('')->tooltip('Düzenle')
                     ->visible(fn (SmsListe $record): bool => static::canEdit($record)),
+
+                Tables\Actions\Action::make('kalici_sil')
+                    ->label('')
+                    ->tooltip('Kalıcı Sil')
+                    ->icon('heroicon-o-trash')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('Listeyi Kalıcı Sil')
+                    ->modalDescription('Bu liste ve içindeki tüm kayıtlar kalıcı olarak silinecek. Bu işlem geri alınamaz.')
+                    ->modalSubmitActionLabel('Evet, Kalıcı Sil')
+                    ->visible(fn (SmsListe $record): bool => static::canDelete($record))
+                    ->action(function (SmsListe $record): void {
+                        try {
+                            $record->delete();
+
+                            Notification::make()
+                                ->title('Liste kalıcı olarak silindi')
+                                ->success()
+                                ->send();
+                        } catch (\Throwable $e) {
+                            \Illuminate\Support\Facades\Log::error('SmsListe kalici sil hatasi', [
+                                'id' => $record->id,
+                                'error' => $e->getMessage(),
+                            ]);
+
+                            Notification::make()
+                                ->title('Silme hatası: '.$e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
+                    }),
             ])
             ->bulkActions([]);
     }
@@ -258,6 +289,13 @@ class SmsListeResource extends Resource
         }
 
         return (int) $record->sahip_yonetici_id === (int) auth()->id();
+    }
+
+    public static function getRelationManagers(): array
+    {
+        return [
+            \App\Filament\Resources\SmsListeResource\RelationManagers\KisilerRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

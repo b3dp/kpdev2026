@@ -227,9 +227,41 @@ class SmsKisiResource extends Resource
                                 ->send();
                         }
                     })
-                    ->visible(fn (): bool => static::tumKayitlariGorebilirMi() && static::izinVarMi('pazarlama_sms.gonder')),
+                    ->visible(fn (): bool => static::izinVarMi('pazarlama_sms.gonder')),
 
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->label('')->tooltip('Düzenle')
+                    ->visible(fn (SmsKisi $record): bool => static::canEdit($record)),
+
+                Tables\Actions\Action::make('kalici_sil')
+                    ->label('')
+                    ->tooltip('Kalıcı Sil')
+                    ->icon('heroicon-o-trash')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('Kişiyi Kalıcı Sil')
+                    ->modalDescription('Bu kişi tüm liste bağlantılarıyla birlikte kalıcı olarak silinecek. Bu işlem geri alınamaz.')
+                    ->modalSubmitActionLabel('Evet, Kalıcı Sil')
+                    ->visible(fn (SmsKisi $record): bool => static::canDelete($record))
+                    ->action(function (SmsKisi $record): void {
+                        try {
+                            $record->forceDelete();
+
+                            Notification::make()
+                                ->title('Kişi kalıcı olarak silindi')
+                                ->success()
+                                ->send();
+                        } catch (\Throwable $e) {
+                            \Illuminate\Support\Facades\Log::error('SmsKisi kalici sil hatasi', [
+                                'id' => $record->id,
+                                'error' => $e->getMessage(),
+                            ]);
+
+                            Notification::make()
+                                ->title('Silme hatası: '.$e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
+                    }),
             ])
             ->bulkActions([]);
     }
