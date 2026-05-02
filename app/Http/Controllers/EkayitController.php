@@ -409,21 +409,23 @@ class EkayitController extends Controller
                 }
             }
 
-            try {
-                app(ZeptomailService::class)->ekayitDurumGonder(
-                    eposta: 'baris@b3dp.com',
-                    ad: 'Barış',
-                    ogrenciAdSoyad: trim($veri['ogrenci_ad'].' '.$veri['ogrenci_soyad']),
-                    sinif: (string) ($sinif->ad ?? 'Başvuru'),
-                    kurum: (string) ($sinif->kurum?->ad ?? 'Kestanepazarı Hatay Kur\'an Kursu'),
-                    durum: 'Başvurunuz Alındı',
-                    durumNotu: 'Onay/Red durumu hakkında size bilgilendirme yapılacaktır.'
-                );
-            } catch (Throwable $e) {
-                Log::warning('E-Kayıt başvuru e-postası gönderilemedi', [
-                    'kayit_id' => $kayit->id,
-                    'mesaj' => $e->getMessage(),
-                ]);
+            if (filled($veri['veli_eposta'] ?? null)) {
+                try {
+                    app(ZeptomailService::class)->ekayitDurumGonder(
+                        eposta: (string) $veri['veli_eposta'],
+                        ad: (string) ($veri['veli_ad_soyad'] ?? 'Veli'),
+                        ogrenciAdSoyad: trim($veri['ogrenci_ad'].' '.$veri['ogrenci_soyad']),
+                        sinif: (string) ($sinif->ad ?? 'Başvuru'),
+                        kurum: (string) ($sinif->kurum?->ad ?? 'Kestanepazarı Hatay Kur\'an Kursu'),
+                        durum: 'Başvurunuz Alındı',
+                        durumNotu: 'Onay/Red durumu hakkında size bilgilendirme yapılacaktır.'
+                    );
+                } catch (Throwable $e) {
+                    Log::warning('E-Kayıt başvuru e-postası gönderilemedi', [
+                        'kayit_id' => $kayit->id,
+                        'mesaj' => $e->getMessage(),
+                    ]);
+                }
             }
 
             return redirect()->route('ekayit.tesekkur')
