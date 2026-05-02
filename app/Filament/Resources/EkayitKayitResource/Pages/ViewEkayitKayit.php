@@ -674,6 +674,14 @@ class ViewEkayitKayit extends ViewRecord
 
                 $this->js("window.open('" . addslashes((string) $whatsappUrl) . "', '_blank')");
 
+                if ($durum === EkayitDurumu::Onaylandi) {
+                    $tarihSaat = now()->format('d.m.Y H:i');
+                    $this->record->update([
+                        'durum_notu' => "KAYIT ONAYLANDI, WHATSAPP BİLDİRİMİ GÖNDERİLDİ. {$tarihSaat}",
+                    ]);
+                    $this->record->refresh();
+                }
+
                 Notification::make()
                     ->title('WhatsApp penceresi açıldı')
                     ->success()
