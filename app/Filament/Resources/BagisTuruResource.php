@@ -7,6 +7,8 @@ use App\Enums\BagisFiyatTipi;
 use App\Enums\BagisOzelligi;
 use App\Filament\Resources\BagisTuruResource\Pages;
 use App\Models\BagisTuru;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
@@ -82,10 +84,32 @@ class BagisTuruResource extends Resource
                 ])->columns(2),
             Section::make('Görseller')
                 ->schema([
-                    TextInput::make('gorsel_kare')->label('Görsel Kare (1:1)'),
-                    TextInput::make('gorsel_dikey')->label('Görsel Dikey (9:16)'),
-                    TextInput::make('gorsel_yatay')->label('Görsel Yatay (16:9)'),
-                    TextInput::make('gorsel_orijinal')->label('Görsel Orijinal'),
+                    Placeholder::make('gorsel_yatay_mevcut')
+                        ->label('Mevcut Görsel (16:9)')
+                        ->content(function (?BagisTuru $record): \Illuminate\Support\HtmlString {
+                            $url = $record?->paylasimGorseliUrl();
+
+                            if (! filled($url)) {
+                                return new \Illuminate\Support\HtmlString('—');
+                            }
+
+                            return new \Illuminate\Support\HtmlString('<a href="' . e($url) . '" target="_blank" rel="noopener"><img src="' . e($url) . '" alt="Görsel 16:9" style="width:100%;max-height:220px;object-fit:cover;border-radius:10px;border:1px solid #e2e8f0;"></a>');
+                        })
+                        ->visible(fn (?BagisTuru $record): bool => filled($record?->paylasimGorseliUrl())),
+
+                    FileUpload::make('gorsel_yatay_gecici')
+                        ->label('Görsel Yükle (16:9)')
+                        ->disk('local')
+                        ->directory('tmp/bagis/turleri')
+                        ->image()
+                        ->maxFiles(1)
+                        ->preserveFilenames(false)
+                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                        ->maxSize(20480)
+                        ->imagePreviewHeight('180')
+                        ->helperText('Yükleme sonrası görsel DO Spaces üzerine taşınır ve sadece 16:9 versiyon tutulur. Önerilen boyut: 1920x1080.')
+                        ->dehydrated(false)
+                        ->columnSpanFull(),
                     TextInput::make('video_yol')->label('Video'),
                 ])->columns(2),
             Section::make('Açılış / Kapanış')

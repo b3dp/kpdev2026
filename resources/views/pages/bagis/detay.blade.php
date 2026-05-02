@@ -54,9 +54,7 @@
 @section('title', $bagisTuru->seo_baslik ?? $bagisTuru->ad.' — Bağış Yap')
 @section('meta_description', $bagisTuru->meta_description ?? $bagisTuru->aciklama)
 @section('robots', 'index, follow')
-@section('og_image', $bagisTuru->gorsel_kare
-    ? 'https://cdn.kestanepazari.org.tr/'.ltrim($bagisTuru->gorsel_kare, '/')
-    : asset('img/og-bagis.jpg'))
+@section('og_image', $bagisTuru->paylasimGorseliUrl() ?: asset('img/og-bagis.jpg'))
 
 @section('schema')
 <script type="application/ld+json">

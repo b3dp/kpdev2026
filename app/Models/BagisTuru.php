@@ -126,4 +126,36 @@ class BagisTuru extends Model
     {
         return app(HicriTakvimService::class)->turAcikMi($this);
     }
+
+    public function gorselYatayUrl(): ?string
+    {
+        return $this->gorselUrlOlustur($this->gorsel_yatay);
+    }
+
+    public function paylasimGorseliUrl(): ?string
+    {
+        return $this->gorselYatayUrl()
+            ?? $this->gorselUrlOlustur($this->gorsel_orijinal)
+            ?? $this->gorselUrlOlustur($this->gorsel_kare)
+            ?? $this->gorselUrlOlustur($this->gorsel_dikey);
+    }
+
+    private function gorselUrlOlustur(?string $deger): ?string
+    {
+        if (! filled($deger)) {
+            return null;
+        }
+
+        if (str_starts_with($deger, 'http://') || str_starts_with($deger, 'https://')) {
+            return $deger;
+        }
+
+        $cdn = rtrim((string) config('filesystems.disks.spaces.cdn_url', ''), '/');
+
+        if ($cdn === '') {
+            return ltrim($deger, '/');
+        }
+
+        return $cdn . '/' . ltrim($deger, '/');
+    }
 }

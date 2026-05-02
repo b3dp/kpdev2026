@@ -162,17 +162,17 @@
       @forelse($bagisturleri as $tur)
         <div class="bagis-kart">
           <div class="bagis-foto">
-            @if($tur->gorsel_dikey)
+            @if($tur->gorselYatayUrl())
               <img
-                src="https://cdn.kestanepazari.org.tr/{{ $tur->gorsel_dikey }}"
+                src="{{ $tur->gorselYatayUrl() }}"
                 alt="{{ $tur->ad }}"
                 class="h-full w-full object-cover"
                 loading="lazy"
-                width="260"
-                height="170"
+                width="1600"
+                height="900"
               >
             @else
-              <div style="width:100%;height:170px;background:linear-gradient(135deg,#162E4B 0%,#091420 100%);display:flex;align-items:center;justify-content:center;position:relative;">
+              <div style="width:100%;height:100%;background:linear-gradient(135deg,#162E4B 0%,#091420 100%);display:flex;align-items:center;justify-content:center;position:relative;">
                 <svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="rgba(235,223,181,.2)" stroke-width=".8"><path stroke-linecap="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
                 <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.5) 0%,transparent 60%);"></div>
               </div>

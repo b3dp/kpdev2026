@@ -12,6 +12,8 @@
 <meta property="og:title" content="@yield('title', config('site.ad')) — Kestanepazarı">
 <meta property="og:description" content="@yield('meta_description', config('site.aciklama'))">
 <meta property="og:image" content="@yield('og_image', asset('img/og-default.jpg'))">
+<meta name="twitter:image" content="@yield('og_image', asset('img/og-default.jpg'))">
+<meta itemprop="image" content="@yield('og_image', asset('img/og-default.jpg'))">
 <meta property="og:url" content="{{ url()->current() }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

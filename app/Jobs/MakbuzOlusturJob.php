@@ -83,9 +83,7 @@ class MakbuzOlusturJob implements ShouldQueue
                     tutar: (string) $bagis->toplam_tutar,
                     tarih: $bagis->odeme_tarihi ?? now(),
                     bagisSlug: $bagisTuru?->slug ?? 'bagis',
-                    gorselUrl: $bagisTuru?->gorsel_orijinal
-                        ? Storage::disk('spaces')->url($bagisTuru->gorsel_orijinal)
-                        : null,
+                    gorselUrl: $bagisTuru?->paylasimGorseliUrl(),
                 );
 
                 if ($gonderildi) {

@@ -1,10 +1,16 @@
 @extends('layouts.app')
 
+@php
+    $bagisListeGorseli = $bagisturleri
+        ->map(fn ($tur) => $tur->paylasimGorseliUrl())
+        ->first(fn ($url) => filled($url));
+@endphp
+
 @section('title', 'Bağış Yap')
 @section('meta_description', 'Zekat, kurban, fitre, burs desteği ve genel bağış için güvenli online bağış. Dijital makbuz, şeffaf raporlama.')
 @section('robots', 'index, follow')
 @section('og_type', 'website')
-@section('og_image', asset('img/og-bagis.jpg'))
+@section('og_image', $bagisListeGorseli ?: asset('img/og-bagis.jpg'))
 
 @section('schema')
 <script type="application/ld+json">
@@ -99,14 +105,14 @@
                 @php($fiyat_tipi = $tur->fiyat_tipi?->value ?? $tur->fiyat_tipi)
                 <a href="{{ route('bagis.show', $tur->slug) }}" class="bagis-kart">
                     <div class="bagis-foto">
-                        @if($tur->gorsel_kare)
+                        @if($tur->gorselYatayUrl())
                             <img
-                                src="https://cdn.kestanepazari.org.tr/{{ ltrim($tur->gorsel_kare, '/') }}"
+                                src="{{ $tur->gorselYatayUrl() }}"
                                 alt="{{ $tur->ad }}"
                                 class="absolute inset-0 h-full w-full object-cover"
                                 loading="lazy"
-                                width="400"
-                                height="200"
+                                width="1600"
+                                height="900"
                             >
                         @else
                             <div class="absolute inset-0" style="background:linear-gradient(135deg,#162E4B 0%,#091420 100%);"></div>
