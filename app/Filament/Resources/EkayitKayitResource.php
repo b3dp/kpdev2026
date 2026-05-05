@@ -68,10 +68,10 @@ class EkayitKayitResource extends Resource
             )
             ->columns([
                 TextColumn::make('ogrenciBilgisi.ad_soyad')
-                    ->label('Öğrenci Adı')->searchable(query: function (Builder $q, string $s): Builder {
+                    ->label('Öğrenci Adı')->searchable(query: function (Builder $q, string $search): Builder {
                         return $q->whereHas('ogrenciBilgisi', fn (Builder $oq) => $oq
-                            ->where('ad_soyad', 'like', "%{$s}%")
-                            ->orWhere('tc_kimlik', 'like', "%{$s}%"));
+                            ->where('ad_soyad', 'like', "%{$search}%")
+                            ->orWhere('tc_kimlik', 'like', "%{$search}%"));
                     })->sortable(false),
 
                 TextColumn::make('sinif.ad')
@@ -82,10 +82,10 @@ class EkayitKayitResource extends Resource
 
                 TextColumn::make('veliBilgisi.ad_soyad')
                     ->label('Veli Adı')
-                    ->searchable(query: function (Builder $q, string $s): Builder {
+                    ->searchable(query: function (Builder $q, string $search): Builder {
                         return $q->whereHas('veliBilgisi', fn (Builder $vq) => $vq
-                            ->where('ad_soyad', 'like', "%{$s}%")
-                            ->orWhere('telefon_1', 'like', "%{$s}%"));
+                            ->where('ad_soyad', 'like', "%{$search}%")
+                            ->orWhere('telefon_1', 'like', "%{$search}%"));
                     })->sortable(false),
 
                 TextColumn::make('veliBilgisi.telefon_1')
