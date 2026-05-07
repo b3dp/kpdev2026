@@ -46,45 +46,39 @@ class EkayitSmsJob implements ShouldQueue
                 throw new \RuntimeException('E-Kayıt kaydı bulunamadı.');
             }
 
-            // Önce kayıttaki durum_notu'nu kullan; yoksa hazır mesaj tablosundan,
-            // o da yoksa son çare hardcoded şablona düş
-            $durumNotu = trim((string) ($kayit->durum_notu ?? ''));
+            // Önce hazır mesaj tablosundan şablonu al (onay/red/yedek için),
+            // yoksa hardcoded fallback şablona düş
+            $tipKarsiligi = match ($this->tip) {
+                'onaylandi' => 'onay',
+                'reddedildi' => 'red',
+                'yedek' => 'yedek',
+                default => null,
+            };
 
-            if ($durumNotu !== '') {
-                $mesaj = $kayit->durumNotunuFormatla($durumNotu) ?? $durumNotu;
-            } else {
-                // Hardcoded fallback şablonlar (basvuru_alindi dahil)
-                $mesajlar = [
-                    'basvuru_alindi' => "Kestanepazarı Hatay Kur'an Kursu'na {AD_SOYAD} öğrencinizin başvurusu alınmıştır. Onay/Red durumu hakkında size bilgilendirme yapılacaktır.",
-                    'onaylandi' => 'Sayın Veli, {AD_SOYAD} öğrencinizin kaydı onaylanmıştır. Kestanepazarı',
-                    'reddedildi' => 'Sayın Veli, {AD_SOYAD} öğrencinizin başvurusu değerlendirme sonucunda kabul edilememiştir. Kestanepazarı',
-                    'yedek' => 'Sayın Veli, {AD_SOYAD} öğrenciniz yedek listeye alınmıştır. Sıra geldiğinde bilgilendirileceksiniz. Kestanepazarı',
-                ];
-
-                // Sadece onay/red/yedek tipleri için hazır mesaj tablosuna bak
-                $tipKarsiligi = match ($this->tip) {
-                    'onaylandi' => 'onay',
-                    'reddedildi' => 'red',
-                    'yedek' => 'yedek',
-                    default => null,
-                };
-
-                $mesajSablonu = null;
-                if ($tipKarsiligi !== null) {
-                    $mesajSablonu = EkayitHazirMesaj::where('tip', $tipKarsiligi)
-                        ->where('aktif', true)
-                        ->orderByDesc('id')
-                        ->value('metin');
-                }
-
-                // DB'de yoksa hardcoded şablona düş
-                $mesajSablonu ??= $mesajlar[$this->tip] ?? $mesajlar['basvuru_alindi'];
-
-                $mesaj = strtr($mesajSablonu, [
-                    '{AD_SOYAD}' => (string) ($kayit->ogrenciBilgisi?->ad_soyad ?? ''),
-                    '{SINIF}' => (string) ($kayit->sinif?->ad ?? ''),
-                ]);
+            $mesajSablonu = null;
+            if ($tipKarsiligi !== null) {
+                $mesajSablonu = EkayitHazirMesaj::where('tip', $tipKarsiligi)
+                    ->where('aktif', true)
+                    ->orderByDesc('id')
+                    ->value('metin');
             }
+
+            // DB'de yoksa hardcoded fallback şablonlara düş
+            $mesajSablonu ??= match ($this->tip) {
+                'onaylandi' => 'Sayın Veli, {AD_SOYAD} öğrencinizin kaydı onaylanmıştır. Kestanepazarı',
+                'reddedildi' => 'Sayın Veli, {AD_SOYAD} öğrencinizin başvurusu değerlendirme sonucunda kabul edilememiştir. Kestanepazarı',
+                'yedek' => 'Sayın Veli, {AD_SOYAD} öğrenciniz yedek listeye alınmıştır. Sıra geldiğinde bilgilendirileceksiniz. Kestanepazarı',
+                default => "Kestanepazarı Hatay Kur'an Kursu'na {AD_SOYAD} öğrencinizin başvurusu alınmıştır. Onay/Red durumu hakkında size bilgilendirme yapılacaktır.",
+            };
+
+            $kayit->loadMissing(['ogrenciBilgisi', 'sinif.kurum']);
+            $mesaj = $kayit->durumNotunuFormatla($mesajSablonu) ?? strtr($mesajSablonu, [
+                '{AD_SOYAD}' => (string) ($kayit->ogrenciBilgisi?->ad_soyad ?? ''),
+                '{SINIF}' => (string) ($kayit->sinif?->ad ?? ''),
+                '{KURUM}' => (string) ($kayit->sinif?->kurum?->ad ?? ''),
+                '{DURUM}' => $this->tip,
+                '{TARIH}' => now()->format('d.m.Y H:i'),
+            ]);
 
             $sonuc = app(HermesService::class)->sendSMS([$telefon], $mesaj);
 

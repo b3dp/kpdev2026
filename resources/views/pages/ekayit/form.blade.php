@@ -281,8 +281,8 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label">Veli Telefon Seçimi 2</label>
-              <select name="veli_telefon_sahibi_2" id="veli_telefon_sahibi_2" lang="tr" class="form-select @error('veli_telefon_sahibi_2') border-red-400 @enderror" data-telefon-sahibi="2">
+              <label class="form-label">Veli Telefon Seçimi 2 <span>*</span></label>
+              <select name="veli_telefon_sahibi_2" id="veli_telefon_sahibi_2" lang="tr" class="form-select @error('veli_telefon_sahibi_2') border-red-400 @enderror" data-telefon-sahibi="2" required>
                 <option value="">Seçiniz</option>
                 <option value="anne" @selected(old('veli_telefon_sahibi_2') === 'anne')>Anne</option>
                 <option value="baba" @selected(old('veli_telefon_sahibi_2') === 'baba')>Baba</option>
@@ -291,7 +291,7 @@
             </div>
 
             <div class="form-group md:col-span-2 {{ old('veli_telefon_sahibi_2') ? '' : 'hidden' }}" id="veli_telefon_2_alani" data-telefon-alani="2">
-              <label class="form-label">Telefon 2</label>
+              <label class="form-label">Telefon 2 <span>*</span></label>
               <input type="tel" name="veli_telefon_2" lang="tr" class="form-input @error('veli_telefon_2') border-red-400 @enderror" autocomplete="tel" inputmode="numeric" pattern="5[0-9]{9}" maxlength="10" placeholder="5321234567" value="{{ old('veli_telefon_2') }}">
             </div>
 
