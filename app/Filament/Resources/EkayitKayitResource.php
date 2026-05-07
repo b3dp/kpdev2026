@@ -68,10 +68,16 @@ class EkayitKayitResource extends Resource
             )
             ->columns([
                 TextColumn::make('ogrenciBilgisi.ad_soyad')
-                    ->label('Öğrenci Adı')->searchable(query: function (Builder $q, string $search): Builder {
-                        return $q->whereHas('ogrenciBilgisi', fn (Builder $oq) => $oq
-                            ->where('ad_soyad', 'like', "%{$search}%")
-                            ->orWhere('tc_kimlik', 'like', "%{$search}%"));
+                    ->label('Öğrenci Adı')->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->whereExists(function ($sub) use ($search) {
+                            $sub->select(\DB::raw(1))
+                                ->from('ekayit_ogrenci_bilgileri')
+                                ->whereColumn('ekayit_ogrenci_bilgileri.kayit_id', 'ekayit_kayitlar.id')
+                                ->where(function ($s) use ($search) {
+                                    $s->where('ad_soyad', 'like', "%{$search}%")
+                                      ->orWhere('tc_kimlik', 'like', "%{$search}%");
+                                });
+                        });
                     })->sortable(false),
 
                 TextColumn::make('sinif.ad')
@@ -82,10 +88,16 @@ class EkayitKayitResource extends Resource
 
                 TextColumn::make('veliBilgisi.ad_soyad')
                     ->label('Veli Adı')
-                    ->searchable(query: function (Builder $q, string $search): Builder {
-                        return $q->whereHas('veliBilgisi', fn (Builder $vq) => $vq
-                            ->where('ad_soyad', 'like', "%{$search}%")
-                            ->orWhere('telefon_1', 'like', "%{$search}%"));
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->whereExists(function ($sub) use ($search) {
+                            $sub->select(\DB::raw(1))
+                                ->from('ekayit_veli_bilgileri')
+                                ->whereColumn('ekayit_veli_bilgileri.kayit_id', 'ekayit_kayitlar.id')
+                                ->where(function ($s) use ($search) {
+                                    $s->where('ad_soyad', 'like', "%{$search}%")
+                                      ->orWhere('telefon_1', 'like', "%{$search}%");
+                                });
+                        });
                     })->sortable(false),
 
                 TextColumn::make('veliBilgisi.telefon_1')
