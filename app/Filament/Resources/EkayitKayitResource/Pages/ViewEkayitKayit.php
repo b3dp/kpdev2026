@@ -660,7 +660,13 @@ class ViewEkayitKayit extends ViewRecord
                     $this->record->refresh();
                 }
 
-                $mesaj = $this->mesajMetniHazirla($durum);
+                // Tel2 için durum_notu'na yazılmış tracking metni yerine her zaman hazır mesaj kullanılır
+                $mesaj = $durumGuncellensin
+                    ? $this->mesajMetniHazirla($durum)
+                    : $this->mesajDegiskenleriniDoldur(
+                        $this->varsayilanMesajMetni($this->durumTipiniBul($durum)),
+                        $durum
+                    );
                 $whatsappUrl = $this->whatsappUrlOlustur((string) $telefon, $mesaj);
 
                 if (blank($whatsappUrl)) {
@@ -674,7 +680,8 @@ class ViewEkayitKayit extends ViewRecord
 
                 $this->js("window.open('" . addslashes((string) $whatsappUrl) . "', '_blank')");
 
-                if ($durum === EkayitDurumu::Onaylandi) {
+                // Durum notu sadece tel1 (ana kanal) için güncellenir
+                if ($durumGuncellensin && $durum === EkayitDurumu::Onaylandi) {
                     $tarihSaat = now()->format('d.m.Y H:i');
                     $this->record->update([
                         'durum_notu' => "KAYIT ONAYLANDI, WHATSAPP BİLDİRİMİ GÖNDERİLDİ. {$tarihSaat}",
@@ -756,6 +763,14 @@ class ViewEkayitKayit extends ViewRecord
                     $durumGuncellensin,
                     auth()->id() ?? 1
                 ));
+
+                if ($durumGuncellensin && $tip === 'onaylandi') {
+                    $tarihSaat = now()->format('d.m.Y H:i');
+                    $this->record->update([
+                        'durum_notu' => "KAYIT ONAYLANDI, SMS BİLDİRİMİ GÖNDERİLDİ. {$tarihSaat}",
+                    ]);
+                    $this->record->refresh();
+                }
 
                 Notification::make()
                     ->title('SMS gönderildi')
