@@ -119,6 +119,7 @@ IZINLI:
 | Faz 7B | Raporlama: Excel, Drive, makbuz PDF, scheduler |
 | Faz 8A | E-Kayit cekirdeği: donem, sinif, kayit, hazir mesaj, evrak sablonu |
 | Faz 8A+ | E-Kayit Excel + Drive + e-posta ile gonderme |
+| Kurban Modulu | KurbanKayitResource, kurban_kayitlar, kurban_kisiler, kurban_bildirimler -- backend tamamlandi |
 
 ---
 
@@ -162,7 +163,7 @@ Kalan isler:
 - GA4 + GTM + Google Ads sifirdan kurulum -> Ayri konusmada
 - GA4 server-side Measurement Protocol -> Faz 7C
 - Pazarlama e-posta servis secimi -> Faz 10B oncesi
-- E-Kayit sinif gorselleri DO Spaces upload -> Simdilik URL
+- E-Kayit sinif gorselleri DO Spaces upload -> TAMAMLANDI (DO Spaces yuklemesi aktif)
 - Google Places API (New) -> Faz 5C duzeltme
 
 ---
