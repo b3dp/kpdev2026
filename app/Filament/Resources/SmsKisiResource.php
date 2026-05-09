@@ -123,7 +123,7 @@ class SmsKisiResource extends Resource
                     ->form([
                         Select::make('liste_id')
                             ->label('Hedef Liste')
-                            ->required()
+                            ->helperText('Boş bırakırsanız Excel’deki Listeler sütunu kullanılır; o da boşsa varsayılan liste açılır.')
                             ->searchable()
                             ->options(fn (): array => self::erisebilirListeSecenekleri()),
 
@@ -137,9 +137,11 @@ class SmsKisiResource extends Resource
                             ->maxSize(10240), // 10MB
                     ])
                     ->action(function (array $data): void {
+                        $listeId = filled($data['liste_id'] ?? null) ? (int) $data['liste_id'] : null;
+
                         $aktarim = SmsAktarim::create([
                             'yonetici_id' => (int) auth()->id(),
-                            'liste_id' => (int) $data['liste_id'],
+                            'liste_id' => $listeId,
                             'dosya' => (string) $data['dosya'],
                             'durum' => 'bekliyor',
                         ]);
@@ -147,7 +149,7 @@ class SmsKisiResource extends Resource
                         HermesAktarimJob::dispatch(
                             $data['dosya'],
                             auth()->id(),
-                            (int) $data['liste_id'],
+                            $listeId,
                             (int) $aktarim->id,
                         );
 

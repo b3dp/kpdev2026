@@ -143,6 +143,7 @@ class HermesAktarimJob implements ShouldQueue
                 $telefonKolonIndex = 0;
                 $telefon2KolonIndex = null;
                 $adSoyadKolonIndex = null;
+                $listeKolonIndex = null;
 
                 foreach ($sheet->getRowIterator() as $row) {
                     $sheetSatirNo++;
@@ -152,6 +153,7 @@ class HermesAktarimJob implements ShouldQueue
                         $telefonKolonIndex = $this->telefonKolonunuBul($cells);
                         $telefon2KolonIndex = $this->telefon2KolonunuBul($cells, $telefonKolonIndex);
                         $adSoyadKolonIndex = $this->adSoyadKolonunuBul($cells);
+                        $listeKolonIndex = $this->listeKolonunuBul($cells);
 
                         if ($this->satirHeaderMi($cells)) {
                             continue;
@@ -188,18 +190,26 @@ class HermesAktarimJob implements ShouldQueue
                     }
                     $exceldeGorulenler[$telefon] = true;
 
+                    $hamListeAdlari = null;
+                    if ($listeKolonIndex !== null && isset($cells[$listeKolonIndex])) {
+                        $hamListeAdlari = $this->hucreDegeriniStringeCevir($cells[$listeKolonIndex]->getValue() ?? null);
+                    }
+
+                    $listeIdleri = $this->listeIdleriniHazirla($hamListeAdlari, $liste);
+
                     $mevcutKisi = SmsKisi::query()
                         ->where('telefon', $telefon)
                         ->orWhere('telefon_2', $telefon)
                         ->first();
 
                     if ($mevcutKisi) {
-                        if ((int) $mevcutKisi->created_by === $this->yoneticiId) {
-                            if (! $mevcutKisi->listeler()->where('sms_listeler.id', $liste->id)->exists()) {
-                                $mevcutKisi->listeler()->attach($liste->id);
+                        if ($listeIdleri !== []) {
+                            foreach ($listeIdleri as $listeId) {
+                                if (! $mevcutKisi->listeler()->where('sms_listeler.id', $listeId)->exists()) {
+                                    $mevcutKisi->listeler()->attach($listeId);
+                                }
                             }
                         }
-
                         $sayaclar['mukerrer_db']++;
                         $hataliNumaralar[] = ['numara' => $telefon, 'sebep' => 'mukerrer_db'];
                         continue;
@@ -232,7 +242,12 @@ class HermesAktarimJob implements ShouldQueue
                         'notlar' => null,
                         'created_by' => $this->yoneticiId,
                     ]);
-                    $yeniKisi->listeler()->attach($liste->id);
+
+                    foreach ($listeIdleri as $listeId) {
+                        if (! $yeniKisi->listeler()->where('sms_listeler.id', $listeId)->exists()) {
+                            $yeniKisi->listeler()->attach($listeId);
+                        }
+                    }
                     $sayaclar['eklenen']++;
                 }
             }
@@ -397,6 +412,69 @@ class HermesAktarimJob implements ShouldQueue
         }
 
         return null;
+    }
+
+    /**
+     * Başlık satırından listeler kolonunu bulur.
+     */
+    private function listeKolonunuBul(array $cells): ?int
+    {
+        foreach ($cells as $index => $cell) {
+            $deger = mb_strtolower($this->hucreDegeriniStringeCevir($cell?->getValue() ?? null), 'UTF-8');
+            if ($deger === '') {
+                continue;
+            }
+
+            if (str_contains($deger, 'listeler') || str_contains($deger, 'liste') || str_contains($deger, 'grup')) {
+                return (int) $index;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Excel hücresindeki liste adlarını ayırır.
+     */
+    private function listeAdlariniAyikla(string $hamDeger): array
+    {
+        $listeAdlari = preg_split('/[\r\n,;\/|]+/u', $hamDeger) ?: [];
+
+        return collect($listeAdlari)
+            ->map(fn (string $ad): string => trim($ad))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Liste adlarından mevcut veya yeni listeleri oluşturup ID dizisi döner.
+     */
+    private function listeIdleriniHazirla(?string $hamListeAdlari, SmsListe $varsayilanListe): array
+    {
+        $listeIdleri = [];
+
+        foreach ($this->listeAdlariniAyikla((string) ($hamListeAdlari ?? '')) as $listeAdi) {
+            $liste = SmsListe::firstOrCreate(
+                [
+                    'ad' => $listeAdi,
+                    'sahip_yonetici_id' => $this->yoneticiId,
+                ],
+                [
+                    'ad' => $listeAdi,
+                    'sahip_yonetici_id' => $this->yoneticiId,
+                ]
+            );
+
+            $listeIdleri[] = (int) $liste->id;
+        }
+
+        if ($listeIdleri === []) {
+            $listeIdleri[] = (int) $varsayilanListe->id;
+        }
+
+        return array_values(array_unique($listeIdleri));
     }
 
     /**

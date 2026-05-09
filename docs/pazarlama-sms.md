@@ -221,6 +221,10 @@ getActiveCreditTransfers(int $serviceId = 1): string — ham XML döner
 
 ### Faz 10A-3 — Numara Aktarımı
 - Excel import
+- Excel kolonları: Ad Soyad, Telefon 1, Listeler
+- Listeler sütunundaki isimlere göre gerekli liste otomatik oluşturulur ve kişi o listeye bağlanır
+- Hedef liste alanı opsiyoneldir; Listeler boşsa panelde seçilen hedef liste kullanılır, o da boşsa varsayılan liste açılır
+- Telefon formatı: 905xxxxxxxxx / 0 5xx / 5xx tümü 5xxxxxxxxx olarak normalize edilir
 - Her kullanıcı için kendi `2026NisanOncesi` listesi otomatik oluştur
 - Mükerrer kontrolü
 
