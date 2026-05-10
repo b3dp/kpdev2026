@@ -57,22 +57,27 @@ class HermesService
     {
         $normalizeTelefonlar = $this->telefonListesiNormalize($telefonlar);
         
-        // Kredi kontrol et
+        // SMS sayısını hesapla (mesaj uzunluğuna göre)
+        $smsAdedi = $this->smsAdediHesapla($mesaj);
+        
+        // Kredi kontrol et (telefon sayısı * SMS adedi)
         $smsKredi = \App\Models\SmsKredi::getKalanKredi();
-        $smsHedefi = count($normalizeTelefonlar);
+        $smsHedefi = count($normalizeTelefonlar) * $smsAdedi;
         
         if ($smsKredi < $smsHedefi) {
             Log::error('[HermesService] Yetersiz SMS Kredi', [
                 'kalan_kredi' => $smsKredi,
-                'istenen' => $smsHedefi,
+                'telefon_sayisi' => count($normalizeTelefonlar),
+                'mesaj_sms_adedi' => $smsAdedi,
+                'toplam_istenen' => $smsHedefi,
             ]);
             
             return [
                 'basarili' => false,
                 'transaction_id' => null,
                 'gecerli' => 0,
-                'gecersiz' => $smsHedefi,
-                'hata' => "Yetersiz SMS Kredi. Kalan: $smsKredi, İstenen: $smsHedefi",
+                'gecersiz' => count($normalizeTelefonlar),
+                'hata' => "Yetersiz SMS Kredi. Kalan: $smsKredi, İstenen: $smsHedefi ({$smsAdedi} SMS x ".count($normalizeTelefonlar)." kişi)",
             ];
         }
 
@@ -479,6 +484,18 @@ class HermesService
         }
 
         return array_values(array_unique($normalize));
+    }
+
+    private function smsAdediHesapla(string $mesaj): int
+    {
+        $karakter = mb_strlen($mesaj, 'UTF-8');
+
+        if ($karakter === 0) {
+            return 0;
+        }
+
+        // Türkçe karakterli SMS hesaplaması: 70 karakter = 1 SMS
+        return (int) ceil($karakter / 70);
     }
 
     private function xmlDegeriBul(?SimpleXMLElement $xml, array $alanlar): ?string
