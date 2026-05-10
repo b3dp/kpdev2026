@@ -1,6 +1,7 @@
 <x-filament-panels::page>
     <div class="space-y-6">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <!-- İstatistikler ve Kredi Yönetimi -->
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
             @php
                 $bugunBasarili = \App\Models\SmsGonderim::whereDate('created_at', today())->sum('basarili') ?? 0;
                 $bugunBasarisiz = \App\Models\SmsGonderim::whereDate('created_at', today())->sum('basarisiz') ?? 0;
@@ -8,6 +9,7 @@
                 $kalanKredi = \App\Models\SmsKredi::getKalanKredi();
             @endphp
 
+            <!-- Başarılı SMS -->
             <div class="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
                 <div class="flex items-center justify-between">
                     <div>
@@ -18,6 +20,7 @@
                 </div>
             </div>
 
+            <!-- Başarısız SMS -->
             <div class="bg-white rounded-lg shadow p-6 border-l-4 border-red-500">
                 <div class="flex items-center justify-between">
                     <div>
@@ -28,6 +31,7 @@
                 </div>
             </div>
 
+            <!-- Rehber Sayısı -->
             <div class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
                 <div class="flex items-center justify-between">
                     <div>
@@ -38,6 +42,7 @@
                 </div>
             </div>
 
+            <!-- Kalan Kredi -->
             <div class="bg-white rounded-lg shadow p-6 border-l-4 {{ $kalanKredi < 1000 ? 'border-orange-500' : 'border-blue-500' }}">
                 <div class="flex items-center justify-between">
                     <div>
@@ -50,8 +55,33 @@
                     <p class="text-orange-600 text-xs mt-2 font-semibold">Kredi azalıyor</p>
                 @endif
             </div>
+
+            <!-- Kredi Ekleme -->
+            <div class="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500">
+                <div class="flex flex-col h-full">
+                    <p class="text-gray-500 text-sm mb-4 font-semibold">Kredi Ekle</p>
+                    <form action="{{ route('filament.admin.sms-kredi-ekle') }}" method="POST" class="flex flex-col gap-3 flex-1">
+                        @csrf
+                        <input
+                            type="number"
+                            name="miktar"
+                            placeholder="Miktar"
+                            required
+                            min="1"
+                            class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                        />
+                        <button
+                            type="submit"
+                            class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold transition text-sm"
+                        >
+                            Ekle
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
 
+        <!-- Son SMS Gönderimler Tablosu -->
         <div class="bg-white rounded-lg shadow overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200">
                 <h3 class="text-lg font-semibold text-gray-800">Son 10 SMS Gönderimi</h3>
@@ -98,35 +128,6 @@
                         @endforelse
                     </tbody>
                 </table>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Kredi Yönetimi</h3>
-
-            <form action="{{ route('filament.admin.sms-kredi-ekle') }}" method="POST" class="flex gap-3">
-                @csrf
-                <input
-                    type="number"
-                    name="miktar"
-                    placeholder="Eklenecek Kredi Miktarı"
-                    required
-                    min="1"
-                    class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                />
-                <button
-                    type="submit"
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition"
-                >
-                    Kredi Ekle
-                </button>
-            </form>
-
-            <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <p class="text-sm text-gray-700">
-                    <span class="font-semibold">Mevcut Kredi:</span>
-                    <strong class="text-lg text-blue-600">{{ number_format($kalanKredi, 0, ',', '.') }}</strong> SMS
-                </p>
             </div>
         </div>
     </div>
