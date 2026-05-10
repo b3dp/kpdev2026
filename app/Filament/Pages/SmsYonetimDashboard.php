@@ -2,26 +2,25 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\SmsGonderim;
+use App\Models\SmsKisi;
+use App\Models\SmsKredi;
 use Filament\Pages\Page;
-use Filament\Widgets\StatsOverviewWidget\Stat;
-use Filament\Widgets\StatsOverviewWidget;
-use Filament\Widgets\TableWidget;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BadgeColumn;
+use Filament\Widgets\StatsOverviewWidget;
+use Filament\Widgets\StatsOverviewWidget\Stat;
+use Filament\Widgets\TableWidget;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use App\Models\SmsGonderim;
-use App\Models\SmsKredi;
-use App\Models\SmsKisi;
 
 class SmsYonetimDashboard extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-envelope';
-    
+
     protected static ?string $navigationLabel = 'SMS Yönetimi';
-    
+
     protected static ?string $title = 'SMS Yönetim Paneli';
-    
+
     protected static ?int $navigationSort = 999;
 
     protected static string $view = 'filament.pages.sms-yonetim-dashboard';
@@ -39,29 +38,19 @@ class SmsStatsWidget extends StatsOverviewWidget
 {
     protected function getStats(): array
     {
-        // Bugün gönderilen SMS
-        $bugunBasarili = SmsGonderim::whereDate('created_at', today())
-            ->where('status', 'success')
-            ->sum('sms_sayisi') ?? 0;
-            
-        $bugunBasarisiz = SmsGonderim::whereDate('created_at', today())
-            ->where('status', 'failed')
-            ->sum('sms_sayisi') ?? 0;
-
-        // Rehber sayısı
+        $bugunBasarili = SmsGonderim::whereDate('created_at', today())->sum('basarili') ?? 0;
+        $bugunBasarisiz = SmsGonderim::whereDate('created_at', today())->sum('basarisiz') ?? 0;
         $rehberSayisi = SmsKisi::count();
-
-        // Kalan kredi
         $kalanKredi = SmsKredi::getKalanKredi();
 
         return [
-            Stat::make('Bugün Başarılı SMS', $bugunBasarili)
+            Stat::make('Bugün Başarılı SMS', number_format($bugunBasarili, 0, ',', '.'))
                 ->description('Gönderilen SMS sayısı')
                 ->descriptionIcon('heroicon-m-check-circle')
                 ->color('success')
                 ->icon('heroicon-o-check-circle'),
 
-            Stat::make('Bugün Başarısız SMS', $bugunBasarisiz)
+            Stat::make('Bugün Başarısız SMS', number_format($bugunBasarisiz, 0, ',', '.'))
                 ->description('Hatalı SMS sayısı')
                 ->descriptionIcon('heroicon-m-x-circle')
                 ->color('danger')
@@ -91,55 +80,45 @@ class SmsGonderimListWidget extends TableWidget
         return true;
     }
 
-    public function getDefaultTableSortColumn(): ?string
-    {
-        return 'created_at';
-    }
-
-    public function getDefaultTableSortDirection(): ?string
-    {
-        return 'desc';
-    }
-
     protected function getTableQuery(): Builder|Relation|null
     {
-        return SmsGonderim::query()
-            ->with('rehber')
-            ->latest('created_at')
-            ->limit(10);
+        return SmsGonderim::query()->latest('created_at')->limit(10);
     }
 
     protected function getTableColumns(): array
     {
         return [
-            TextColumn::make('rehber.ad')
-                ->label('Rehber/Liste')
-                ->searchable()
-                ->sortable()
-                ->wrap(),
+            TextColumn::make('tip')
+                ->label('Tip')
+                ->formatStateUsing(fn (string $state): string => ucfirst($state))
+                ->sortable(),
 
-            TextColumn::make('sms_sayisi')
-                ->label('SMS Sayısı')
-                ->sortable()
-                ->alignment('center'),
+            TextColumn::make('alici_sayisi')
+                ->label('Alıcı')
+                ->sortable(),
 
-            BadgeColumn::make('status')
+            TextColumn::make('basarili')
+                ->label('Başarılı')
+                ->sortable(),
+
+            TextColumn::make('basarisiz')
+                ->label('Başarısız')
+                ->sortable(),
+
+            TextColumn::make('durum')
                 ->label('Durum')
-                ->colors([
-                    'success' => 'success',
-                    'failed' => 'danger',
-                    'pending' => 'warning',
-                ])
-                ->formatStateUsing(fn ($state) => match ($state) {
-                    'success' => '✓ Başarılı',
-                    'failed' => '✗ Başarısız',
-                    'pending' => '⏳ Beklemede',
-                    default => $state,
+                ->badge()
+                ->color(fn (string $state): string => match ($state) {
+                    'tamamlandi' => 'success',
+                    'basarisiz' => 'danger',
+                    'gonderiliyor' => 'warning',
+                    default => 'gray',
                 }),
 
             TextColumn::make('created_at')
                 ->label('Gönderme Tarihi')
-                ->dateTime('d.m.Y H:i')
+                ->formatStateUsing(fn ($state) => $state
+                    ? \Carbon\Carbon::parse($state)->format('d.m.Y H:i') : '—')
                 ->sortable(),
         ];
     }
