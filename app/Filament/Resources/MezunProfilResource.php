@@ -23,6 +23,7 @@ use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
@@ -33,6 +34,7 @@ use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Database\Eloquent\Collection;
 
 class MezunProfilResource extends Resource
 {
@@ -394,7 +396,66 @@ class MezunProfilResource extends Resource
 
                 DeleteAction::make(),
             ])
-            ->bulkActions([])
+            ->bulkActions([
+                BulkAction::make('smsSonder')
+                    ->label('SMS Gönder')
+                    ->icon('heroicon-o-envelope')
+                    ->color('info')
+                    ->form([
+                        Textarea::make('mesaj')
+                            ->label('Mesaj')
+                            ->required()
+                            ->maxLength(1000)
+                            ->rows(4)
+                            ->hint('Seçilen mezunlara gönderilecek'),
+                    ])
+                    ->action(function (Collection $records, array $data) {
+                        // Seçilen mezunların telefon numaralarını al
+                        $telefonlar = $records
+                            ->map(fn($record) => $record->uye?->telefon)
+                            ->filter()
+                            ->unique()
+                            ->values()
+                            ->toArray();
+
+                        if (count($telefonlar) === 0) {
+                            Notification::make()
+                                ->danger()
+                                ->title('Hata')
+                                ->body('Seçilen mezunların telefon numarası bulunamadı.')
+                                ->send();
+                            return;
+                        }
+
+                        // SMS gönderme işlemi
+                        try {
+                            $result = app(\App\Services\HermesService::class)->sendSMS(
+                                telefonlar: $telefonlar,
+                                mesaj: $data['mesaj'],
+                            );
+
+                            if ($result['basarili']) {
+                                Notification::make()
+                                    ->success()
+                                    ->title('Başarılı')
+                                    ->body(count($telefonlar) . ' mezuna SMS gönderildi. (Transaction ID: ' . $result['transaction_id'] . ')')
+                                    ->send();
+                            } else {
+                                Notification::make()
+                                    ->warning()
+                                    ->title('Kısmi Hata')
+                                    ->body('Geçerli: ' . $result['gecerli'] . ', Geçersiz: ' . $result['gecersiz'])
+                                    ->send();
+                            }
+                        } catch (\Exception $e) {
+                            Notification::make()
+                                ->danger()
+                                ->title('Hata')
+                                ->body('SMS gönderilemedi: ' . $e->getMessage())
+                                ->send();
+                        }
+                    }),
+            ])
             ->defaultSort('created_at', 'desc');
     }
 
