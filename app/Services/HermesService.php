@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Log;
 use RuntimeException;
 use SimpleXMLElement;
 use Throwable;
-use App\Support\SmsHelper;
 
 class HermesService
 {
@@ -127,14 +126,31 @@ class HermesService
         $gecerli = $this->xmlIntDegeriBul($cozulmus['icerik'], ['VALID_SMS_COUNT']) ?? 0;
         $gecersiz = $this->xmlIntDegeriBul($cozulmus['icerik'], ['INVALID_SMS_COUNT']) ?? 0;
 
+        // Hermes bazı yanıtlarda toplam SMS özetini farklı alan adlarıyla dönebilir.
+        $toplamSms = $this->xmlIntDegeriBul($cozulmus['icerik'], [
+            'SMS_SMS_COUNT',
+            'TOTAL_SMS_COUNT',
+            'TOTAL_MESSAGE_COUNT',
+            'TOTAL_PACKET_COUNT',
+            'SMS_COUNT',
+            'MESSAGE_COUNT',
+        ]);
+
+        if ($toplamSms === null) {
+            // Özet alanı yoksa, kredi düşümü için güvenli fallback: geçerli alıcı x mesaj SMS adedi.
+            $toplamSms = $gecerli * $smsAdedi;
+        }
+
         if ($cozulmus['basarili']) {
-            // Kredi düş (başarılı SMS sayısı kadar)
-            \App\Models\SmsKredi::krediDus($gecerli, 'SMS Gonderimi - Transaction ID: ' . $transactionId);
+            // Kredi düş (Hermes toplam SMS özeti varsa onu, yoksa fallback hesabı kullan)
+            \App\Models\SmsKredi::krediDus($toplamSms, 'SMS Gonderimi - Transaction ID: ' . $transactionId);
             
             Log::info('[HermesService] sendSMS başarılı', [
                 'telefon_sayisi' => count($normalizeTelefonlar),
+                'mesaj_sms_adedi' => $smsAdedi,
+                'toplam_sms' => $toplamSms,
                 'transaction_id' => $transactionId,
-                'kredi_dusuldü' => $gecerli,
+                'kredi_dusuldu' => $toplamSms,
             ]);
         } else {
             Log::error('[HermesService] sendSMS hatası', [
@@ -149,12 +165,40 @@ class HermesService
             'transaction_id' => $transactionId,
             'gecerli' => $gecerli,
             'gecersiz' => $gecersiz,
+            'mesaj_sms_adedi' => $smsAdedi,
+            'toplam_sms' => $toplamSms,
         ];
     }
 
     public function setAsyncTransaction(array $telefonlar, string $mesaj, ?string $sendDate = null): array
     {
         $normalizeTelefonlar = $this->telefonListesiNormalize($telefonlar);
+        $smsAdedi = $this->smsAdediHesapla($mesaj);
+
+        // Async gönderimlerde de kredi kontrolü senkron akışla aynı mantıkta yapılır.
+        $smsKredi = \App\Models\SmsKredi::getKalanKredi();
+        $smsHedefi = count($normalizeTelefonlar) * $smsAdedi;
+
+        if ($smsKredi < $smsHedefi) {
+            Log::error('[HermesService] Async Yetersiz SMS Kredi', [
+                'kalan_kredi' => $smsKredi,
+                'telefon_sayisi' => count($normalizeTelefonlar),
+                'mesaj_sms_adedi' => $smsAdedi,
+                'toplam_istenen' => $smsHedefi,
+            ]);
+
+            return [
+                'basarili' => false,
+                'async' => false,
+                'req_log_id' => null,
+                'transaction_id' => null,
+                'gecerli' => 0,
+                'gecersiz' => count($normalizeTelefonlar),
+                'mesaj_sms_adedi' => $smsAdedi,
+                'toplam_sms' => 0,
+                'hata' => "Yetersiz SMS Kredi. Kalan: $smsKredi, İstenen: $smsHedefi ({$smsAdedi} SMS x ".count($normalizeTelefonlar)." kişi)",
+            ];
+        }
 
         $params = [
             'token' => $this->authenticate(),
@@ -202,10 +246,34 @@ class HermesService
             );
         }
 
+        $gecerli = $this->xmlIntDegeriBul($cozulmus['icerik'], ['VALID_SMS_COUNT']) ?? 0;
+        $gecersiz = $this->xmlIntDegeriBul($cozulmus['icerik'], ['INVALID_SMS_COUNT']) ?? 0;
+
+        // Hermes bazı ortamlarda toplam SMS alanını SMS_SMS_COUNT olarak dönebiliyor.
+        $toplamSms = $this->xmlIntDegeriBul($cozulmus['icerik'], [
+            'SMS_SMS_COUNT',
+            'TOTAL_SMS_COUNT',
+            'TOTAL_MESSAGE_COUNT',
+            'TOTAL_PACKET_COUNT',
+            'SMS_COUNT',
+            'MESSAGE_COUNT',
+        ]);
+
+        if ($toplamSms === null) {
+            $toplamSms = $gecerli > 0 ? ($gecerli * $smsAdedi) : $smsHedefi;
+        }
+
         if ($cozulmus['basarili']) {
+            \App\Models\SmsKredi::krediDus($toplamSms, 'Async SMS Gonderimi - Transaction ID: ' . $transactionId);
+
             Log::info('[HermesService] setAsyncTransaction', [
                 'async' => true,
                 'req_log_id' => $reqLogId,
+                'telefon_sayisi' => count($normalizeTelefonlar),
+                'mesaj_sms_adedi' => $smsAdedi,
+                'toplam_sms' => $toplamSms,
+                'transaction_id' => $transactionId,
+                'kredi_dusuldu' => $toplamSms,
             ]);
         } else {
             Log::error('[HermesService] setAsyncTransaction hatası', [
@@ -219,6 +287,10 @@ class HermesService
             'async' => $cozulmus['basarili'],
             'req_log_id' => $reqLogId,
             'transaction_id' => $transactionId,
+            'gecerli' => $gecerli,
+            'gecersiz' => $gecersiz,
+            'mesaj_sms_adedi' => $smsAdedi,
+            'toplam_sms' => $toplamSms,
         ];
     }
 
@@ -489,7 +561,14 @@ class HermesService
 
     private function smsAdediHesapla(string $mesaj): int
     {
-        return SmsHelper::smsAdediHesapla($mesaj);
+        $karakter = mb_strlen($mesaj, 'UTF-8');
+
+        if ($karakter === 0) {
+            return 0;
+        }
+
+        // Türkçe karakterli SMS hesaplaması: 70 karakter = 1 SMS
+        return (int) ceil($karakter / 70);
     }
 
     private function xmlDegeriBul(?SimpleXMLElement $xml, array $alanlar): ?string
