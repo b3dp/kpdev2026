@@ -7,6 +7,7 @@ use App\Models\SmsGonderimAlici;
 use App\Models\SmsKisi;
 use App\Services\HermesService;
 use Filament\Forms\Components\Select;
+use App\Support\SmsHelper;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -231,13 +232,7 @@ class HizliSmsSayfasi extends Page implements \Filament\Forms\Contracts\HasForms
 
     private function smsAdediHesapla(string $mesaj): int
     {
-        $karakter = mb_strlen($mesaj, 'UTF-8');
-
-        if ($karakter === 0) {
-            return 0;
-        }
-
-        return (int) ceil($karakter / 70);
+        return SmsHelper::smsAdediHesapla($mesaj);
     }
 
     private static function telefonNormalize(string $telefon): string

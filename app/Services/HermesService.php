@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 use RuntimeException;
 use SimpleXMLElement;
 use Throwable;
+use App\Support\SmsHelper;
 
 class HermesService
 {
@@ -488,14 +489,7 @@ class HermesService
 
     private function smsAdediHesapla(string $mesaj): int
     {
-        $karakter = mb_strlen($mesaj, 'UTF-8');
-
-        if ($karakter === 0) {
-            return 0;
-        }
-
-        // Türkçe karakterli SMS hesaplaması: 70 karakter = 1 SMS
-        return (int) ceil($karakter / 70);
+        return SmsHelper::smsAdediHesapla($mesaj);
     }
 
     private function xmlDegeriBul(?SimpleXMLElement $xml, array $alanlar): ?string
