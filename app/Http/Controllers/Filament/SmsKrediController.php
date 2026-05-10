@@ -25,7 +25,7 @@ class SmsKrediController extends Controller
             SmsKredi::krediEkle($miktar, 'Admin Panel - Manual Kredi Ekleme');
             
             return redirect()
-                ->route('filament.admin.pages.sms-yonetim-dashboard')
+                ->route('filament.yonetim.pages.sms-yonetim-dashboard')
                 ->with('success', "✅ {$miktar} kredi başarıyla eklendi!");
                 
         } catch (\Exception $e) {
@@ -36,7 +36,7 @@ class SmsKrediController extends Controller
             ]);
 
             return redirect()
-                ->route('filament.admin.pages.sms-yonetim-dashboard')
+                ->route('filament.yonetim.pages.sms-yonetim-dashboard')
                 ->with('error', '❌ Kredi ekleme sırasında bir hata oluştu. Lütfen tekrar deneyin.');
         }
     }
