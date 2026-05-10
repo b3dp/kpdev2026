@@ -70,3 +70,8 @@ Route::middleware('auth:admin')->group(function () {
     Route::post('/yonetim/haberler/{haber}/ai-baslat', [HaberAiController::class, 'baslat'])->name('haber.ai.baslat');
     Route::get('/yonetim/haberler/{haber}/ai-durum', [HaberAiController::class, 'durum'])->name('haber.ai.durum');
 });
+
+// SMS Kredi Yönetimi
+Route::middleware('auth:admin')->group(function () {
+    Route::post('/filament/sms-kredi-ekle', [\App\Http\Controllers\Filament\SmsKrediController::class, 'ekle'])->name('filament.admin.sms-kredi-ekle');
+});

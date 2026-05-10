@@ -56,6 +56,25 @@ class HermesService
     public function sendSMS(array $telefonlar, string $mesaj, ?string $sendDate = null): array
     {
         $normalizeTelefonlar = $this->telefonListesiNormalize($telefonlar);
+        
+        // Kredi kontrol et
+        $smsKredi = \App\Models\SmsKredi::getKalanKredi();
+        $smsHedefi = count($normalizeTelefonlar);
+        
+        if ($smsKredi < $smsHedefi) {
+            Log::error('[HermesService] Yetersiz SMS Kredi', [
+                'kalan_kredi' => $smsKredi,
+                'istenen' => $smsHedefi,
+            ]);
+            
+            return [
+                'basarili' => false,
+                'transaction_id' => null,
+                'gecerli' => 0,
+                'gecersiz' => $smsHedefi,
+                'hata' => "Yetersiz SMS Kredi. Kalan: $smsKredi, İstenen: $smsHedefi",
+            ];
+        }
 
         $params = [
             'token' => $this->authenticate(),
@@ -103,9 +122,13 @@ class HermesService
         $gecersiz = $this->xmlIntDegeriBul($cozulmus['icerik'], ['INVALID_SMS_COUNT']) ?? 0;
 
         if ($cozulmus['basarili']) {
+            // Kredi düş (başarılı SMS sayısı kadar)
+            \App\Models\SmsKredi::krediDus($gecerli, 'SMS Gonderimi - Transaction ID: ' . $transactionId);
+            
             Log::info('[HermesService] sendSMS başarılı', [
                 'telefon_sayisi' => count($normalizeTelefonlar),
                 'transaction_id' => $transactionId,
+                'kredi_dusuldü' => $gecerli,
             ]);
         } else {
             Log::error('[HermesService] sendSMS hatası', [
