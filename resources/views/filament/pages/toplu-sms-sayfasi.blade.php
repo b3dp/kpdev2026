@@ -10,8 +10,8 @@
     @endphp
 
     <form wire:submit="gonder" class="space-y-6">
-        <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
-            <div class="xl:col-span-2">
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div class="lg:col-span-2">
                 {{ $this->form }}
 
                 <div class="mt-6 flex flex-wrap gap-3">
@@ -26,11 +26,10 @@
                 </div>
             </div>
 
-            <div class="xl:col-span-1">
+            <div class="lg:col-span-1">
                 <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
                     <div class="mb-3 flex items-center justify-between">
                         <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Canlı SMS Önizleme</h3>
-                        <span class="text-xs text-gray-500 dark:text-gray-400">Hermes tarzı görünüm</span>
                     </div>
 
                     <div class="mx-auto w-full max-w-[320px] rounded-[2rem] border-8 border-gray-200 bg-gray-100 p-2 shadow-inner dark:border-gray-700 dark:bg-gray-800">
