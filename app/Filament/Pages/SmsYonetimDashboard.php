@@ -15,13 +15,15 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 
 class SmsYonetimDashboard extends Page
 {
+    protected static ?string $navigationGroup = 'SMS Yönetimi';
+
     protected static ?string $navigationIcon = 'heroicon-o-envelope';
 
-    protected static ?string $navigationLabel = 'SMS Yönetimi';
+    protected static ?string $navigationLabel = 'SMS Yönetimi Dashboard';
 
     protected static ?string $title = 'SMS Yönetim Paneli';
 
-    protected static ?int $navigationSort = 999;
+    protected static ?int $navigationSort = 10;
 
     protected static string $view = 'filament.pages.sms-yonetim-dashboard';
 

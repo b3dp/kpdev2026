@@ -36,7 +36,7 @@ class SmsListeResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Listeler';
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 60;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 

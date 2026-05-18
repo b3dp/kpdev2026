@@ -28,7 +28,7 @@ class TopluSmsSayfasi extends Page implements \Filament\Forms\Contracts\HasForms
 
     protected static ?string $navigationLabel = 'Toplu SMS Gönder';
 
-    protected static ?int $navigationSort = 35;
+    protected static ?int $navigationSort = 30;
 
     protected static ?string $navigationIcon = 'heroicon-o-megaphone';
 

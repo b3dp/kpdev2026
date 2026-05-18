@@ -29,7 +29,7 @@ class SmsGonderimResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Gönderimler';
 
-    protected static ?int $navigationSort = 40;
+    protected static ?int $navigationSort = 80;
 
     protected static ?string $navigationIcon = 'heroicon-o-clock';
 

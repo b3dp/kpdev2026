@@ -20,7 +20,7 @@ class ExcelSmsGonderSayfasi extends Page implements \Filament\Forms\Contracts\Ha
 
     protected static ?string $navigationLabel = 'Excel\'den SMS Gönder';
 
-    protected static ?int $navigationSort = 32;
+    protected static ?int $navigationSort = 40;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-arrow-up';
 

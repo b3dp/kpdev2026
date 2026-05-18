@@ -30,7 +30,7 @@ class SmsAktarimResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Aktarımlar';
 
-    protected static ?int $navigationSort = 30;
+    protected static ?int $navigationSort = 70;
 
     protected static ?string $navigationIcon = 'heroicon-o-inbox-arrow-down';
 

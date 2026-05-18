@@ -25,7 +25,7 @@ class HizliSmsSayfasi extends Page implements \Filament\Forms\Contracts\HasForms
 
     protected static ?string $navigationLabel = 'Hızlı SMS Gönder';
 
-    protected static ?int $navigationSort = 30;
+    protected static ?int $navigationSort = 20;
 
     protected static ?string $navigationIcon = 'heroicon-o-paper-airplane';
 

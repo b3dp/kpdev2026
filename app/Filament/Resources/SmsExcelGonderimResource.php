@@ -30,7 +30,7 @@ class SmsExcelGonderimResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Excel SMS Raporları';
 
-    protected static ?int $navigationSort = 45;
+    protected static ?int $navigationSort = 90;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-chart-bar';
 
