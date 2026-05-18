@@ -8,7 +8,6 @@ use App\Models\SmsGonderimAlici;
 use App\Models\SmsListe;
 use App\Services\HermesService;
 use Carbon\Carbon;
-use App\Support\SmsHelper;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Textarea;
@@ -238,7 +237,20 @@ class TopluSmsSayfasi extends Page implements \Filament\Forms\Contracts\HasForms
 
     private function smsAdediHesapla(string $mesaj): int
     {
-        return SmsHelper::smsAdediHesapla($mesaj);
+        $karakter = mb_strlen($mesaj, 'UTF-8');
+
+        if ($karakter === 0) {
+            return 0;
+        }
+
+        $tekSmsLimit = 155;
+        $cokluSmsParcaBoyu = 149;
+
+        if ($karakter <= $tekSmsLimit) {
+            return 1;
+        }
+
+        return (int) ceil($karakter / $cokluSmsParcaBoyu);
     }
 
     private static function telefonNormalize(string $telefon): string

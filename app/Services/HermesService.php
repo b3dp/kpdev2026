@@ -218,7 +218,17 @@ class HermesService
             $params['sendDate'] = $sendDate;
         }
 
-        $xml = $this->postIstegi('/SMSGatewayWS/functions/SetAsyncTransaction', $params);
+        try {
+            $xml = $this->postIstegi('/SMSGatewayWS/functions/SetAsyncTransaction', $params);
+        } catch (Throwable $exception) {
+            Log::warning('[HermesService] setAsyncTransaction HTTP hatası, sendSMS fallback uygulanıyor', [
+                'hata' => $exception->getMessage(),
+                'telefon_sayisi' => count($normalizeTelefonlar),
+            ]);
+
+            return $this->sendSMS($normalizeTelefonlar, $mesaj, $sendDate);
+        }
+
         $cozulmus = $this->xmlParse($xml);
 
         if ($cozulmus['kod'] === 43) {
@@ -567,8 +577,16 @@ class HermesService
             return 0;
         }
 
-        // Türkçe karakterli SMS hesaplaması: 70 karakter = 1 SMS
-        return (int) ceil($karakter / 70);
+        // Hermes tarafında isNLSSAllowed=true ve isUTF8Allowed=false ile
+        // tek SMS 155, çoklu SMS parça boyu 149 karakter olarak hesaplanır.
+        $tekSmsLimit = 155;
+        $cokluSmsParcaBoyu = 149;
+
+        if ($karakter <= $tekSmsLimit) {
+            return 1;
+        }
+
+        return (int) ceil($karakter / $cokluSmsParcaBoyu);
     }
 
     private function xmlDegeriBul(?SimpleXMLElement $xml, array $alanlar): ?string
