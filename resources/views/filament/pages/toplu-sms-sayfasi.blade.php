@@ -1,4 +1,18 @@
 <x-filament-panels::page>
+    <style>
+        .toplu-sms-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 1024px) {
+            .toplu-sms-layout {
+                grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
+            }
+        }
+    </style>
+
     @php
         $mesaj = (string) data_get($this->data, 'mesaj', '');
         $karakter = mb_strlen($mesaj, 'UTF-8');
@@ -10,8 +24,8 @@
     @endphp
 
     <form wire:submit="gonder" class="space-y-6">
-        <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <div class="lg:col-span-2">
+        <div class="toplu-sms-layout">
+            <div>
                 {{ $this->form }}
 
                 <div class="mt-6 flex flex-wrap gap-3">
@@ -26,7 +40,7 @@
                 </div>
             </div>
 
-            <div class="lg:col-span-1">
+            <div>
                 <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
                     <div class="mb-3 flex items-center justify-between">
                         <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Canlı SMS Önizleme</h3>
