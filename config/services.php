@@ -91,7 +91,7 @@ return [
         'originator_id' => env('ILETISIM_MAKINESI_ORIGINATOR_ID', 45605),
         'async_limit' => (int) env('ILETISIM_MAKINESI_ASYNC_LIMIT', 500),
         'validity_period' => (int) env('ILETISIM_MAKINESI_VALIDITY_PERIOD', 1440),
-        'kredi_uyari_esik' => (int) env('SMS_KREDI_UYARI_ESIK', 145690),
+        'kredi_uyari_esik' => (int) env('SMS_KREDI_UYARI_ESIK', 60000),
         'kredi_uyari_telefonlar' => array_values(array_filter(array_map('trim', explode(',', (string) env('SMS_KREDI_UYARI_TELEFONLAR', '5425278192,5372305064,5305686751,5326847101'))))),
         'kredi_uyari_mesaj' => env('SMS_KREDI_UYARI_MESAJ', 'SMS Krediniz Tukenmek Uzere. Lutfen SMS Yuklemesi yapin.'),
     ],
