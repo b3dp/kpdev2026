@@ -59,10 +59,13 @@ class HermesService
         
         // SMS sayısını hesapla (mesaj uzunluğuna göre)
         $smsAdedi = $this->smsAdediHesapla($mesaj);
+
+        // Mümkünse hedef kredi hesabını Hermes calculateCost ile birebir al.
+        $hermesToplamSms = $this->hermesToplamSmsHesapla($normalizeTelefonlar, $mesaj);
         
-        // Kredi kontrol et (telefon sayısı * SMS adedi)
+        // Kredi kontrol et (öncelik Hermes toplam mesaj değeri)
         $smsKredi = \App\Models\SmsKredi::getKalanKredi();
-        $smsHedefi = count($normalizeTelefonlar) * $smsAdedi;
+        $smsHedefi = $hermesToplamSms ?? (count($normalizeTelefonlar) * $smsAdedi);
         
         if ($smsKredi < $smsHedefi) {
             Log::error('[HermesService] Yetersiz SMS Kredi', [
@@ -137,8 +140,8 @@ class HermesService
         ]);
 
         if ($toplamSms === null) {
-            // Özet alanı yoksa, kredi düşümü için güvenli fallback: geçerli alıcı x mesaj SMS adedi.
-            $toplamSms = $gecerli * $smsAdedi;
+            // Özet alanı yoksa önce Hermes calculateCost, o da yoksa yerel fallback.
+            $toplamSms = $hermesToplamSms ?? ($gecerli * $smsAdedi);
         }
 
         if ($cozulmus['basarili']) {
@@ -174,10 +177,11 @@ class HermesService
     {
         $normalizeTelefonlar = $this->telefonListesiNormalize($telefonlar);
         $smsAdedi = $this->smsAdediHesapla($mesaj);
+        $hermesToplamSms = $this->hermesToplamSmsHesapla($normalizeTelefonlar, $mesaj);
 
         // Async gönderimlerde de kredi kontrolü senkron akışla aynı mantıkta yapılır.
         $smsKredi = \App\Models\SmsKredi::getKalanKredi();
-        $smsHedefi = count($normalizeTelefonlar) * $smsAdedi;
+        $smsHedefi = $hermesToplamSms ?? (count($normalizeTelefonlar) * $smsAdedi);
 
         if ($smsKredi < $smsHedefi) {
             Log::error('[HermesService] Async Yetersiz SMS Kredi', [
@@ -270,7 +274,7 @@ class HermesService
         ]);
 
         if ($toplamSms === null) {
-            $toplamSms = $gecerli > 0 ? ($gecerli * $smsAdedi) : $smsHedefi;
+            $toplamSms = $hermesToplamSms ?? ($gecerli > 0 ? ($gecerli * $smsAdedi) : $smsHedefi);
         }
 
         if ($cozulmus['basarili']) {
@@ -485,6 +489,23 @@ class HermesService
             'token' => $this->authenticate(),
             'serviceId' => $serviceId,
         ]);
+    }
+
+    private function hermesToplamSmsHesapla(array $telefonlar, string $mesaj): ?int
+    {
+        try {
+            $maliyet = $this->calculateCost($telefonlar, $mesaj);
+            $toplamMesaj = (int) ($maliyet['toplam_mesaj'] ?? 0);
+
+            return $toplamMesaj > 0 ? $toplamMesaj : null;
+        } catch (Throwable $exception) {
+            Log::warning('[HermesService] calculateCost fallback', [
+                'hata' => $exception->getMessage(),
+                'telefon_sayisi' => count($telefonlar),
+            ]);
+
+            return null;
+        }
     }
 
     private function postIstegi(string $endpoint, array $params): string
