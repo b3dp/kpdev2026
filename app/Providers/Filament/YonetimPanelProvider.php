@@ -6,6 +6,7 @@ use App\Filament\Pages\Giris;
 use App\Filament\Widgets\EkayitBasvuruDurumWidget;
 use App\Filament\Widgets\HaberIstatistikWidget;
 use App\Filament\Widgets\MezunlarIstatistikWidget;
+use App\Filament\Widgets\SmsIstatistikWidget;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -53,6 +54,7 @@ class YonetimPanelProvider extends PanelProvider
                 HaberIstatistikWidget::class,
                 MezunlarIstatistikWidget::class,
                 EkayitBasvuruDurumWidget::class,
+                SmsIstatistikWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
