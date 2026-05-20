@@ -46,6 +46,10 @@ class YonetimPanelProvider extends PanelProvider
                 PanelsRenderHook::USER_MENU_BEFORE,
                 fn (): string => view('filament.topbar.yeni-menu')->render()
             )
+            ->renderHook(
+                PanelsRenderHook::BODY_START,
+                fn (): \Illuminate\Contracts\View\View => view('filament.topbar.arama-modal')
+            )
             ->pages([
                 Pages\Dashboard::class,
             ])

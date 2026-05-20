@@ -1,0 +1,1 @@
+@livewire('global-arama-modal')
