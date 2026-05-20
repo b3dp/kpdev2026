@@ -14,60 +14,44 @@
     $aramaVar = mb_strlen(trim($arama), 'UTF-8') >= 2;
 @endphp
 
-<div>
-<style>
-@keyframes spin { to { transform: rotate(360deg); } }
-[x-cloak] { display: none !important; }
-</style>
 <div
-    x-data="{ acik: @entangle('acik'), aramaInput: '' }"
+    x-data="{ acik: @entangle('acik').live, aramaInput: '' }"
     x-on:keydown.window="
         if (event.key === 'k' && (event.metaKey || event.ctrlKey)) {
             event.preventDefault();
             acik = true;
-            $nextTick(() => $refs.aramaInput?.focus());
+            $nextTick(function() { if ($refs.aramaInput) $refs.aramaInput.focus(); });
         }
         if (event.key === 'Escape' && acik) {
-            acik = false; aramaInput = '';
+            event.preventDefault();
+            acik = false;
+            aramaInput = '';
+            $wire.kapat();
         }
     "
 >
     {{-- Overlay --}}
     <div
         x-show="acik"
-        x-transition:enter="transition ease-out duration-200"
-        x-transition:enter-start="opacity-0"
-        x-transition:enter-end="opacity-100"
-        x-transition:leave="transition ease-in duration-150"
-        x-transition:leave-start="opacity-100"
-        x-transition:leave-end="opacity-0"
-        x-on:click="acik = false; $wire.kapat()"
+        x-on:click="acik = false; aramaInput = ''; $wire.kapat()"
         style="position:fixed;inset:0;z-index:9998;background:rgba(15,23,42,0.55);backdrop-filter:blur(3px);"
-        x-cloak
     ></div>
 
-    {{-- Modal --}}
+    {{-- Modal kartı --}}
     <div
         x-show="acik"
-        x-transition:enter="transition ease-out duration-200"
-        x-transition:enter-start="opacity-0 scale-95 -translate-y-4"
-        x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-        x-transition:leave="transition ease-in duration-150"
-        x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-        x-transition:leave-end="opacity-0 scale-95 -translate-y-4"
         x-on:click.stop
         style="position:fixed;top:80px;left:50%;transform:translateX(-50%);z-index:9999;width:min(680px, calc(100vw - 2rem));max-height:calc(100vh - 120px);display:flex;flex-direction:column;border-radius:16px;background:#fff;box-shadow:0 25px 60px rgba(0,0,0,0.25),0 0 0 1px rgba(0,0,0,0.06);overflow:hidden;"
-        x-cloak
     >
         {{-- Arama girişi --}}
-        <div style="display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid #f1f5f9;">
+        <div style="display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid #f1f5f9;flex-shrink:0;">
             <div wire:loading.remove wire:target="updatedArama" style="flex-shrink:0;color:#94a3b8;">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" style="width:20px;height:20px;">
                     <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
                 </svg>
             </div>
             <div wire:loading wire:target="updatedArama" style="flex-shrink:0;color:#3b82f6;">
-                <svg style="width:20px;height:20px;animation:spin 1s linear infinite;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg style="width:20px;height:20px;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle style="opacity:.25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path style="opacity:.75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                 </svg>
@@ -78,11 +62,10 @@
                 x-on:input.debounce.300ms="$wire.set('arama', $el.value)"
                 placeholder="Kişi, üye, haber, e-kayıt, bağış, mezun ara…"
                 x-ref="aramaInput"
-                x-on:keydown.escape.stop="acik = false; $wire.kapat()"
+                x-init="$watch('acik', function(v) { if (v) $nextTick(function() { if ($refs.aramaInput) $refs.aramaInput.focus(); }); })"
                 style="flex:1;border:none;outline:none;font-size:16px;color:#0f172a;background:transparent;font-weight:500;"
                 autocomplete="off"
                 spellcheck="false"
-                x-init="$watch('acik', v => v && $nextTick(() => $el.focus()))"
             />
             @if(strlen(trim($arama)) > 0)
             <button
@@ -108,7 +91,6 @@
         <div style="overflow-y:auto;flex:1;">
 
             @if(!$aramaVar)
-            {{-- Başlangıç --}}
             <div style="padding:40px 24px;text-align:center;">
                 <p style="font-size:14px;color:#94a3b8;margin:0;">Aramak istediğinizi yazın</p>
                 <p style="font-size:12px;color:#cbd5e1;margin:8px 0 16px;">Kişi, üye, bağış, e-kayıt ve daha fazlası</p>
@@ -128,7 +110,6 @@
             </div>
 
             @elseif($toplamSonuc === 0)
-            {{-- Boş sonuç --}}
             <div style="padding:40px 24px;text-align:center;">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:40px;height:40px;color:#cbd5e1;margin:0 auto;">
                     <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
@@ -140,17 +121,14 @@
             </div>
 
             @else
-            {{-- Sonuç grupları --}}
             @foreach($grupTanim as $anahtar => $tanim)
                 @php $liste = $sonuclar[$anahtar] ?? []; @endphp
                 @if(count($liste) > 0)
                 <div>
-                    {{-- Grup başlığı --}}
                     <div style="display:flex;align-items:center;gap:8px;padding:10px 18px 6px;background:{{ $tanim['bg'] }};border-bottom:1px solid rgba(0,0,0,0.05);">
                         <span style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:{{ $tanim['renk'] }};">{{ $tanim['etiket'] }}</span>
                         <span style="font-size:11px;font-weight:600;color:{{ $tanim['renk'] }};background:rgba(255,255,255,0.7);border-radius:999px;padding:0 7px;line-height:1.8;border:1px solid rgba(0,0,0,0.08);">{{ count($liste) }}</span>
                     </div>
-                    {{-- Satırlar --}}
                     @foreach($liste as $sonuc)
                     <a
                         href="{{ $sonuc['link'] }}"
@@ -182,7 +160,7 @@
 
         {{-- Footer --}}
         @if($aramaVar && $toplamSonuc > 0)
-        <div style="padding:8px 18px;border-top:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;background:#fafafa;">
+        <div style="padding:8px 18px;border-top:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;background:#fafafa;flex-shrink:0;">
             <span style="font-size:11px;color:#94a3b8;">
                 <strong style="color:#64748b;">{{ $toplamSonuc }}</strong> sonuç
             </span>
