@@ -2,6 +2,7 @@
     $grupTanim = [
         'kisiler'           => ['etiket' => 'Kişiler',           'renk' => '#2563eb', 'bg' => '#eff6ff'],
         'uyeler'            => ['etiket' => 'Üyeler',            'renk' => '#4f46e5', 'bg' => '#eef2ff'],
+        'sms_rehber'        => ['etiket' => 'SMS Rehberi',       'renk' => '#0891b2', 'bg' => '#ecfeff'],
         'haberler'          => ['etiket' => 'Haberler',          'renk' => '#0284c7', 'bg' => '#f0f9ff'],
         'ekayit_kayitlar'   => ['etiket' => 'E-Kayıt',           'renk' => '#059669', 'bg' => '#ecfdf5'],
         'bagislar'          => ['etiket' => 'Bağışlar',          'renk' => '#e11d48', 'bg' => '#fff1f2'],

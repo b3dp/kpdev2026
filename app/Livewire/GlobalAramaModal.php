@@ -10,12 +10,14 @@ use App\Filament\Resources\KisiResource;
 use App\Filament\Resources\KurumResource;
 use App\Filament\Resources\KurumsalSayfaResource;
 use App\Filament\Resources\MezunProfilResource;
+use App\Filament\Resources\SmsKisiResource;
 use App\Filament\Resources\UyeResource;
 use App\Models\Etkinlik;
 use App\Models\Haber;
 use App\Models\Kisi;
 use App\Models\Kurum;
 use App\Models\KurumsalSayfa;
+use App\Models\SmsKisi;
 use App\Models\Uye;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -33,6 +35,7 @@ class GlobalAramaModal extends Component
     public array $sonuclar = [
         'kisiler'           => [],
         'uyeler'            => [],
+        'sms_rehber'        => [],
         'haberler'          => [],
         'ekayit_kayitlar'   => [],
         'bagislar'          => [],
@@ -51,6 +54,7 @@ class GlobalAramaModal extends Component
         $this->sonuclar = [
             'kisiler'           => [],
             'uyeler'            => [],
+            'sms_rehber'        => [],
             'haberler'          => [],
             'ekayit_kayitlar'   => [],
             'bagislar'          => [],
@@ -78,6 +82,7 @@ class GlobalAramaModal extends Component
         $bos = [
             'kisiler'           => [],
             'uyeler'            => [],
+            'sms_rehber'        => [],
             'haberler'          => [],
             'ekayit_kayitlar'   => [],
             'bagislar'          => [],
@@ -126,6 +131,25 @@ class GlobalAramaModal extends Component
         } catch (\Throwable $e) {
             Log::error('AramaModal uye: '.$e->getMessage());
             $this->sonuclar['uyeler'] = [];
+        }
+
+        // SMS Rehberi — DB LIKE
+        try {
+            $smsKisiler = SmsKisi::where(fn ($q) => $q
+                ->where('ad_soyad', 'LIKE', $like)
+                ->orWhere('telefon', 'LIKE', $like)
+                ->orWhere('telefon_2', 'LIKE', $like)
+            )->limit(5)->get();
+
+            $this->sonuclar['sms_rehber'] = $smsKisiler->map(fn (SmsKisi $s) => [
+                'id'     => $s->id,
+                'baslik' => $s->ad_soyad ?? $s->telefon,
+                'ozet'   => collect([$s->telefon, $s->telefon_2, $s->notlar])->filter()->implode(' · '),
+                'link'   => SmsKisiResource::getUrl('edit', ['record' => $s]),
+            ])->all();
+        } catch (\Throwable $e) {
+            Log::error('AramaModal smsrehber: '.$e->getMessage());
+            $this->sonuclar['sms_rehber'] = [];
         }
 
         // Haberler — Scout
