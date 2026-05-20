@@ -14,6 +14,11 @@
     $aramaVar = mb_strlen(trim($arama), 'UTF-8') >= 2;
 @endphp
 
+<div>
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+[x-cloak] { display: none !important; }
+</style>
 <div
     x-data="{ acik: @entangle('acik') }"
     x-on:keydown.window="
@@ -187,8 +192,3 @@
 
     </div>
 </div>
-
-<style>
-@keyframes spin { to { transform: rotate(360deg); } }
-[x-cloak] { display: none !important; }
-</style>
