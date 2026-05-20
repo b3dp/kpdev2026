@@ -20,7 +20,7 @@
 [x-cloak] { display: none !important; }
 </style>
 <div
-    x-data="{ acik: @entangle('acik') }"
+    x-data="{ acik: @entangle('acik'), aramaInput: '' }"
     x-on:keydown.window="
         if (event.key === 'k' && (event.metaKey || event.ctrlKey)) {
             event.preventDefault();
@@ -28,7 +28,7 @@
             $nextTick(() => $refs.aramaInput?.focus());
         }
         if (event.key === 'Escape' && acik) {
-            acik = false;
+            acik = false; aramaInput = '';
         }
     "
 >
@@ -61,12 +61,12 @@
     >
         {{-- Arama girişi --}}
         <div style="display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid #f1f5f9;">
-            <div wire:loading.remove wire:target="arama" style="flex-shrink:0;color:#94a3b8;">
+            <div wire:loading.remove wire:target="updatedArama" style="flex-shrink:0;color:#94a3b8;">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" style="width:20px;height:20px;">
                     <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
                 </svg>
             </div>
-            <div wire:loading wire:target="arama" style="flex-shrink:0;color:#3b82f6;">
+            <div wire:loading wire:target="updatedArama" style="flex-shrink:0;color:#3b82f6;">
                 <svg style="width:20px;height:20px;animation:spin 1s linear infinite;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle style="opacity:.25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path style="opacity:.75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
@@ -74,19 +74,19 @@
             </div>
             <input
                 type="text"
-                wire:model.live.debounce.300ms="arama"
+                x-model="aramaInput"
+                x-on:input.debounce.300ms="$wire.set('arama', $el.value)"
                 placeholder="Kişi, üye, haber, e-kayıt, bağış, mezun ara…"
                 x-ref="aramaInput"
                 x-on:keydown.escape.stop="acik = false; $wire.kapat()"
                 style="flex:1;border:none;outline:none;font-size:16px;color:#0f172a;background:transparent;font-weight:500;"
                 autocomplete="off"
                 spellcheck="false"
-                x-init="$nextTick(() => { if (acik) $el.focus() })"
-                x-effect="if (acik) $nextTick(() => $el.focus())"
+                x-init="$watch('acik', v => v && $nextTick(() => $el.focus()))"
             />
             @if(strlen(trim($arama)) > 0)
             <button
-                wire:click="$set('arama', '')"
+                x-on:click="aramaInput = ''; $wire.set('arama', '')"
                 type="button"
                 title="Temizle"
                 style="flex-shrink:0;padding:4px;border-radius:6px;border:none;background:#f1f5f9;cursor:pointer;color:#64748b;display:flex;align-items:center;"
@@ -98,7 +98,7 @@
             @endif
             <button
                 type="button"
-                x-on:click="acik = false; $wire.kapat()"
+                x-on:click="acik = false; aramaInput = ''; $wire.kapat()"
                 title="Kapat (ESC)"
                 style="flex-shrink:0;padding:4px 8px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;cursor:pointer;font-size:11px;color:#94a3b8;font-family:monospace;line-height:1;"
             >ESC</button>
@@ -115,7 +115,7 @@
                 <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px;">
                     @foreach(['5326847101', 'Ahmet Yılmaz', 'mezun 2015', 'Anadolu'] as $ornek)
                     <button
-                        wire:click="$set('arama', '{{ $ornek }}')"
+                        x-on:click="aramaInput = '{{ $ornek }}'; $wire.set('arama', '{{ $ornek }}')"
                         type="button"
                         style="padding:4px 12px;border-radius:999px;border:1px solid #e2e8f0;background:#f8fafc;font-size:12px;color:#64748b;cursor:pointer;"
                     >{{ $ornek }}</button>
